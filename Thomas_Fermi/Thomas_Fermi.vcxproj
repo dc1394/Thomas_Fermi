@@ -205,6 +205,13 @@
     <ClInclude Include="shoot\shootfunc.h" />
     <ClInclude Include="Spline.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Document\Thomas-Fermi.tex" />
+    <None Include="Document\Thomas-Fermi方程式のFEMによる解法.pptx" />
+    <None Include="result\result2.plt" />
+    <None Include="result\result2_logscale.plt" />
+    <None Include="result\result3.plt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
