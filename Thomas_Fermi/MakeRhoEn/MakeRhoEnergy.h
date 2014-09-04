@@ -1,23 +1,35 @@
-﻿#include "../Beta.h"
-#include <cstdint>
-#include <fstream>
-#include <memory>
-#include <tuple>
-#include <utility>
-#include <boost/cast.hpp>
+﻿#ifndef _MAKERHOENERGY_H_
+#define _MAKERHOENERGY_H_
+
+#include "../Beta.h"
+#include <cstdint>          // for std::int32_t
+#include <fstream>          // for std::ofstream
+#include <memory>           // for std::shared_ptr
+#include <iomanip>
+#include <tuple>            // for std::tuple
+#include <utility>          // for std::get
+#include <boost/cast.hpp>   // for boost::numeric_cast
 
 namespace Thomas_Fermi {
 	namespace MakeRhoEn {
 		class MakeRhoEnergy final
 		{
-            typedef std::tuple<std::vector<double>, std::shared_ptr<const FEM_ALL::Beta>,
-                double> parameter_type;
+            typedef std::tuple<std::shared_ptr<const FEM_ALL::Beta>,
+                               std::vector<double>> parameter_type;
+
+            // #region メンバ変数
 
             //! A static const variable.
             /*!
             エネルギーを計算するときの定数の値
             */
             static const double ALPHA;
+
+            //! A private const variable.
+            /*!
+            x方向のメッシュ
+            */
+            const std::vector<double> xvec_;
 
             //! A private const variable.
             /*!
@@ -29,13 +41,25 @@ namespace Thomas_Fermi {
             /*!
             規格化のための定数
             */
-            double k_;
+            double s_;
 
             //! A private const variable.
             /*!
             ファイル出力するときのループの最大数
             */
             const std::int32_t max_;
+
+            //! A private variable.
+            /*!
+            ファイル出力用のストリーム
+            */
+            std::ofstream ofs_;
+
+            //! A private const variable.
+            /*!
+            ファイル出力用のストリーム
+            */
+            const double Z_;
 
             //! A private const variable.
             /*!
@@ -49,36 +73,44 @@ namespace Thomas_Fermi {
             */
             const std::size_t size_;
 
-            //! A private const variable.
-            /*!
-            x方向のメッシュ
-            */
-            const std::vector<double> xvec_;
+            // #endregion メンバ変数
 
-            //! A private variable.
-            /*!
-            ファイル出力用のストリーム
-            */
-            std::ofstream ofs_;
+            // #region コンストラクタ
 
             //! デフォルトコンストラクタ（禁止）
             /*!
-              デフォルトコンストラクタ（禁止）
             */
             MakeRhoEnergy() = delete;
 
             //! コピーコンストラクタ（禁止）
             /*!
-              \param コピー元のオブジェクト
+            \param コピー元のオブジェクト
             */
 			MakeRhoEnergy(const MakeRhoEnergy &) = delete;
 
+        public:
+            //!  A constructor.
+            /*!
+            \param pt パラメータ
+            \param Z 原子番号
+            */
+            MakeRhoEnergy(const parameter_type & pt, double Z);
+
+            // #endregion コンストラクタ
+
+            // #region operator=()
+
+        private:
             //! operator=()（禁止）
             /*!
-              \param コピー元のオブジェクト（禁止）
-              \return コピー元のオブジェクト
+            \param コピー元のオブジェクト（禁止）
+            \return コピー元のオブジェクト
             */
             MakeRhoEnergy & operator=(const MakeRhoEnergy &) = delete;
+
+            // #endregion operator=()
+
+            // #region メンバ関数
 
             //! 原子のエネルギーを求める
             /*!
@@ -91,7 +123,30 @@ namespace Thomas_Fermi {
             \param x xの値
             \return ρ(x)の値
             */
-            double rhofunc(double x) const;
+            double rho(double x) const;
+
+        public:
+            //! 計算結果をファイルに出力する
+            /*!
+            \param n Gauss-Legendreの分点
+            \param usecilk Intel® Cilk™ Plusを使うかどうか
+            \param usesimd SIMDを使うかどうか
+            */
+            void saveresult(std::size_t n, bool usecilk, bool usesimd);
+
+        private:
+            //! 関数ρ(x)の値をファイルに書き込む
+            /*!
+            \param filename 書き込むファイル名
+            */
+            void saverho(const std::string & filename);
+
+            //! 関数r^2ρ(x)の値をファイルに書き込む
+            /*!
+            \param コピー元のオブジェクト（禁止）
+            \return コピー元のオブジェクト
+            */
+            void saverhoTilde(const std::string & filename);
 
             //! 関数y(x)の値をファイルに書き込む
             /*!
@@ -99,51 +154,23 @@ namespace Thomas_Fermi {
             */
             void savey(const std::string & filename);
 
-            //! 関数ρ(x)の値をファイルに書き込む
-            /*!
-            \param filename 書き込むファイル名
-            */
-            void saverho(const std::string & filename);
-
-            //! operator=()（禁止）
-            /*!
-            \param コピー元のオブジェクト（禁止）
-            \return コピー元のオブジェクト
-            */
-            void saveresult3();
-
             //! 関数y(x)の値を返す
             /*!
-              \param x xの値
-              \return y(x)の値
+            \param x xの値
+            \return y(x)の値
             */
             double y(double x) const;
 
-
-
-
-
-
-
-		public:
-			MakeRhoEnergy::MakeRhoEnergy(const parameter_type & pt);
-
-            //! 計算結果をファイルに出力する
-            /*!
-            \param n Gauss-Legendreの分点
-            \param usecilk Intel Cilk Plusを使うかどうか
-            \param usesimd SIMDを使うかどうか
-            \param Z 原子番号
-            */
-			void saveresult(std::size_t n, bool usecilk, bool usesimd, double Z);
+            // #endregion メンバ関数
 		};
 
-		inline MakeRhoEnergy::MakeRhoEnergy(const parameter_type & pt)
-			:	xvec_(std::get<0>(pt)), pbeta_(std::get<1>(pt)),
+		inline MakeRhoEnergy::MakeRhoEnergy(const parameter_type & pt, double Z)
+			:	xvec_(std::get<1>(pt)),
+                dx_((xvec_[2] - xvec_[1]) * 2.0),
+                max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / MakeRhoEnergy::ALPHA / dx_)),
+                pbeta_(std::get<0>(pt)),
 				size_(xvec_.size()),
-				dx_((xvec_[2] - xvec_[1]) * 2.0),
-				max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] /
-					 MakeRhoEnergy::ALPHA / dx_))
+                Z_(Z)
 		{
             // 例外指定
             ofs_.exceptions(std::ios::badbit | std::ios::failbit);
@@ -151,6 +178,14 @@ namespace Thomas_Fermi {
             ofs_ << std::setprecision(15);
 		}
 
+        //! x^yを計算する
+        /*!
+        \param x xの値    
+        \param y yの値
+        \return x^yの値
+        */
 		constexpr double power(double x, std::uint32_t y);
 	}
 }
+
+#endif  // _MAKERHOENERGY_H_
