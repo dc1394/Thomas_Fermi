@@ -1,11 +1,11 @@
-﻿#ifndef _MAKERHOENERGY_H_
+#ifndef _MAKERHOENERGY_H_
 #define _MAKERHOENERGY_H_
 
 #include "../Beta.h"
 #include <cstdint>          // for std::int32_t
 #include <fstream>          // for std::ofstream
 #include <memory>           // for std::shared_ptr
-#include <iomanip>
+#include <iomanip>          // for std::setprecision
 #include <tuple>            // for std::tuple
 #include <utility>          // for std::get
 #include <boost/cast.hpp>   // for boost::numeric_cast
@@ -118,12 +118,12 @@ namespace Thomas_Fermi {
             */
             double makeEnergy() const;
 
-            //! 関数ρ(x)の値を返す
+            //! 関数ρ~(x)の値を返す
             /*!
             \param x xの値
-            \return ρ(x)の値
+            \return ρ~(x)の値
             */
-            double rho(double x) const;
+            double rhoTilde(double x) const;
 
         public:
             //! 計算結果をファイルに出力する
@@ -141,7 +141,7 @@ namespace Thomas_Fermi {
             */
             void saverho(const std::string & filename);
 
-            //! 関数r^2ρ(x)の値をファイルに書き込む
+            //! 関数ρ~(x)の値をファイルに書き込む
             /*!
             \param コピー元のオブジェクト（禁止）
             \return コピー元のオブジェクト

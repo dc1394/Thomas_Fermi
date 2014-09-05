@@ -1,4 +1,4 @@
-﻿#include "MakeRhoEnergy.h"
+#include "MakeRhoEnergy.h"
 #include "../Gauss_Legendre.h"
 
 #include <cmath>                                // for std::pow
@@ -15,7 +15,7 @@ namespace Thomas_Fermi {
             //return 3.0 / 7.0 * ALPHA * v1_;
         }
 
-		double MakeRhoEnergy::rho(double x) const
+		double MakeRhoEnergy::rhoTilde(double x) const
 		{
             const double a = 128.0  * Z_ * Z_ / (9.0 * power(boost::math::constants::pi<double>(), 2));
 			
