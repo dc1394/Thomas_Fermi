@@ -12,7 +12,7 @@
 #include "mkl_allocator.h"
 #include <vector>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 		class Beta
 #if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)

@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <mkl.h>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	template <typename T>
 	class mkl_allocator
 	{

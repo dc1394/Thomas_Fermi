@@ -1,6 +1,6 @@
 ﻿#include "FOElement.h"
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 		FOElement::FOElement(std::size_t nint, bool useSSEorAVX, bool usecilk, const dvector & coords, dvector && beta)
 			:	FEM(nint, useSSEorAVX, usecilk, coords, std::move(beta)),

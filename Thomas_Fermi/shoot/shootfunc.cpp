@@ -3,7 +3,7 @@
 #include <utility>
 #include <boost/range/algorithm.hpp>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace shoot {
 		const shootfunc::tmpary shootfunc::V1 = { -1.588076779 };
 		const shootfunc::tmpary shootfunc::DELV = { 1.0E-14 };

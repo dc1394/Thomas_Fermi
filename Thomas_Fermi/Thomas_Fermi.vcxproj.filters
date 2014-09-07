@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ヘッダー ファイル\MakeRhoEn">
-      <UniqueIdentifier>{67fcfe62-472e-4236-abb7-92c89941a663}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\MakeRhoEn">
-      <UniqueIdentifier>{3ee89725-eb63-4910-9fb8-99894e513bcb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\shoot">
       <UniqueIdentifier>{32bf1bd2-8475-464f-8e3e-e1b48aaaf4e8}</UniqueIdentifier>
     </Filter>
@@ -30,6 +24,21 @@
     </Filter>
     <Filter Include="result">
       <UniqueIdentifier>{f2ca450d-760c-4fc0-bd7c-70c43bf855d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\makerhoen">
+      <UniqueIdentifier>{3ee89725-eb63-4910-9fb8-99894e513bcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\makerhoen">
+      <UniqueIdentifier>{67fcfe62-472e-4236-abb7-92c89941a663}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\gausslegendre">
+      <UniqueIdentifier>{5b94c15b-de57-4a72-a35c-617a93713e08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\gausslegendre">
+      <UniqueIdentifier>{37536f66-7804-450a-8727-0620a369cec4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\myfunctional">
+      <UniqueIdentifier>{dbae2dea-8384-4e80-947f-3ee6611458da}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,7 +61,7 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="MakeRhoEn\MakeRhoEnergy.cpp">
-      <Filter>ソース ファイル\MakeRhoEn</Filter>
+      <Filter>ソース ファイル\makerhoen</Filter>
     </ClCompile>
     <ClCompile Include="shoot\load2.cpp">
       <Filter>ソース ファイル\shoot</Filter>
@@ -68,6 +77,9 @@
     </ClCompile>
     <ClCompile Include="Iteration.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="gausslegendre\Gauss_Legendre.cpp">
+      <Filter>ソース ファイル\gausslegendre</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -96,7 +108,7 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="MakeRhoEn\MakeRhoEnergy.h">
-      <Filter>ヘッダー ファイル\MakeRhoEn</Filter>
+      <Filter>ヘッダー ファイル\makerhoen</Filter>
     </ClInclude>
     <ClInclude Include="shoot\load2.h">
       <Filter>ヘッダー ファイル\shoot</Filter>
@@ -106,6 +118,12 @@
     </ClInclude>
     <ClInclude Include="shoot\shootfunc.h">
       <Filter>ヘッダー ファイル\shoot</Filter>
+    </ClInclude>
+    <ClInclude Include="gausslegendre\Gauss_Legendre.h">
+      <Filter>ヘッダー ファイル\gausslegendre</Filter>
+    </ClInclude>
+    <ClInclude Include="myfunctional\Functional.h">
+      <Filter>ヘッダー ファイル\myfunctional</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

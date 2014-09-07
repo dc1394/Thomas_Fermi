@@ -8,7 +8,7 @@
 #include <boost/assign.hpp>
 #include <boost/utility/in_place_factory.hpp>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 #if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
 		const double Iteration::IterationTHRESHOLD = 1.0;
@@ -24,8 +24,8 @@ namespace Thomas_Fermi {
 				avxSupported_(availableAVX()),
 				TOL_(TOL), alpha_(alpha), ple_(boost::none)
 		{
-			using namespace Thomas_Fermi;
-			using namespace Thomas_Fermi::shoot;
+			using namespace thomasfermi;
+			using namespace thomasfermi::shoot;
 
 			load2 l2;
 			shootf s(shootfunc::V1,

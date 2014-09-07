@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <cstdint>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 		double Beta::operator()(double x) const
 		{

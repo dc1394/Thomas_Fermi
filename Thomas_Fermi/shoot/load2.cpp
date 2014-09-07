@@ -4,7 +4,7 @@
 #include <boost/assign.hpp>
 #include <boost/utility/in_place_factory.hpp>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace shoot {
 #if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
 	const double load2::THRESHOLD = 65.0;

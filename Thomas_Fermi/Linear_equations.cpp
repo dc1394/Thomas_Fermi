@@ -14,7 +14,7 @@
 //
 //#pragma comment(lib, "liblapacke.lib")
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 		void Linear_equations::reset(const dvector & b)
 		{

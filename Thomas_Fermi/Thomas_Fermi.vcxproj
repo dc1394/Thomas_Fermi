@@ -181,6 +181,7 @@
     <ClCompile Include="Beta.cpp" />
     <ClCompile Include="FEM.cpp" />
     <ClCompile Include="FOElement.cpp" />
+    <ClCompile Include="gausslegendre\Gauss_Legendre.cpp" />
     <ClCompile Include="Gauss_Legendre.cpp" />
     <ClCompile Include="Iteration.cpp" />
     <ClCompile Include="Linear_equations.cpp" />
@@ -195,11 +196,13 @@
     <ClInclude Include="Beta.h" />
     <ClInclude Include="FEM.h" />
     <ClInclude Include="FOElement.h" />
+    <ClInclude Include="gausslegendre\Gauss_Legendre.h" />
     <ClInclude Include="Gauss_Legendre.h" />
     <ClInclude Include="Iteration.h" />
     <ClInclude Include="Linear_equations.h" />
     <ClInclude Include="MakeRhoEn\MakeRhoEnergy.h" />
     <ClInclude Include="mkl_allocator.h" />
+    <ClInclude Include="myfunctional\Functional.h" />
     <ClInclude Include="shoot\load2.h" />
     <ClInclude Include="shoot\shootf.h" />
     <ClInclude Include="shoot\shootfunc.h" />

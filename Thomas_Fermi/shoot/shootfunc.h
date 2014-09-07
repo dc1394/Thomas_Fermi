@@ -15,7 +15,7 @@
 	#include <boost/noncopyable.hpp>
 #endif
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace shoot {
 		class shootfunc
 #if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)

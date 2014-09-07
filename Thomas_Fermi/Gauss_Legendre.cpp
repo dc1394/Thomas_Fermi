@@ -10,7 +10,7 @@
 	#define cilk_for for
 #endif
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 #if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
 		const double Gauss_Legendre::EPS = 1.0E-15;

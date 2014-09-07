@@ -8,7 +8,7 @@
 	#include <boost/noncopyable.hpp>
 #endif
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 		bool availableAVX();
 

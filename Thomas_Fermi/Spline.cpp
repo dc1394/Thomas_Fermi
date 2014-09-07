@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <boost/cast.hpp>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 #if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
 	const double Spline::TINY = 1.0E-30;
 #endif	

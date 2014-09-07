@@ -13,7 +13,7 @@
 	#define cilk_for for
 #endif
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 		void FEM::initialize()
 		{

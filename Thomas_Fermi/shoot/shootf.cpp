@@ -13,7 +13,7 @@
 	#include <boost/foreach.hpp>
 #endif
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace shoot {
 #if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
 		const double shootf::EPS = 1.0E-14;

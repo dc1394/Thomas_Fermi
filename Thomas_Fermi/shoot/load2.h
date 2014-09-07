@@ -2,7 +2,7 @@
 #include "../Spline.h"
 #include <boost/optional.hpp>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace shoot {
 		class load2	{
 #if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__)

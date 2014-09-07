@@ -1,3 +1,8 @@
+﻿/*! \file MakeRhoEnergy.cpp
+    \brief y(x)から電子密度とエネルギーを計算するクラスの実装
+
+    Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
 #include "MakeRhoEnergy.h"
 #include "../Gauss_Legendre.h"
 
@@ -6,8 +11,8 @@
 #include <boost/assert.hpp>                     // for boost::assert
 #include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
 
-namespace Thomas_Fermi {
-	namespace MakeRhoEn {
+namespace thomasfermi {
+	namespace makerhoen {
 		const double MakeRhoEnergy::ALPHA = std::pow(128.0 / (9.0 * power(boost::math::constants::pi<double>(), 2)), 1.0 / 3.0);
 
         double MakeRhoEnergy::makeEnergy() const
@@ -22,16 +27,8 @@ namespace Thomas_Fermi {
 			return a * s_ * (y(x) / x) * std::sqrt(y(x) / x);
 		}
 
-        void MakeRhoEnergy::saveresult(std::size_t n, bool usecilk, bool usesimd)
+        void MakeRhoEnergy::saveresult()
 		{
-            FEM_ALL::Gauss_Legendre gl(n, usecilk);
-
-            s_ = 1.0 / gl.qgauss(
-                xvec_[0],
-                xvec_[size_ - 1],
-                usesimd,
-                [&](double x) { return std::sqrt(x) * rho(x); });
-
 			std::cout << boost::format("Energy = %.15f * Z^(7/3) (Hartree)\n") % makeEnergy();
 
 			ofs_.open("Energy.txt");
@@ -50,7 +47,7 @@ namespace Thomas_Fermi {
             ofs_.open(filename);
 
             for (std::int32_t i = 1; i <= max_; i++) {
-                const double r = static_cast<double>(i)* dx_;
+                const double r = static_cast<double>(i) * dx_;
                 ofs_ << r << ' ' << rho(MakeRhoEnergy::ALPHA * r);
             }
 

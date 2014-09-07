@@ -1,7 +1,7 @@
 ﻿#include "FEM.h"
 #include <functional>
 
-namespace Thomas_Fermi {
+namespace thomasfermi {
 	namespace FEM_ALL {
 		class FOElement : public FEM {
 #if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER >= 1800)
