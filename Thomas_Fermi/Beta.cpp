@@ -1,16 +1,22 @@
-﻿#include "Beta.h"
-#include <stdexcept>
+﻿/*! \file Beta.h
+\brief β(x)を計算するクラスの実装
+
+Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
+#include "Beta.h"
 #include <cstdint>
+#include <stdexcept>
 
 namespace thomasfermi {
 	namespace FEM_ALL {
 		double Beta::operator()(double x) const
 		{
-			std::uint32_t klo = 0;												// 表の中の正しい位置を二分探索で求める
-			std::uint32_t khi = static_cast<std::uint32_t>(size_ - 1);
+			auto klo = 0;
+			auto khi = static_cast<std::uint32_t>(size_ - 1);
 
+            // 表の中の正しい位置を二分探索で求める
 			while (khi - klo > 1) {
-				const std::uint32_t k = static_cast<std::uint32_t>((khi + klo) >> 1);
+				auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
 
 				if (xvec_[k] > x)
 					khi = k;

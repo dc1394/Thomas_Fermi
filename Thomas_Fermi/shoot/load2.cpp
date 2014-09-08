@@ -6,11 +6,6 @@
 
 namespace thomasfermi {
 	namespace shoot {
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
-	const double load2::THRESHOLD = 65.0;
-	const double load2::k = 0.190785707092222;
-	const double load2::alpha = 3.886;
-#endif
 		load2::load2() : psplint(boost::none)
 		{
 			std::vector<double> x, y;

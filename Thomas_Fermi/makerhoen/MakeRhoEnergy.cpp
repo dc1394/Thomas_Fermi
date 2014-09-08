@@ -1,5 +1,5 @@
 ﻿/*! \file MakeRhoEnergy.cpp
-    \brief y(x)から電子密度とエネルギーを計算するクラスの実装
+    \brief β(x)から電子密度とエネルギーを計算してファイルに記録するクラスの実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 */
@@ -10,13 +10,21 @@
 #include <iostream>                             // for std::cout
 #include <boost/assert.hpp>                     // for boost::assert
 #include <boost/format.hpp>                     // for boost::format
-#include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
 
 namespace thomasfermi {
 	namespace makerhoen {
         double MakeRhoEnergy::makeEnergy() const
         {
-            //return 3.0 / 7.0 * ALPHA * v1_;
+            auto const func = myfunctional::make_functional(
+                [&](double x) { return (*pbeta_)(x); });
+
+            auto const sum = gl_.qgauss(
+                func,
+                usesimd_,
+                xvec_[0],
+                xvec_[size_ - 1]);
+
+            return -3.0 / 7.0 * alpha_ * Z_ * Z_ * sum;
         }
 
         double MakeRhoEnergy::rho(double x) const
@@ -36,7 +44,7 @@ namespace thomasfermi {
             ofs_.open(filename);
 
             for (std::int32_t i = 1; i <= max_; i++) {
-                auto const r = static_cast<double>(i)* dx_;
+                auto const r = static_cast<double>(i) * dx_;
                 ofs_ << r << ' ' << rho(alpha_ * r);
             }
 

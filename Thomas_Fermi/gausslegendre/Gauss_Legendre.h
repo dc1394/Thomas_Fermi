@@ -106,7 +106,7 @@ namespace gausslegendre {
         //! A private member function (deleted).
         /*!
             operator=()の宣言（禁止）
-            \param コピー元のオブジェクト
+            \param コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
 		Gauss_Legendre & operator=(Gauss_Legendre const &) = delete;

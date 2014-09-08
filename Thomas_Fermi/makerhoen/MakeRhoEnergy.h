@@ -1,5 +1,5 @@
 /*! \file MakeRhoEnergy.h
-    \brief y(x)から電子密度とエネルギーを計算するクラスの宣言
+    \brief β(x)から電子密度とエネルギーを計算してファイルに記録するクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 */
@@ -10,13 +10,14 @@
 
 #include "../Beta.h"
 #include "../gausslegendre/Gauss_Legendre.h"
-#include <cstdint>          // for std::int32_t
-#include <fstream>          // for std::ofstream
-#include <memory>           // for std::shared_ptr
-#include <iomanip>          // for std::setprecision
-#include <tuple>            // for std::tuple
-#include <utility>          // for std::get
-#include <boost/cast.hpp>   // for boost::numeric_cast
+#include <cstdint>                              // for std::int32_t
+#include <fstream>                              // for std::ofstream
+#include <memory>                               // for std::shared_ptr
+#include <iomanip>                              // for std::setprecision
+#include <tuple>                                // for std::tuple
+#include <utility>                              // for std::get
+#include <boost/cast.hpp>                       // for boost::numeric_cast
+#include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
 
 namespace thomasfermi {
 	namespace makerhoen {
@@ -36,7 +37,7 @@ namespace thomasfermi {
             // #endregion 型エイリアス
 
         public:
-            // #region コンストラクタ・
+            // #region コンストラクタ・デストラクタ
 
             //! A constructor.
             /*!
@@ -132,7 +133,7 @@ namespace thomasfermi {
 
             //! A private variable (constant).
             /*!
-                x方向のメッシュ
+                x方向のメッシュが格納された動的配列
             */
             std::vector<double> const xvec_;
 
@@ -142,12 +143,24 @@ namespace thomasfermi {
             */
             double const dx_;
 
+            //! A private variable (constant).
+            /*!
+                Gauss-Legendreの積分を行うオブジェクト
+            */
+            gausslegendre::Gauss_Legendre const gl_;
+
             //! A private variable.
             /*!
                 規格化のための定数
                 s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
             */
             double s_;
+
+            //! A private variable (constant).
+            /*!
+                SIMDを使うかどうか
+            */
+            bool const usesimd_;
 
             //! A private variable (constant).
             /*!
@@ -163,7 +176,7 @@ namespace thomasfermi {
 
             //! A private variable (constant).
             /*!
-                ファイル出力用のストリーム
+                原子番号
             */
             double const Z_;
 
@@ -175,7 +188,7 @@ namespace thomasfermi {
 
             //! A private variable (constant).
             /*!
-                x方向のメッシュが格納されたstd::vectorのサイズ
+                x方向のメッシュが格納された動的配列のサイズ
             */
             std::size_t const size_;
 
@@ -226,13 +239,13 @@ namespace thomasfermi {
             :   alpha_(std::pow(128.0 / (9.0 * power(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
                 xvec_(std::get<1>(pt)),
                 dx_((xvec_[2] - xvec_[1]) * 2.0),
+                gl_(n),
+                usesimd_(usesimd),
                 max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
                 pbeta_(std::get<0>(pt)),
 				size_(xvec_.size()),
                 Z_(Z)
 		{
-            gausslegendre::Gauss_Legendre gl(n);
-
             // 例外指定
             ofs_.exceptions(std::ios::badbit | std::ios::failbit);
             ofs_.setf(std::ios::fixed, std::ios::floatfield);
@@ -241,9 +254,9 @@ namespace thomasfermi {
             auto const func = myfunctional::make_functional(
                 [&](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
 
-            s_ = 1.0 / gl.qgauss(
+            s_ = 1.0 / gl_.qgauss(
                 func,
-                usesimd,
+                usesimd_,
                 xvec_[0],
                 xvec_[size_ - 1]);
 		}
