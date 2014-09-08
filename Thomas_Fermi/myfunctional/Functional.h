@@ -23,7 +23,7 @@ namespace myfunctional {
         /*!
         \param func operator()で呼び出す関数
         */
-        Functional(const FUNCTYPE & func) : func_(func) {}
+        Functional(FUNCTYPE const & func) : func_(func) {}
 
         // #endregion コンストラクタ
 
@@ -50,7 +50,7 @@ namespace myfunctional {
         /*!
             operator()で呼び出す関数
         */
-        const FUNCTYPE & func_;
+        FUNCTYPE const & func_;
 
         // #endregion メンバ変数
     };
