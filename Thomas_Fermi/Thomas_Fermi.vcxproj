@@ -185,7 +185,7 @@
     <ClCompile Include="Gauss_Legendre.cpp" />
     <ClCompile Include="Iteration.cpp" />
     <ClCompile Include="Linear_equations.cpp" />
-    <ClCompile Include="MakeRhoEn\MakeRhoEnergy.cpp" />
+    <ClCompile Include="makerhoen\MakeRhoEnergy.cpp" />
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
@@ -200,7 +200,7 @@
     <ClInclude Include="Gauss_Legendre.h" />
     <ClInclude Include="Iteration.h" />
     <ClInclude Include="Linear_equations.h" />
-    <ClInclude Include="MakeRhoEn\MakeRhoEnergy.h" />
+    <ClInclude Include="makerhoen\MakeRhoEnergy.h" />
     <ClInclude Include="mkl_allocator.h" />
     <ClInclude Include="myfunctional\Functional.h" />
     <ClInclude Include="shoot\load2.h" />

@@ -60,9 +60,6 @@
     <ClCompile Include="Spline.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="MakeRhoEn\MakeRhoEnergy.cpp">
-      <Filter>ソース ファイル\makerhoen</Filter>
-    </ClCompile>
     <ClCompile Include="shoot\load2.cpp">
       <Filter>ソース ファイル\shoot</Filter>
     </ClCompile>
@@ -80,6 +77,9 @@
     </ClCompile>
     <ClCompile Include="gausslegendre\Gauss_Legendre.cpp">
       <Filter>ソース ファイル\gausslegendre</Filter>
+    </ClCompile>
+    <ClCompile Include="makerhoen\MakeRhoEnergy.cpp">
+      <Filter>ソース ファイル\makerhoen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,9 +107,6 @@
     <ClInclude Include="Spline.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="MakeRhoEn\MakeRhoEnergy.h">
-      <Filter>ヘッダー ファイル\makerhoen</Filter>
-    </ClInclude>
     <ClInclude Include="shoot\load2.h">
       <Filter>ヘッダー ファイル\shoot</Filter>
     </ClInclude>
@@ -124,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="myfunctional\Functional.h">
       <Filter>ヘッダー ファイル\myfunctional</Filter>
+    </ClInclude>
+    <ClInclude Include="makerhoen\MakeRhoEnergy.h">
+      <Filter>ヘッダー ファイル\makerhoen</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
