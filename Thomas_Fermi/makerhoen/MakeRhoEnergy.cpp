@@ -48,8 +48,8 @@ namespace thomasfermi {
             ofs_.open(filename);
 
             for (std::int32_t i = 1; i <= max_; i++) {
-                auto const r = static_cast<double>(i)* dx_;
-                ofs_ << r << ' ' << r * r * rho(alpha_ * r) << '\n';
+                auto const r = static_cast<double>(i) * dx_;
+                ofs_ << r << ' ' << rhoTilde(alpha_ * r) << '\n';
             }
 
             ofs_.close();
