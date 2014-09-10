@@ -75,13 +75,13 @@ namespace thomasfermi {
 
             //! A public member variable (constant expression).
             /*!
-                無限遠点における関数値とその微分値を求めるときに使う定数α
+                無限遠点における関数値とその微分値を求めるときに使う定数λ
             */
-            static double constexpr Alpha = 3.886;
+            static double constexpr Lambda = 3.886;
 
             //! A public member variable (constant expression).
             /*!
-            補間と近似表式を切り替える閾値
+                補間と近似表式を切り替える時の閾値
             */
             static double constexpr Threshold = 65.0;
 
@@ -99,7 +99,7 @@ namespace thomasfermi {
                         
             //! A public member variable (constant expression).
             /*!
-            補間のために使う動的配列のサイズ
+                Spline補間のために使う
             */
             boost::optional<Spline> psplint;
 
