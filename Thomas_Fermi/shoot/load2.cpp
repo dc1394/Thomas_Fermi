@@ -1,15 +1,20 @@
-﻿#include "load2.h"
+﻿/*! \file load2.cpp
+    \brief y(x)の初期関数y0(x)の、原点と端点における
+    関数値とその微分値を求めるクラスの実装
+
+    Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
+#include "load2.h"
 #include <cmath>
 #include <boost/assert.hpp>
-#include <boost/assign.hpp>
-#include <boost/utility/in_place_factory.hpp>
-#include <interpolation.h>
 
 namespace thomasfermi {
 	namespace shoot {
-		load2::load2() : psplint(boost::none)
+		load2::load2()
 		{
             // 正規表現 = "  ([\d\.]+\, )+[\d\.]+\,"→"$1"
+
+            // y(x)の近似値のx方向メッシュ
             alglib::real_1d_array x = 
                 "[ 0.000, 0.010, 0.020, 0.030, 0.040, 0.050,"
                 "  0.060, 0.080, 0.100, 0.150, 0.200, 0.250,"
@@ -37,6 +42,9 @@ namespace thomasfermi {
                 "  32.00, 34.00, 34.29, 36.00, 36.92, 38.00,"
                 "  40.00, 45.00, 50.00, 55.00, 60.00, 65.00  ]";
 
+            // y(x)の近似値のyの数表
+            // 参考:
+            // E. U. Condon, Halis Odabasi. Atomic Structure, Cambridge University Press, Cambridge, 1980
             alglib::real_1d_array y =
                 "[ 1.000, 0.985, 0.972, 0.959, 0.947, 0.935,"
                 "  0.924, 0.902, 0.882, 0.835, 0.793, 0.755,"
@@ -66,29 +74,39 @@ namespace thomasfermi {
             
             BOOST_ASSERT(x.length() == y.length());
 
+            alglib::spline1dbuildcubic(x, y, s);
 		}
 
-		shootfunc::tmpary load2::make_v2(double x2) const
-		{
-			shootfunc::tmpary v2 = { x2 > load2::Threshold ? load2::dy0(x2) : psplint->df_dx(x2) };
-			return v2;
-		}
+        double load2::dy0(double x)
+        {
+            auto const a = -3.0 * std::pow(load2::K, 3.0 / load2::Lambda) * std::pow(x, 3.0 / load2::Lambda - 1.0);
+            return a * std::pow((1.0 + std::pow(load2::K * x, 3.0 / load2::Lambda)), -load2::Lambda - 1.0);
+        }
 
-		shootfunc::state_type load2::operator()(double x2, const shootfunc::tmpary & v2) const
-		{
-			shootfunc::state_type y = { (x2 > THRESHOLD ? load2::phiT(x2) : (*psplint)(x2)), v2[0] };
-			return y;
-		}
+        shootfunc::tmpary load2::make_v2(double x2) const
+        {
+            shootfunc::tmpary v2;
+            if (x2 > load2::Threshold) {
+                v2[0] = load2::dy0(x2);
+            }
+            else {
+                double df_dx, dummy, dummy2;
+                alglib::spline1ddiff(s, x2, df_dx, dummy, dummy2);
+                v2[0] = df_dx;
+            }
+            
+            return v2;
+        }
 
-		double load2::phiT(double x)
-		{
-			return std::pow((1.0 + std::pow(load2::k * x, 3.0 / load2::alpha)), - load2::alpha);
-		}
+        shootfunc::state_type load2::operator()(shootfunc::tmpary const & v2, double x2) const
+        {
+            shootfunc::state_type y = { (x2 > load2::Threshold ? load2::y0(x2) : alglib::spline1dcalc(s, x2)), v2[0] };
+            return y;
+        }
 
-		double load2::dphiT(double x)
-		{
-			const double a = - 3.0 * std::pow(load2::k, 3.0 / load2::alpha) * std::pow(x, 3.0 / load2::alpha - 1.0);
-			return a * std::pow((1.0 + std::pow(load2::k * x, 3.0 / load2::alpha)), - load2::alpha - 1.0);
-		}
+        double load2::y0(double x)
+        {
+            return std::pow((1.0 + std::pow(load2::K * x, 3.0 / load2::Lambda)), -load2::Lambda);
+        }
 	}
 }

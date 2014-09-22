@@ -9,15 +9,8 @@
 #include <boost/numeric/ublas/lu.hpp>
 #include <boost/numeric/ublas/triangular.hpp>
 
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)
-	#include <boost/foreach.hpp>
-#endif
-
 namespace thomasfermi {
 	namespace shoot {
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
-		const double shootf::EPS = 1.0E-14;
-#endif
 		shootf::result_type shootf::operator()(double x1, double x2, double xf)
 		{
 			BOOST_ASSERT(x1 < xf);

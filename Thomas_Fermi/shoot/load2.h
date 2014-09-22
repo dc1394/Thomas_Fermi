@@ -10,8 +10,7 @@
 #pragma once
 
 #include "shootfunc.h"
-#include "../Spline.h"
-#include <boost/optional.hpp>
+#include <interpolation.h>
 
 namespace thomasfermi {
 	namespace shoot {
@@ -33,7 +32,7 @@ namespace thomasfermi {
             //! A destructor.
             /*!
             */
-            ~load2() { psplint = boost::none; }
+            ~load2() {}
 
             // #endregion コンストラクタ・デストラクタ
 
@@ -73,6 +72,10 @@ namespace thomasfermi {
             */
             shootfunc::state_type operator()(shootfunc::tmpary const & v2, double x2) const;
 
+            // #endregion メンバ関数
+
+            // #region メンバ変数
+
             //! A public member variable (constant expression).
             /*!
                 無限遠点における関数値とその微分値を求めるときに使う定数λ
@@ -96,13 +99,15 @@ namespace thomasfermi {
                 補間のために使う動的配列のサイズ
             */
 			static std::size_t constexpr Xysize = 150;
-                        
-            //! A public member variable (constant expression).
+
+        private:
+            //! A private member variable.
             /*!
                 Spline補間のために使う
             */
-            boost::optional<Spline> psplint;
+            alglib::spline1dinterpolant s;
 
+            // #endregion メンバ変数
 		};
 	}
 }

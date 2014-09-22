@@ -1,46 +1,39 @@
-﻿#pragma warning(disable : 4819)
-// Visual C++ 2008以下は対応しません、GCCはC++11オプションで動かして下さい
-#if (_MSC_VER <= 1500) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
-	#include <boost/static_assert.hpp>
-	BOOST_STATIC_ASSERT(false);
-#endif
+﻿/*! \file shootf.h
+    \brief 狙い撃ち法により、y(x)を求める
+
+    Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
+
+#ifndef _SHOOTF_H_
+#define _SHOOTF_H
+
+#pragma once
 
 #include "load2.h"
+#include "../myfunctional/Functional.h"
+#include <functional>
 #include <tuple>
 #include <utility>
-#include <functional>
 #include <boost/numeric/ublas/matrix.hpp>
-
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)
-	#include <boost/noncopyable.hpp>
-#endif
 
 namespace thomasfermi {
 	namespace shoot {
-		class shootf
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)
-			: private boost::noncopyable
-#endif
+		class shootf final
 		{
-#if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER >= 1800)
 			shootf(const shootf &) = delete;
 			shootf & operator=(const shootf &) = delete;
 			shootf() = delete;
-#endif
 
-#if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__)
 			static constexpr double EPS = 1.0E-14;
-#else
-			static const double EPS;
-#endif
+
 			typedef std::vector<double> dvector;
 
 		public:
 			typedef std::tuple<dvector, const dvector, const shootfunc::tmpary> result_type;
 
 		private:
-			typedef std::function<shootfunc::state_type (double, const shootfunc::tmpary &)> loadfunctype;
-			typedef std::function<shootfunc::dblasvector (const shootfunc::state_type & )> scorefunctype;
+            typedef myfunctional::Functional<shootfunc::state_type(double, shootfunc::tmpary const &)> loadfunctype;
+            typedef myfunctional::Functional<shootfunc::dblasvector(const shootfunc::state_type &)> scorefunctype;
 
 			shootfunc::tmpary v1_;
 			shootfunc::tmpary v2_;
@@ -79,3 +72,5 @@ namespace thomasfermi {
 			score_(score) {}
 	}
 }
+
+#endif  // _SHOOTF_H_

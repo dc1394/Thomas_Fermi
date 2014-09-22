@@ -194,20 +194,6 @@ namespace thomasfermi {
 
             // #endregion メンバ変数
 
-            // #region コンストラクタ
-
-        public:
-            //!  A constructor.
-            /*!
-                \param pt パラメータ
-                \param Z 原子番号
-            */
-            MakeRhoEnergy(parameter_type const & pt, double Z);
-
-            // #endregion コンストラクタ
-
-            // #region operator=()
-
         private:
             // #region 禁止されたコンストラクタ・メンバ関数
 
