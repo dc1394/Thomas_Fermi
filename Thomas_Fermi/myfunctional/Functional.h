@@ -61,8 +61,8 @@ namespace myfunctional {
         \param func 格納する関数
         \return 生成されたFunction<FUNCTYPE>
     */
-    template <class FUNCTYPE>
-    Functional<FUNCTYPE> make_functional(const FUNCTYPE & func)
+    template <typename FUNCTYPE>
+    Functional<FUNCTYPE> make_functional(FUNCTYPE const & func)
     {
         return Functional<FUNCTYPE>(func);
     }

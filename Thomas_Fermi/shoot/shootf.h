@@ -11,25 +11,28 @@
 
 #include "load2.h"
 #include "../myfunctional/Functional.h"
+#include <functional>
 #include <tuple>
 #include <utility>
 #include <boost/numeric/ublas/matrix.hpp>
 
 namespace thomasfermi {
-	namespace shoot {
+    namespace shoot {
         //! A class.
         /*!
             狙い撃ち法により、y(x)を求めるクラス
-        */
-		class shootf final
-		{
+            */
+        class shootf final
+        {
         public:
             // #region 型エイリアス
 
             typedef std::vector<double> dvector;
 
         private:
-            typedef myfunctional::Functional<shootfunc::state_type(double, shootfunc::tmpary const &)> loadfunctype;
+            typedef myfunctional::Functional<shootfunc::state_type(shootfunc::tmpary const &, double)> loadfunctype;
+
+            typedef std::function<shootfunc::state_type(shootfunc::tmpary const &, double)> loadrunfunctype;
 
         public:
             typedef std::tuple<dvector, dvector const> result_type;
@@ -63,7 +66,7 @@ namespace thomasfermi {
                    scorefunctype const & score,
                    shootfunc::tmpary const & v1,
                    shootfunc::tmpary const & v2);
-			
+
             //! A destructor.
             /*!
             */
@@ -82,7 +85,7 @@ namespace thomasfermi {
                 \param x1 原点に近いxの値
                 \param xf 適合点に近いxの値
                 \return xのメッシュとそれに対応したyの値のtuple
-            */
+                */
             shootf::result_type createResult(dvector const & res1,
                                              dvector const & res2,
                                              double x1,
@@ -108,8 +111,8 @@ namespace thomasfermi {
             /*!
                 許容誤差
             */
-			static double constexpr EPS = 1.0E-14;
-            
+            static double constexpr EPS = 1.0E-14;
+
             //! A private member variable (constant).
             /*!
                 原点に近いxにおけるyの微分値
@@ -125,44 +128,44 @@ namespace thomasfermi {
             //! A private member variable (constant).
             /*!
                 xのメッシュの間隔
-            */
+                */
             double const dx_;
 
             //! A private member variable (constant).
             /*!
                 許容誤差
-            */
+                */
             double const eps_;
 
             //! A private member variable.
             /*!
                 原点に近いxにおけるyの値
-            */
-			shootfunc::tmpary v1_;
-			
+                */
+            shootfunc::tmpary v1_;
+
             //! A private member variable.
             /*!
                 無限遠点に近いxにおけるyの値
-            */
+                */
             shootfunc::tmpary v2_;
-			
+
             //! A private member variable (constant).
             /*!
                 原点に近いxにおけるyの値とその微分値を求める関数オブジェクト
-            */
-			loadfunctype const load1_;
-            
+                */
+            loadfunctype const load1_;
+
             //! A private member variable (constant).
             /*!
                 無限遠点に近いxにおけるyの値とその微分値を求める関数オブジェクト
-            */
-			loadfunctype const load2_;
+                */
+            loadrunfunctype const load2_;
 
             //! A private member variable (constant).
             /*!
                 適合点で合致するべきyの値とその微分値を求める関数オブジェクト
-            */
-			scorefunctype const score_;
+                */
+            scorefunctype const score_;
 
         private:
             // #region 禁止されたコンストラクタ・メンバ関数
@@ -170,13 +173,13 @@ namespace thomasfermi {
             //! A private constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
-            */
+                */
             shootf() = delete;
 
             //! A private copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
-            */
+                */
             shootf(shootf const &) = delete;
 
             //! A private member function (deleted).
@@ -184,11 +187,11 @@ namespace thomasfermi {
                 operator=()の宣言（禁止）
                 \param コピー元のオブジェクト
                 \return コピー元のオブジェクト
-            */
+                */
             shootf & operator=(shootf const &) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
-		};
+        };
 
         inline shootf::shootf(shootfunc::tmpary const & delv1,
                               shootfunc::tmpary const & delv2,
@@ -199,10 +202,17 @@ namespace thomasfermi {
                               scorefunctype const & score,
                               shootfunc::tmpary const & v1,
                               shootfunc::tmpary const & v2)
-		 :	v1_(v1), v2_(v2), delv1_(delv1), delv2_(delv2),
-			dx_(dx), eps_(eps), load1_(load1),
-			load2_(std::bind(&load2::operator(), std::ref(l2), std::placeholders::_1, std::placeholders::_2)),
-			score_(score) {}
+        :   delv1_(delv1),
+            delv2_(delv2),
+            dx_(dx),
+            eps_(eps),
+            load1_(load1),
+            load2_(std::bind(&load2::operator(), std::cref(l2), std::placeholders::_1, std::placeholders::_2)),
+            score_(score),
+            v1_(v1),
+            v2_(v2)
+        {
+        }
 	}
 }
 
