@@ -3,6 +3,7 @@
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 */
+
 #include "MakeRhoEnergy.h"
 #include "../Gauss_Legendre.h"
 

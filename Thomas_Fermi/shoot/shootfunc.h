@@ -1,4 +1,11 @@
-﻿#ifndef _SHOOTFUNC_H_
+﻿/*! \file shootfunc.h
+    \brief y(x)の初期関数y0(x)の、原点に近い点xにおける関数値および微分値と、
+           適合点xfにおける関数値および微分値を求めるクラスの宣言
+
+    Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
+
+#ifndef _SHOOTFUNC_H_
 #define _SHOOTFUNC_H_
 
 #pragma once
@@ -50,7 +57,6 @@ namespace thomasfermi {
             */
             static shootfunc::state_type load1(double x1, double v1);
 
-
             //! A public static member function.
             /*!
                 y0(x)の適合点xfにおける関数値および微分値の型を変換する
@@ -68,12 +74,14 @@ namespace thomasfermi {
             */
             static void rhs(shootfunc::state_type const & y, shootfunc::state_type & dydx, const double x);
 
+            // #endregion メンバ関数
+
         private:
             // #region メンバ定数
 
             //! A private member variable (constant expression).
             /*!
-                変化幅の値
+                微分を差分化するための適当な刻み幅のベクトル
             */
             static double constexpr DELV = 1.0E-14;
 

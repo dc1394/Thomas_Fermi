@@ -1,4 +1,11 @@
-﻿#include "shootfunc.h"
+﻿/*! \file shootfunc.h
+    \brief y(x)の初期関数y0(x)の、原点に近い点xにおける関数値および微分値と、
+           適合点xfにおける関数値および微分値を求めるクラスの実装
+
+    Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
+
+#include "shootfunc.h"
 #include <cmath>
 #include <utility>
 #include <boost/range/algorithm.hpp>

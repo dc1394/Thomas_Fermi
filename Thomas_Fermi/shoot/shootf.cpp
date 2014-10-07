@@ -1,4 +1,10 @@
-﻿#include "shootf.h"
+﻿/*! \file shootf.cpp
+    \brief 狙い撃ち法により、y(x)を求めるクラスの宣言
+
+    Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
+
+#include "shootf.h"
 #include <cmath>
 #include <cstdint>
 #include <iterator>

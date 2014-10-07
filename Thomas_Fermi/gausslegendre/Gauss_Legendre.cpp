@@ -3,6 +3,7 @@
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 */
+
 #include "Gauss_Legendre.h"
 #include <stdexcept>        // for std::runtime_error
 #include <boost/cast.hpp>   // for boost::numeric_cast

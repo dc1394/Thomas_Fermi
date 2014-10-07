@@ -3,6 +3,7 @@
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 */
+
 #ifndef _MAKERHOENERGY_H_
 #define _MAKERHOENERGY_H_
 

@@ -4,6 +4,7 @@
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 */
+
 #include "load2.h"
 #include <cmath>
 #include <boost/assert.hpp>
