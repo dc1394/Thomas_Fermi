@@ -1,50 +1,111 @@
 ﻿#ifndef _SHOOTFUNC_H_
 #define _SHOOTFUNC_H_
 
-#ifdef _MSC_VER
-	#pragma once
-#endif
+#pragma once
 
-#pragma warning(disable : 4819)
-#define _SCL_SECURE_NO_WARNINGS
+#ifdef _MSC_VER
+    #pragma warning(disable : 4819)
+    #define _SCL_SECURE_NO_WARNINGS
+#endif
 
 #include <array>
 #include <boost/numeric/ublas/matrix.hpp>
 
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)
-	#include <boost/noncopyable.hpp>
-#endif
-
 namespace thomasfermi {
 	namespace shoot {
-		class shootfunc
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)
-			: private boost::noncopyable
-#endif
+        //! A class.
+        /*!
+            y(x)の初期関数y0(x)の、原点に近い点xにおける関数値および微分値と、
+            適合点xfにおける関数値および微分値を求めるクラス
+        */
+		class shootfunc final
 		{
-#if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER >= 1800)
+        public:
+            // #region メンバ定数
+            
+            //! A public member variable (constant expression).
+            /*!
+                二元連立常微分方程式を表す定数
+            */
+            static std::size_t constexpr NVAR = 2;
+
+            // #endregion メンバ定数
+
+            // #region 型エイリアス
+
+            typedef boost::numeric::ublas::vector<double> dblasvector;
+
+            typedef std::array<double, NVAR> state_type;
+
+            // #region 型エイリアス
+
+            // #region メンバ関数
+
+            //! A public static member function.
+            /*!
+                y0(x)の原点に近い点xにおける関数値および微分値を求める
+                \param x1 xの値
+                \param v1 y0(x)の微分値
+                \return y0(x)の原点に近い点xにおける関数値および微分値
+            */
+            static shootfunc::state_type load1(double x1, double v1);
+
+
+            //! A public static member function.
+            /*!
+                y0(x)の適合点xfにおける関数値および微分値の型を変換する
+                \param y y0(x)の適合点xfにおける関数値および微分値の型を変換する（std::array）
+                \return y0(x)のx（原点に近い点）における関数値および微分値（boost::numeric::ublas::vector<double>）
+            */
+            static shootfunc::dblasvector score(shootfunc::state_type const & y);
+
+            //! A public static member function.
+            /*!
+                d[y0(x)]/dxの関数値および微分値を求める
+                \param y y0(x)の関数値および微分値（入力）
+                \param dydx d[y0(x)]/dxの関数値および微分値（出力）
+                \param x y0(x)のx
+            */
+            static void rhs(shootfunc::state_type const & y, shootfunc::state_type & dydx, const double x);
+
+        private:
+            // #region メンバ定数
+
+            //! A private member variable (constant expression).
+            /*!
+                変化幅の値
+            */
+            static double constexpr DELV = 1.0E-14;
+
+            //! A private member variable (constant expression).
+            /*!
+                y'0(0)の初期値
+            */
+            static double constexpr V1 = -1.588076779;
+
+            // #endregion 
+
+            // #region 禁止されたコンストラクタ・メンバ関数
+
+            //! A private constructor (deleted).
+            /*!
+                デフォルトコンストラクタ（禁止）
+            */
+            shootfunc() = delete;
+
+            //! A private copy constructor (deleted).
+            /*!
+                コピーコンストラクタ（禁止）
+            */
 			shootfunc(const shootfunc &) = delete;
-			shootfunc & operator=(const shootfunc &) = delete;
-			shootfunc() = delete;
-#endif
-		public:
-#if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__)
-			static constexpr std::size_t N2 = 1;
-			static constexpr std::size_t NVAR = 2;
-#else
-			static const std::size_t N2 = 1;
-			static const std::size_t NVAR = 2;
-#endif
-			typedef boost::numeric::ublas::vector<double> dblasvector;
-			typedef std::array<double, N2> tmpary;
-			typedef std::array<double, NVAR> state_type;
-
-			static const shootfunc::tmpary V1;
-			static const shootfunc::tmpary DELV;
-
-			static shootfunc::state_type load1(double x1, const shootfunc::tmpary & v1);
-			static shootfunc::dblasvector score(const shootfunc::state_type & y);
-			static void rhs(const shootfunc::state_type & y, shootfunc::state_type & dydx, const double x);
+			
+            //! A private member function (deleted).
+            /*!
+                operator=()の宣言（禁止）
+                \param コピー元のオブジェクト
+                \return コピー元のオブジェクト
+            */
+            shootfunc & operator=(const shootfunc &) = delete;
 		};
 	}
 }

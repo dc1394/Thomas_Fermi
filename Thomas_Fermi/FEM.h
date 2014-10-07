@@ -2,12 +2,12 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 #include "Beta.h"
+#include "gausslegendre/Gauss_Legendre.h"
 #include "mkl_allocator.h"
-#include "Gauss_Legendre.h"
-#include <tuple>
 #include <memory>
-#include <vector>
+#include <tuple>
 #include <utility>
+#include <vector>
 #include <functional>
 #include <boost/optional.hpp>
 #include <boost/multi_array.hpp>
@@ -18,16 +18,8 @@
 
 namespace thomasfermi {
 	namespace FEM_ALL {
-		class FEM
-#if !defined(__INTEL_COMPILER) || !defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER < 1800)
-			: private boost::noncopyable
-#endif
+		class FEM final
 		{
-#if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER >= 1800)
-			FEM(const FEM &) = delete;
-			FEM & operator=(const FEM &) = delete;
-			FEM() = delete;
-#endif
 		public:
 			typedef std::vector<double> dvector;
 			typedef std::vector<double, mkl_allocator<double>> dmklvector;
@@ -92,6 +84,10 @@ namespace thomasfermi {
 
 			const FEM::dmklvector & getb() const
 			{ return b_; }
+
+            FEM(const FEM &) = delete;
+            FEM & operator=(const FEM &) = delete;
+            FEM() = delete;
 		};
 
 		inline FEM::FEM(std::size_t nint, bool useSSEorAVX, bool usecilk, const dvector & coords, dvector && beta)

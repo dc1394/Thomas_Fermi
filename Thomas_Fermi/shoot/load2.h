@@ -60,7 +60,7 @@ namespace thomasfermi {
             \param x2 端点
             \return y0(x)の端点における微分値
             */
-            shootfunc::tmpary make_v2(double x2) const;
+            double make_v2(double x2) const;
 
             //! A public member function (const).
             /*!
@@ -70,7 +70,7 @@ namespace thomasfermi {
                 \param x2 y0(x)の端点における値
                 \return 端点における値とその微分値が収納されたstd::array
             */
-            shootfunc::state_type operator()(shootfunc::tmpary const & v2, double x2) const;
+            shootfunc::state_type operator()(double v2, double x2) const;
 
             // #endregion メンバ関数
 

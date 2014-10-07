@@ -5,24 +5,21 @@
 
 namespace thomasfermi {
 	namespace shoot {
-		const shootfunc::tmpary shootfunc::V1 = { -1.588076779 };
-		const shootfunc::tmpary shootfunc::DELV = { 1.0E-14 };
-
-		shootfunc::state_type shootfunc::load1(double x1, const shootfunc::tmpary & v1)
+		shootfunc::state_type shootfunc::load1(double x1, double v1)
 		{
 			shootfunc::state_type y;
 
 			//y[0] = 1.0 + v1[0] * x1 + 4.0 / 3.0 * x1 * std::sqrt(x1) + 0.4 * v1[0] * x1 * x1 * std::sqrt(x1) + 1.0 / 3.0 * x1 * x1 * x1;
-			y[0] = (((1.0 / 3.0 * x1 + 0.4 * v1[0] * std::sqrt(x1)) * x1) + 4.0 / 3.0 * std::sqrt(x1) + v1[0]) * x1 + 1.0;
+			y[0] = (((1.0 / 3.0 * x1 + 0.4 * v1 * std::sqrt(x1)) * x1) + 4.0 / 3.0 * std::sqrt(x1) + v1) * x1 + 1.0;
 			//y[1] = v1[0] + 2.0 * std::sqrt(x1) + v1[0] * x1 * std::sqrt(x1) + x1 * x1 + 0.15 * v1[0] * x1 * x1 * std::sqrt(x1);
-			y[1] = ((0.15 * v1[0] * std::sqrt(x1) + 1.0) * x1 + v1[0] * std::sqrt(x1)) * x1 + 2.0 * std::sqrt(x1) + v1[0];
+			y[1] = ((0.15 * v1 * std::sqrt(x1) + 1.0) * x1 + v1 * std::sqrt(x1)) * x1 + 2.0 * std::sqrt(x1) + v1;
 
 			return std::move(y);
 		}
 
-		shootfunc::dblasvector shootfunc::score(const shootfunc::state_type & y)
+		shootfunc::dblasvector shootfunc::score(shootfunc::state_type const & y)
 		{
-			shootfunc::dblasvector f(NVAR);
+            shootfunc::dblasvector f(shootfunc::NVAR);
 			boost::copy(y, f.begin());
 
 			return std::move(f);

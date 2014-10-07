@@ -21,24 +21,22 @@ namespace thomasfermi {
         //! A class.
         /*!
             狙い撃ち法により、y(x)を求めるクラス
-            */
+        */
         class shootf final
         {
-        public:
             // #region 型エイリアス
 
+        public:
             typedef std::vector<double> dvector;
 
         private:
-            typedef myfunctional::Functional<shootfunc::state_type(shootfunc::tmpary const &, double)> loadfunctype;
-
-            typedef std::function<shootfunc::state_type(shootfunc::tmpary const &, double)> loadrunfunctype;
+            typedef std::function<shootfunc::state_type(double, double)> loadfunctype;
 
         public:
             typedef std::tuple<dvector, dvector const> result_type;
 
         private:
-            typedef myfunctional::Functional<shootfunc::dblasvector(const shootfunc::state_type &)> scorefunctype;
+            typedef std::function<shootfunc::dblasvector(shootfunc::state_type const &)> scorefunctype;
 
             // #endregion 型エイリアス
 
@@ -57,15 +55,15 @@ namespace thomasfermi {
                 \param v1 原点に近いxにおけるyの値
                 \param v2 無限遠点に近いxにおけるyの値
             */
-            shootf(shootfunc::tmpary const & delv1,
-                   shootfunc::tmpary const & delv2,
+            shootf(double delv1,
+                   double delv2,
                    double dx,
                    double eps,
                    loadfunctype const & load1,
                    load2 const & l2,
                    scorefunctype const & score,
-                   shootfunc::tmpary const & v1,
-                   shootfunc::tmpary const & v2);
+                   double v1,
+                   double v2);
 
             //! A destructor.
             /*!
@@ -117,13 +115,13 @@ namespace thomasfermi {
             /*!
                 原点に近いxにおけるyの微分値
             */
-            shootfunc::tmpary const delv1_;
+            double const delv1_;
 
             //! A private member variable (constant).
             /*!
                 無限遠点のxにおけるyの微分値
             */
-            shootfunc::tmpary const delv2_;
+            double const delv2_;
 
             //! A private member variable (constant).
             /*!
@@ -141,13 +139,13 @@ namespace thomasfermi {
             /*!
                 原点に近いxにおけるyの値
                 */
-            shootfunc::tmpary v1_;
+            double v1_;
 
             //! A private member variable.
             /*!
                 無限遠点に近いxにおけるyの値
                 */
-            shootfunc::tmpary v2_;
+            double v2_;
 
             //! A private member variable (constant).
             /*!
@@ -159,7 +157,7 @@ namespace thomasfermi {
             /*!
                 無限遠点に近いxにおけるyの値とその微分値を求める関数オブジェクト
                 */
-            loadrunfunctype const load2_;
+            loadfunctype const load2_;
 
             //! A private member variable (constant).
             /*!
@@ -173,13 +171,13 @@ namespace thomasfermi {
             //! A private constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
-                */
+            */
             shootf() = delete;
 
             //! A private copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
-                */
+            */
             shootf(shootf const &) = delete;
 
             //! A private member function (deleted).
@@ -187,21 +185,21 @@ namespace thomasfermi {
                 operator=()の宣言（禁止）
                 \param コピー元のオブジェクト
                 \return コピー元のオブジェクト
-                */
+            */
             shootf & operator=(shootf const &) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
 
-        inline shootf::shootf(shootfunc::tmpary const & delv1,
-                              shootfunc::tmpary const & delv2,
+        inline shootf::shootf(double delv1,
+                              double delv2,
                               double dx,
                               double eps,
                               loadfunctype const & load1,
                               load2 const & l2,
                               scorefunctype const & score,
-                              shootfunc::tmpary const & v1,
-                              shootfunc::tmpary const & v2)
+                              double v1,
+                              double v2)
         :   delv1_(delv1),
             delv2_(delv2),
             dx_(dx),

@@ -74,7 +74,7 @@ namespace thomasfermi {
             
             BOOST_ASSERT(x.length() == y.length());
 
-            alglib::spline1dbuildcubic(x, y, s);
+            alglib::spline1dbuildakima(x, y, s);
 		}
 
         double load2::dy0(double x)
@@ -98,7 +98,7 @@ namespace thomasfermi {
             return v2;
         }
 
-        shootfunc::state_type load2::operator()(shootfunc::tmpary const & v2, double x2) const
+        shootfunc::state_type load2::operator()(double v2, double x2) const
         {
             shootfunc::state_type y = { (x2 > load2::Threshold ? load2::y0(x2) : alglib::spline1dcalc(s, x2)), v2[0] };
             return y;

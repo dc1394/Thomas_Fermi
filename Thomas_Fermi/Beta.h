@@ -67,7 +67,6 @@ namespace thomasfermi {
             */
             std::vector<double> const xvec_;
 
-
             //!  A private variable (constant).
             /*!
             y方向のメッシュが格納された動的配列
@@ -89,7 +88,6 @@ namespace thomasfermi {
             コピーコンストラクタ（禁止）
             */
 			Beta(const Beta &) = delete;
-
 
             //! A private member function (deleted).
             /*!
