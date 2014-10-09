@@ -126,43 +126,43 @@ namespace thomasfermi {
             //! A private member variable (constant).
             /*!
                 xのメッシュの間隔
-                */
+            */
             double const dx_;
 
             //! A private member variable (constant).
             /*!
                 許容誤差
-                */
+            */
             double const eps_;
 
             //! A private member variable.
             /*!
                 原点に近いxにおけるyの値
-                */
+            */
             double v1_;
 
             //! A private member variable.
             /*!
                 無限遠点に近いxにおけるyの値
-                */
+            */
             double v2_;
 
             //! A private member variable (constant).
             /*!
                 原点に近いxにおけるyの値とその微分値を求める関数オブジェクト
-                */
+            */
             loadfunctype const load1_;
 
             //! A private member variable (constant).
             /*!
                 無限遠点に近いxにおけるyの値とその微分値を求める関数オブジェクト
-                */
+            */
             loadfunctype const load2_;
 
             //! A private member variable (constant).
             /*!
                 適合点で合致するべきyの値とその微分値を求める関数オブジェクト
-                */
+            */
             scorefunctype const score_;
 
         private:
