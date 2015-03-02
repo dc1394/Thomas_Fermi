@@ -84,16 +84,16 @@ namespace thomasfermi {
             return a * std::pow((1.0 + std::pow(load2::K * x, 3.0 / load2::Lambda)), -load2::Lambda - 1.0);
         }
 
-        shootfunc::tmpary load2::make_v2(double x2) const
+        double load2::make_v2(double x2) const
         {
-            shootfunc::tmpary v2;
+            double v2;
             if (x2 > load2::Threshold) {
-                v2[0] = load2::dy0(x2);
+                v2 = load2::dy0(x2);
             }
             else {
                 double df_dx, dummy, dummy2;
                 alglib::spline1ddiff(s, x2, df_dx, dummy, dummy2);
-                v2[0] = df_dx;
+                v2 = df_dx;
             }
             
             return v2;
@@ -101,7 +101,7 @@ namespace thomasfermi {
 
         shootfunc::state_type load2::operator()(double v2, double x2) const
         {
-            shootfunc::state_type y = { (x2 > load2::Threshold ? load2::y0(x2) : alglib::spline1dcalc(s, x2)), v2[0] };
+            shootfunc::state_type y = { (x2 > load2::Threshold ? load2::y0(x2) : alglib::spline1dcalc(s, x2)), v2 };
             return y;
         }
 

@@ -1,20 +1,23 @@
-﻿#pragma warning(disable : 4819)
-#define _SCL_SECURE_NO_WARNINGS
+﻿#ifndef _FEM_H_
+#define _FEM_H_
+
+#pragma once
+
+#ifdef _MSC_VER
+    #pragma warning(disable : 4819)
+    #define _SCL_SECURE_NO_WARNINGS
+#endif
 
 #include "Beta.h"
 #include "gausslegendre/Gauss_Legendre.h"
 #include "mkl_allocator.h"
+#include <functional>
 #include <memory>
 #include <tuple>
 #include <utility>
 #include <vector>
-#include <functional>
-#include <boost/optional.hpp>
 #include <boost/multi_array.hpp>
-
-#if !defined(__INTEL_COMPILER) || !defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER < 1800)
-	#include <boost/noncopyable.hpp>
-#endif
+#include <boost/optional.hpp>
 
 namespace thomasfermi {
 	namespace FEM_ALL {
@@ -108,3 +111,5 @@ namespace thomasfermi {
 		}
 	}
 }
+
+#endif  // _FEM_H_
