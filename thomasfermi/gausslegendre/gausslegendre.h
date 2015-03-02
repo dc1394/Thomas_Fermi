@@ -1,4 +1,4 @@
-﻿/*! \file Gauss_Legendre.h
+/*! \file Gauss_Legendre.h
     \brief Gauss-Legendre積分を行うクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
@@ -12,18 +12,17 @@
 #include <array>                            // for std::array
 #include <cstdint>                          // for std::int32_t
 #include <vector>                           // for std::vector
-#include <integration.h>                    // for alglib::ae_int_t
-#include <intrin.h>                         // for ::_xgetbv
 #include <boost/simd/memory/allocator.hpp>  // for boost::simd::allocator
 #include <dvec.h>                           // for F64vec4, F64vec2
+#include <integration.h>                    // for alglib::ae_int_t
+#include <intrin.h>                         // for ::_xgetbv
 
 namespace gausslegendre {
     //! A class.
     /*!
         Gauss-Legendre積分を行うクラス
     */
-	class Gauss_Legendre final
-	{
+	class Gauss_Legendre final {
     public:
         // #region コンストラクタ
 
@@ -67,13 +66,13 @@ namespace gausslegendre {
         /*!
             AVX命令が使用可能かどうか
         */
-        const bool avxSupported;
+        bool const avxSupported_;
 
         //! A private member variable (constant).
         /*!
             Gauss-Legendreの分点
         */
-        const std::uint32_t n_;
+        std::uint32_t const n_;
 
         //! A private member variable.
         /*!
@@ -114,24 +113,7 @@ namespace gausslegendre {
         // #endregion 禁止されたコンストラクタ・メンバ関数
 	};
 
-	inline bool Gauss_Legendre::availableAVX() const
-	{
-#if (_MSC_FULL_VER >= 160040219)
-        std::array<std::int32_t, 4> cpuInfo = { 0 };
-		::__cpuid(cpuInfo.data(), 1);
- 			
-		auto const osUsesXSAVE_XRSTORE = cpuInfo[2] & (1 << 27) || false;
-		auto const cpuAVXSuport = cpuInfo[2] & (1 << 28) || false;
- 
-		if (osUsesXSAVE_XRSTORE && cpuAVXSuport)
-		{
-			// Check if the OS will save the YMM registers
-			auto const xcrFeatureMask = ::_xgetbv(_XCR_XFEATURE_ENABLED_MASK);
-			return (xcrFeatureMask & 0x6) || false;
-		}
-#endif
-		return false;
-	}
+    // #region template privateメンバ関数
 
     template <typename FUNCTYPE>
     double Gauss_Legendre::qgauss(myfunctional::Functional<FUNCTYPE> const & func, bool usesimd, double x1, double x2) const
@@ -182,6 +164,8 @@ namespace gausslegendre {
 
         return sum * xr;
     }
+
+    // #endregion template privateメンバ関数
 }
 
 #endif  // _GAUSS_LEGENDRE_H_

@@ -10,15 +10,11 @@
 #pragma once
 
 #include "../Beta.h"
-#include "../gausslegendre/Gauss_Legendre.h"
+#include "../gausslegendre/gausslegendre.h"
 #include <cstdint>                              // for std::int32_t
 #include <fstream>                              // for std::ofstream
 #include <memory>                               // for std::shared_ptr
-#include <iomanip>                              // for std::setprecision
 #include <tuple>                                // for std::tuple
-#include <utility>                              // for std::get
-#include <boost/cast.hpp>                       // for boost::numeric_cast
-#include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
 
 namespace thomasfermi {
 	namespace makerhoen {
@@ -30,10 +26,7 @@ namespace thomasfermi {
 		{
             // #region 型エイリアス
 
-            typedef std::tuple<
-                std::shared_ptr<const FEM_ALL::Beta> const,
-                std::vector<double> const
-                    > parameter_type;
+            using parameter_type = std::tuple < std::shared_ptr<FEM_ALL::Beta>, std::vector<double> > ;
 
             // #endregion 型エイリアス
 
@@ -43,7 +36,7 @@ namespace thomasfermi {
             //! A constructor.
             /*!
                 \param n Gauss-Legendreの分点
-                \param pt std::shared_ptr<Beta> constとstd::vector<double> constのタプル
+                \param pt std::shared_ptr<Beta>とstd::vector<double>のタプル
                 \param usesimd SIMDを使うかどうか
                 \param Z 原子番号
             */
@@ -56,8 +49,21 @@ namespace thomasfermi {
 
             // #endregion コンストラクタ・デストラクタ
 
+            // #region publicメンバ関数
+
+            //! A public member function.
+            /*!
+            計算結果をファイルに出力する
+            \param n Gauss-Legendreの分点
+            \param usecilk Intel® Cilk™ Plusを使うかどうか
+            \param usesimd SIMDを使うかどうか
+            */
+            void saveResult();
+
+            // #endregion publicメンバ関数
+
         private:
-            // #region メンバ関数
+            // #region privateメンバ関数
 
             //! A private member function (const).
             /*!
@@ -82,17 +88,6 @@ namespace thomasfermi {
             */
             double rhoTilde(double x) const;
 
-        public:
-            //! A public member function.
-            /*!
-                計算結果をファイルに出力する
-                \param n Gauss-Legendreの分点
-                \param usecilk Intel® Cilk™ Plusを使うかどうか
-                \param usesimd SIMDを使うかどうか
-            */
-            void saveResult();
-
-        private:
             //! A private member function.
             /*!
                 関数ρ(x)の値をファイルに書き込む
@@ -115,14 +110,15 @@ namespace thomasfermi {
             */
             void savey(std::string const & filename);
 
-            //! 関数y(x)の値を返す
+            //! A private member function.
             /*!
+                関数y(x)の値を返す
                 \param x xの値
                 \return y(x)の値
             */
             double y(double x) const;
 
-            // #endregion メンバ関数
+            // #endregion privateメンバ関数
 
             // #region メンバ変数
 
@@ -168,12 +164,6 @@ namespace thomasfermi {
                 ファイル出力するときのループの最大数
             */
             std::int32_t const max_;
-
-            //! A private variable.
-            /*!
-                ファイル出力用のストリーム
-            */
-            std::ofstream ofs_;
 
             //! A private variable (constant).
             /*!
@@ -221,40 +211,6 @@ namespace thomasfermi {
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
 		};
-
-        inline MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, parameter_type const & pt, bool usesimd, double Z)
-            :   alpha_(std::pow(128.0 / (9.0 * power(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
-                xvec_(std::get<1>(pt)),
-                dx_((xvec_[2] - xvec_[1]) * 2.0),
-                gl_(n),
-                usesimd_(usesimd),
-                max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
-                pbeta_(std::get<0>(pt)),
-				size_(xvec_.size()),
-                Z_(Z)
-		{
-            // 例外指定
-            ofs_.exceptions(std::ios::badbit | std::ios::failbit);
-            ofs_.setf(std::ios::fixed, std::ios::floatfield);
-            ofs_ << std::setprecision(15);
-
-            auto const func = myfunctional::make_functional(
-                [&](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
-
-            s_ = 1.0 / gl_.qgauss(
-                func,
-                usesimd_,
-                xvec_[0],
-                xvec_[size_ - 1]);
-		}
-
-        //! x^yを計算する（非メンバ関数）
-        /*!
-            \param x xの値    
-            \param y yの値
-            \return x^yの値
-        */
-		constexpr double power(double x, std::uint32_t y);
 	}
 }
 

@@ -21,32 +21,33 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CC005C09-2F0C-4316-801C-0B13B9675800}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Thomas_Fermi</RootNamespace>
+    <RootNamespace>thomasfermi</RootNamespace>
+    <ProjectName>thomasfermi</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -99,20 +100,19 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
       <OpenMP>GenerateParallelCode</OpenMP>
-      <AdditionalIncludeDirectories>D:\DATA\PROGRAM\C++\Thomas_Fermi\CheckPoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\DATA\PROGRAM\C++\thomasfermi\CheckPoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\DATA\PROGRAM\C++\Thomas_Fermi\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\DATA\PROGRAM\C++\thomasfermi\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>mkl_intel_lp64_dll.lib;mkl_core_dll.lib;mkl_intel_thread_dll.lib;CheckPoint.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level5</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -131,8 +131,7 @@
       <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
       <UseProcessorExtensions>AVX</UseProcessorExtensions>
       <OpenMP>GenerateParallelCode</OpenMP>
-      <AdditionalIncludeDirectories>D:\DATA\PROGRAM\C++\Thomas_Fermi\CheckPoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <Optimization>MaxSpeedHighLevel</Optimization>
+      <AdditionalIncludeDirectories>D:\DATA\PROGRAM\C++\thomasfermi\CheckPoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,13 +139,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>mkl_intel_c_dll.lib;mkl_core_dll.lib;mkl_intel_thread_dll.lib;CheckPoint.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\DATA\PROGRAM\C++\Thomas_Fermi\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\DATA\PROGRAM\C++\thomasfermi\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/LTCG %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level5</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -157,12 +155,11 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>D:\DATA\PROGRAM\C++\Thomas_Fermi\CheckPoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\DATA\PROGRAM\C++\thomasfermi\CheckPoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
       <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
       <UseProcessorExtensions>AVX</UseProcessorExtensions>
       <OpenMP>GenerateParallelCode</OpenMP>
-      <Optimization>MaxSpeedHighLevel</Optimization>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <FloatingPointModel>Fast2</FloatingPointModel>
       <EnableMatrixMultiplyLibraryCall>Yes</EnableMatrixMultiplyLibraryCall>
@@ -172,7 +169,7 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>D:\DATA\PROGRAM\C++\Thomas_Fermi\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\DATA\PROGRAM\C++\thomasfermi\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CheckPoint.lib;mkl_intel_lp64_dll.lib;mkl_core_dll.lib;mkl_intel_thread_dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/LTCG %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -181,26 +178,26 @@
     <ClCompile Include="Beta.cpp" />
     <ClCompile Include="FEM.cpp" />
     <ClCompile Include="FOElement.cpp" />
-    <ClCompile Include="gausslegendre\Gauss_Legendre.cpp" />
+    <ClCompile Include="gausslegendre\gausslegendre.cpp" />
     <ClCompile Include="Gauss_Legendre.cpp" />
     <ClCompile Include="Iteration.cpp" />
     <ClCompile Include="Linear_equations.cpp" />
-    <ClCompile Include="makerhoen\MakeRhoEnergy.cpp" />
+    <ClCompile Include="makerhoen\makerhoenergy.cpp" />
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
     <ClCompile Include="Spline.cpp" />
-    <ClCompile Include="Thomas_FermiMain.cpp" />
+    <ClCompile Include="thomasfermimain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Beta.h" />
     <ClInclude Include="FEM.h" />
     <ClInclude Include="FOElement.h" />
-    <ClInclude Include="gausslegendre\Gauss_Legendre.h" />
+    <ClInclude Include="gausslegendre\gausslegendre.h" />
     <ClInclude Include="Gauss_Legendre.h" />
     <ClInclude Include="Iteration.h" />
     <ClInclude Include="Linear_equations.h" />
-    <ClInclude Include="makerhoen\MakeRhoEnergy.h" />
+    <ClInclude Include="makerhoen\makerhoenergy.h" />
     <ClInclude Include="mkl_allocator.h" />
     <ClInclude Include="myfunctional\Functional.h" />
     <ClInclude Include="shoot\load2.h" />

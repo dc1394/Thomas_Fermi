@@ -6,14 +6,46 @@
 
 #include "MakeRhoEnergy.h"
 #include "../Gauss_Legendre.h"
-
 #include <cmath>                                // for std::pow
 #include <iostream>                             // for std::cout
+#include <utility>                              // for std::get
 #include <boost/assert.hpp>                     // for boost::assert
+#include <boost/cast.hpp>                       // for boost::numeric_cast
 #include <boost/format.hpp>                     // for boost::format
+#include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
 
 namespace thomasfermi {
 	namespace makerhoen {
+        // #region コンストラクタ
+
+        MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, MakeRhoEnergy::parameter_type const & pt, bool usesimd, double Z)
+            : alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
+            xvec_(std::get<1>(pt)),
+            dx_((xvec_[2] - xvec_[1]) * 2.0),
+            gl_(n),
+            usesimd_(usesimd),
+            max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
+            pbeta_(std::get<0>(pt)),
+            size_(xvec_.size()),
+            Z_(Z)
+        {
+            auto const func = myfunctional::make_functional(
+                [&](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
+
+            s_ = 1.0 / gl_.qgauss(
+                func,
+                usesimd_,
+                xvec_[0],
+                xvec_[size_ - 1]);
+        }
+
+        // #endregion コンストラクタ
+
+        // #region privateメンバ関数
+
+        // #region publicメンバ関数
+
+
         double MakeRhoEnergy::makeEnergy() const
         {
             auto const func = myfunctional::make_functional(
@@ -63,22 +95,7 @@ namespace thomasfermi {
 
             ofs_.close();
         }
-
-        void MakeRhoEnergy::saveResult()
-		{
-			std::cout << boost::format("Energy = %.15f (Hartree)\n") % makeEnergy();
-
-			ofs_.open("Energy.txt");
-			
-			ofs_ << boost::format("Energy = %.15f (Hartree)\n") % makeEnergy();
-			
-			ofs_.close();
-
-			saverho("rho.txt");
-            saverhoTilde("rhoTilde.txt");
-			savey("y_x.txt");
-		}
-        
+                
         void MakeRhoEnergy::savey(const std::string & filename)
         {
             ofs_.open(filename);
@@ -94,9 +111,10 @@ namespace thomasfermi {
             return std::pow(x * (*pbeta_)(x) * (*pbeta_)(x), 1.0 / 3.0);
         }
 
-		constexpr double power(double x, std::uint32_t y)
-		{
-			return y == 0 ? 1 : power(x, y - 1) * x;
-		}
+        // #endregion privateメンバ関数
+
+        
+
+
 	}
 }

@@ -69,17 +69,17 @@
     <ClCompile Include="shoot\shootfunc.cpp">
       <Filter>ソース ファイル\shoot</Filter>
     </ClCompile>
-    <ClCompile Include="Thomas_FermiMain.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Iteration.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="gausslegendre\Gauss_Legendre.cpp">
+    <ClCompile Include="gausslegendre\gausslegendre.cpp">
       <Filter>ソース ファイル\gausslegendre</Filter>
     </ClCompile>
-    <ClCompile Include="makerhoen\MakeRhoEnergy.cpp">
+    <ClCompile Include="makerhoen\makerhoenergy.cpp">
       <Filter>ソース ファイル\makerhoen</Filter>
+    </ClCompile>
+    <ClCompile Include="thomasfermimain.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,13 +116,13 @@
     <ClInclude Include="shoot\shootfunc.h">
       <Filter>ヘッダー ファイル\shoot</Filter>
     </ClInclude>
-    <ClInclude Include="gausslegendre\Gauss_Legendre.h">
-      <Filter>ヘッダー ファイル\gausslegendre</Filter>
-    </ClInclude>
     <ClInclude Include="myfunctional\Functional.h">
       <Filter>ヘッダー ファイル\myfunctional</Filter>
     </ClInclude>
-    <ClInclude Include="makerhoen\MakeRhoEnergy.h">
+    <ClInclude Include="gausslegendre\gausslegendre.h">
+      <Filter>ヘッダー ファイル\gausslegendre</Filter>
+    </ClInclude>
+    <ClInclude Include="makerhoen\makerhoenergy.h">
       <Filter>ヘッダー ファイル\makerhoen</Filter>
     </ClInclude>
   </ItemGroup>

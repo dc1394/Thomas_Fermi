@@ -87,7 +87,7 @@ namespace thomasfermi {
             /*!
             コピーコンストラクタ（禁止）
             */
-			Beta(const Beta &) = delete;
+			Beta(Beta const &) = delete;
 
             //! A private member function (deleted).
             /*!
@@ -95,7 +95,7 @@ namespace thomasfermi {
                 \param コピー元のオブジェクト（未使用）
                 \return コピー元のオブジェクト
             */
-			Beta & operator=(const Beta &) = delete;
+			Beta & operator=(Beta const &) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
 		};
