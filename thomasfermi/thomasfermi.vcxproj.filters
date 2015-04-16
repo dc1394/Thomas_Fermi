@@ -57,9 +57,6 @@
     <ClCompile Include="shoot\shootfunc.cpp">
       <Filter>ソース ファイル\shoot</Filter>
     </ClCompile>
-    <ClCompile Include="Iteration.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="gausslegendre\gausslegendre.cpp">
       <Filter>ソース ファイル\gausslegendre</Filter>
     </ClCompile>
@@ -76,6 +73,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="foelement.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="iteration.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

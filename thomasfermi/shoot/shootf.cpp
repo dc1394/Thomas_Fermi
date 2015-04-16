@@ -6,18 +6,29 @@
 */
 
 #include "shootf.h"
-#include <cmath>
-#include <cstdint>
-#include <iterator>
-#include <boost/assert.hpp>
-#include <boost/cast.hpp>
-#include <boost/numeric/odeint.hpp>
-#include <boost/numeric/ublas/lu.hpp>
-#include <boost/numeric/ublas/triangular.hpp>
-#include <boost/range/algorithm.hpp>
+#include <cmath>							// for std::fabs
+#include <iterator>							// for std::advance, std::distance
+#include <boost/assert.hpp>					// for BOOST_ASSERT
+#include <boost/cast.hpp>					// for boost::numeric_cast
+#include <boost/numeric/odeint.hpp>			// for boost::numeric::odeint
+#include <boost/numeric/ublas/lu.hpp>		// for boost::numeric::ublas::lu_factorize, boost::numeric::ublas::lu_substitute, boost::numeric::ublas::permutation_matrix
+#include <boost/range/algorithm.hpp>		// for boost::find_if			
 
 namespace thomasfermi {
 	namespace shoot {
+		shootf::shootf(double delv1, double delv2, double dx, double eps, loadfunctype const & load1, load2 const & l2,	scorefunctype const & score, double v1,	double v2) :
+			delv1_(delv1),
+			delv2_(delv2),
+			dx_(dx),
+			eps_(eps),
+			load1_(load1),
+			load2_([&l2](double v2, double x2) { return l2(v2, x2); }),
+			score_(score),
+			v1_(v1),
+			v2_(v2)
+		{
+		}
+
 		shootf::result_type shootf::operator()(double x1, double x2, double xf)
 		{
 			BOOST_ASSERT(x1 < xf);
@@ -27,11 +38,11 @@ namespace thomasfermi {
 
 			bulirsch_stoer<shootfunc::state_type> stepper(eps_, eps_);
 
-			auto y1 = load1_(v1_, x1);					                // 最良の仮の値v1_でx1からxfまで解いていく
+			auto y1 = load1_(x1, v1_);					         // 最良の仮の値v1_でx1からxfまで解いていく
 			integrate_const(stepper, shootfunc::rhs, y1, x1, xf, dx_);
 			auto const f1(score_(y1));
 		
-			auto y2 = load2_(v2_, x2);					                // 最良の仮の値v2_でx2からxfまで解いていく			
+			auto y2 = load2_(x2, v2_);					        // 最良の仮の値v2_でx2からxfまで解いていく			
 			integrate_const(stepper, shootfunc::rhs, y2, x2, xf, - dx_);
 			auto const f2(score_(y2));
 
@@ -42,14 +53,14 @@ namespace thomasfermi {
                 auto const sav = v1_;
                 v1_ += delv1_;
 
-                auto const y = load1_(v1_, x1);
+                auto y = load1_(v1_, x1);
                 integrate_const(stepper, shootfunc::rhs, y, x1, xf, dx_);
                 auto const f = score_(y);
 
-                for (std::size_t i = 0; i < shootfunc::NVAR; i++)		// NVAR個の合致条件にある偏微分を数値的に計算
+                for (auto i = 0U; i < shootfunc::NVAR; i++)		// NVAR個の合致条件にある偏微分を数値的に計算
                     dfdv(i, 0) = (f[i] - f1[i]) / delv1_;
 
-                v1_ = sav;											    // 境界におけるパラメータを格納
+                v1_ = sav;										// 境界におけるパラメータを格納
             }
 
             // 次にx2で用いる境界条件を変える
@@ -57,7 +68,7 @@ namespace thomasfermi {
 				auto const sav = v2_;
 				v2_ += delv2_;
 
-				auto const y = load2_(v2_, x2);
+				auto y = load2_(v2_, x2);
 				integrate_const(stepper, shootfunc::rhs, y, x2, xf, - dx_);
 				auto const f = score_(y);
 
@@ -68,7 +79,7 @@ namespace thomasfermi {
 			}
 
 			shootfunc::dblasvector f(shootfunc::NVAR), ff(shootfunc::NVAR);
-			for (std::size_t i = 0; i < shootfunc::NVAR; i++) {
+			for (auto i = 0U; i < shootfunc::NVAR; i++) {
 				f[i] = f1[i] - f2[i];
 				ff[i] = - f[i];
 			}
@@ -121,7 +132,7 @@ namespace thomasfermi {
 
 			auto const xfindex = boost::numeric_cast<std::size_t>(xf / dx_); 
 
-			for (std::size_t i = 0; i < xfindex; i++)
+			for (auto i = 0U; i < xfindex; i++)
 				xptmp.push_back(i ? static_cast<double>(i) * dx_ : x1);
 
 			for (std::size_t i = xfindex + 1; i < size; i++)
@@ -131,7 +142,7 @@ namespace thomasfermi {
 
 			auto const s = res2.size();
 			
-            for (std::size_t i = 1; i < s; i++)
+            for (auto i = 1U; i < s; i++)
 				yp.push_back(res2[s - i - 1]);
 
 			BOOST_ASSERT(xptmp.size() == yp.size());
@@ -145,10 +156,10 @@ namespace thomasfermi {
 
             alglib::spline1dbuildakima(x, y, spline);
 			
-			for (std::size_t i = 0; i < size; i++)
+			for (auto i = 0U; i < size; i++)
 				xp.push_back(i ? static_cast<double>(i) * dx_ : x1);
 
-			auto const iter2 = yp.begin();
+			auto iter2 = yp.begin();
 			std::advance(
                 iter2,
                 std::distance(
@@ -161,7 +172,7 @@ namespace thomasfermi {
 
 			BOOST_ASSERT(xp.size() == yp.size());
 
-			return std::make_tuple(std::move(xp), std::move(yp));
+			return std::make_pair(std::move(xp), std::move(yp));
 		}
 	}
 }

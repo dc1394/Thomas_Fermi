@@ -51,7 +51,7 @@ namespace thomasfermi {
             /*!
                 y0(x)の原点に近い点xにおける関数値および微分値を求める
                 \param x1 xの値
-                \param v1 y0(x)の微分値
+                \param v1 y'0(0)
                 \return y0(x)の原点に近い点xにおける関数値および微分値
             */
             static shootfunc::state_type load1(double x1, double v1);
@@ -75,23 +75,24 @@ namespace thomasfermi {
 
             // #endregion メンバ関数
 
-        private:
+        public:
             // #region メンバ定数
 
-            //! A private member variable (constant expression).
+            //! A public member variable (constant expression).
             /*!
                 微分を差分化するための適当な刻み幅のベクトル
             */
-            static double constexpr DELV = 1.0E-14;
+            static auto constexpr DELV = 1.0E-14;
 
-            //! A private member variable (constant expression).
+            //! A public member variable (constant expression).
             /*!
                 y'0(0)の初期値
             */
-            static double constexpr V1 = -1.588076779;
+            static auto constexpr V1 = -1.588076779;
 
             // #endregion 
 
+		public:
             // #region 禁止されたコンストラクタ・メンバ関数
 
             //! A private constructor (deleted).

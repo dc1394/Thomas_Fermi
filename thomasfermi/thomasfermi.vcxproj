@@ -179,7 +179,7 @@
     <ClCompile Include="fem.cpp" />
     <ClCompile Include="foelement.cpp" />
     <ClCompile Include="gausslegendre\gausslegendre.cpp" />
-    <ClCompile Include="Iteration.cpp" />
+    <ClCompile Include="iteration.cpp" />
     <ClCompile Include="Linear_equations.cpp" />
     <ClCompile Include="makerhoen\makerhoenergy.cpp" />
     <ClCompile Include="shoot\load2.cpp" />

@@ -1,4 +1,12 @@
 ﻿#include "Iteration.h"
+/*! \file iteration.cpp
+	\brief 微分方程式を反復法で解くクラスの実装
+
+	Copyright ©  2015 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
+*/
+
+
 #include "shoot/shootf.h"
 #include <iostream>
 #include <dvec.h>
@@ -10,32 +18,29 @@
 
 namespace thomasfermi {
 	namespace fem_all {
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
-		const double Iteration::IterationTHRESHOLD = 1.0;
-		const double Iteration::IterationREDUCTION = 0.15;
-#endif
-				// 原点に近い方、無限遠に近い方、適合点、要素の間隔
-		Iteration::Iteration(double x1, double x2, double xf, double dx,
-				// Gauss-Legendreの積分点、ベクトル化するかどうか、並列化するかどうか
-				std::size_t n, bool useSSEorAVX, bool usecilk,
-				// Iterationの許容誤差、Iterationの1次混合の値α
-				double TOL, double alpha)
-			:	useSSEorAVX_(useSSEorAVX), usecilk_(usecilk),
-				avxSupported_(availableAVX()),
-				TOL_(TOL), alpha_(alpha), ple_(boost::none)
+		// #region コンストラクタ・デストラクタ
+
+		Iteration::Iteration(double alpha, double dx, std::size_t n, double eps, bool usesimd, bool usetbb, double x1, double x2, double xf) :
+			alpha_(alpha),
+			eps_(eps),
+			ple_(boost::none),
+			usesimd_(usesimd),
+			usetbb_(usetbb)
 		{
 			using namespace thomasfermi;
 			using namespace thomasfermi::shoot;
 
 			load2 l2;
-			shootf s(shootfunc::V1,
-					 l2.make_v2(x2),
-					 shootfunc::DELV,
-					 shootfunc::DELV,
-					 dx, shootfunc::DELV[0] * 0.1,
-					 shootfunc::load1,
-					 l2,
-					 shootfunc::score);
+			shootf s(
+				shootfunc::DELV,
+				shootfunc::DELV,
+				dx,
+				shootfunc::DELV * 0.1,
+				shootfunc::load1,
+				l2,
+				shootfunc::score,
+				shootfunc::V1,
+				l2.make_v2(x2));
 			
 			shootf::result_type xyvtuple(s(x1, x2, xf));
 			y1_ = std::get<1>(xyvtuple)[0];

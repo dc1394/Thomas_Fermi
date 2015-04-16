@@ -12,7 +12,7 @@
 #include "load2.h"
 #include "../myfunctional/Functional.h"
 #include <functional>						// for std::function
-#include <tuple>							// for std::tuple
+#include <utility>							// for std::pair
 
 namespace thomasfermi {
     namespace shoot {
@@ -30,7 +30,7 @@ namespace thomasfermi {
 			using loadfunctype = std::function<shootfunc::state_type(double, double)>;
 
         public:
-			using result_type = std::tuple<dvector, dvector>;
+			using result_type = std::pair<dvector, dvector>;
 
         private:
 			using scorefunctype = std::function<shootfunc::dblasvector(shootfunc::state_type const &)>;
@@ -42,15 +42,15 @@ namespace thomasfermi {
 
             //! A constructor.
             /*!
-                \param delv1 原点に近いxにおけるyの微分値
-                \param delv2 無限遠点に近いxにおけるyの微分値
+                \param delv1 原点に近いxにおけるyの微分値の変化
+                \param delv2 無限遠点に近いxにおけるyの微分値の変化
                 \param dx xのメッシュの間隔
                 \param eps 許容誤差
                 \param load1 原点に近いxにおけるyの値とその微分値を求める関数オブジェクト
                 \param l2 原点と無限遠点に近いxにおけるyの値とその微分値を求める関数オブジェクト
                 \param score 適合点で合致するべきyの値とその微分値を求める関数オブジェクト
-                \param v1 原点に近いxにおけるyの値
-                \param v2 無限遠点に近いxにおけるyの値
+                \param v1 原点に近いxにおけるyの微分値
+                \param v2 無限遠点に近いxにおけるyの微分値
             */
             shootf(double delv1,
                    double delv2,
@@ -81,11 +81,8 @@ namespace thomasfermi {
                 \param x1 原点に近いxの値
                 \param xf 適合点に近いxの値
                 \return xのメッシュとそれに対応したyの値のtuple
-                */
-            shootf::result_type createResult(dvector const & res1,
-                                             dvector const & res2,
-                                             double x1,
-                                             double xf) const;
+            */
+            shootf::result_type createResult(dvector const & res1, dvector const & res2, double x1, double xf) const;
 
         public:
             //! A public member function (const).
@@ -111,13 +108,13 @@ namespace thomasfermi {
 
             //! A private member variable (constant).
             /*!
-                原点に近いxにおけるyの微分値
+                原点に近いxにおけるyの微分値の増分
             */
             double const delv1_;
 
             //! A private member variable (constant).
             /*!
-                無限遠点のxにおけるyの微分値
+                無限遠点のxにおけるyの微分値の増分
             */
             double const delv2_;
 
@@ -135,13 +132,13 @@ namespace thomasfermi {
 
             //! A private member variable.
             /*!
-                原点に近いxにおけるyの値
+                原点に近いxにおけるyの微分値
             */
             double v1_;
 
             //! A private member variable.
             /*!
-                無限遠点に近いxにおけるyの値
+                無限遠点に近いxにおけるyの微分値
             */
             double v2_;
 
@@ -188,27 +185,6 @@ namespace thomasfermi {
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
-
-        inline shootf::shootf(double delv1,
-                              double delv2,
-                              double dx,
-                              double eps,
-                              loadfunctype const & load1,
-                              load2 const & l2,
-                              scorefunctype const & score,
-                              double v1,
-                              double v2)
-        :   delv1_(delv1),
-            delv2_(delv2),
-            dx_(dx),
-            eps_(eps),
-            load1_(load1),
-			load2_([&l2](double v2, double x2) { return l2(v2, x2); }),
-            score_(score),
-            v1_(v1),
-            v2_(v2)
-        {
-        }
 	}
 }
 
