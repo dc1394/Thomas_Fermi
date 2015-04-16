@@ -8,7 +8,7 @@ int main()
 {
 	CheckPoint::ChkPoint cp("処理開始", __LINE__);
 	try {
-		Thomas_Fermi::FEM_ALL::Iteration scf(1.0E-5, 20.0, 5.0, 0.001, 1000, false, true, 1.0E-12, 0.3);
+		Thomas_Fermi::fem_all::Iteration scf(1.0E-5, 20.0, 5.0, 0.001, 1000, false, true, 1.0E-12, 0.3);
 
 		cp.checkpoint("初期関数生成処理", __LINE__);
 

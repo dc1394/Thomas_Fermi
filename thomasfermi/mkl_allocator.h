@@ -30,13 +30,13 @@ namespace thomasfermi {
 		struct rebind { typedef mkl_allocator<U> other; };
 
 		// constructors
-		mkl_allocator() throw() {}
-		mkl_allocator(mkl_allocator const &) throw() {}
+		mkl_allocator() noexcept {}
+		mkl_allocator(mkl_allocator const &) noexcept {}
 		template <typename U>
-		mkl_allocator(mkl_allocator<U> const &) throw() {}
+		mkl_allocator(mkl_allocator<U> const &) noexcept {}
 
 		// destructor
-		~mkl_allocator() throw() {}
+		~mkl_allocator() noexcept {}
 
 		// メモリを割り当てる
 		pointer allocate(size_type size, const_pointer hint = 0) {
@@ -66,7 +66,7 @@ namespace thomasfermi {
 		{ return &value; }
 		
 		// 割当てることができる最大の要素数を返す
-		size_type max_size() const throw()
+		size_type max_size() const noexcept
 		{ return (std::numeric_limits<std::size_t>::max()) / sizeof(T); }
 	};
 

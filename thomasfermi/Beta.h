@@ -13,7 +13,7 @@
 #include <vector>			// for std::vector
 
 namespace thomasfermi {
-	namespace FEM_ALL {
+	namespace fem_all {
         //! A class.
         /*!
             β(x)を計算するクラス
@@ -28,8 +28,8 @@ namespace thomasfermi {
                 \param xvec x方向のメッシュ
                 \param yvec y方向のメッシュ
             */
-            Beta(const std::vector<double> & xvec, const std::vector<double> & yvec)
-                : size_(xvec.size()), xvec_(xvec), yvec_(yvec) {}
+            Beta(const std::vector<double> & xvec, const std::vector<double> & yvec) :
+				size_(xvec.size()), xvec_(xvec), yvec_(yvec) {}
 
             //! A destructor.
             /*!
@@ -39,7 +39,6 @@ namespace thomasfermi {
 
             // #endregion コンストラクタ・デストラクタ
 
-        public:
             // #region メンバ関数
 
             //! A public member function (const).

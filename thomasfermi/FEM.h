@@ -26,7 +26,7 @@
 #include <boost/multi_array.hpp>		// for boost::multi_array
 
 namespace thomasfermi {
-	namespace FEM_ALL {
+	namespace fem_all {
 		using namespace utility;
 
 		//! A class.
@@ -68,18 +68,17 @@ namespace thomasfermi {
 
 			// #region publicメンバ関数
 
-			//! A public member function.
+			//! A public member function (constant).
 			/*!
+				結果を返す関数
 				\return 結果を集めたtuple
 			*/
 			std::tuple<dmklvector, dmklvector, dmklvector> createresult() const;
-			/*{
-				return std::make_tuple(a1_, a2_, b_);
-			};
-*/
+	
 			//! A public member function.
 			/*!
-				\param beta 新しいβ
+				βの状態をリセットする
+				\param beta 対象のβ
 			*/
 			void reset(const dvector & beta);
 			

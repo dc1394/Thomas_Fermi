@@ -1,37 +1,90 @@
-﻿#include "shoot/shootfunc.h"
-#include "FOElement.h"
-#include "Linear_equations.h"
-#include <tuple>
-#include <memory>
-#include <utility>
-#include <boost/optional.hpp>
+﻿/*! \file iteration.h
+	\brief 微分方程式を反復法で解くクラスの宣言
 
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)
-	#include <boost/noncopyable.hpp>
-#endif
+	Copyright ©  2015 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
+*/
+
+#ifndef _ITERATION_H_
+#define _ITERATION_H_
+
+#pragma once
+
+
+#include "foelement.h"
+#include "Linear_equations.h"
+#include "shoot/shootfunc.h"
+#include <boost/optional.hpp>	// for boost::optional;
 
 namespace thomasfermi {
-	namespace FEM_ALL {
-		class Iteration
-#if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && (_MSC_VER < 1800)
-			: private boost::noncopyable
-#endif
-		{
-#if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER >= 1800)
-			Iteration(const Iteration &) = delete;
-			Iteration & operator=(const Iteration &) = delete;
-			Iteration() = delete;
-#endif
+	namespace fem_all {
+		class Iteration final {
+			// #region 型エイリアス
+
+		public:
+			using result_type = std::tuple<FEM::dvector, std::shared_ptr<const Beta>, double>;
+
+			// #endregion 型エイリアス
+
+			// #region コンストラクタ・デストラクタ
+
+			//! A constructor.
+			/*!
+				\param alpha 一次混合の値α
+				\param dx 要素の間隔
+				\param n Gauss-Legendreの積分点
+				\param tol 許容誤差
+				\param usesimd SIMDを使用するかどうか
+				\param usetbb TBBを使用するかどうか
+				\param x1 原点に近い方のxの値
+				\param x2 無限遠に近い方のxの値
+				\param xf 適合点
+			*/
+			Iteration(double alpha, double dx, std::size_t n, double eps, bool usesimd, bool usetbb, double x1, double x2, double xf);
+
+			//! A destructor.
+			/*!
+				デストラクタ
+			*/
+			~Iteration();
+
+			// #region コンストラクタ・デストラクタ
+			
+			// #region publicメンバ関数
+
+			//! A public member function.
+			/*!
+				反復関数
+			*/
+			void Iterationloop();
+
+			//! A public member function.
+			/*!
+				結果を返す関数
+				\return 結果
+			*/
+			result_type makeresult();
+			/*{
+				return std::make_tuple(std::move(x_), std::move(pbeta_), v1_);
+			}*/
+
+			// #endregion publicメンバ関数
+
+			// #region privateメンバ関数
+
+			FEM::dvector make_beta() const;
+			
+			void ymix();
+			
+			double IterationError() const;
+
+			// #endregion privateメンバ関数
+
 
 #if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__)
 			static constexpr std::size_t N_BC_GIVEN = 2;
 			static constexpr double IterationTHRESHOLD = 1.0;
 			static constexpr double IterationREDUCTION = 0.15;
-#else
-			static const std::size_t N_BC_GIVEN = 2;
-			static const double IterationTHRESHOLD;
-			static const double IterationREDUCTION;
-#endif
 			const bool useSSEorAVX_;
 			const bool usecilk_;
 			const bool avxSupported_;
@@ -50,22 +103,20 @@ namespace thomasfermi {
 			double y2_;
 			double v1_;
 
-			FEM::dvector make_beta() const;
-			void ymix();
-			double IterationError() const;
-
+			
 		public:
-			typedef std::tuple<FEM::dvector, std::shared_ptr<const Beta>, double> result_type;
-				// 原点に近い方、無限遠に近い方、適合点、要素の間隔
-			Iteration(double x1, double x2, double xf, double dx,
-				// Gauss-Legendreの積分点、ベクトル化するかどうか、並列化するかどうか
-				std::size_t n, bool useSSEorAVX, bool usecilk,
-				// Iterationの許容誤差、Iterationの1次混合の値α
-				double TOL, double alpha);
+			
+				// 、無限遠に近い方、適合点、要素の間隔
+			;
 			~Iteration() { ple_ = boost::none; }
-			void Iterationloop();
-			result_type makeresult()
-			{ return std::make_tuple(std::move(x_), std::move(pbeta_), v1_); }
+
+
+#if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER >= 1800)
+			Iteration(const Iteration &) = delete;
+			Iteration & operator=(const Iteration &) = delete;
+			Iteration() = delete;
+#endif
+
 		};
 	}
 
@@ -73,3 +124,5 @@ namespace thomasfermi {
 	inline T sqr(T x)
 	{ return x * x; }
 }
+
+#endif	// _ITERATION_H_

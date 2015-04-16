@@ -10,7 +10,7 @@
 #include <stdexcept>
 
 namespace thomasfermi {
-	namespace FEM_ALL {
+	namespace fem_all {
 		double Beta::operator()(double x) const
 		{
 			auto klo = 0;

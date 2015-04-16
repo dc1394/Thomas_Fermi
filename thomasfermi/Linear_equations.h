@@ -9,7 +9,7 @@
 #endif
 
 namespace thomasfermi {
-	namespace FEM_ALL {
+	namespace fem_all {
 		class Linear_equations
 #if !defined(__INTEL_COMPILER) || !defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER < 1800)
 			: private boost::noncopyable

@@ -81,7 +81,6 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
@@ -178,7 +177,7 @@
   <ItemGroup>
     <ClCompile Include="beta.cpp" />
     <ClCompile Include="fem.cpp" />
-    <ClCompile Include="FOElement.cpp" />
+    <ClCompile Include="foelement.cpp" />
     <ClCompile Include="gausslegendre\gausslegendre.cpp" />
     <ClCompile Include="Iteration.cpp" />
     <ClCompile Include="Linear_equations.cpp" />
@@ -186,16 +185,15 @@
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
-    <ClCompile Include="Spline.cpp" />
     <ClCompile Include="thomasfermimain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\C++\DirectX\SchracVisualize\utility\property.h" />
     <ClInclude Include="beta.h" />
     <ClInclude Include="fem.h" />
-    <ClInclude Include="FOElement.h" />
+    <ClInclude Include="foelement.h" />
     <ClInclude Include="gausslegendre\gausslegendre.h" />
-    <ClInclude Include="Iteration.h" />
+    <ClInclude Include="iteration.h" />
     <ClInclude Include="Linear_equations.h" />
     <ClInclude Include="makerhoen\makerhoenergy.h" />
     <ClInclude Include="mkl_allocator.h" />
@@ -203,7 +201,6 @@
     <ClInclude Include="shoot\load2.h" />
     <ClInclude Include="shoot\shootf.h" />
     <ClInclude Include="shoot\shootfunc.h" />
-    <ClInclude Include="Spline.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Document\Thomas-Fermi.tex" />

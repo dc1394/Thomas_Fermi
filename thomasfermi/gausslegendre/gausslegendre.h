@@ -142,7 +142,7 @@ namespace gausslegendre {
         auto const xr = 0.5 * (x2 - x1);
 
         auto sum = 0.0;
-        if (usesimd && avxSupported) {
+        if (usesimd && avxSupported_) {
             auto const loop = n_ >> 2;
             for (std::uint32_t i = 0; i < loop; i++) {
                 auto const xi(

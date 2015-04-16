@@ -9,7 +9,7 @@
 #include <boost/utility/in_place_factory.hpp>
 
 namespace thomasfermi {
-	namespace FEM_ALL {
+	namespace fem_all {
 #if !defined(__INTEL_COMPILER) && !defined(__GXX_EXPERIMENTAL_CXX0X__)
 		const double Iteration::IterationTHRESHOLD = 1.0;
 		const double Iteration::IterationREDUCTION = 0.15;
@@ -45,7 +45,7 @@ namespace thomasfermi {
 			x_ = std::get<0>(xyvtuple);
 			y_ = ybefore_ = FEM::dmklvector(std::get<1>(xyvtuple).begin(), std::get<1>(xyvtuple).end());
 
-			pfem_.reset(new FEM_ALL::FOElement(n, useSSEorAVX_, usecilk_, x_, Iteration::make_beta()));
+			pfem_.reset(new fem_all::FOElement(n, useSSEorAVX_, usecilk_, x_, Iteration::make_beta()));
 			pfem_->stiff();
 
 			i_bc_given_.reserve(N_BC_GIVEN);
