@@ -1,4 +1,11 @@
-﻿#ifndef _FEM_H_
+﻿/*! \file fem.h
+	\brief 有限要素法のクラスの宣言
+
+	Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
+*/
+
+#ifndef _FEM_H_
 #define _FEM_H_
 
 #pragma once
@@ -8,107 +15,273 @@
     #define _SCL_SECURE_NO_WARNINGS
 #endif
 
-#include "Beta.h"
-#include "gausslegendre/Gauss_Legendre.h"
+#include "beta.h"
+#include "gausslegendre/gausslegendre.h"
 #include "mkl_allocator.h"
-#include <functional>
-#include <memory>
-#include <tuple>
-#include <utility>
-#include <vector>
-#include <boost/multi_array.hpp>
-#include <boost/optional.hpp>
+#include "utility/property.h"
+#include <functional>					// for std::function
+#include <memory>						// for std::shared_ptr
+#include <tuple>						// for std::tuple
+#include <vector>						// for std::vector
+#include <boost/multi_array.hpp>		// for boost::multi_array
 
 namespace thomasfermi {
 	namespace FEM_ALL {
-		class FEM final
-		{
-		public:
-			typedef std::vector<double> dvector;
-			typedef std::vector<double, mkl_allocator<double>> dmklvector;
+		using namespace utility;
 
-		protected:
-			const std::size_t nnode_;
-			const bool useSSEorAVX_;
-			const bool usecilk_;
-
-		private:
-			typedef boost::multi_array<double, 2> dmatrix;
-			const std::size_t nint_;
-
-		protected:
-			std::size_t ntnoel_;
-			std::size_t nelem_;
-			boost::multi_array<std::size_t, 2> lnods_;				
-
-		private:
-			dmklvector a1_;
-			dmklvector a2_;
-			dmatrix astiff_;
-			dmklvector b_;
-
-		protected:
-			const dvector coords_;
-
-		private:
-			const dvector beta_;
-
-		protected:
-			Gauss_Legendre gl_;
-			std::shared_ptr<const Beta> pbeta_;
-			std::function<double (double)> func_;
-			void initialize();
-
-		private:
-			virtual dvector getdndr() const = 0;
-			virtual dvector getc(std::size_t ielem) const = 0;
-
-			void element(std::size_t ielem);
-			void amerge(std::size_t ielem);
+		//! A class.
+		/*!
+			有限要素法のクラス
+		*/
+		class FEM {
+			// #region 型エイリアス
 
 		public:
-			FEM(std::size_t nint, bool useSSEorAVX, bool usecilk, const dvector & coords, dvector && beta);
-			virtual ~FEM() {}
-			void stiff();
+			using dvector = std::vector<double>;
+
+			using dmklvector = std::vector<double, mkl_allocator<double>>;
+
+		private:
+			using dmatrix = boost::multi_array<double, 2>;
+
+			// #region コンストラクタ・デストラクタ
+
+		public:
+			//! A constructor.
+			/*!
+				唯一のコンストラクタ
+				\param beta
+				\param coords
+				\param nint
+				\param usesimd SIMDを利用するかどうか
+				\param usetbb TBBを使用するかどうか
+			*/
+			FEM(dvector && beta, dvector const & coords, std::size_t nint, bool usesimd, bool usetbb);
+
+			//! A destructor.
+			/*!
+				デストラクタ
+			*/
+			virtual ~FEM() = default;
+			
+			// #endregion コンストラクタ・デストラクタ 
+
+			// #region publicメンバ関数
+
+			//! A public member function.
+			/*!
+				\return 結果を集めたtuple
+			*/
+			std::tuple<dmklvector, dmklvector, dmklvector> createresult() const;
+			/*{
+				return std::make_tuple(a1_, a2_, b_);
+			};
+*/
+			//! A public member function.
+			/*!
+				\param beta 新しいβ
+			*/
 			void reset(const dvector & beta);
+			
+			//! A public member function.
+			/*!
+				
+			*/
+			void stiff();
+
+			//! A public member function.
+			/*!
+
+			*/
 			void stiff2();
 
-			std::size_t getntnoel() const
-			{ return ntnoel_; }
+			// #endregion publicメンバ関数
 
-			std::size_t getnnode() const
-			{ return nnode_; }
+			// #region protectedメンバ関数
 
-			std::tuple<dmklvector, dmklvector, dmklvector> createresult() const
-			{ return std::make_tuple(a1_, a2_, b_); };
+		protected:
+			//! A protected member function.
+			/*!
+				\param beta 新しいβ
+			*/
+			void initialize();
 
-			const std::shared_ptr<const Beta> & getpbeta() const
-			{ return pbeta_; }
+			// #endregion protectedメンバ関数
 
-			const FEM::dmklvector & getb() const
-			{ return b_; }
+			// #region privateメンバ関数
 
-            FEM(const FEM &) = delete;
-            FEM & operator=(const FEM &) = delete;
-            FEM() = delete;
+		private:
+			//! A private member function.
+			/*!
+				\param ielem
+			*/
+			void amerge(std::size_t ielem);
+
+			//! A private member function.
+			/*!
+				\param ielem
+			*/
+			void element(std::size_t ielem);
+
+			//! A private member function (pure virtual function).
+			/*!
+				\param ielem
+			*/
+			virtual dvector getc(std::size_t ielem) const = 0;
+			
+			//! A private member function (pure virtual function).
+			/*!
+
+			*/
+			virtual dvector getdndr() const = 0;
+						
+			// #endregion 
+
+			// #region プロパティ
+
+		public:
+			//! A property.
+			/*!
+
+			*/
+			Property<FEM::dmklvector> const B;
+
+			//! A property.
+			/*!
+
+			*/
+			Property<std::size_t> const Nnode;
+
+			//! A property.
+			/*!
+				
+			*/
+			Property<std::size_t> const Ntnoel;
+
+			//! A property.
+			/*!
+				βのスマートポインタへのプロパティ
+			*/
+			Property<std::shared_ptr<Beta>> const PBeta;
+
+			// #endregion プロパティ
+
+			// #region メンバ変数
+			
+		private:
+			//! A private member variable.
+			/*!
+			*/
+			dmklvector a1_;
+
+			//! A private member variable.
+			/*!
+			*/
+			dmklvector a2_;
+
+			//! A private member variable.
+			/*!
+			*/
+			dmatrix astiff_;
+
+			//! A private member variable.
+			/*!
+			*/
+			dmklvector b_;
+
+			//! A private member variable (constant).
+			/*!
+				関数β
+			*/
+			dvector const beta_;
+
+		protected:
+			//! A protected member variable (constant).
+			/*!
+			*/
+			dvector const coords_;
+
+			//! A protected member variable.
+			/*!
+				double func(double)の形の関数オブジェクト
+			*/
+			std::function<double(double)> func_;
+
+			//! A protected member variable.
+			/*!
+				Gauss-Legendre積分のオブジェクト
+			*/
+			gausslegendre::Gauss_Legendre gl_;
+
+			//! A protected member variable.
+			/*!
+			*/
+			boost::multi_array<std::size_t, 2> lnods_;
+
+			//! A protected member variable.
+			/*!
+			*/
+			std::size_t nelem_;
+			
+			//! A protected member variable (constant).
+			/*!
+			*/
+			std::size_t const nint_;
+
+			//! A protected member variable (constant).
+			/*!
+			*/
+			std::size_t const nnode_;
+
+			//! A protected member variable.
+			/*!
+			*/
+			std::size_t ntnoel_;
+			
+			//! A protected member variable.
+			/*!
+				βオブジェクトへのスマートポインタ
+			*/
+			std::shared_ptr<Beta> pbeta_;
+
+			//! A protected member variable.
+			/*!
+				SIMDを使用するかどうか
+			*/
+			bool const usesimd_;
+			
+			//! A protected member variable.
+			/*!
+				TBBを使用するかどうか
+			*/
+			bool const usetbb_;
+
+			// #region 禁止されたコンストラクタ・メンバ関数
+
+		private:
+			//! A private constructor (deleted).
+			/*!
+				デフォルトコンストラクタ（禁止）
+			*/
+			FEM() = delete;
+
+			//! A private copy constructor (deleted).
+			/*!
+				コピーコンストラクタ（禁止）
+				\param コピー元のオブジェクト（未使用）
+			*/
+			FEM(FEM const &) = delete;
+
+			//! A private member function (deleted).
+			/*!
+				operator=()の宣言（禁止）
+				\param コピー元のオブジェクト（未使用）
+				\return コピー元のオブジェクト
+			*/
+			FEM & operator=(FEM const &) = delete;
+
+			// #endregion 禁止されたコンストラクタ・メンバ関数
 		};
-
-		inline FEM::FEM(std::size_t nint, bool useSSEorAVX, bool usecilk, const dvector & coords, dvector && beta)
-			:	nnode_(coords.size()),
-				useSSEorAVX_(useSSEorAVX),
-				usecilk_(usecilk),
-				nint_(nint),
-				a1_(nnode_, 0.0),
-				a2_(nnode_ - 1, 0.0),
-				b_(nnode_, 0.0),
-				coords_(coords),
-				beta_(std::move(beta)),
-				gl_(nint_, usecilk_),
-				pbeta_(std::make_shared<const Beta>(coords_, beta_)),
-				func_(std::bind(&Beta::operator(), std::ref(*pbeta_), std::placeholders::_1))
-		{
-			BOOST_ASSERT(coords_.size() == beta_.size());
-		}
 	}
 }
 

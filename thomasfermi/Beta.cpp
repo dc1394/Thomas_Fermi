@@ -1,9 +1,11 @@
-﻿/*! \file Beta.h
-\brief β(x)を計算するクラスの実装
+﻿/*! \file beta.cpp
+	\brief β(x)を計算するクラスの実装
 
-Copyright ©  2014 @dc1394 All Rights Reserved.
+	Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
-#include "Beta.h"
+
+#include "beta.h"
 #include <cstdint>
 #include <stdexcept>
 

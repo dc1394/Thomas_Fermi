@@ -2,6 +2,7 @@
     \brief 狙い撃ち法により、y(x)を求めるクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
 
 #include "shootf.h"

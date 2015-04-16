@@ -40,18 +40,12 @@
     <Filter Include="ヘッダー ファイル\myfunctional">
       <UniqueIdentifier>{dbae2dea-8384-4e80-947f-3ee6611458da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\utility">
+      <UniqueIdentifier>{cbb11a61-2b4d-4a56-8b7a-b614493a7cf5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Beta.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="FEM.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="FOElement.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Gauss_Legendre.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Linear_equations.cpp">
@@ -81,18 +75,15 @@
     <ClCompile Include="thomasfermimain.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="beta.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="fem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Beta.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="FEM.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="FOElement.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Gauss_Legendre.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Iteration.h">
@@ -116,14 +107,23 @@
     <ClInclude Include="shoot\shootfunc.h">
       <Filter>ヘッダー ファイル\shoot</Filter>
     </ClInclude>
-    <ClInclude Include="myfunctional\Functional.h">
-      <Filter>ヘッダー ファイル\myfunctional</Filter>
-    </ClInclude>
     <ClInclude Include="gausslegendre\gausslegendre.h">
       <Filter>ヘッダー ファイル\gausslegendre</Filter>
     </ClInclude>
     <ClInclude Include="makerhoen\makerhoenergy.h">
       <Filter>ヘッダー ファイル\makerhoen</Filter>
+    </ClInclude>
+    <ClInclude Include="beta.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="fem.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\C++\DirectX\SchracVisualize\utility\property.h">
+      <Filter>ヘッダー ファイル\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="myfunctional\functional.h">
+      <Filter>ヘッダー ファイル\myfunctional</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

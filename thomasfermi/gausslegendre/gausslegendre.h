@@ -2,13 +2,16 @@
     \brief Gauss-Legendre積分を行うクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
+
 #ifndef _GAUSS_LEGENDRE_H_
 #define _GAUSS_LEGENDRE_H_
 
 #pragma once
 
-#include "../myfunctional/Functional.h"
+#include "../myfunctional/functional.h"
+#include "../utility/property.h"
 #include <array>                            // for std::array
 #include <cstdint>                          // for std::int32_t
 #include <vector>                           // for std::vector
@@ -24,7 +27,7 @@ namespace gausslegendre {
     */
 	class Gauss_Legendre final {
     public:
-        // #region コンストラクタ
+        // #region コンストラクタ・デストラクタ
 
         //! A constructor.
         /*!
@@ -34,10 +37,17 @@ namespace gausslegendre {
         */
         explicit Gauss_Legendre(std::int32_t n);
 
-        // #endregion コンストラクタ
+		//! A destructor.
+		/*!
+			デフォルトデストラクタ
+		*/
+		~Gauss_Legendre() = default;
+
+        // #endregion コンストラクタ・デストラクタ
 
         // #region メンバ関数
 
+		template <typename FUNCTYPE>
         //! A public member function (template function).
         /*!
             Gauss-Legendre積分を実行する
@@ -47,7 +57,6 @@ namespace gausslegendre {
             \param x2 積分の上端
             \return 積分値
         */
-        template <typename FUNCTYPE>
         double qgauss(myfunctional::Functional<FUNCTYPE> const & func, bool usesimd, double x1, double x2) const;
 
     private:
@@ -59,6 +68,17 @@ namespace gausslegendre {
         bool availableAVX() const;
 
         // #endregion メンバ関数
+
+		// #region プロパティ
+
+	public:
+		//! A property.
+		/*!
+
+		*/
+		utility::Property<std::vector<double, boost::simd::allocator<double, 64>>> const W;
+
+		// #endregion プロパティ
 
         // #region メンバ変数
 
@@ -76,7 +96,7 @@ namespace gausslegendre {
 
         //! A private member variable.
         /*!
-        Gauss-Legendreの重み（alignmentが揃っている）
+			Gauss-Legendreの重み（alignmentが揃っている）
         */
         std::vector<double, boost::simd::allocator<double, 64>> w_;
 

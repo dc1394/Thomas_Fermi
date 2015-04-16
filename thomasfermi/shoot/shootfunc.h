@@ -15,8 +15,8 @@
     #define _SCL_SECURE_NO_WARNINGS
 #endif
 
-#include <array>
-#include <boost/numeric/ublas/matrix.hpp>
+#include <array>							// for std::array
+#include <boost/numeric/ublas/matrix.hpp>	// for boost::numeric::ublas::vector
 
 namespace thomasfermi {
 	namespace shoot {
@@ -25,8 +25,7 @@ namespace thomasfermi {
             y(x)の初期関数y0(x)の、原点に近い点xにおける関数値および微分値と、
             適合点xfにおける関数値および微分値を求めるクラス
         */
-		class shootfunc final
-		{
+		class shootfunc final {
         public:
             // #region メンバ定数
             
@@ -40,9 +39,9 @@ namespace thomasfermi {
 
             // #region 型エイリアス
 
-            typedef boost::numeric::ublas::vector<double> dblasvector;
+            using dblasvector = boost::numeric::ublas::vector<double>;
 
-            typedef std::array<double, NVAR> state_type;
+			using state_type = std::array<double, NVAR>;
 
             // #region 型エイリアス
 

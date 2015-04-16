@@ -2,6 +2,7 @@
     \brief Gauss-Legendre積分を行うクラスの実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
 
 #include "gausslegendre.h"
@@ -11,8 +12,10 @@
 namespace gausslegendre {
     // #region コンストラクタ
 
-    Gauss_Legendre::Gauss_Legendre(std::int32_t n)
-        : avxSupported_(availableAVX()), n_(n)
+    Gauss_Legendre::Gauss_Legendre(std::int32_t n) :
+		W([this] { return w_; }, nullptr),
+		avxSupported_(availableAVX()),
+		n_(n)
     {
         alglib::ae_int_t info = 0;
         alglib::real_1d_array x, w;

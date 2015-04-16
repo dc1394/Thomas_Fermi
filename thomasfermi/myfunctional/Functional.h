@@ -1,4 +1,4 @@
-﻿/*! \file Functional.h
+﻿/*! \file functional.h
     \brief std::function<double (double)>の代わりになるクラス
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
@@ -9,23 +9,29 @@
 #pragma once
 
 namespace myfunctional {
-    //! A template class.
+	template <typename FUNCTYPE>
+	//! A template class.
     /*!
         std::function<double (double)>の代わりになるtemplate class
     */
-    template <typename FUNCTYPE>
-    class Functional final
-    {
+    class Functional final {
     public:
-        // #region コンストラクタ
+        // #region コンストラクタ・デストラクタ
 
         //! A constructor.
         /*!
-        \param func operator()で呼び出す関数
+			唯一のコンストラクタ
+			\param func operator()で呼び出す関数
         */
-        Functional(FUNCTYPE const & func) : func_(func) {}
+        explicit Functional(FUNCTYPE const & func) : func_(func) {}
 
-        // #endregion コンストラクタ
+		//! A destructor.
+		/*!
+			唯一のデストラクタ
+		*/
+		~Functional() = default;
+
+        // #endregion コンストラクタ・デストラクタ
 
         // #region メンバ関数
 
@@ -55,13 +61,13 @@ namespace myfunctional {
         // #endregion メンバ変数
     };
 
+	template <typename FUNCTYPE>
     //! A template function（非メンバ関数）.
     /*!
         Function<FUNCTYPE>を生成する
         \param func 格納する関数
         \return 生成されたFunction<FUNCTYPE>
     */
-    template <typename FUNCTYPE>
     Functional<FUNCTYPE> make_functional(FUNCTYPE const & func)
     {
         return Functional<FUNCTYPE>(func);

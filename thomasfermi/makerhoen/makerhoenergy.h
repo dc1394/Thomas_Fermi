@@ -35,6 +35,7 @@ namespace thomasfermi {
 
             //! A constructor.
             /*!
+				唯一のコンストラクタ
                 \param n Gauss-Legendreの分点
                 \param pt std::shared_ptr<Beta>とstd::vector<double>のタプル
                 \param usesimd SIMDを使うかどうか
@@ -44,8 +45,9 @@ namespace thomasfermi {
 
             //! A destructor.
             /*!
+				デフォルトデストラクタ
             */
-            ~MakeRhoEnergy() {}
+			~MakeRhoEnergy() = default;
 
             // #endregion コンストラクタ・デストラクタ
 

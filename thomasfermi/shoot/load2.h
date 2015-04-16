@@ -31,8 +31,9 @@ namespace thomasfermi {
 
             //! A destructor.
             /*!
+				デフォルトデストラクタ
             */
-            ~load2() {}
+			~load2() = default;
 
             // #endregion コンストラクタ・デストラクタ
 

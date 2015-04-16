@@ -11,10 +11,8 @@
 
 #include "load2.h"
 #include "../myfunctional/Functional.h"
-#include <functional>
-#include <tuple>
-#include <utility>
-#include <boost/numeric/ublas/matrix.hpp>
+#include <functional>						// for std::function
+#include <tuple>							// for std::tuple
 
 namespace thomasfermi {
     namespace shoot {
@@ -22,21 +20,20 @@ namespace thomasfermi {
         /*!
             狙い撃ち法により、y(x)を求めるクラス
         */
-        class shootf final
-        {
+        class shootf final {
             // #region 型エイリアス
 
         public:
-            typedef std::vector<double> dvector;
+            using dvector = std::vector<double>;
 
         private:
-            typedef std::function<shootfunc::state_type(double, double)> loadfunctype;
+			using loadfunctype = std::function<shootfunc::state_type(double, double)>;
 
         public:
-            typedef std::tuple<dvector, dvector const> result_type;
+			using result_type = std::tuple<dvector, dvector>;
 
         private:
-            typedef std::function<shootfunc::dblasvector(shootfunc::state_type const &)> scorefunctype;
+			using scorefunctype = std::function<shootfunc::dblasvector(shootfunc::state_type const &)>;
 
             // #endregion 型エイリアス
 
@@ -67,8 +64,9 @@ namespace thomasfermi {
 
             //! A destructor.
             /*!
+				デフォルトデストラクタ
             */
-            ~shootf() {}
+			~shootf() = default;
 
             // #endregion コンストラクタ・デストラクタ
 
@@ -205,7 +203,7 @@ namespace thomasfermi {
             dx_(dx),
             eps_(eps),
             load1_(load1),
-            load2_(std::bind(&load2::operator(), std::cref(l2), std::placeholders::_1, std::placeholders::_2)),
+			load2_([&l2](double v2, double x2) { return l2(v2, x2); }),
             score_(score),
             v1_(v1),
             v2_(v2)

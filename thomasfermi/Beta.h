@@ -1,7 +1,8 @@
-﻿/*! \file Beta.h
+﻿/*! \file beta.h
     \brief β(x)を計算するクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
 #ifndef _BETA_H_
 #define _BETA_H_
@@ -9,7 +10,7 @@
 #pragma once
 
 #include "mkl_allocator.h"
-#include <vector>
+#include <vector>			// for std::vector
 
 namespace thomasfermi {
 	namespace FEM_ALL {
@@ -32,9 +33,9 @@ namespace thomasfermi {
 
             //! A destructor.
             /*!
-                何もしないデストラクタ
+                デフォルトデストラクタ
             */
-            ~Beta() {}
+			~Beta() = default;
 
             // #endregion コンストラクタ・デストラクタ
 
