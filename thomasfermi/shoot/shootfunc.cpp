@@ -7,9 +7,9 @@
 */
 
 #include "shootfunc.h"
-#include <cmath>
-#include <utility>
-#include <boost/range/algorithm.hpp>
+#include <cmath>						// for std::sqrt
+#include <utility>						// for std::move
+#include <boost/range/algorithm.hpp>	// for boost::copy
 
 namespace thomasfermi {
 	namespace shoot {

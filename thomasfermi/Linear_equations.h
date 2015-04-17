@@ -1,24 +1,19 @@
-﻿#pragma warning(disable : 4819)
+﻿
+#ifdef _MSC_VER
+#pragma warning(disable : 4819)
+#define _SCL_SECURE_NO_WARNINGS
+#endif
+
 
 #include "mkl_allocator.h"
 #include <tuple>
 #include <vector>
 
-#if !defined(__INTEL_COMPILER) || !defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER < 1800)
-	#include <boost/noncopyable.hpp>
-#endif
-
 namespace thomasfermi {
 	namespace fem_all {
-		class Linear_equations
-#if !defined(__INTEL_COMPILER) || !defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER < 1800)
-			: private boost::noncopyable
-#endif
-		{
-#if defined(__INTEL_COMPILER) || defined(__GXX_EXPERIMENTAL_CXX0X__) || (_MSC_VER >= 1800)
+		class Linear_equations final {
 			Linear_equations & operator=(const Linear_equations &) = delete;
 			Linear_equations() = delete;
-#endif
 			typedef std::vector<std::size_t> sivector;
 			typedef std::vector<double, mkl_allocator<double>> dvector;
 

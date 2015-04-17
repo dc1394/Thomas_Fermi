@@ -1,18 +1,18 @@
 ﻿/*! \file shootf.cpp
-    \brief 狙い撃ち法により、y(x)を求めるクラスの宣言
+    \brief 狙い撃ち法により、y(x)を求めるクラスの実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 	This software is released under the BSD-2 License.
 */
 
 #include "shootf.h"
-#include <cmath>							// for std::fabs
-#include <iterator>							// for std::advance, std::distance
-#include <boost/assert.hpp>					// for BOOST_ASSERT
-#include <boost/cast.hpp>					// for boost::numeric_cast
-#include <boost/numeric/odeint.hpp>			// for boost::numeric::odeint
-#include <boost/numeric/ublas/lu.hpp>		// for boost::numeric::ublas::lu_factorize, boost::numeric::ublas::lu_substitute, boost::numeric::ublas::permutation_matrix
-#include <boost/range/algorithm.hpp>		// for boost::find_if			
+#include <cmath>						// for std::fabs
+#include <iterator>						// for std::advance, std::distance
+#include <boost/assert.hpp>				// for BOOST_ASSERT
+#include <boost/cast.hpp>				// for boost::numeric_cast
+#include <boost/numeric/odeint.hpp>		// for boost::numeric::odeint
+#include <boost/numeric/ublas/lu.hpp>	// for boost::numeric::ublas::lu_factorize, boost::numeric::ublas::lu_substitute, boost::numeric::ublas::permutation_matrix
+#include <boost/range/algorithm.hpp>	// for boost::find_if			
 
 namespace thomasfermi {
 	namespace shoot {
@@ -123,32 +123,30 @@ namespace thomasfermi {
 			auto const size = boost::numeric_cast<std::vector<double>::size_type>(res1.size() + res2.size() - 1);
 
 			dvector xp, xptmp, yp;
-			
             xp.reserve(size);
-			
             xptmp.reserve(size - 1);
-			
             yp.reserve(size);
 
 			auto const xfindex = boost::numeric_cast<std::size_t>(xf / dx_); 
 
-			for (auto i = 0U; i < xfindex; i++)
-				xptmp.push_back(i ? static_cast<double>(i) * dx_ : x1);
+			for (auto i = 0U; i < xfindex; i++) {
+				xptmp.push_back(i ? static_cast<double>(i)* dx_ : x1);
+			}
 
-			for (std::size_t i = xfindex + 1; i < size; i++)
-				xptmp.push_back(static_cast<double>(i) * dx_);
+			for (auto i = xfindex + 1U; i < size; i++) {
+				xptmp.push_back(static_cast<double>(i)* dx_);
+			}
 
 			yp.assign(res1.begin(), res1.end() - 1);
 
 			auto const s = res2.size();
-			
-            for (auto i = 1U; i < s; i++)
+			for (auto i = 1U; i < s; i++) {
 				yp.push_back(res2[s - i - 1]);
+			}
 
 			BOOST_ASSERT(xptmp.size() == yp.size());
 
             alglib::spline1dinterpolant spline;
-
             alglib::real_1d_array x, y;
 
             x.setcontent(xptmp.size(), xptmp.data());
@@ -156,8 +154,9 @@ namespace thomasfermi {
 
             alglib::spline1dbuildakima(x, y, spline);
 			
-			for (auto i = 0U; i < size; i++)
-				xp.push_back(i ? static_cast<double>(i) * dx_ : x1);
+			for (auto i = 0U; i < size; i++) {
+				xp.push_back(i ? static_cast<double>(i)* dx_ : x1);
+			}
 
 			auto iter2 = yp.begin();
 			std::advance(

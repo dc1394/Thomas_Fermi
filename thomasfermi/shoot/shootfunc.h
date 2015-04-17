@@ -3,6 +3,7 @@
            適合点xfにおける関数値および微分値を求めるクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
 
 #ifndef _SHOOTFUNC_H_

@@ -2,7 +2,9 @@
     \brief std::function<double (double)>の代わりになるクラス
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
+
 #ifndef _FUNCTONAL_H_
 #define _FUNCTONAL_H_
 

@@ -10,11 +10,10 @@
 
 #pragma once
 
-
 #include "foelement.h"
 #include "Linear_equations.h"
 #include "shoot/shootfunc.h"
-#include <boost/optional.hpp>	// for boost::optional;
+#include <boost/optional.hpp>	// for boost::optional
 
 namespace thomasfermi {
 	namespace fem_all {
@@ -22,7 +21,7 @@ namespace thomasfermi {
 			// #region 型エイリアス
 
 		public:
-			using result_type = std::tuple<FEM::dvector, std::shared_ptr<const Beta>, double>;
+			using result_type = std::pair<FEM::dvector, std::shared_ptr<const Beta>>;
 
 			// #endregion 型エイリアス
 
@@ -63,11 +62,8 @@ namespace thomasfermi {
 				結果を返す関数
 				\return 結果
 			*/
-			result_type makeresult();
-			/*{
-				return std::make_tuple(std::move(x_), std::move(pbeta_), v1_);
-			}*/
-
+			Iteration::result_type makeresult();
+			
 			// #endregion publicメンバ関数
 
 			// #region privateメンバ関数
@@ -158,11 +154,6 @@ namespace thomasfermi {
 				TBBを使用するかどうか
 			*/
 			bool const usetbb_;
-
-			//! A private member variable.
-			/*!
-			*/
-			double v1_;
 			
 			//! A private member variable.
 			/*!

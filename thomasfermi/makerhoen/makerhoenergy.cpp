@@ -6,7 +6,6 @@
 */
 
 #include "MakeRhoEnergy.h"
-#include "../Gauss_Legendre.h"
 #include <cmath>                                // for std::pow
 #include <iostream>                             // for std::cout
 #include <utility>                              // for std::get
@@ -19,15 +18,15 @@ namespace thomasfermi {
 	namespace makerhoen {
         // #region コンストラクタ
 
-        MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, MakeRhoEnergy::parameter_type const & pt, bool usesimd, double Z)
-            : alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
-            xvec_(std::get<1>(pt)),
-            dx_((xvec_[2] - xvec_[1]) * 2.0),
-            gl_(n),
-            usesimd_(usesimd),
-            max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
-            pbeta_(std::get<0>(pt)),
-            size_(xvec_.size()),
+        MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, MakeRhoEnergy::parameter_type const & pt, bool usesimd, double Z) :
+			alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
+			xvec_(std::get<1>(pt)),
+			dx_((xvec_[2] - xvec_[1]) * 2.0),
+			gl_(n),
+			max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
+			pbeta_(std::get<0>(pt)),
+			size_(xvec_.size()),
+			usesimd_(usesimd),
             Z_(Z)
         {
             auto const func = myfunctional::make_functional(
@@ -42,10 +41,18 @@ namespace thomasfermi {
 
         // #endregion コンストラクタ
 
-        // #region privateメンバ関数
-
         // #region publicメンバ関数
 
+		void MakeRhoEnergy::saveresult()
+		{
+			saverho("rho.csv");
+			saverhoTilde("rhoTilde.csv");
+			savey("y.csv");
+		}
+
+		// #endregion publicメンバ関数
+
+		// #region privateメンバ関数
 
         double MakeRhoEnergy::makeEnergy() const
         {
@@ -68,41 +75,42 @@ namespace thomasfermi {
 
 		double MakeRhoEnergy::rhoTilde(double x) const
 		{
-            auto const b = 32.0 / (9.0 * power(boost::math::constants::pi<double>(), 3)) * Z_ * Z_;
+            auto const b = 32.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 3)) * Z_ * Z_;
 
 			return b * s_ * (y(x) / x) * std::sqrt(y(x) / x);
 		}
 
-        void MakeRhoEnergy::saverho(const std::string & filename)
+        void MakeRhoEnergy::saverho(std::string const & filename)
         {
             ofs_.open(filename);
 
-            for (std::int32_t i = 1; i <= max_; i++) {
+            for (auto i = 1; i <= max_; i++) {
                 auto const r = static_cast<double>(i) * dx_;
-                ofs_ << r << ' ' << rho(alpha_ * r);
+                ofs_ << r << ',' << rho(alpha_ * r);
             }
 
             ofs_.close();
         }
 
-        void MakeRhoEnergy::saverhoTilde(const std::string & filename)
+		void MakeRhoEnergy::saverhoTilde(std::string const & filename)
         {
             ofs_.open(filename);
 
-            for (std::int32_t i = 1; i <= max_; i++) {
+            for (auto i = 1; i <= max_; i++) {
                 auto const r = static_cast<double>(i) * dx_;
-                ofs_ << r << ' ' << rhoTilde(alpha_ * r) << '\n';
+                ofs_ << r << ',' << rhoTilde(alpha_ * r) << '\n';
             }
 
             ofs_.close();
         }
                 
-        void MakeRhoEnergy::savey(const std::string & filename)
+        void MakeRhoEnergy::savey(std::string const & filename)
         {
             ofs_.open(filename);
 
-            for (auto x : xvec_)
-                ofs_ << x << ' ' << y(x) << '\n';
+			for (auto x : xvec_) {
+				ofs_ << x << ',' << y(x) << '\n';
+			}
 
             ofs_.close();
         }
@@ -113,9 +121,5 @@ namespace thomasfermi {
         }
 
         // #endregion privateメンバ関数
-
-        
-
-
 	}
 }

@@ -2,6 +2,7 @@
     \brief β(x)から電子密度とエネルギーを計算してファイルに記録するクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
 
 #ifndef _MAKERHOENERGY_H_
@@ -14,7 +15,7 @@
 #include <cstdint>                              // for std::int32_t
 #include <fstream>                              // for std::ofstream
 #include <memory>                               // for std::shared_ptr
-#include <tuple>                                // for std::tuple
+#include <utility>                              // for std::pair
 
 namespace thomasfermi {
 	namespace makerhoen {
@@ -22,11 +23,10 @@ namespace thomasfermi {
         /*!
             y(x)から電子密度とエネルギーを計算する
         */
-		class MakeRhoEnergy final
-		{
+		class MakeRhoEnergy final {
             // #region 型エイリアス
 
-            using parameter_type = std::tuple < std::shared_ptr<fem_all::Beta>, std::vector<double> > ;
+            using parameter_type = std::pair < std::shared_ptr<fem_all::Beta>, std::vector<double> > ;
 
             // #endregion 型エイリアス
 
@@ -55,12 +55,9 @@ namespace thomasfermi {
 
             //! A public member function.
             /*!
-            計算結果をファイルに出力する
-            \param n Gauss-Legendreの分点
-            \param usecilk Intel® Cilk™ Plusを使うかどうか
-            \param usesimd SIMDを使うかどうか
+				計算結果をファイルに出力する
             */
-            void saveResult();
+            void saveresult();
 
             // #endregion publicメンバ関数
 
@@ -129,62 +126,68 @@ namespace thomasfermi {
                 エネルギーを計算するときの定数の値
             */
             double const alpha_;
+			
+			//! A private variable (constant).
+			/*!
+				x方向のメッシュが格納された動的配列
+			*/
+			std::vector<double> const xvec_;
 
-            //! A private variable (constant).
-            /*!
-                x方向のメッシュが格納された動的配列
-            */
-            std::vector<double> const xvec_;
+			//! A private variable (constant).
+			/*!
+				x方向のメッシュの刻み幅
+			*/
+			double const dx_;
 
-            //! A private variable (constant).
-            /*!
-                x方向のメッシュの刻み幅
-            */
-            double const dx_;
+			//! A private variable (constant).
+			/*!
+				Gauss-Legendreの積分を行うオブジェクト
+			*/
+			gausslegendre::Gauss_Legendre const gl_;
 
-            //! A private variable (constant).
-            /*!
-                Gauss-Legendreの積分を行うオブジェクト
-            */
-            gausslegendre::Gauss_Legendre const gl_;
+			//! A private variable (constant).
+			/*!
+				ファイル出力するときのループの最大数
+			*/
+			std::int32_t const max_;
 
-            //! A private variable.
-            /*!
-                規格化のための定数
-                s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
-            */
-            double s_;
+			//! A private variable (constant).
+			/*!
+				ファイル出力ストリーム
+			*/
+			std::ofstream ofs_;
 
-            //! A private variable (constant).
-            /*!
-                SIMDを使うかどうか
-            */
-            bool const usesimd_;
+			//! A private variable (constant).
+			/*!
+				Betaクラスのオブジェクトへのスマートポインタ
+			*/
+			std::shared_ptr<fem_all::Beta> const pbeta_;
 
-            //! A private variable (constant).
-            /*!
-                ファイル出力するときのループの最大数
-            */
-            std::int32_t const max_;
+			//! A private variable.
+			/*!
+				規格化のための定数
+				s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
+			*/
+			double s_;
 
+			//! A private variable (constant).
+			/*!
+				x方向のメッシュが格納された動的配列のサイズ
+			*/
+			std::size_t const size_;
+			
+			//! A private variable (constant).
+			/*!
+				SIMDを使うかどうか
+			*/
+			bool const usesimd_;
+            
             //! A private variable (constant).
             /*!
                 原子番号
             */
             double const Z_;
-
-            //! A private variable (constant).
-            /*!
-                Betaクラスのオブジェクトへのスマートポインタ
-            */
-            std::shared_ptr<const fem_all::Beta> const pbeta_;
-
-            //! A private variable (constant).
-            /*!
-                x方向のメッシュが格納された動的配列のサイズ
-            */
-            std::size_t const size_;
-
+			            
             // #endregion メンバ変数
 
         private:

@@ -2,6 +2,7 @@
     \brief 狙い撃ち法により、y(x)を求めるクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
 */
 
 #ifndef _SHOOTF_H_
@@ -10,7 +11,7 @@
 #pragma once
 
 #include "load2.h"
-#include "../myfunctional/Functional.h"
+#include "../myfunctional/functional.h"
 #include <functional>						// for std::function
 #include <utility>							// for std::pair
 
