@@ -1,5 +1,5 @@
 ﻿/*! \file functional.h
-    \brief std::function<double (double)>の代わりになるクラス
+    \brief std::function<double (double)>の代わりになるクラスの宣言と実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 	This software is released under the BSD-2 License.
@@ -17,9 +17,9 @@ namespace myfunctional {
         std::function<double (double)>の代わりになるtemplate class
     */
     class Functional final {
-    public:
         // #region コンストラクタ・デストラクタ
 
+	public:
         //! A constructor.
         /*!
 			唯一のコンストラクタ

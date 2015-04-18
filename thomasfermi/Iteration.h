@@ -11,7 +11,7 @@
 #pragma once
 
 #include "foelement.h"
-#include "Linear_equations.h"
+#include "linearequations.h"
 #include "shoot/shootfunc.h"
 #include <boost/optional.hpp>	// for boost::optional
 
@@ -21,7 +21,7 @@ namespace thomasfermi {
 			// #region 型エイリアス
 
 		public:
-			using result_type = std::pair<FEM::dvector, std::shared_ptr<const Beta>>;
+			using result_type = std::pair<std::shared_ptr<Beta>, FEM::dvector>;
 
 			// #endregion 型エイリアス
 

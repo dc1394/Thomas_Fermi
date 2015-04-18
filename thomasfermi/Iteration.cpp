@@ -102,7 +102,7 @@ namespace thomasfermi {
 
 		Iteration::result_type Iteration::makeresult()
 		{
-			return std::make_pair(std::move(x_), std::move(pbeta_));
+			return std::make_pair(std::move(pbeta_), std::move(x_));
 		}
 
 		// #endregion publicメンバ関数

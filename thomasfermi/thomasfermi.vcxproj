@@ -84,11 +84,16 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\Composer XE 2013\mkl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\mylib64\alglib\include;C:\Program Files (x86)\Intel\Composer XE 2015\mkl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <OpenMP>GenerateParallelCode</OpenMP>
+      <WarningLevel>Level5</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>alglib_debug.lib;mkl_intel_c.lib;mkl_core.lib;mkl_intel_thread.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\mylib64\alglib\lib\ia32;C:\Program Files (x86)\Intel\Composer XE 2015\mkl\lib\ia32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -180,7 +185,7 @@
     <ClCompile Include="foelement.cpp" />
     <ClCompile Include="gausslegendre\gausslegendre.cpp" />
     <ClCompile Include="iteration.cpp" />
-    <ClCompile Include="Linear_equations.cpp" />
+    <ClCompile Include="linearequations.cpp" />
     <ClCompile Include="makerhoen\makerhoenergy.cpp" />
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
@@ -194,7 +199,7 @@
     <ClInclude Include="foelement.h" />
     <ClInclude Include="gausslegendre\gausslegendre.h" />
     <ClInclude Include="iteration.h" />
-    <ClInclude Include="Linear_equations.h" />
+    <ClInclude Include="linearequations.h" />
     <ClInclude Include="makerhoen\makerhoenergy.h" />
     <ClInclude Include="mkl_allocator.h" />
     <ClInclude Include="myfunctional\functional.h" />

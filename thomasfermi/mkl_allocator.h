@@ -1,59 +1,125 @@
-﻿#ifndef _MKL_ALLOCATOR_H_
+﻿/*! \file mkl_allocator.h
+	\brief MKL用のアロケータクラスの宣言と実装
+
+	Copyright ©  2015 @dc1394 All Rights Reserved.
+	This software is released under the BSD-2 License.
+*/
+
+
+#ifndef _MKL_ALLOCATOR_H_
 #define _MKL_ALLOCATOR_H_
 
-#ifdef _MSC_VER
-	#pragma once
-#endif
+#pragma once
 
-#include <new>
-#include <limits>
-#include <cstddef>
-#include <cstdint>
-#include <mkl.h>
+#include <cstddef>	// for std::ptrdiff_t
+#include <new>		// for placement new,std::bad_alloc
+#include <limits>	// for std::numeric_limits
+#include <mkl.h>	// for mkl_allocator
 
 namespace thomasfermi {
 	template <typename T>
-	class mkl_allocator
-	{
-	public:
-		// typedefs
-		typedef std::size_t size_type;
-		typedef std::ptrdiff_t difference_type;
-		typedef T * pointer;
-		typedef const T * const_pointer;
-		typedef T & reference;
-		typedef const T & const_reference;
-		typedef T value_type;
+	//! A class.
+	/*!
+		MKL用のアロケータクラス
+	*/
+	struct mkl_allocator {
+		// #region 型エイリアス
+
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using pointer = T *;
+		using const_pointer = const T *;
+		using reference = T &;
+		using const_reference = const T &;
+		using value_type = T;
 			
-		// convert an allocator<T> to allocator<U>
-		template <class U> 
-		struct rebind { typedef mkl_allocator<U> other; };
+		// #endregion 型エイリアス
 
-		// constructors
-		mkl_allocator() noexcept {}
-		mkl_allocator(mkl_allocator const &) noexcept {}
+		// #region 構造体内構造体
+
+		template <class U>
+		//! A templater struct.
+		/*!
+			convert an allocator<T> to allocator<U>
+		*/
+		struct rebind {
+			typedef mkl_allocator<U> other;
+		};
+		
+		// #endregion 構造体内構造体
+
+		// #region コンストラクタ・デストラクタ
+		
+		//! A constructor.
+		/*!
+			デフォルトコンストラクタ
+		*/
+		mkl_allocator() noexcept = default;
+		
+		//! A constructor.
+		/*!
+			デフォルトコピーコンストラクタ
+		*/
+		mkl_allocator(mkl_allocator const &) noexcept = default;
+
 		template <typename U>
-		mkl_allocator(mkl_allocator<U> const &) noexcept {}
+		//! A constructor (template).
+		/*!
+			コピーコンストラクタ
+		*/
+		mkl_allocator(mkl_allocator<U> const &) noexcept
+		{
+		}
 
-		// destructor
-		~mkl_allocator() noexcept {}
+		//! A destructor.
+		/*!
+			デフォルトデストラクタ
+		*/
+		~mkl_allocator() noexcept = default;
 
-		// メモリを割り当てる
-		pointer allocate(size_type size, const_pointer hint = 0) {
-			void * const p = mkl_malloc(size * sizeof(T), 64);
-			if (!p)
+		// #endregion コンストラクタ・デストラクタ
+
+		// #region メンバ関数
+
+		//! A public member function.
+		/*!
+			メモリを割り当てる
+			\param size 割り当てるメモリのサイズ
+			\param hint 未使用
+			\return 割り当てたメモリの先頭アドレス
+		*/
+		pointer allocate(size_type size, const_pointer hint = 0)
+		{
+			auto const p = mkl_malloc(size * sizeof(T), 64);
+			
+			if (!p) {
 				throw std::bad_alloc();
+			}
 
 			return reinterpret_cast<pointer>(p);
 		}
 
-		// 割当て済みの領域を初期化する
+		//! A public member function.
+		/*!
+			割当て済みの領域を初期化する
+			\param p 割り当て済みのメモリの先頭アドレス
+			\param val 初期化に使う値
+		*/
 		void construct(pointer p, const T & val)
-		{ new (reinterpret_cast<void *>(p)) T(val);	}
+		{
+			new (reinterpret_cast<void *>(p)) T(val);
+		}
 
-		// メモリを解放する
+		//! A public member function.
+		/*!
+			割り当て済みのメモリを解放する
+			\param p 割り当て済みのメモリの先頭アドレス
+			\param n 未使用 
+		*/
 		void deallocate(pointer p, size_type n)
-		{ mkl_free(reinterpret_cast<void *>(p)); }
+		{
+			mkl_free(reinterpret_cast<void *>(p));
+		}
 
 		// 初期化済みの領域を削除する
 		void destroy(pointer p)
