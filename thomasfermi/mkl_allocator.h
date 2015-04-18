@@ -5,7 +5,6 @@
 	This software is released under the BSD-2 License.
 */
 
-
 #ifndef _MKL_ALLOCATOR_H_
 #define _MKL_ALLOCATOR_H_
 
@@ -121,19 +120,48 @@ namespace thomasfermi {
 			mkl_free(reinterpret_cast<void *>(p));
 		}
 
-		// 初期化済みの領域を削除する
+		//! A public member function.
+		/*!
+			初期化済みの領域を削除する
+			\param p 初期化済みの領域の先頭アドレス
+		*/
 		void destroy(pointer p)
-		{ p->~T(); }
+		{
+			p->~T();
+		}
 
-		// アドレスを返す
+		//! A public member function (const).
+		/*!
+			アドレスを返す
+			\param value アドレスを返す対象の変数
+			\return アドレス
+		*/
 		pointer address(reference value) const
-		{ return &value; }
+		{
+			return &value;
+		}
+
+		//! A public member function (const).
+		/*!
+			アドレスを返す（constポインタバージョン）
+			\param value アドレスを返す対象の変数
+			\return アドレス
+		*/
 		const_pointer address(const_reference value) const
-		{ return &value; }
+		{
+			return &value;
+		}
 		
-		// 割当てることができる最大の要素数を返す
+		//! A public member function (const).
+		/*!
+			割当てることができる最大の要素数を返す
+			\return 割当てることができる最大の要素数
+		*/
+
 		size_type max_size() const noexcept
-		{ return (std::numeric_limits<std::size_t>::max()) / sizeof(T); }
+		{
+			return (std::numeric_limits<std::size_t>::max()) / sizeof(T);
+		}
 	};
 
 	template <typename T, typename U>

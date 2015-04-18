@@ -4,12 +4,12 @@
     Copyright ©  2014 @dc1394 All Rights Reserved.
 	This software is released under the BSD-2 License.
 */
+
 #ifndef _BETA_H_
 #define _BETA_H_
 
 #pragma once
 
-#include "mkl_allocator.h"
 #include <vector>			// for std::vector
 
 namespace thomasfermi {
@@ -25,11 +25,12 @@ namespace thomasfermi {
 
             //! A constructor.
             /*!
+				コンストラクタ
                 \param xvec x方向のメッシュ
                 \param yvec y方向のメッシュ
             */
-            Beta(const std::vector<double> & xvec, const std::vector<double> & yvec) :
-				size_(xvec.size()), xvec_(xvec), yvec_(yvec) {}
+			Beta(std::vector<double> const & xvec, std::vector<double> const & yvec);
+			
 
             //! A destructor.
             /*!
