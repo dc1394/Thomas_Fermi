@@ -73,7 +73,7 @@ namespace thomasfermi {
 		
 		void Iteration::Iterationloop()
 		{
-			std::int32_t cnt = 0;
+			auto cnt = 0;
 			auto scferr = Iteration::ITERATION_THRESHOLD;
 			double scferrbefore;
 			do {

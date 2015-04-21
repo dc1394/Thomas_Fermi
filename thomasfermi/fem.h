@@ -80,7 +80,7 @@ namespace thomasfermi {
 				βの状態をリセットする
 				\param beta 対象のβ
 			*/
-			void reset(const dvector & beta);
+			void reset(dvector const & beta);
 			
 			//! A public member function.
 			/*!

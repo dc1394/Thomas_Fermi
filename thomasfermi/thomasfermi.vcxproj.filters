@@ -45,82 +45,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="shoot\load2.cpp">
-      <Filter>ソース ファイル\shoot</Filter>
-    </ClCompile>
-    <ClCompile Include="shoot\shootf.cpp">
-      <Filter>ソース ファイル\shoot</Filter>
-    </ClCompile>
-    <ClCompile Include="shoot\shootfunc.cpp">
-      <Filter>ソース ファイル\shoot</Filter>
-    </ClCompile>
-    <ClCompile Include="gausslegendre\gausslegendre.cpp">
-      <Filter>ソース ファイル\gausslegendre</Filter>
-    </ClCompile>
-    <ClCompile Include="makerhoen\makerhoenergy.cpp">
-      <Filter>ソース ファイル\makerhoen</Filter>
-    </ClCompile>
-    <ClCompile Include="beta.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="fem.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="iteration.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="linearequations.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="thomasfermimain.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="foelement.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="shoot\load2.h">
-      <Filter>ヘッダー ファイル\shoot</Filter>
-    </ClInclude>
-    <ClInclude Include="shoot\shootf.h">
-      <Filter>ヘッダー ファイル\shoot</Filter>
-    </ClInclude>
-    <ClInclude Include="shoot\shootfunc.h">
-      <Filter>ヘッダー ファイル\shoot</Filter>
-    </ClInclude>
-    <ClInclude Include="gausslegendre\gausslegendre.h">
-      <Filter>ヘッダー ファイル\gausslegendre</Filter>
-    </ClInclude>
-    <ClInclude Include="makerhoen\makerhoenergy.h">
-      <Filter>ヘッダー ファイル\makerhoen</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\C++\DirectX\SchracVisualize\utility\property.h">
-      <Filter>ヘッダー ファイル\utility</Filter>
-    </ClInclude>
-    <ClInclude Include="myfunctional\functional.h">
-      <Filter>ヘッダー ファイル\myfunctional</Filter>
-    </ClInclude>
-    <ClInclude Include="beta.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="fem.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="foelement.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="iteration.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="linearequations.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="mkl_allocator.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="result\result2.plt">
       <Filter>result</Filter>
     </None>
@@ -136,5 +60,84 @@
     <None Include="Document\Thomas-Fermi方程式のFEMによる解法.pptx">
       <Filter>ドキュメント</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="thomasfermimain.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="gausslegendre\gausslegendre.cpp">
+      <Filter>ソース ファイル\gausslegendre</Filter>
+    </ClCompile>
+    <ClCompile Include="makerhoen\makerhoenergy.cpp">
+      <Filter>ソース ファイル\makerhoen</Filter>
+    </ClCompile>
+    <ClCompile Include="beta.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="shoot\load2.cpp">
+      <Filter>ソース ファイル\shoot</Filter>
+    </ClCompile>
+    <ClCompile Include="shoot\shootf.cpp">
+      <Filter>ソース ファイル\shoot</Filter>
+    </ClCompile>
+    <ClCompile Include="shoot\shootfunc.cpp">
+      <Filter>ソース ファイル\shoot</Filter>
+    </ClCompile>
+    <ClCompile Include="fem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="foelement.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="iteration.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="linearequations.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="gausslegendre\gausslegendre.h">
+      <Filter>ヘッダー ファイル\gausslegendre</Filter>
+    </ClInclude>
+    <ClInclude Include="makerhoen\makerhoenergy.h">
+      <Filter>ヘッダー ファイル\makerhoen</Filter>
+    </ClInclude>
+    <ClInclude Include="beta.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="shoot\load2.h">
+      <Filter>ヘッダー ファイル\shoot</Filter>
+    </ClInclude>
+    <ClInclude Include="shoot\shootf.h">
+      <Filter>ヘッダー ファイル\shoot</Filter>
+    </ClInclude>
+    <ClInclude Include="shoot\shootfunc.h">
+      <Filter>ヘッダー ファイル\shoot</Filter>
+    </ClInclude>
+    <ClInclude Include="myfunctional\functional.h">
+      <Filter>ヘッダー ファイル\myfunctional</Filter>
+    </ClInclude>
+    <ClInclude Include="fem.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="foelement.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="iteration.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="utility\deleter.h">
+      <Filter>ヘッダー ファイル\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="utility\property.h">
+      <Filter>ヘッダー ファイル\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="mkl_allocator.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="linearequations.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

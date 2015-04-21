@@ -145,7 +145,7 @@ namespace thomasfermi {
 
 			BOOST_ASSERT(xptmp.size() == yp.size());
 
-            alglib::spline1dinterpolant spline;
+/*            alglib::spline1dinterpolant spline;
             alglib::real_1d_array x, y;
 
             x.setcontent(xptmp.size(), xptmp.data());
@@ -166,7 +166,7 @@ namespace thomasfermi {
                         yp,
 				        [&, s](double x) { return std::fabs(x - res2[s - 2]) < EPS; })));
 
-            yp.insert(iter2, alglib::spline1dcalc(spline, xf));
+            yp.insert(iter2, alglib::spline1dcalc(spline, xf))*/;
 
 			BOOST_ASSERT(xp.size() == yp.size());
 

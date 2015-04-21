@@ -12,7 +12,8 @@
 #pragma once
 
 #include "shootfunc.h"
-#include <interpolation.h>
+#include "../utility/deleter.h"
+#include <memory>				// for std::unique_ptr
 
 namespace thomasfermi {
 	namespace shoot {
@@ -83,32 +84,38 @@ namespace thomasfermi {
             /*!
                 無限遠点における関数値とその微分値を求めるときに使う定数λ
             */
-            static double constexpr Lambda = 3.886;
+            static auto constexpr LAMBDA = 3.886;
 
             //! A public member variable (constant expression).
             /*!
                 補間と近似表式を切り替える時の閾値
             */
-            static double constexpr Threshold = 65.0;
+            static auto constexpr THRESHOLD = 65.0;
 
             //! A public member variable (constant expression).
             /*!
                 無限遠点における関数値とその微分値を求めるときに使う定数k
             */
-            static double constexpr K = 0.190785707092222;
+            static auto constexpr K = 0.190785707092222;
 
             //! A public member variable (constant expression).
             /*!
                 補間のために使う動的配列のサイズ
             */
-			static std::size_t constexpr Xysize = 150;
+			static auto constexpr XYSIZE = 150;
 
         private:
-            //! A private member variable.
-            /*!
-                Spline補間のために使う
-            */
-            alglib::spline1dinterpolant s;
+			//! A private member variable.
+			/*!
+				gsl_interp_accelへのスマートポインタ
+			*/
+			std::unique_ptr<gsl_interp_accel, decltype(utility::gsl_interp_accel_deleter)> const acc_;
+
+			//! A private member variable.
+			/*!
+				gsl_splineへのスマートポインタ
+			*/
+			std::unique_ptr<gsl_spline, decltype(utility::gsl_spline_deleter)> const spline_;
 
             // #endregion メンバ変数
 		};

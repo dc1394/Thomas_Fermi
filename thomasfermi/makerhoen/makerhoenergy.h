@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "../Beta.h"
+#include "../beta.h"
 #include "../gausslegendre/gausslegendre.h"
 #include <cstdint>                              // for std::int32_t
 #include <fstream>                              // for std::ofstream

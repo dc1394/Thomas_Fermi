@@ -6,8 +6,6 @@
 	This software is released under the BSD-2 License.
 */
 
-#define _ITERATOR_DEBUG_LEVEL 0
-
 #include "fem.h"
 #include <cstdint>						// for std::uint32_t
 #include <utility>						// for std::move
@@ -50,7 +48,7 @@ namespace thomasfermi {
 			return std::make_tuple(a1_, a2_, b_);
 		}
 
-		void FEM::reset(const dvector & beta)
+		void FEM::reset(dvector const & beta)
 		{
 			pbeta_.reset();
 			pbeta_ = std::make_shared<Beta>(coords_, beta);
@@ -77,7 +75,7 @@ namespace thomasfermi {
 				{
 					amerge(ielem);
 
-					dvector const c(getc(ielem));
+					auto const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
 					{
 						b_[lnods_[i][ielem]] += c[i];
@@ -150,8 +148,8 @@ namespace thomasfermi {
 					astiff_[i][j] = 0.0;
 
 			for (auto ir = 0U; ir < nint_; ir++) {
-				const dvector dndr(getdndr());
-				double ajacob = 0.0;
+				auto const dndr(getdndr());
+				auto ajacob = 0.0;
 
 				for (auto i = 0U; i < ntnoel_; i++) {
 					ajacob += dndr[i] * coords_[lnods_[i][ielem]];
