@@ -145,16 +145,15 @@ namespace thomasfermi {
 
 			BOOST_ASSERT(xptmp.size() == yp.size());
 
-/*            alglib::spline1dinterpolant spline;
-            alglib::real_1d_array x, y;
+			std::unique_ptr<gsl_interp_accel, decltype(utility::gsl_interp_accel_deleter)>
+				const acc(gsl_interp_accel_alloc(), utility::gsl_interp_accel_deleter);
+			std::unique_ptr<gsl_spline, decltype(utility::gsl_spline_deleter)>
+				const spline(gsl_spline_alloc(gsl_interp_cspline, yp.size()), utility::gsl_spline_deleter);
 
-            x.setcontent(xptmp.size(), xptmp.data());
-            y.setcontent(yp.size(), yp.data());
+			gsl_spline_init(spline.get(), xptmp.data(), yp.data(), xptmp.size());
 
-            alglib::spline1dbuildakima(x, y, spline);
-			
 			for (auto i = 0U; i < size; i++) {
-				xp.push_back(i ? static_cast<double>(i)* dx_ : x1);
+				xp.push_back(i ? static_cast<double>(i) * dx_ : x1);
 			}
 
 			auto iter2 = yp.begin();
@@ -166,7 +165,7 @@ namespace thomasfermi {
                         yp,
 				        [&, s](double x) { return std::fabs(x - res2[s - 2]) < EPS; })));
 
-            yp.insert(iter2, alglib::spline1dcalc(spline, xf))*/;
+			yp.insert(iter2, gsl_spline_eval(spline.get(), xf, acc.get()));
 
 			BOOST_ASSERT(xp.size() == yp.size());
 

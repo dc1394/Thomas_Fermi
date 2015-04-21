@@ -20,7 +20,7 @@
 #include "mkl_allocator.h"
 #include "utility/property.h"
 #include <functional>					// for std::function
-#include <memory>						// for std::shared_ptr
+#include <memory>						// for std::unique_ptr, std::shared_ptr
 #include <tuple>						// for std::tuple
 #include <vector>						// for std::vector
 #include <boost/multi_array.hpp>		// for boost::multi_array
@@ -167,6 +167,12 @@ namespace thomasfermi {
 
 			// #region メンバ変数
 			
+		protected:
+			//! A protected member variable (constant).
+			/*!
+			*/
+			std::size_t const nnode_;
+
 		private:
 			//! A private member variable.
 			/*!
@@ -181,11 +187,6 @@ namespace thomasfermi {
 			//! A private member variable.
 			/*!
 			*/
-			dmatrix astiff_;
-
-			//! A private member variable.
-			/*!
-			*/
 			dmklvector b_;
 
 			//! A private member variable (constant).
@@ -193,6 +194,11 @@ namespace thomasfermi {
 				関数β
 			*/
 			dvector const beta_;
+			
+			//! A private member variable.
+			/*!
+			*/
+			std::unique_ptr<dmatrix> pastiff_;
 
 		protected:
 			//! A protected member variable (constant).
@@ -215,22 +221,12 @@ namespace thomasfermi {
 			//! A protected member variable.
 			/*!
 			*/
-			boost::multi_array<std::size_t, 2> lnods_;
-
-			//! A protected member variable.
-			/*!
-			*/
 			std::size_t nelem_;
 			
 			//! A protected member variable (constant).
 			/*!
 			*/
 			std::size_t const nint_;
-
-			//! A protected member variable (constant).
-			/*!
-			*/
-			std::size_t const nnode_;
 
 			//! A protected member variable.
 			/*!
@@ -242,6 +238,11 @@ namespace thomasfermi {
 				βオブジェクトへのスマートポインタ
 			*/
 			std::shared_ptr<Beta> pbeta_;
+			
+			//! A protected member variable.
+			/*!
+			*/
+			std::unique_ptr<boost::multi_array<std::size_t, 2>> plnods_;
 
 			//! A protected member variable.
 			/*!

@@ -8,8 +8,7 @@ int main()
 	//CheckPoint::ChkPoint cp("処理開始", __LINE__);
 	try {
 
-		thomasfermi::femall::Iteration iter(0.3, 0.001, 1000, 1.0E-12, false, false, 1.0E-5, 20.0, 5.0);
-		
+		thomasfermi::femall::Iteration iter(0.3, 0.01, 1000, 1.0E-12, false, false, 1.0E-5, 20.0, 5.0);
 
 		//cp.checkpoint("初期関数生成処理", __LINE__);
 

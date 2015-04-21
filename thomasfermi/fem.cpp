@@ -23,6 +23,7 @@ namespace thomasfermi {
 			Nnode([this] { return nnode_; }, nullptr),
 			Ntnoel([this] { return ntnoel_; }, nullptr),
 			PBeta([this] { return pbeta_; }, nullptr),
+			nnode_(coords.size()),
 			a1_(nnode_, 0.0),
 			a2_(nnode_ - 1, 0.0),
 			b_(nnode_, 0.0),
@@ -31,7 +32,6 @@ namespace thomasfermi {
 			func_([this](double x) { return (*pbeta_)(x); }),
 			gl_(nint),
 			nint_(nint),
-			nnode_(coords.size()),
 			pbeta_(std::make_shared<Beta>(coords_, beta_)),
 			usesimd_(usesimd),
 			usetbb_(usetbb)
@@ -78,7 +78,7 @@ namespace thomasfermi {
 					auto const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
 					{
-						b_[lnods_[i][ielem]] += c[i];
+						b_[(*plnods_)[i][ielem]] += c[i];
 					}
 				},
 					tbb::auto_partitioner());
@@ -89,7 +89,7 @@ namespace thomasfermi {
 
 					dvector const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
-						b_[lnods_[i][ielem]] += c[i];
+						b_[(*plnods_)[i][ielem]] += c[i];
 				}
 			}
 		}
@@ -107,7 +107,7 @@ namespace thomasfermi {
 				{
 					dvector const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
-						b_[lnods_[i][ielem]] += c[i];
+						b_[(*plnods_)[i][ielem]] += c[i];
 				},
 					tbb::auto_partitioner());
 			}
@@ -115,7 +115,7 @@ namespace thomasfermi {
 				for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					dvector const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
-						b_[lnods_[i][ielem]] += c[i];
+						b_[(*plnods_)[i][ielem]] += c[i];
 				}
 			}
 		}
@@ -126,8 +126,8 @@ namespace thomasfermi {
 
 		void FEM::initialize()
 		{
-			astiff_.resize(boost::extents[ntnoel_][ntnoel_]);
-			lnods_.resize(boost::extents[ntnoel_][nelem_]);
+			pastiff_.reset(new dmatrix(boost::extents[ntnoel_][ntnoel_]));
+			plnods_.reset(new boost::multi_array<std::size_t, 2>(boost::extents[ntnoel_][nelem_]));
 		}
 
 		// #endregion protectedメンバ関数
@@ -136,23 +136,23 @@ namespace thomasfermi {
 
 		void FEM::amerge(std::size_t ielem)
 		{
-			a1_[ielem] += astiff_[0][0];
-			a1_[ielem + 1] += astiff_[1][1];
-			a2_[ielem] = astiff_[0][1];
+			a1_[ielem] += (*pastiff_)[0][0];
+			a1_[ielem + 1] += (*pastiff_)[1][1];
+			a2_[ielem] = (*pastiff_)[0][1];
 		}
 
 		void FEM::element(std::size_t ielem)
 		{
 			for (auto i = 0U; i < ntnoel_; i++)
 				for (auto j = 0U; j < ntnoel_; j++)
-					astiff_[i][j] = 0.0;
+					(*pastiff_)[i][j] = 0.0;
 
 			for (auto ir = 0U; ir < nint_; ir++) {
 				auto const dndr(getdndr());
 				auto ajacob = 0.0;
 
 				for (auto i = 0U; i < ntnoel_; i++) {
-					ajacob += dndr[i] * coords_[lnods_[i][ielem]];
+					ajacob += dndr[i] * coords_[(*plnods_)[i][ielem]];
 				}
 
 				auto const detjac = ajacob;
@@ -166,7 +166,7 @@ namespace thomasfermi {
 				auto const detwei = detjac * gl_.W()[ir];
 				for (auto i = 0U; i < ntnoel_; i++) {
 					for (auto j = 0U; j < ntnoel_; j++) {
-						astiff_[i][j] += detwei * dndx[i] * dndx[j];
+						(*pastiff_)[i][j] += detwei * dndx[i] * dndx[j];
 					}
 				}
 			}
