@@ -93,14 +93,14 @@ namespace thomasfermi {
             }
             else {
                 double df_dx, dummy, dummy2;
-                alglib::spline1ddiff(s, x2, df_dx, dummy, dummy2);
+                alglib::spline1ddiff(s, x2, dummy, df_dx, dummy2);
                 v2 = df_dx;
             }
             
             return v2;
         }
 
-        shootfunc::state_type load2::operator()(double v2, double x2) const
+        shootfunc::state_type load2::operator()(double x2, double v2) const
         {
             shootfunc::state_type y = { (x2 > load2::Threshold ? load2::y0(x2) : alglib::spline1dcalc(s, x2)), v2 };
             return y;

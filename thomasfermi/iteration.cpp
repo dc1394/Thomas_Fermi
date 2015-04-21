@@ -39,12 +39,12 @@ namespace thomasfermi {
 				shootfunc::V1,
 				l2.make_v2(x2));
 			
-			shootf::result_type xyvtuple(s(x1, x2, xf));
-			y1_ = std::get<1>(xyvtuple)[0];
-			y2_ = std::get<1>(xyvtuple).back();
+			shootf::result_type xytuple(s(x1, x2, xf));
+			y1_ = std::get<1>(xytuple)[0];
+			y2_ = std::get<1>(xytuple).back();
 			
-			x_ = std::get<0>(xyvtuple);
-			y_ = ybefore_ = FEM::dmklvector(std::get<1>(xyvtuple).begin(), std::get<1>(xyvtuple).end());
+			x_ = std::get<0>(xytuple);
+			y_ = ybefore_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
 
 			pfem_.reset(new femall::FOElement(make_beta(), x_, n, usesimd_, usetbb_));
 			pfem_->stiff();

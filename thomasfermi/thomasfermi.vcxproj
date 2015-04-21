@@ -182,6 +182,7 @@
   <ItemGroup>
     <ClCompile Include="beta.cpp" />
     <ClCompile Include="fem.cpp" />
+    <ClCompile Include="foelement.cpp" />
     <ClCompile Include="gausslegendre\gausslegendre.cpp" />
     <ClCompile Include="iteration.cpp" />
     <ClCompile Include="linearequations.cpp" />
@@ -189,6 +190,7 @@
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
+    <ClCompile Include="thomasfermimain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\C++\DirectX\SchracVisualize\utility\property.h" />

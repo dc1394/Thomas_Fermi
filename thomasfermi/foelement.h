@@ -67,25 +67,25 @@ namespace thomasfermi {
 			/*!
 				関数オブジェクト
 			*/
-			std::function<double(double, double, std::size_t)> const fun1_;
+			std::function<double(double, double, std::size_t)> fun1_;
 
 			//! A private member variable (constant).
 			/*!
 				関数オブジェクト
 			*/
-			std::function<double(double, double, std::size_t)> const fun2_;
+			std::function<double(double, double, std::size_t)> fun2_;
 
 			//! A private member variable (constant).
 			/*!
 				関数オブジェクト
 			*/
-			std::function<double (double)> const N1_;
+			std::function<double (double)> N1_;
 			
 			//! A private member variable (constant).
 			/*!
 				関数オブジェクト
 			*/
-			std::function<double (double)> const N2_;
+			std::function<double (double)> N2_;
 
 			// #region 禁止されたコンストラクタ・メンバ関数
 

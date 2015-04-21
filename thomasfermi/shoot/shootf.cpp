@@ -36,14 +36,14 @@ namespace thomasfermi {
 
 			using namespace boost::numeric::odeint;
 
-			bulirsch_stoer<shootfunc::state_type> stepper(eps_, eps_);
+			using stepper_type = adams_bashforth_moulton<2, shootfunc::state_type >;
 
 			auto y1 = load1_(x1, v1_);					         // 最良の仮の値v1_でx1からxfまで解いていく
-			integrate_const(stepper, shootfunc::rhs, y1, x1, xf, dx_);
+			integrate_const(stepper_type(), shootfunc::rhs, y1, x1, xf, dx_);
 			auto const f1(score_(y1));
 		
 			auto y2 = load2_(x2, v2_);					        // 最良の仮の値v2_でx2からxfまで解いていく			
-			integrate_const(stepper, shootfunc::rhs, y2, x2, xf, - dx_);
+			integrate_const(stepper_type(), shootfunc::rhs, y2, x2, xf, - dx_);
 			auto const f2(score_(y2));
 
 			boost::numeric::ublas::matrix<double> dfdv(shootfunc::NVAR, shootfunc::NVAR);
@@ -53,8 +53,8 @@ namespace thomasfermi {
                 auto const sav = v1_;
                 v1_ += delv1_;
 
-                auto y = load1_(v1_, x1);
-                integrate_const(stepper, shootfunc::rhs, y, x1, xf, dx_);
+                auto y = load1_(x1, v1_);
+                integrate_const(stepper_type(), shootfunc::rhs, y, x1, xf, dx_);
                 auto const f = score_(y);
 
                 for (auto i = 0U; i < shootfunc::NVAR; i++)		// NVAR個の合致条件にある偏微分を数値的に計算
@@ -68,11 +68,11 @@ namespace thomasfermi {
 				auto const sav = v2_;
 				v2_ += delv2_;
 
-				auto y = load2_(v2_, x2);
-				integrate_const(stepper, shootfunc::rhs, y, x2, xf, - dx_);
+				auto y = load2_(x2, v2_);
+				integrate_const(stepper_type(), shootfunc::rhs, y, x2, xf, - dx_);
 				auto const f = score_(y);
 
-				for (std::size_t i = 0; i < shootfunc::NVAR; i++)
+				for (auto i = 0U; i < shootfunc::NVAR; i++)
 					dfdv(i, 1) = (f2[i] - f[i]) / delv2_;
 			
 				v2_ = sav;
@@ -92,27 +92,27 @@ namespace thomasfermi {
 
             v2_ += ff[1];                                               // x2の境界でのパラメータ値の増分
 
-			y1 = load1_(v1_, x1);
+			y1 = load1_(x1, v1_);
 
 			dvector res1;
 			
             res1.reserve(boost::numeric_cast<std::size_t>((xf - x1) / dx_) + 2);
 			
             // 得られた条件でx1...dxまで微分方程式を解く
-			integrate_const(stepper, shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](shootfunc::state_type const & y, double const x)
-			{ res1.push_back(y[0]); });									// x1...dxの結果を得る
+			integrate_const(stepper_type(), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](shootfunc::state_type const & y, double const x)
+			{ res1.push_back(y[0]);	});									// x1...dxの結果を得る
 			res1.pop_back();
 
 			// 得られた条件でdx...xfまで微分方程式を解く
-			integrate_const(stepper, shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](shootfunc::state_type const & y, double const x)
+			integrate_const(stepper_type(), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](shootfunc::state_type const & y, double const x)
 			{ res1.push_back(y[0]); });									// dx...xf + x1の結果を得る
-			
+
 			// 得られた条件でx2...xfまで微分方程式を解く
-			y2 = load2_(v2_, x2);								
+			y2 = load2_(x2, v2_);								
 			
             dvector res2;
 			res2.reserve(boost::numeric_cast<std::size_t>((x2 - xf) / dx_) + 1);
-			integrate_const(stepper, shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](const shootfunc::state_type & y, const double x)
+			integrate_const(stepper_type(), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](const shootfunc::state_type & y, const double x)
 			{ res2.push_back(y[0]); });									// x2...xf - x1の結果を得る
 
             return createResult(res1, res2, x1, xf);
@@ -138,7 +138,6 @@ namespace thomasfermi {
 			}
 
 			yp.assign(res1.begin(), res1.end() - 1);
-
 			auto const s = res2.size();
 			for (auto i = 1U; i < s; i++) {
 				yp.push_back(res2[s - i - 1]);
