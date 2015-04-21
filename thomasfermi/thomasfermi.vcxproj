@@ -180,28 +180,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="beta.cpp" />
-    <ClCompile Include="fem.cpp" />
-    <ClCompile Include="foelement.cpp" />
     <ClCompile Include="gausslegendre\gausslegendre.cpp" />
     <ClCompile Include="iteration.cpp" />
-    <ClCompile Include="linearequations.cpp" />
     <ClCompile Include="makerhoen\makerhoenergy.cpp" />
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
-    <ClCompile Include="thomasfermimain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\C++\DirectX\SchracVisualize\utility\property.h" />
-    <ClInclude Include="beta.h" />
-    <ClInclude Include="fem.h" />
-    <ClInclude Include="foelement.h" />
     <ClInclude Include="gausslegendre\gausslegendre.h" />
-    <ClInclude Include="iteration.h" />
-    <ClInclude Include="linearequations.h" />
     <ClInclude Include="makerhoen\makerhoenergy.h" />
-    <ClInclude Include="mkl_allocator.h" />
     <ClInclude Include="myfunctional\functional.h" />
     <ClInclude Include="shoot\load2.h" />
     <ClInclude Include="shoot\shootf.h" />

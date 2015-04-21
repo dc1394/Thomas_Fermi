@@ -26,7 +26,7 @@
 #include <boost/multi_array.hpp>		// for boost::multi_array
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
 		using namespace utility;
 
 		//! A class.

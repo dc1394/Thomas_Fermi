@@ -27,9 +27,9 @@ namespace thomasfermi {
 		using size_type = std::size_t;
 		using difference_type = std::ptrdiff_t;
 		using pointer = T *;
-		using const_pointer = const T *;
+		using const_pointer = T const *;
 		using reference = T &;
-		using const_reference = const T &;
+		using const_reference = T const &;
 		using value_type = T;
 			
 		// #endregion 型エイリアス
@@ -104,7 +104,7 @@ namespace thomasfermi {
 			\param p 割り当て済みのメモリの先頭アドレス
 			\param val 初期化に使う値
 		*/
-		void construct(pointer p, const T & val)
+		void construct(pointer p, T const & val)
 		{
 			new (reinterpret_cast<void *>(p)) T(val);
 		}
@@ -157,7 +157,6 @@ namespace thomasfermi {
 			割当てることができる最大の要素数を返す
 			\return 割当てることができる最大の要素数
 		*/
-
 		size_type max_size() const noexcept
 		{
 			return (std::numeric_limits<std::size_t>::max()) / sizeof(T);
@@ -165,12 +164,30 @@ namespace thomasfermi {
 	};
 
 	template <typename T, typename U>
-	inline bool operator ==(const mkl_allocator<T>&, const mkl_allocator<U>)
-	{ return true; }
+	//! A global function (template function).
+	/*!
+		operator==の宣言と実装
+		\param 未使用
+		\param 未使用
+		\return 左辺と右辺が等値かどうか
+	*/
+	inline bool operator ==(mkl_allocator<T> const &, const mkl_allocator<U>)
+	{
+		return true;
+	}
 
 	template <typename T, typename U>
-	inline bool operator !=(const mkl_allocator<T>&, const mkl_allocator<U>)
-	{ return false; }
+	//! A global function (template function).
+	/*!
+		operator!=の宣言と実装
+		\param 未使用
+		\param 未使用
+		\return 左辺と右辺が等値かどうか
+	*/
+	inline bool operator !=(mkl_allocator<T> const &, const mkl_allocator<U>)
+	{
+		return false;
+	}
 }
 
 #endif	// _MKL_ALLOCATOR_H_

@@ -13,7 +13,7 @@
 #include "fem.h"
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
 		//! A class.
 		/*!
 			一次要素のクラス

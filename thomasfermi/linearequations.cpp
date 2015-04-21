@@ -23,7 +23,7 @@
 //#pragma comment(lib, "liblapacke.lib")
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
 		// #region コンストラクタ
 
 		Linear_equations::Linear_equations(std::tuple<dvector, dvector, dvector> const & res) :

@@ -14,7 +14,7 @@
 #include <boost/utility/in_place_factory.hpp>	// for boost::in_place
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
 		// #region コンストラクタ・デストラクタ
 
 		Iteration::Iteration(double alpha, double dx, std::size_t n, double eps, bool usesimd, bool usetbb, double x1, double x2, double xf) :
@@ -46,7 +46,7 @@ namespace thomasfermi {
 			x_ = std::get<0>(xyvtuple);
 			y_ = ybefore_ = FEM::dmklvector(std::get<1>(xyvtuple).begin(), std::get<1>(xyvtuple).end());
 
-			pfem_.reset(new fem_all::FOElement(make_beta(), x_, n, usesimd_, usetbb_));
+			pfem_.reset(new femall::FOElement(make_beta(), x_, n, usesimd_, usetbb_));
 			pfem_->stiff();
 
 			i_bc_given_.reserve(Iteration::N_BC_GIVEN);

@@ -10,7 +10,7 @@
 #include "myfunctional/functional.h"
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
 		// #region コンストラクタ
 
 		FOElement::FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usesimd, bool usetbb) :

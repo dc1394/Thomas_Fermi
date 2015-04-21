@@ -17,7 +17,7 @@
 #include <tbb/task_scheduler_init.h>    // for tbb::task_scheduler_init
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
 		// #region コンストラクタ
 
 		FEM::FEM(dvector && beta, dvector const & coords, std::size_t nint, bool usesimd, bool usetbb) :

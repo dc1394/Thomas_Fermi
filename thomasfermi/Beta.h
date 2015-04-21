@@ -13,7 +13,7 @@
 #include <vector>			// for std::vector
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
         //! A class.
         /*!
             β(x)を計算するクラス

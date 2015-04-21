@@ -26,7 +26,7 @@ namespace thomasfermi {
 		class MakeRhoEnergy final {
             // #region 型エイリアス
 
-            using parameter_type = std::pair < std::shared_ptr<fem_all::Beta>, std::vector<double> > ;
+            using parameter_type = std::pair < std::shared_ptr<femall::Beta>, std::vector<double> > ;
 
             // #endregion 型エイリアス
 
@@ -161,7 +161,7 @@ namespace thomasfermi {
 			/*!
 				Betaクラスのオブジェクトへのスマートポインタ
 			*/
-			std::shared_ptr<fem_all::Beta> const pbeta_;
+			std::shared_ptr<femall::Beta> const pbeta_;
 
 			//! A private variable.
 			/*!

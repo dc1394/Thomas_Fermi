@@ -16,7 +16,7 @@
 #include <boost/optional.hpp>	// for boost::optional
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
 		class Iteration final {
 			// #region 型エイリアス
 

@@ -9,7 +9,7 @@
 #include <cstdint>	// for std::uint32_t
 
 namespace thomasfermi {
-	namespace fem_all {
+	namespace femall {
 		// #region コンストラクタ
 
 		Beta::Beta(std::vector<double> const & xvec, std::vector<double> const & yvec) :
