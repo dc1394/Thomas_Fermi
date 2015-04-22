@@ -30,7 +30,7 @@ namespace thomasfermi {
             Z_(Z)
         {
             auto const func = myfunctional::make_functional(
-                [&](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
+                [this](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
 
             s_ = 1.0 / gl_.qgauss(
                 func,
@@ -57,7 +57,7 @@ namespace thomasfermi {
         double MakeRhoEnergy::makeEnergy() const
         {
             auto const func = myfunctional::make_functional(
-                [&](double x) { return (*pbeta_)(x); });
+                [this](double x) { return (*pbeta_)(x); });
 
             auto const sum = gl_.qgauss(
                 func,

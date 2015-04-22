@@ -7,12 +7,10 @@
 */
 
 #include "fem.h"
-#include <cstdint>						// for std::uint32_t
-#include <utility>						// for std::move
-#include <boost/assert.hpp>				// for BOOST_ASSERT
-#include <tbb/parallel_for.h>           // for tbb::parallel_for
-#include <tbb/partitioner.h>            // for tbb::auto_partitioner
-#include <tbb/task_scheduler_init.h>    // for tbb::task_scheduler_init
+#include <cstdint>				// for std::uint32_t
+#include <utility>				// for std::move
+#include <boost/assert.hpp>		// for BOOST_ASSERT
+#include <cilk/cilk.h>			// for cilik_for
 
 namespace thomasfermi {
 	namespace femall {
@@ -65,23 +63,13 @@ namespace thomasfermi {
 				element(ielem);
 
 			if (usetbb_) {
-				tbb::task_scheduler_init init;
-
-				tbb::parallel_for(
-					std::uint32_t(0),
-					nelem_,
-					std::uint32_t(1),
-					[this](std::uint32_t ielem)
-				{
+				cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					amerge(ielem);
 
-					auto const c(getc(ielem));
+					dvector const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
-					{
 						b_[(*plnods_)[i][ielem]] += c[i];
-					}
-				},
-					tbb::auto_partitioner());
+				}
 			}
 			else {
 				for (auto ielem = 0U; ielem < nelem_; ielem++) {
@@ -97,19 +85,11 @@ namespace thomasfermi {
 		void FEM::stiff2()
 		{
 			if (usetbb_) {
-				tbb::task_scheduler_init init;
-
-				tbb::parallel_for(
-					std::uint32_t(0),
-					nelem_,
-					std::uint32_t(1),
-					[this](std::uint32_t ielem)
-				{
+				cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					dvector const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
 						b_[(*plnods_)[i][ielem]] += c[i];
-				},
-					tbb::auto_partitioner());
+				}
 			}
 			else {
 				for (auto ielem = 0U; ielem < nelem_; ielem++) {

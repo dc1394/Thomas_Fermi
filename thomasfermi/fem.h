@@ -62,7 +62,7 @@ namespace thomasfermi {
 			/*!
 				デストラクタ
 			*/
-			virtual ~FEM() = default;
+			virtual ~FEM() noexcept = default;
 			
 			// #endregion コンストラクタ・デストラクタ 
 
@@ -93,6 +93,11 @@ namespace thomasfermi {
 
 			*/
 			void stiff2();
+
+			std::shared_ptr<Beta> getpbeta() const
+			{
+				return pbeta_; 
+			}
 
 			// #endregion publicメンバ関数
 

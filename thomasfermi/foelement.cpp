@@ -14,20 +14,12 @@ namespace thomasfermi {
 		// #region コンストラクタ
 
 		FOElement::FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usesimd, bool usetbb) :
-			FEM(std::move(beta), coords, nint, usesimd, usetbb)
+			FEM(std::move(beta), coords, nint, usesimd, usetbb),
+			fun1_([this](double r, double xl, std::size_t ielem)
+			{ return -N1_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]]) * xl * 0.5; }),
+			fun2_([this](double r, double xl, std::size_t ielem)
+			{ return -N2_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]]) * xl * 0.5; })
 		{
-			auto const fun1tmp = [this](double r, double xl, std::size_t ielem)
-			{
-				return -N1_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]]) * xl * 0.5;
-			};
-			fun1_ = std::cref(fun1tmp);
-		
-			auto const fun2tmp = [this](double r, double xl, std::size_t ielem)
-			{
-				return -N2_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]]) * xl * 0.5;
-			};
-			fun2_ = std::cref(fun2tmp);
-
 			auto const N1tmp = [](double r) { return 0.5 * (1.0 - r); };
 			N1_ = std::cref(N1tmp);
 			

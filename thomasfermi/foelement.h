@@ -37,7 +37,7 @@ namespace thomasfermi {
 			/*!
 				デストラクタ
 			*/
-			virtual ~FOElement() = default;
+			~FOElement() noexcept override = default;
 
 			// #endregion コンストラクタ・デストラクタ 
 
@@ -67,13 +67,13 @@ namespace thomasfermi {
 			/*!
 				関数オブジェクト
 			*/
-			std::function<double(double, double, std::size_t)> fun1_;
+			std::function<double(double, double, std::size_t)> const fun1_;
 
 			//! A private member variable (constant).
 			/*!
 				関数オブジェクト
 			*/
-			std::function<double(double, double, std::size_t)> fun2_;
+			std::function<double(double, double, std::size_t)> const fun2_;
 
 			//! A private member variable (constant).
 			/*!

@@ -7,34 +7,32 @@ int main()
 {
 	//CheckPoint::ChkPoint cp("処理開始", __LINE__);
 	try {
-
-		thomasfermi::femall::Iteration iter(0.3, 0.01, 1000, 1.0E-12, false, false, 1.0E-5, 20.0, 5.0);
+		thomasfermi::femall::Iteration iter(0.4, 0.001, 1000, 1.0E-12, true, true, 1.0E-5, 50.0, 5.0);
 
 		//cp.checkpoint("初期関数生成処理", __LINE__);
 
 		iter.Iterationloop();
 
 		//cp.checkpoint("Iterationループ処理", __LINE__);
-
 		thomasfermi::makerhoen::MakeRhoEnergy mre(1000, iter.makeresult(), true, 1);
-		mre.saveresult();
+		//mre.saveresult();
 
 		//cp.checkpoint("結果出力処理", __LINE__);
-	} catch (const std::bad_alloc &) {
+	} catch (std::bad_alloc const &) {
 		std::cerr << "メモリ確保に失敗しました。強制終了します。" << std::endl;
 
 		std::cout << "終了するには何かキーを押してください..." ;
 		::_getch();
 
 		return EXIT_FAILURE;
-	} catch (const std::logic_error & e) {
+	} catch (std::logic_error const & e) {
 		std::cerr << e.what() << std::endl;
 
 		std::cout << "終了するには何かキーを押してください..." ;
 		::_getch();
 
 		return EXIT_FAILURE;
-	} catch (const std::runtime_error & e) {
+	} catch (std::runtime_error const & e) {
 		std::cerr << e.what() << std::endl;
 
 		std::cout << "終了するには何かキーを押してください..." ;
