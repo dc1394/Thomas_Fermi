@@ -9,7 +9,6 @@
 #include <cmath>                                // for std::pow
 #include <iostream>                             // for std::cout
 #include <utility>                              // for std::get
-#include <boost/assert.hpp>                     // for boost::assert
 #include <boost/cast.hpp>                       // for boost::numeric_cast
 #include <boost/format.hpp>                     // for boost::format
 #include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
@@ -45,6 +44,7 @@ namespace thomasfermi {
 
 		void MakeRhoEnergy::saveresult()
 		{
+			std::cout << boost::format("Energy = %.15f") % makeEnergy() << '\n';
 			saverho("rho.csv");
 			saverhoTilde("rhoTilde.csv");
 			savey("y.csv");
@@ -82,37 +82,31 @@ namespace thomasfermi {
 
         void MakeRhoEnergy::saverho(std::string const & filename)
         {
-            ofs_.open(filename);
+			fp_.reset(std::fopen(filename.c_str(), "w"));
 
             for (auto i = 1; i <= max_; i++) {
                 auto const r = static_cast<double>(i) * dx_;
-                ofs_ << r << ',' << rho(alpha_ * r);
+                std::fprintf(fp_.get(), "%.15f, %.15f\n", r, rho(alpha_ * r));
             }
-
-            ofs_.close();
         }
 
 		void MakeRhoEnergy::saverhoTilde(std::string const & filename)
         {
-            ofs_.open(filename);
+			fp_.reset(std::fopen(filename.c_str(), "w"));
 
             for (auto i = 1; i <= max_; i++) {
                 auto const r = static_cast<double>(i) * dx_;
-                ofs_ << r << ',' << rhoTilde(alpha_ * r) << '\n';
+				std::fprintf(fp_.get(), "%.15f, %.15f\n", r, rhoTilde(alpha_ * r));
             }
-
-            ofs_.close();
         }
                 
         void MakeRhoEnergy::savey(std::string const & filename)
         {
-            ofs_.open(filename);
+			fp_.reset(std::fopen(filename.c_str(), "w"));
 
 			for (auto x : xvec_) {
-				ofs_ << x << ',' << y(x) << '\n';
+				std::fprintf(fp_.get(), "%.15f, %.15f\n", x, y(x));
 			}
-
-            ofs_.close();
         }
 
         double MakeRhoEnergy::y(double x) const

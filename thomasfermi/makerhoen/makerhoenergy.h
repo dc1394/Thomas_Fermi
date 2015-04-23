@@ -13,11 +13,23 @@
 #include "../beta.h"
 #include "../gausslegendre/gausslegendre.h"
 #include <cstdint>                              // for std::int32_t
-#include <fstream>                              // for std::ofstream
+#include <cstdio>								// for FILE, std::fclose
 #include <memory>                               // for std::shared_ptr
 #include <utility>                              // for std::pair
 
 namespace thomasfermi {
+	//! A lambda expression.
+	/*!
+		ファイルをクローズするときに使うラムダ式
+		\param fp ファイルポインタ
+	*/
+	auto const fcloser = [](FILE * fp)
+	{
+		if (fp) {
+			std::fclose(fp);
+		}
+	};
+
 	namespace makerhoen {
         //! A class.
         /*!
@@ -138,6 +150,12 @@ namespace thomasfermi {
 				x方向のメッシュの刻み幅
 			*/
 			double const dx_;
+			
+			//! A private variable (constant).
+			/*!
+				ファイルポインタ
+			*/
+			std::unique_ptr<FILE, decltype(fcloser)> fp_;
 
 			//! A private variable (constant).
 			/*!
@@ -150,12 +168,6 @@ namespace thomasfermi {
 				ファイル出力するときのループの最大数
 			*/
 			std::int32_t const max_;
-
-			//! A private variable (constant).
-			/*!
-				ファイル出力ストリーム
-			*/
-			std::ofstream ofs_;
 
 			//! A private variable (constant).
 			/*!
