@@ -7,10 +7,12 @@
 */
 
 #include "fem.h"
-#include <cstdint>				// for std::uint32_t
-#include <utility>				// for std::move
-#include <boost/assert.hpp>		// for BOOST_ASSERT
-#include <cilk/cilk.h>			// for cilik_for
+#include <cstdint>				        // for std::uint32_t
+#include <utility>				        // for std::move
+#include <boost/assert.hpp>		        // for BOOST_ASSERT
+#include <tbb/parallel_for.h>           // for tbb::parallel_for
+#include <tbb/partitioner.h>            // for tbb::auto_partitioner
+#include <tbb/task_scheduler_init.h>    // for tbb::task_scheduler_init
 
 namespace thomasfermi {
 	namespace femall {
@@ -35,6 +37,7 @@ namespace thomasfermi {
 			usetbb_(usetbb)
 		{
 			BOOST_ASSERT(coords_.size() == beta_.size());
+            tbb::task_scheduler_init init;
 		}
 		
 		// #endregion コンストラクタ
@@ -62,42 +65,41 @@ namespace thomasfermi {
 			for (auto ielem = 0U; ielem < nelem_; ielem++)
 				element(ielem);
 
-			//if (usetbb_) {
-			//	cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
-			//		amerge(ielem);
-
-			//		dvector const c(getc(ielem));
-			//		for (auto i = 0U; i < ntnoel_; i++)
-			//			b_[(*plnods_)[i][ielem]] += c[i];
-			//	}
-			//}
-			//else {
+			if (usetbb_) {
+                tbb::parallel_for(
+                    std::uint32_t(0),
+                    nelem_,
+                    std::uint32_t(1),
+                    [this](std::uint32_t ielem)
+                    {
+                        amerge(ielem);
+                        createb(ielem);
+                    },
+                    tbb::auto_partitioner());
+			}
+			else {
 				for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					amerge(ielem);
-
-					dvector const c(getc(ielem));
-					for (auto i = 0U; i < ntnoel_; i++)
-						b_[(*plnods_)[i][ielem]] += c[i];
+                    createb(ielem);
 				}
-			//}
+			}
 		}
 
 		void FEM::stiff2()
 		{
-			/*if (usetbb_) {
-				cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
-					dvector const c(getc(ielem));
-					for (auto i = 0U; i < ntnoel_; i++)
-						b_[(*plnods_)[i][ielem]] += c[i];
+			if (usetbb_) {
+                tbb::parallel_for(
+                    std::uint32_t(0),
+                    nelem_,
+                    std::uint32_t(1),
+                    [this](std::uint32_t ielem) { createb(ielem); },
+                    tbb::auto_partitioner());
+			}
+			else {
+				for (auto ielem = 0U; ielem < nelem_; ielem++) {
+                    createb(ielem);
 				}
 			}
-			else {*/
-				for (auto ielem = 0U; ielem < nelem_; ielem++) {
-					dvector const c(getc(ielem));
-					for (auto i = 0U; i < ntnoel_; i++)
-						b_[(*plnods_)[i][ielem]] += c[i];
-				}
-			//}
 		}
 
 		// #endregion publicメンバ関数
@@ -120,6 +122,14 @@ namespace thomasfermi {
 			a1_[ielem + 1] += (*pastiff_)[1][1];
 			a2_[ielem] = (*pastiff_)[0][1];
 		}
+
+        void FEM::createb(std::size_t ielem)
+        {
+            auto const c(getc(ielem));
+            for (auto i = 0U; i < ntnoel_; i++) {
+                b_[(*plnods_)[i][ielem]] += c[i];
+            }
+        }
 
 		void FEM::element(std::size_t ielem)
 		{

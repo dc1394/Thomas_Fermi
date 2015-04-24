@@ -163,17 +163,23 @@ namespace thomasfermi {
 			*/
 			gausslegendre::Gauss_Legendre const gl_;
 
+            //! A private variable (constant).
+            /*!
+                Betaクラスのオブジェクトへのスマートポインタ
+            */
+            std::shared_ptr<femall::Beta> const pbeta_;
+
+            //! A private variable (constant).
+            /*!
+                x方向のメッシュが格納された動的配列のサイズ
+            */
+            std::size_t const size_;
+
 			//! A private variable (constant).
 			/*!
 				ファイル出力するときのループの最大数
 			*/
 			std::int32_t const max_;
-
-			//! A private variable (constant).
-			/*!
-				Betaクラスのオブジェクトへのスマートポインタ
-			*/
-			std::shared_ptr<femall::Beta> pbeta_;
 
 			//! A private variable.
 			/*!
@@ -182,12 +188,6 @@ namespace thomasfermi {
 			*/
 			double s_;
 
-			//! A private variable (constant).
-			/*!
-				x方向のメッシュが格納された動的配列のサイズ
-			*/
-			std::size_t const size_;
-			
 			//! A private variable (constant).
 			/*!
 				SIMDを使うかどうか

@@ -20,15 +20,14 @@ namespace thomasfermi {
         MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, MakeRhoEnergy::parameter_type const & pt, bool usesimd, double Z) :
 			alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
 			xvec_(std::get<1>(pt)),
-			dx_((xvec_[2] - xvec_[1]) * 2.0),
+			dx_(xvec_[2] - xvec_[1]),
 			gl_(n),
+            pbeta_(std::get<0>(pt)),
+            size_(xvec_.size()),
 			max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
-			size_(xvec_.size()),
 			usesimd_(usesimd),
             Z_(Z)
         {
-			pbeta_ = std::get<0>(pt);
-
             auto const func = myfunctional::make_functional(
                 [this](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
 
@@ -57,8 +56,8 @@ namespace thomasfermi {
 
         double MakeRhoEnergy::makeEnergy() const
         {
-            auto const func = myfunctional::make_functional(
-                [this](double x) { return (*pbeta_)(x); });
+            auto const func = 
+                myfunctional::make_functional([this](double x) { return (*pbeta_)(x); });
 
             auto const sum = gl_.qgauss(
                 func,

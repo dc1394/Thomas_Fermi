@@ -94,11 +94,6 @@ namespace thomasfermi {
 			*/
 			void stiff2();
 
-			std::shared_ptr<Beta> getpbeta() const
-			{
-				return pbeta_; 
-			}
-
 			// #endregion publicメンバ関数
 
 			// #region protectedメンバ関数
@@ -120,6 +115,13 @@ namespace thomasfermi {
 				\param ielem
 			*/
 			void amerge(std::size_t ielem);
+
+            //! A private member function.
+            /*!
+                行列b_を生成する
+                \param ielem
+            */
+            void createb(std::size_t ielem);
 
 			//! A private member function.
 			/*!
