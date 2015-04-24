@@ -144,7 +144,7 @@ namespace gausslegendre {
         auto sum = 0.0;
         if (usesimd && avxSupported_) {
             auto const loop = n_ >> 2;
-            for (std::uint32_t i = 0; i < loop; i++) {
+            for (auto i = 0U; i < loop; i++) {
                 auto const xi(
                 	F64vec4(
                 		::_mm256_load_pd(&x_[(i << 2)]) * F64vec4(xr) + F64vec4(xm)));
@@ -162,7 +162,7 @@ namespace gausslegendre {
         }
         else if (usesimd) {
             auto const loop = n_ >> 1;
-            for (std::uint32_t i = 0; i < loop; i++) {
+            for (auto i = 0U; i < loop; i++) {
                 auto const xi(
                 	F64vec2(
                 		::_mm_load_pd(&x_[(i << 1)]) * F64vec2(xr) + F64vec2(xm)));
@@ -176,7 +176,7 @@ namespace gausslegendre {
                 sum += w_[n_ - 1] * func(xm + xr * x_[n_ - 1]);
         }
         else {
-            for (std::uint32_t i = 0; i < n_; i++) {
+            for (auto i = 0U; i < n_; i++) {
                 auto const xi = xm + xr * x_[i];
                 sum += w_[i] * func(xi);
             }
