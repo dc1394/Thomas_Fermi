@@ -173,7 +173,7 @@ namespace thomasfermi {
 			/*!
 				Betaクラスのオブジェクトへのスマートポインタ
 			*/
-			std::shared_ptr<femall::Beta> const pbeta_;
+			std::shared_ptr<femall::Beta> pbeta_;
 
 			//! A private variable.
 			/*!

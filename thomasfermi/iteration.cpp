@@ -60,8 +60,6 @@ namespace thomasfermi {
 			ple_->bound(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
 			y_ = ple_->LEsolver();
-
-			int i = 1;
 		}
 
 		Iteration::~Iteration()

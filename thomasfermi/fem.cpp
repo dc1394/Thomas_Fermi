@@ -62,16 +62,16 @@ namespace thomasfermi {
 			for (auto ielem = 0U; ielem < nelem_; ielem++)
 				element(ielem);
 
-			if (usetbb_) {
-				cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
-					amerge(ielem);
+			//if (usetbb_) {
+			//	cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
+			//		amerge(ielem);
 
-					dvector const c(getc(ielem));
-					for (auto i = 0U; i < ntnoel_; i++)
-						b_[(*plnods_)[i][ielem]] += c[i];
-				}
-			}
-			else {
+			//		dvector const c(getc(ielem));
+			//		for (auto i = 0U; i < ntnoel_; i++)
+			//			b_[(*plnods_)[i][ielem]] += c[i];
+			//	}
+			//}
+			//else {
 				for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					amerge(ielem);
 
@@ -79,25 +79,25 @@ namespace thomasfermi {
 					for (auto i = 0U; i < ntnoel_; i++)
 						b_[(*plnods_)[i][ielem]] += c[i];
 				}
-			}
+			//}
 		}
 
 		void FEM::stiff2()
 		{
-			if (usetbb_) {
+			/*if (usetbb_) {
 				cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					dvector const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
 						b_[(*plnods_)[i][ielem]] += c[i];
 				}
 			}
-			else {
+			else {*/
 				for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					dvector const c(getc(ielem));
 					for (auto i = 0U; i < ntnoel_; i++)
 						b_[(*plnods_)[i][ielem]] += c[i];
 				}
-			}
+			//}
 		}
 
 		// #endregion publicメンバ関数
