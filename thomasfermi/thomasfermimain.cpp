@@ -1,22 +1,46 @@
 ﻿#include "checkpoint.h"
+#include "getcomlineoption.h"
 #include "goexit.h"
 #include "iteration.h"
 #include "makerhoen/makerhoenergy.h"
 #include <cstdlib>                      // for EXIT_FAILURE, EXIT_SUCCESS
 
-int main()
+int main(int argc, char * argv[])
 {
 	checkpoint::CheckPoint cp;
+
+	thomasfermi::GetComLineOption mg;
+	switch (mg.getopt(argc, argv)) {
+	case -1:
+		thomasfermi::goexit();
+
+		return EXIT_FAILURE;
+		break;
+
+	case 0:
+		break;
+
+	case 1:
+		thomasfermi::goexit();
+
+		return EXIT_SUCCESS;
+		break;
+
+	default:
+		BOOST_ASSERT(!"何かがおかしい！");
+		break;
+	}
+
 	cp.checkpoint("処理開始", __LINE__);
 	try {
-		thomasfermi::femall::Iteration iter(1.0, 0.001, 1000, 1.0E-12, true, true, 1.0E-5, 50.0, 10.0);
+		thomasfermi::femall::Iteration iter(mg.getpairdata());
 
 		cp.checkpoint("初期関数生成処理", __LINE__);
 
 		iter.Iterationloop();
 
 		cp.checkpoint("Iterationループ処理", __LINE__);
-        thomasfermi::makerhoen::MakeRhoEnergy mre(1000, iter.makeresult(), true, 1);
+        thomasfermi::makerhoen::MakeRhoEnergy mre(1000, iter.makeresult(), 1);
 		mre.saveresult();
 
 		cp.checkpoint("結果出力処理", __LINE__);

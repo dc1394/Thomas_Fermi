@@ -13,6 +13,7 @@
 #include <boost/numeric/odeint.hpp>		// for boost::numeric::odeint
 #include <boost/numeric/ublas/lu.hpp>	// for boost::numeric::ublas::lu_factorize, boost::numeric::ublas::lu_substitute, boost::numeric::ublas::permutation_matrix
 #include <boost/range/algorithm.hpp>	// for boost::find_if			
+#include <cilk/cilk.h>					// for cilk_spawn, cilk_sync
 
 namespace thomasfermi {
 	namespace shoot {
@@ -38,18 +39,21 @@ namespace thomasfermi {
 
 			using stepper_type = bulirsch_stoer<shootfunc::state_type>;
 
-			auto y1 = load1_(x1, v1_);					         // 最良の仮の値v1_でx1からxfまで解いていく
+			// 最良の仮の値v1_でx1からxfまで解いていく
+			auto y1 = load1_(x1, v1_);
 			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, xf, dx_);
 			auto const f1(score_(y1));
-		
-			auto y2 = load2_(x2, v2_);					        // 最良の仮の値v2_でx2からxfまで解いていく			
+
+			// 最良の仮の値v2_でx2からxfまで解いていく			
+			auto y2 = load2_(x2, v2_);
 			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf, - dx_);
 			auto const f2(score_(y2));
 
 			boost::numeric::ublas::matrix<double> dfdv(shootfunc::NVAR, shootfunc::NVAR);
             
             // x1で用いる境界条件を変える
-            {
+			auto const funcx1 = [&]
+			{
                 auto const sav = v1_;
                 v1_ += delv1_;
 
@@ -57,12 +61,17 @@ namespace thomasfermi {
                 integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y, x1, xf, dx_);
                 auto const f = score_(y);
 
-                for (auto i = 0U; i < shootfunc::NVAR; i++)		// NVAR個の合致条件にある偏微分を数値的に計算
-                    dfdv(i, 0) = (f[i] - f1[i]) / delv1_;
+				// NVAR個の合致条件にある偏微分を数値的に計算
+				for (auto i = 0U; i < shootfunc::NVAR; i++) {
+					dfdv(i, 0) = (f[i] - f1[i]) / delv1_;
+				}
 
-                v1_ = sav;										// 境界におけるパラメータを格納
-            }
+				// 境界におけるパラメータを格納
+				v1_ = sav;
+			};
 
+			cilk_spawn funcx1();
+			
             // 次にx2で用いる境界条件を変える
 			{	
 				auto const sav = v2_;
@@ -76,7 +85,9 @@ namespace thomasfermi {
 					dfdv(i, 1) = (f2[i] - f[i]) / delv2_;
 			
 				v2_ = sav;
-			}
+			};
+
+			cilk_sync;
 
 			shootfunc::dblasvector f(shootfunc::NVAR), ff(shootfunc::NVAR);
 			for (auto i = 0U; i < shootfunc::NVAR; i++) {
@@ -98,14 +109,19 @@ namespace thomasfermi {
 			
             res1.reserve(boost::numeric_cast<std::size_t>((xf - x1) / dx_) + 2);
 			
-            // 得られた条件でx1...dxまで微分方程式を解く
-			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](shootfunc::state_type const & y, double const x)
-			{ res1.push_back(y[0]);	});									// x1...dxの結果を得る
-			res1.pop_back();
+			auto const funcx1toxf = [&]
+			{
+				// 得られた条件でx1...dxまで微分方程式を解く
+				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](shootfunc::state_type const & y, double const x)
+				{ res1.push_back(y[0]);	});									// x1...dxの結果を得る
+				res1.pop_back();
 
-			// 得られた条件でdx...xfまで微分方程式を解く
-			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](shootfunc::state_type const & y, double const x)
-			{ res1.push_back(y[0]); });									// dx...xf + x1の結果を得る
+				// 得られた条件でdx...xfまで微分方程式を解く
+				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](shootfunc::state_type const & y, double const x)
+				{ res1.push_back(y[0]); });									// dx...xf + x1の結果を得る
+			};
+
+			cilk_spawn funcx1toxf();
 
 			// 得られた条件でx2...xfまで微分方程式を解く
 			y2 = load2_(x2, v2_);								
@@ -114,6 +130,8 @@ namespace thomasfermi {
 			res2.reserve(boost::numeric_cast<std::size_t>((x2 - xf) / dx_) + 1);
 			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](const shootfunc::state_type & y, const double x)
 			{ res2.push_back(y[0]); });									// x2...xf - x1の結果を得る
+
+			cilk_sync;
 
             return createResult(res1, res2, x1, xf);
 		}

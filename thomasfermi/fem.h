@@ -53,10 +53,9 @@ namespace thomasfermi {
 				\param beta
 				\param coords
 				\param nint
-				\param usesimd SIMDを利用するかどうか
-				\param usetbb TBBを使用するかどうか
+				\param usecilk TBBを使用するかどうか
 			*/
-			FEM(dvector && beta, dvector const & coords, std::size_t nint, bool usesimd, bool usetbb);
+			FEM(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk);
 
 			//! A destructor.
 			/*!
@@ -250,18 +249,12 @@ namespace thomasfermi {
 			/*!
 			*/
 			std::unique_ptr<boost::multi_array<std::size_t, 2>> plnods_;
-
-			//! A protected member variable.
-			/*!
-				SIMDを使用するかどうか
-			*/
-			bool const usesimd_;
 			
 			//! A protected member variable.
 			/*!
 				TBBを使用するかどうか
 			*/
-			bool const usetbb_;
+			bool const usecilk_;
 
 			// #region 禁止されたコンストラクタ・メンバ関数
 

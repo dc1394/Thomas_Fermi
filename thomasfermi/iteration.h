@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "data.h"
 #include "foelement.h"
 #include "linearequations.h"
 #include "shoot/shootfunc.h"
@@ -29,17 +30,10 @@ namespace thomasfermi {
 
 			//! A constructor.
 			/*!
-				\param alpha 一次混合の値α
-				\param dx 要素の間隔
-				\param n Gauss-Legendreの積分点
-				\param tol 許容誤差
-				\param usesimd SIMDを使用するかどうか
-				\param usetbb TBBを使用するかどうか
-				\param x1 原点に近い方のxの値
-				\param x2 無限遠に近い方のxの値
-				\param xf 適合点
+				唯一のコンストラクタ
+				\param arg インプットファイル名とTBBを使用するかどうかのstd::pair
 			*/
-			Iteration(double alpha, double dx, std::size_t n, double eps, bool usesimd, bool usetbb, double x1, double x2, double xf);
+			explicit Iteration(std::pair<std::string, bool> const & arg);
 
 			//! A destructor.
 			/*!
@@ -106,18 +100,6 @@ namespace thomasfermi {
 			/*!
 			*/
 			static auto constexpr N_BC_GIVEN = 2U;
-
-			//! A private member variable.
-			/*!
-				一次混合の値α
-			*/
-			double alpha_;
-			
-			//! A private member variable (constant).
-			/*!
-				許容誤差
-			*/
-			double const eps_;
 			
 			//! A private member variable.
 			/*!
@@ -131,6 +113,12 @@ namespace thomasfermi {
 			*/
 			std::shared_ptr<Beta> pbeta_;
 			
+			//!  A private member variable (constant).
+			/*!
+				データオブジェクト
+			*/
+			std::shared_ptr<Data> pdata_;
+
 			//! A private member variable.
 			/*!
 				有限要素法オブジェクト
@@ -142,18 +130,6 @@ namespace thomasfermi {
 				連立一次方程式のソルバーオブジェクト
 			*/
 			boost::optional<Linear_equations> ple_;
-
-			//! A private member variable (constant).
-			/*!
-				SIMDを使用するかどうか
-			*/
-			bool const usesimd_;
-			
-			//! A private member variable (constant).
-			/*!
-				TBBを使用するかどうか
-			*/
-			bool const usetbb_;
 			
 			//! A private member variable.
 			/*!

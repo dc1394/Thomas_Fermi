@@ -28,10 +28,9 @@ namespace thomasfermi {
 				\param beta
 				\param coords
 				\param nint
-				\param usesimd SIMDを利用するかどうか
-				\param usetbb TBBを使用するかどうか
+				\param usecilk TBBを使用するかどうか
 			*/
-			FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usesimd, bool usetbb);
+			FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk);
 
 			//! A destructor.
 			/*!

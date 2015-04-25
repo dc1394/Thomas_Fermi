@@ -13,8 +13,8 @@ namespace thomasfermi {
 	namespace femall {
 		// #region コンストラクタ
 
-		FOElement::FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usesimd, bool usetbb) :
-			FEM(std::move(beta), coords, nint, usesimd, usetbb),
+		FOElement::FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk) :
+			FEM(std::move(beta), coords, nint, usecilk),
 			fun1_([this](double r, double xl, std::size_t ielem)
 			{ return -N1_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]]) * xl * 0.5; }),
 			fun2_([this](double r, double xl, std::size_t ielem)
@@ -48,13 +48,11 @@ namespace thomasfermi {
 
 			c[0] = gl_.qgauss(
 				myfunctional::make_functional([this, xl, ielem](double r){ return fun1_(r, xl, ielem); }),
-				usesimd_,
 				-1.0,
 				1.0);
 
 			c[1] = gl_.qgauss(
 				myfunctional::make_functional([this, xl, ielem](double r){ return fun2_(r, xl, ielem); }),
-				usesimd_,
 				-1.0,
 				1.0);
 

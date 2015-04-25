@@ -50,10 +50,9 @@ namespace thomasfermi {
 				唯一のコンストラクタ
                 \param n Gauss-Legendreの分点
                 \param pt std::shared_ptr<Beta>とstd::vector<double>のタプル
-                \param usesimd SIMDを使うかどうか
                 \param Z 原子番号
             */
-            MakeRhoEnergy(std::int32_t n, parameter_type const & pt, bool usesimd, double Z);
+            MakeRhoEnergy(std::int32_t n, parameter_type const & pt, double Z);
 
             //! A destructor.
             /*!
@@ -187,12 +186,6 @@ namespace thomasfermi {
 				s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
 			*/
 			double s_;
-
-			//! A private variable (constant).
-			/*!
-				SIMDを使うかどうか
-			*/
-			bool const usesimd_;
             
             //! A private variable (constant).
             /*!

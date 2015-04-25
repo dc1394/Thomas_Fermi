@@ -6,8 +6,10 @@
 */
 
 #include "iteration.h"
+#include "readinputfile.h"
 #include "shoot/shootf.h"
 #include <iostream>								// for std::cout
+#include <stdexcept>							// for std::runtime_error
 #include <boost/cast.hpp>						// for boost::numeric_cast
 #include <boost/format.hpp>						// for boost::format
 #include <boost/assert.hpp>						// for BOOST_ASSERT
@@ -17,15 +19,16 @@ namespace thomasfermi {
 	namespace femall {
 		// #region コンストラクタ・デストラクタ
 
-		Iteration::Iteration(double alpha, double dx, std::size_t n, double eps, bool usesimd, bool usetbb, double x1, double x2, double xf) :
-			alpha_(alpha),
-			eps_(eps),
-			ple_(boost::none),
-			usesimd_(usesimd),
-			usetbb_(usetbb)
+		Iteration::Iteration(std::pair<std::string, bool> const & arg)
 		{
 			using namespace thomasfermi;
 			using namespace thomasfermi::shoot;
+
+			ReadInputFile rif(arg);         // ファイルを読み込む
+			rif.readFile();
+			pdata_ = rif.PData;
+
+			auto const dx = pdata_->xmax_ / static_cast<double>(pdata_->grid_num_);
 
 			load2 l2;
 			shootf s(
@@ -37,16 +40,16 @@ namespace thomasfermi {
 				l2,
 				shootfunc::score,
 				shootfunc::V1,
-				l2.make_v2(x2));
+				l2.make_v2(pdata_->xmax_));
 			
-			shootf::result_type xytuple(s(x1, x2, xf));
+			shootf::result_type xytuple(s(pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
 			y1_ = std::get<1>(xytuple)[0];
 			y2_ = std::get<1>(xytuple).back();
 			
 			x_ = std::get<0>(xytuple);
 			y_ = ybefore_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
 
-			pfem_.reset(new femall::FOElement(make_beta(), x_, n, usesimd_, usetbb_));
+			pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, std::get<1>(arg)));
 			pfem_->stiff();
 
 			i_bc_given_.reserve(Iteration::N_BC_GIVEN);
@@ -73,10 +76,9 @@ namespace thomasfermi {
 		
 		void Iteration::Iterationloop()
 		{
-			auto cnt = 0;
 			auto scferr = Iteration::ITERATION_THRESHOLD;
 			double scferrbefore;
-			do {
+			for (auto i = 1U; i < pdata_->scf_maxiter_; i++) {
 				ymix();
 				pfem_->reset(Iteration::make_beta());
 				pfem_->stiff2();
@@ -90,14 +92,17 @@ namespace thomasfermi {
 				scferr = IterationError();
 
 				if (scferr > scferrbefore) {
-					alpha_ *= Iteration::ITERATION_REDUCTION;
+					pdata_->scf_mixing_weight_ *= Iteration::ITERATION_REDUCTION;
 				}
 
-				cnt++;
-				std::cout << "反復回数: " << cnt << "回, IterationError: " << boost::format("%.15f\n") % scferr;
-			} while (scferr > eps_);
-
-			pbeta_ = pfem_->PBeta;
+				std::cout << "反復回数: " << i << "回, IterationError: " << boost::format("%.15f\n") % scferr;
+				if (scferr < pdata_->scf_criterion_) {
+					pbeta_ = pfem_->PBeta;
+					return;
+				}
+			}
+			
+			throw std::runtime_error("収束しませんでした。");
 		}
 
 		Iteration::result_type Iteration::makeresult()
@@ -141,7 +146,7 @@ namespace thomasfermi {
 			BOOST_ASSERT(size == ybefore_.size());
 
 			for (auto i = 0U; i < size; i++) {
-				y_[i] = ybefore_[i] + alpha_ * (y_[i] - ybefore_[i]);
+				y_[i] = ybefore_[i] + pdata_->scf_mixing_weight_ * (y_[i] - ybefore_[i]);
 			}
 		}
 		
