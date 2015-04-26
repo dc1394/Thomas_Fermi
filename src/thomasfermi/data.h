@@ -41,21 +41,21 @@ namespace thomasfermi {
         
     //! A global variable (constant expression).
     /*!
-        SCFの収束判定条件の値のデフォルト値
+        ITERATIONの収束判定条件の値のデフォルト値
     */
-    static auto constexpr SCF_CRITERION_DEFAULT = 1.0E-12;
+    static auto constexpr ITERATION_CRITERION_DEFAULT = 1.0E-12;
 
     //! A global variable (constant expression).
     /*!
-        SCFの最大ループ回数のデフォルト値
+        ITERATIONの最大ループ回数のデフォルト値
     */
-    static auto constexpr SCF_MAXITER_DEFAULT = 200U;
+    static auto constexpr ITERATION_MAXITER_DEFAULT = 200U;
 
     //! A global variable (constant expression).
     /*!
         電子密度を合成するときの重みのデフォルト値
     */
-    static auto constexpr SCF_MIXING_WEIGHT_DEFAULT = 0.05;
+    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.05;
 
     //! A global variable (constant expression).
     /*!
@@ -102,21 +102,21 @@ namespace thomasfermi {
 
         //!  A public member variable.
         /*!
-            SCFの収束判定条件の値
+            ITERATIONの収束判定条件の値
         */
-        double scf_criterion_ = SCF_CRITERION_DEFAULT;
+        double iteration_criterion_ = ITERATION_CRITERION_DEFAULT;
 
         //!  A public member variable.
         /*!
-            SCFの最大ループ回数
+            ITERATIONの最大ループ回数
         */
-        std::uint32_t scf_maxiter_ = SCF_MAXITER_DEFAULT;
+        std::uint32_t iteration_maxiter_ = ITERATION_MAXITER_DEFAULT;
 
         //!  A public member variable.
         /*!
             電子密度を合成するときの重み
         */
-        double scf_mixing_weight_ = SCF_MIXING_WEIGHT_DEFAULT;
+        double iteration_mixing_weight_ = ITERATION_MIXING_WEIGHT_DEFAULT;
 
         //!  A public member variable.
         /*!

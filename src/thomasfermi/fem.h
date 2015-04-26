@@ -231,6 +231,7 @@ namespace thomasfermi {
 			
 			//! A protected member variable (constant).
 			/*!
+				Gauss-Legendreの分点数
 			*/
 			std::size_t const nint_;
 

@@ -89,12 +89,13 @@ namespace thomasfermi {
             //! A public member function (const).
             /*!
                 結果を生成する
+				\param usecilk cilkを使うかどうか
                 \param x1 原点に近いxの値
                 \param x2 無限遠点に近いxの値
                 \param xf 適合点のxの値
                 \return xのメッシュとそれに対応したyの値のtuple
             */
-            shootf::result_type operator()(double x1, double x2, double xf);
+            shootf::result_type operator()(bool usecilk, double x1, double x2, double xf);
 
             // #endregion メンバ関数
 
@@ -131,6 +132,24 @@ namespace thomasfermi {
             */
             double const eps_;
 
+			//! A private member variable (constant).
+			/*!
+				原点に近いxにおけるyの値とその微分値を求める関数オブジェクト
+			*/
+			loadfunctype const load1_;
+
+			//! A private member variable (constant).
+			/*!
+				無限遠点に近いxにおけるyの値とその微分値を求める関数オブジェクト
+			*/
+			loadfunctype const load2_;
+
+			//! A private member variable (constant).
+			/*!
+				適合点で合致するべきyの値とその微分値を求める関数オブジェクト
+			*/
+			scorefunctype const score_;
+
             //! A private member variable.
             /*!
                 原点に近いxにおけるyの微分値
@@ -142,24 +161,6 @@ namespace thomasfermi {
                 無限遠点に近いxにおけるyの微分値
             */
             double v2_;
-
-            //! A private member variable (constant).
-            /*!
-                原点に近いxにおけるyの値とその微分値を求める関数オブジェクト
-            */
-            loadfunctype const load1_;
-
-            //! A private member variable (constant).
-            /*!
-                無限遠点に近いxにおけるyの値とその微分値を求める関数オブジェクト
-            */
-            loadfunctype const load2_;
-
-            //! A private member variable (constant).
-            /*!
-                適合点で合致するべきyの値とその微分値を求める関数オブジェクト
-            */
-            scorefunctype const score_;
 
         private:
             // #region 禁止されたコンストラクタ・メンバ関数

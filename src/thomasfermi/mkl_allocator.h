@@ -84,7 +84,7 @@ namespace thomasfermi {
 		/*!
 			メモリを割り当てる
 			\param size 割り当てるメモリのサイズ
-			\param hint 未使用
+			\param 未使用
 			\return 割り当てたメモリの先頭アドレス
 		*/
 		pointer allocate(size_type size, const_pointer hint = 0)
@@ -113,9 +113,9 @@ namespace thomasfermi {
 		/*!
 			割り当て済みのメモリを解放する
 			\param p 割り当て済みのメモリの先頭アドレス
-			\param n 未使用 
+			\param 未使用 
 		*/
-		void deallocate(pointer p, size_type n)
+		void deallocate(pointer p, size_type)
 		{
 			mkl_free(reinterpret_cast<void *>(p));
 		}

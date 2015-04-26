@@ -14,6 +14,7 @@
 #include "foelement.h"
 #include "linearequations.h"
 #include "shoot/shootfunc.h"
+#include "utility/property.h"
 #include <boost/optional.hpp>	// for boost::optional
 
 namespace thomasfermi {
@@ -67,7 +68,7 @@ namespace thomasfermi {
 				反復の誤差を返す
 				\return 反復の誤差
 			*/
-			double IterationError() const;
+			double GetNormRD() const;
 			
 			//! A private member function (const).
 			/*!
@@ -84,8 +85,21 @@ namespace thomasfermi {
 						
 			// #endregion privateメンバ関数
 
+			// #region プロパティ
+
+		public:
+			//! A property.
+			/*!
+				読み込んだデータを返す
+				\return 読み込んだデータ
+			*/
+			utility::Property<std::shared_ptr<Data>> const PData;
+
+			// #endregion プロパティ
+
 			// #region メンバ変数
 
+		private:
 			//! A private member variable (constant expression).
 			/*!
 			*/
@@ -113,7 +127,7 @@ namespace thomasfermi {
 			*/
 			std::shared_ptr<Beta> pbeta_;
 			
-			//!  A private member variable (constant).
+			//!  A private member variable.
 			/*!
 				データオブジェクト
 			*/
@@ -165,9 +179,7 @@ namespace thomasfermi {
 			FEM::dmklvector ybefore_;
 
 			// #endregion メンバ変数
-			
-			//~Iteration() { ple_ = boost::none; }
-
+						
 			// #region 禁止されたコンストラクタ・メンバ関数
 
 			//! A private constructor (deleted).

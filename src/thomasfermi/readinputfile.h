@@ -135,10 +135,10 @@ namespace thomasfermi {
 
         //! A private member function.
         /*!
-            SCFの一次混合の重みを読み込む
+            Iterationの一次混合の重みを読み込む
             \return 読み込みが成功したかどうか
         */
-        bool readScfMixingWeight();
+		bool readIterationMixingWeight();
 
         template <typename T>
         //! A private member function.

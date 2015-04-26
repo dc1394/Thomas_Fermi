@@ -69,16 +69,16 @@ namespace thomasfermi {
 		// Gauss-Legendre積分の分点を読み込む
 		readValue("gauss.legendre.integ", GAUSS_LEGENDRE_INTEG_DEFAULT, pdata_->gauss_legendre_integ_);
 
-        // SCFの最大ループ回数を読み込む
-        readValue("scf.maxIter", SCF_MAXITER_DEFAULT, pdata_->scf_maxiter_);
+        // Iterationの最大ループ回数を読み込む
+        readValue("iteration.maxIter", ITERATION_MAXITER_DEFAULT, pdata_->iteration_maxiter_);
 
-        // SCFの一次混合の重みを読み込む
-        if (!readScfMixingWeight()) {
+        // Iterationの一次混合の重みを読み込む
+        if (!readIterationMixingWeight()) {
             errorendfunc();
         }
         
-        // SCFの収束判定条件の値を読み込む
-        readValue("scf.criterion", SCF_CRITERION_DEFAULT, pdata_->scf_criterion_);
+        // Iterationの収束判定条件の値を読み込む
+        readValue("iteration.criterion", ITERATION_CRITERION_DEFAULT, pdata_->iteration_criterion_);
     }
     
     // #endregion publicメンバ関数
@@ -293,6 +293,16 @@ namespace thomasfermi {
         }
     }
     
+	bool ReadInputFile::readIterationMixingWeight()
+	{
+		readValue("iteration.Mixing.Weight", ITERATION_MIXING_WEIGHT_DEFAULT, pdata_->iteration_mixing_weight_);
+		if (pdata_->iteration_mixing_weight_ <= 0.0 || pdata_->iteration_mixing_weight_ > 1.0) {
+			std::cerr << "インプットファイルの[iteration.Mixing.Weight]の行が正しくありません" << std::endl;
+			return false;
+		}
+		return true;
+	}
+
 	bool ReadInputFile::readMatchPoint()
 	{
 		readValue("matching.point", MATCH_POINT_DEFAULT, pdata_->match_point_);
@@ -303,15 +313,6 @@ namespace thomasfermi {
 		return true;
 	}
 
-    bool ReadInputFile::readScfMixingWeight()
-    {
-        readValue("scf.Mixing.Weight", SCF_MIXING_WEIGHT_DEFAULT, pdata_->scf_mixing_weight_);
-        if (pdata_->scf_mixing_weight_ <= 0.0 || pdata_->scf_mixing_weight_ > 1.0) {
-            std::cerr << "インプットファイルの[scf.Mixing.Weight]の行が正しくありません" << std::endl;
-            return false;
-        }
-        return true;
-    }
-
+    
     // #endregion privateメンバ関数
 }

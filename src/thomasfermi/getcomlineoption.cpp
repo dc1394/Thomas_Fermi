@@ -56,9 +56,9 @@ namespace thomasfermi {
             inpname_ = vm["inputfile"].as<std::string>();
         }
 
-        // TBB指定がある場合
-        if (vm.count("tbb")) {
-            usecilk_ = vm["tbb"].as<bool>();
+        // Cilk Plus指定がある場合
+        if (vm.count("cilk")) {
+            usecilk_ = vm["cilk"].as<bool>();
         }
 
         return 0;

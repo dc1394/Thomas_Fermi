@@ -19,7 +19,8 @@ namespace thomasfermi {
 	namespace femall {
 		// #region コンストラクタ・デストラクタ
 
-		Iteration::Iteration(std::pair<std::string, bool> const & arg)
+		Iteration::Iteration(std::pair<std::string, bool> const & arg) :
+			PData([this] { return pdata_; }, nullptr)
 		{
 			using namespace thomasfermi;
 			using namespace thomasfermi::shoot;
@@ -42,14 +43,15 @@ namespace thomasfermi {
 				shootfunc::V1,
 				l2.make_v2(pdata_->xmax_));
 			
-			shootf::result_type xytuple(s(pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
+			auto const usecilk = std::get<1>(arg);
+			auto const xytuple(s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
 			y1_ = std::get<1>(xytuple)[0];
 			y2_ = std::get<1>(xytuple).back();
 			
 			x_ = std::get<0>(xytuple);
 			y_ = ybefore_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
 
-			pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, std::get<1>(arg)));
+			pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
 			pfem_->stiff();
 
 			i_bc_given_.reserve(Iteration::N_BC_GIVEN);
@@ -76,9 +78,9 @@ namespace thomasfermi {
 		
 		void Iteration::Iterationloop()
 		{
-			auto scferr = Iteration::ITERATION_THRESHOLD;
-			double scferrbefore;
-			for (auto i = 1U; i < pdata_->scf_maxiter_; i++) {
+			auto normrd = Iteration::ITERATION_THRESHOLD;
+			double normrdbefore;
+			for (auto i = 1U; i < pdata_->iteration_maxiter_; i++) {
 				ymix();
 				pfem_->reset(Iteration::make_beta());
 				pfem_->stiff2();
@@ -88,15 +90,15 @@ namespace thomasfermi {
 
 				ybefore_ = y_;
 				y_ = ple_->LEsolver();
-				scferrbefore = scferr;
-				scferr = IterationError();
+				normrd = normrd;
+				normrd = GetNormRD();
 
-				if (scferr > scferrbefore) {
-					pdata_->scf_mixing_weight_ *= Iteration::ITERATION_REDUCTION;
+				if (normrd > normrdbefore) {
+					pdata_->iteration_mixing_weight_ *= Iteration::ITERATION_REDUCTION;
 				}
 
-				std::cout << "反復回数: " << i << "回, IterationError: " << boost::format("%.15f\n") % scferr;
-				if (scferr < pdata_->scf_criterion_) {
+				std::cout << "反復回数: " << i << "回, NormRD: " << boost::format("%.15f\n") % normrd;
+				if (normrd < pdata_->iteration_criterion_) {
 					pbeta_ = pfem_->PBeta;
 					return;
 				}
@@ -114,7 +116,7 @@ namespace thomasfermi {
 
 		// #region privateメンバ関数
 
-		double Iteration::IterationError() const
+		double Iteration::GetNormRD() const
 		{
 			auto const size = y_.size();
 			BOOST_ASSERT(size == ybefore_.size());
@@ -146,7 +148,7 @@ namespace thomasfermi {
 			BOOST_ASSERT(size == ybefore_.size());
 
 			for (auto i = 0U; i < size; i++) {
-				y_[i] = ybefore_[i] + pdata_->scf_mixing_weight_ * (y_[i] - ybefore_[i]);
+				y_[i] = ybefore_[i] + pdata_->iteration_mixing_weight_ * (y_[i] - ybefore_[i]);
 			}
 		}
 		

@@ -30,7 +30,7 @@ namespace thomasfermi {
 		{
 		}
 
-		shootf::result_type shootf::operator()(double x1, double x2, double xf)
+		shootf::result_type shootf::operator()(bool usecilk, double x1, double x2, double xf)
 		{
 			BOOST_ASSERT(x1 < xf);
 			BOOST_ASSERT(x2 > xf);
@@ -70,7 +70,12 @@ namespace thomasfermi {
 				v1_ = sav;
 			};
 
-			cilk_spawn funcx1();
+			if (usecilk) {
+				cilk_spawn funcx1();
+			}
+			else {
+				funcx1();
+			}
 			
             // 次にx2で用いる境界条件を変える
 			{	
@@ -86,8 +91,10 @@ namespace thomasfermi {
 			
 				v2_ = sav;
 			};
-
-			cilk_sync;
+			
+			if (usecilk) {
+				cilk_sync;
+			}
 
 			shootfunc::dblasvector f(shootfunc::NVAR), ff(shootfunc::NVAR);
 			for (auto i = 0U; i < shootfunc::NVAR; i++) {
@@ -112,26 +119,33 @@ namespace thomasfermi {
 			auto const funcx1toxf = [&]
 			{
 				// 得られた条件でx1...dxまで微分方程式を解く
-				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](shootfunc::state_type const & y, double const x)
+				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](shootfunc::state_type const & y, double const)
 				{ res1.push_back(y[0]);	});									// x1...dxの結果を得る
 				res1.pop_back();
 
 				// 得られた条件でdx...xfまで微分方程式を解く
-				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](shootfunc::state_type const & y, double const x)
+				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](shootfunc::state_type const & y, double const)
 				{ res1.push_back(y[0]); });									// dx...xf + x1の結果を得る
 			};
 
-			cilk_spawn funcx1toxf();
+			if (usecilk) {
+				cilk_spawn funcx1toxf();
+			}
+			else {
+				funcx1toxf();
+			}
 
 			// 得られた条件でx2...xfまで微分方程式を解く
 			y2 = load2_(x2, v2_);								
 			
             dvector res2;
 			res2.reserve(boost::numeric_cast<std::size_t>((x2 - xf) / dx_) + 1);
-			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](const shootfunc::state_type & y, const double x)
+			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](const shootfunc::state_type & y, double const)
 			{ res2.push_back(y[0]); });									// x2...xf - x1の結果を得る
 
-			cilk_sync;
+			if (usecilk) {
+				cilk_sync;
+			}
 
             return createResult(res1, res2, x1, xf);
 		}
