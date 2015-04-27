@@ -19,7 +19,8 @@ LDFLAGS = -L/home/dc1394/oss/boost_1_57_0/stage/icc/lib/ -lboost_program_options
 		  -lgsl -lgslcblas -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core \
 		  -lmkl_intel_thread -lpthread -lm
 
-all: $(PROG) ; rm -f $(OBJS) $(DEPS)
+all: $(PROG) ;
+#rm -f $(OBJS) $(DEPS)
 
 -include $(DEPS)
 

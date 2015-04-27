@@ -179,9 +179,12 @@ namespace thomasfermi {
 
     boost::optional<ci_string> ReadInputFile::readData(ci_string const & article, ci_string const & def)
     {
+        std::cout << __LINE__ << "OK\n";
         // グリッドを読み込む
         for (; true; lineindex_++) {
             auto const ret(getToken(article));
+
+            std::cout << __LINE__ << "OK\n";
 
             switch (std::get<0>(ret))
             {
