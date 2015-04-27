@@ -50,16 +50,16 @@ namespace thomasfermi {
         }
 
         // グリッドの最小値を読み込む
-        readValue("grid.xmin", XMIN_DEFAULT, pdata_->xmin_);
+        readValue(ci_string("grid.xmin"), XMIN_DEFAULT, pdata_->xmin_);
 
         // グリッドの最大値を読み込む
-        readValue("grid.xmax", XMAX_DEFAULT, pdata_->xmax_);
+		readValue(ci_string("grid.xmax"), XMAX_DEFAULT, pdata_->xmax_);
 
         // グリッドのサイズを読み込む
-        readValue("grid.num", GRID_NUM_DEFAULT, pdata_->grid_num_);
+		readValue(ci_string("grid.num"), GRID_NUM_DEFAULT, pdata_->grid_num_);
 
         // 許容誤差を読み込む
-        readValue("eps", EPS_DEFAULT, pdata_->eps_);
+		readValue(ci_string("eps"), EPS_DEFAULT, pdata_->eps_);
 		        
         // マッチングポイントを読み込む
 		if (!readMatchPoint()) {
@@ -67,10 +67,10 @@ namespace thomasfermi {
 		}
 		
 		// Gauss-Legendre積分の分点を読み込む
-		readValue("gauss.legendre.integ", GAUSS_LEGENDRE_INTEG_DEFAULT, pdata_->gauss_legendre_integ_);
+		readValue(ci_string("gauss.legendre.integ"), GAUSS_LEGENDRE_INTEG_DEFAULT, pdata_->gauss_legendre_integ_);
 
         // Iterationの最大ループ回数を読み込む
-        readValue("iteration.maxIter", ITERATION_MAXITER_DEFAULT, pdata_->iteration_maxiter_);
+		readValue(ci_string("iteration.maxIter"), ITERATION_MAXITER_DEFAULT, pdata_->iteration_maxiter_);
 
         // Iterationの一次混合の重みを読み込む
         if (!readIterationMixingWeight()) {
@@ -78,7 +78,7 @@ namespace thomasfermi {
         }
         
         // Iterationの収束判定条件の値を読み込む
-        readValue("iteration.criterion", ITERATION_CRITERION_DEFAULT, pdata_->iteration_criterion_);
+		readValue(ci_string("iteration.criterion"), ITERATION_CRITERION_DEFAULT, pdata_->iteration_criterion_);
     }
     
     // #endregion publicメンバ関数
@@ -295,7 +295,7 @@ namespace thomasfermi {
     
 	bool ReadInputFile::readIterationMixingWeight()
 	{
-		readValue("iteration.Mixing.Weight", ITERATION_MIXING_WEIGHT_DEFAULT, pdata_->iteration_mixing_weight_);
+		readValue(ci_string("iteration.Mixing.Weight"), ITERATION_MIXING_WEIGHT_DEFAULT, pdata_->iteration_mixing_weight_);
 		if (pdata_->iteration_mixing_weight_ <= 0.0 || pdata_->iteration_mixing_weight_ > 1.0) {
 			std::cerr << "インプットファイルの[iteration.Mixing.Weight]の行が正しくありません" << std::endl;
 			return false;
@@ -305,7 +305,7 @@ namespace thomasfermi {
 
 	bool ReadInputFile::readMatchPoint()
 	{
-		readValue("matching.point", MATCH_POINT_DEFAULT, pdata_->match_point_);
+		readValue(ci_string("matching.point"), MATCH_POINT_DEFAULT, pdata_->match_point_);
 		if (pdata_->match_point_ <= pdata_->xmin_ || pdata_->match_point_ >= pdata_->xmax_) {
 			std::cerr << "インプットファイルの[matching.point]の行が正しくありません" << std::endl;
 			return false;

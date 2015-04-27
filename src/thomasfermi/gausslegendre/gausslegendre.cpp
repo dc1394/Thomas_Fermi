@@ -5,10 +5,10 @@
 	This software is released under the BSD-2 License.
 */
 
+#include "../alglib/integration.h"	// for alglib
 #include "gausslegendre.h"
-#include <stdexcept>        // for std::runtime_error
-#include <boost/cast.hpp>   // for boost::numeric_cast
-#include <integration.h>	// for alglib
+#include <stdexcept>				// for std::runtime_error
+#include <boost/cast.hpp>			// for boost::numeric_cast
 
 namespace gausslegendre {
     // #region コンストラクタ
