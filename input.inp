@@ -2,41 +2,24 @@
 # Chemical Symbol and orbital
 #
 
-chemical.symbol             He
-orbital                     1s
-spin.orbital                alpha           # alpha|beta default = alpha
-
-#
-# Calculation type
-#
-
-eq.type                     sch             # sch|sdirac|dirac default = sch
+chemical.number             1
 
 #
 # Parameters for solving 1D-differential equations
 #
 
-grid.xmin                  -8.0             # default = -7.0 rmin(a.u.) = exp(grid.xmin)
-grid.xmax                   6.0             # default = 5.0 rmax(a.u.) = exp(grid.xmax)
+grid.xmin                   1.0E-7          # default = 1.0E-5
+grid.xmax                   100.0           # default = 100.0
 grid.num                    100000          # default = 20000
 eps                         1.0E-15         # default = 1.0E-15
-solver.type             Bulirsch_Stoer      # Adams_Bashforth_Moulton|Bulirsch_Stoer|Controlled_Runge_Kutta default = Controlled_Runge_Kutta
-search.LowerE               Auto            # default = Auto
-num.of.partition            300             # default = 300
-matching.point.ratio        0.67            # default = 0.67
-
-#
-# rho
-#
-
-rho0.c                      Auto            # default = Auto
-rho0.alpha                  Auto            # default = Auto
+matching.point              10.0            # default = 15.0
+gauss.legendre.integ        1000            # default = 1000
 
 #
 # SCF
 #
 
-scf.maxIter                 100             # default = 40            
-scf.Mixing.Weight           1.0             # default = 0.3
-scf.criterion               1.0E-15         # default = 1.0E-12
+scf.maxIter                 2000            # default = 200
+scf.Mixing.Weight           0.1             # default = 0.05
+scf.criterion               1.0E-13         # default = 1.0E-12
 

@@ -91,5 +91,6 @@
 *
 * ALGLIB is a registered trademark of the ALGLIB Project.
 */
+
   thomasfermiにはGNU ProjectによるGNU Scientific Libraryを使用しています。こち
 　らのライセンスは GNU General Public License になります。
