@@ -1,17 +1,23 @@
-PROG := schrac
-SRCS :=	ci_string.cpp data.cpp diffdata.cpp diffsolver.cpp diracnormalize.cpp \
-		eigenvaluesearch.cpp energy.cpp getcomlineoption.cpp goexit.cpp \
-		normalization.cpp readinputfile.cpp rho.cpp scfloop.cpp schnormalize.cpp \
-		schracmain.cpp simpson.cpp solvelinearequ.cpp vhartree.cpp \
-		wavefunctionsave.cpp checkpoint.cpp
+PROG := thomasfermi
+SRCS :=	alglibinternal.cpp alglibmisc.cpp ap.cpp dataanalysis.cpp diffequations.cpp \
+		fasttransforms.cpp integration.cpp interpolation.cpp linalg.cpp optimization.cpp \
+		solvers.cpp specialfunctions.cpp specialfunctions.cpp statistics.cpp \
+		checkpoint.cpp \
+		beta.cpp ci_string.cpp fem.cpp foelement.cpp gausslegendre.cpp \
+		getcomlineoption.cpp goexit.cpp iteration.cpp linearequations.cpp \
+		makerhoenergy.cpp readinputfile.cpp load2.cpp shootf.cpp shootfunc.cpp \
+		thomasfermimain.cpp
+
 OBJS :=	$(SRCS:%.cpp=%.o)
 DEPS :=	$(SRCS:%.cpp=%.d)
 
-VPATH  = src src/checkpoint
-CXX = clang++
-CXXFLAGS = -Wextra -O3 -pipe -std=c++11
-LDFLAGS = -L/home/dc1394/oss/boost_1_57_0/stage/clang/lib/ -lboost_program_options \
-		  -lgsl -lgslcblas -lm -L/home/dc1394/oss/tbb43_20150316oss/lib/intel64/gcc4.4 -ltbb
+VPATH  = src/alglib src/checkpoint src/thomasfermi src/thomasfermi/gausslegendre \
+		 src/thomasfermi/makerhoen src/thomasfermi/shoot 
+CXX = icc
+CXXFLAGS = -Wextra -O3 -pipe -std=c++11 -openmp -I${MKLROOT}/include
+LDFLAGS = -L/home/dc1394/oss/boost_1_57_0/stage/icc/lib/ -lboost_program_options \
+		  -lgsl -lgslcblas -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core \
+		  -lmkl_intel_thread -lpthread -lm
 
 all: $(PROG) ; rm -f $(OBJS) $(DEPS)
 

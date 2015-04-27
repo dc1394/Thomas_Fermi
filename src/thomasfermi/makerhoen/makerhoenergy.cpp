@@ -1,11 +1,11 @@
-﻿/*! \file MakeRhoEnergy.cpp
+﻿/*! \file makerhoenergy.cpp
     \brief β(x)から電子密度とエネルギーを計算してファイルに記録するクラスの実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 	This software is released under the BSD-2 License.
 */
 
-#include "MakeRhoEnergy.h"
+#include "makerhoenergy.h"
 #include <cmath>                                // for std::pow
 #include <iostream>                             // for std::cout
 #include <utility>                              // for std::get
@@ -21,6 +21,7 @@ namespace thomasfermi {
 			alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
 			xvec_(std::get<1>(pt)),
 			dx_(xvec_[2] - xvec_[1]),
+            fp_(nullptr, fcloser),
 			gl_(n),
             pbeta_(std::get<0>(pt)),
             size_(xvec_.size()),
