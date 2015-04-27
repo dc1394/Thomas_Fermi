@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ソース ファイル\shoot">
+      <UniqueIdentifier>{32bf1bd2-8475-464f-8e3e-e1b48aaaf4e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\shoot">
+      <UniqueIdentifier>{be582795-cd40-4cd4-8862-f00a9fb5b304}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ドキュメント">
+      <UniqueIdentifier>{70810ab2-51c2-4b6b-943c-b015653a2c0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="result">
+      <UniqueIdentifier>{f2ca450d-760c-4fc0-bd7c-70c43bf855d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\makerhoen">
+      <UniqueIdentifier>{3ee89725-eb63-4910-9fb8-99894e513bcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\makerhoen">
+      <UniqueIdentifier>{67fcfe62-472e-4236-abb7-92c89941a663}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\gausslegendre">
+      <UniqueIdentifier>{5b94c15b-de57-4a72-a35c-617a93713e08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\gausslegendre">
+      <UniqueIdentifier>{37536f66-7804-450a-8727-0620a369cec4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\myfunctional">
+      <UniqueIdentifier>{dbae2dea-8384-4e80-947f-3ee6611458da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\utility">
+      <UniqueIdentifier>{cbb11a61-2b4d-4a56-8b7a-b614493a7cf5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="result\result2.plt">
+      <Filter>result</Filter>
+    </None>
+    <None Include="result\result2_logscale.plt">
+      <Filter>result</Filter>
+    </None>
+    <None Include="result\result3.plt">
+      <Filter>result</Filter>
+    </None>
+    <None Include="Document\Thomas-Fermi.tex">
+      <Filter>ドキュメント</Filter>
+    </None>
+    <None Include="Document\Thomas-Fermi方程式のFEMによる解法.pptx">
+      <Filter>ドキュメント</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="thomasfermimain.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="gausslegendre\gausslegendre.cpp">
+      <Filter>ソース ファイル\gausslegendre</Filter>
+    </ClCompile>
+    <ClCompile Include="makerhoen\makerhoenergy.cpp">
+      <Filter>ソース ファイル\makerhoen</Filter>
+    </ClCompile>
+    <ClCompile Include="beta.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="shoot\load2.cpp">
+      <Filter>ソース ファイル\shoot</Filter>
+    </ClCompile>
+    <ClCompile Include="shoot\shootf.cpp">
+      <Filter>ソース ファイル\shoot</Filter>
+    </ClCompile>
+    <ClCompile Include="shoot\shootfunc.cpp">
+      <Filter>ソース ファイル\shoot</Filter>
+    </ClCompile>
+    <ClCompile Include="fem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="foelement.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="iteration.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="linearequations.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="goexit.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="readinputfile.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="ci_string.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="getcomlineoption.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="gausslegendre\gausslegendre.h">
+      <Filter>ヘッダー ファイル\gausslegendre</Filter>
+    </ClInclude>
+    <ClInclude Include="makerhoen\makerhoenergy.h">
+      <Filter>ヘッダー ファイル\makerhoen</Filter>
+    </ClInclude>
+    <ClInclude Include="beta.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="shoot\load2.h">
+      <Filter>ヘッダー ファイル\shoot</Filter>
+    </ClInclude>
+    <ClInclude Include="shoot\shootf.h">
+      <Filter>ヘッダー ファイル\shoot</Filter>
+    </ClInclude>
+    <ClInclude Include="shoot\shootfunc.h">
+      <Filter>ヘッダー ファイル\shoot</Filter>
+    </ClInclude>
+    <ClInclude Include="fem.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="foelement.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="iteration.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="utility\deleter.h">
+      <Filter>ヘッダー ファイル\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="utility\property.h">
+      <Filter>ヘッダー ファイル\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="mkl_allocator.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="linearequations.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="myfunctional\functional.h">
+      <Filter>ヘッダー ファイル\myfunctional</Filter>
+    </ClInclude>
+    <ClInclude Include="goexit.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="readinputfile.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="ci_string.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="data.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="getcomlineoption.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
