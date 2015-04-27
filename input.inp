@@ -19,7 +19,7 @@ gauss.legendre.integ        1000            # default = 1000
 # SCF
 #
 
-iteratio.maxIter           2000            # default = 200
+iteration.maxIter           2000            # default = 200
 iteration.Mixing.Weight     0.1             # default = 0.05
 iteration.criterion         1.0E-13         # default = 1.0E-12
 

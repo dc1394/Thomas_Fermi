@@ -240,7 +240,6 @@ namespace thomasfermi {
         // グリッドを読み込む
         for (; true; lineindex_++) {
             auto const ret = getToken(article);
-
             switch (std::get<0>(ret))
             {
             case -1:
