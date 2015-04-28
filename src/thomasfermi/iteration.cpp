@@ -90,7 +90,7 @@ namespace thomasfermi {
 
 				ybefore_ = y_;
 				y_ = ple_->LEsolver();
-				normrd = normrd;
+				normrdbefore = normrd;
 				normrd = GetNormRD();
 
 				if (normrd > normrdbefore) {
