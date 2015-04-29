@@ -32,7 +32,7 @@ namespace thomasfermi {
 			//! A constructor.
 			/*!
 				唯一のコンストラクタ
-				\param arg インプットファイル名とTBBを使用するかどうかのstd::pair
+				\param arg インプットファイル名とCilk Plusを使用するかどうかのstd::pair
 			*/
 			explicit Iteration(std::pair<std::string, bool> const & arg);
 

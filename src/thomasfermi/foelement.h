@@ -28,7 +28,7 @@ namespace thomasfermi {
 				\param beta
 				\param coords
 				\param nint
-				\param usecilk TBBを使用するかどうか
+				\param usecilk Cilk Plusを使用するかどうか
 			*/
 			FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk);
 

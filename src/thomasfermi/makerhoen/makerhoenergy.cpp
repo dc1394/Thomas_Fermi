@@ -33,8 +33,8 @@ namespace thomasfermi {
 
             s_ = 1.0 / gl_.qgauss(
                 func,
-                xvec_[0],
-                xvec_[size_ - 1]);
+                xvec_.front(),
+                xvec_.back());
         }
 
         // #endregion コンストラクタ
@@ -60,8 +60,8 @@ namespace thomasfermi {
 
             auto const sum = gl_.qgauss(
                 func,
-                xvec_[0],
-                xvec_[size_ - 1]);
+                xvec_.front(),
+				xvec_.back());
 
             return -3.0 / 7.0 * alpha_ * Z_ * Z_ * sum;
         }

@@ -50,8 +50,8 @@ namespace thomasfermi {
 
         //! A public member function (constant).
         /*!
-            インプットファイル名とTBBを使用するかどうかを、std::pairで返す
-            \return インプットファイル名とTBBを使用するかどうかのstd::pair
+            インプットファイル名とCilk Plusを使用するかどうかを、std::pairで返す
+            \return インプットファイル名とCilk Plusを使用するかどうかのstd::pair
         */
         std::pair<std::string, bool> getpairdata() const;
 
@@ -74,7 +74,7 @@ namespace thomasfermi {
 
         //!  A private member variable.
         /*!
-            TBBを使用するかどうか    
+            Cilk Plusを使用するかどうか    
         */
         bool usecilk_ = false;
 

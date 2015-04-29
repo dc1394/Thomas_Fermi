@@ -50,10 +50,10 @@ namespace thomasfermi {
 			//! A constructor.
 			/*!
 				唯一のコンストラクタ
-				\param beta
-				\param coords
-				\param nint
-				\param usecilk TBBを使用するかどうか
+				\param beta 関数β(x)の配列
+				\param coords xのメッシュ
+				\param nint Gauss-Legendreの分点
+				\param usecilk Cilk Plusを使用するかどうか
 			*/
 			FEM(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk);
 
@@ -253,7 +253,7 @@ namespace thomasfermi {
 			
 			//! A protected member variable.
 			/*!
-				TBBを使用するかどうか
+				Cilk Plusを使用するかどうか
 			*/
 			bool const usecilk_;
 
