@@ -25,8 +25,14 @@ namespace thomasfermi {
 	/*!
 		Gauss-Legendre積分の分点のデフォルト値
 	*/
-	static auto constexpr GAUSS_LEGENDRE_INTEG_DEFAULT = 1000U;
+	static auto constexpr GAUSS_LEGENDRE_INTEG_DEFAULT = 5U;
 
+	//! A global variable (constant expression).
+	/*!
+		エネルギーを求めるときのGauss-Legendre積分の分点のデフォルト値
+	*/
+	static auto constexpr GAUSS_LEGENDRE_INTEG_ENE_DEFAULT = 1000U;
+	
     //! A global variable (constant expression).
     /*!
         微分方程式を解くときのメッシュの数のデフォルト値
@@ -35,9 +41,9 @@ namespace thomasfermi {
     
     //! A global variable (constant expression).
     /*!
-        マッチングポイント（xmin〜xmaxまでの間でなければならない）
+        マッチングポイント（xmin〜xmaxまでの間でなければならない）のデフォルト値
     */
-	static auto constexpr MATCH_POINT_DEFAULT = 15.0;
+	static auto constexpr MATCH_POINT_DEFAULT = 10.0;
         
     //! A global variable (constant expression).
     /*!
@@ -49,13 +55,13 @@ namespace thomasfermi {
     /*!
         ITERATIONの最大ループ回数のデフォルト値
     */
-    static auto constexpr ITERATION_MAXITER_DEFAULT = 200U;
+    static auto constexpr ITERATION_MAXITER_DEFAULT = 10000U;
 
     //! A global variable (constant expression).
     /*!
         電子密度を合成するときの重みのデフォルト値
     */
-    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.05;
+    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.1;
 
     //! A global variable (constant expression).
     /*!
@@ -87,6 +93,12 @@ namespace thomasfermi {
 			Gauss-Legendre積分の分点
 		*/
 		std::uint32_t gauss_legendre_integ_ = GAUSS_LEGENDRE_INTEG_DEFAULT;
+		
+		//!  A public member variable.
+		/*!
+			エネルギーを求めるときのGauss-Legendre積分の分点
+		*/
+		std::uint32_t gauss_legendre_integ_ene_ = GAUSS_LEGENDRE_INTEG_ENE_DEFAULT;
 
         //!  A public member variable.
         /*!

@@ -1,4 +1,4 @@
-/*! \file Gauss_Legendre.h
+/*! \file gausslegendre.h
     \brief Gauss-Legendre積分を行うクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.

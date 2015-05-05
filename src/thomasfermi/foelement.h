@@ -48,7 +48,7 @@ namespace thomasfermi {
 				dn/drを返す関数
 				\return dn/dr
 			*/
-			dvector getdndr() const;
+			dvector getdndr() const override;
 
 			//! A private member function (constant).
 			/*!
@@ -56,7 +56,7 @@ namespace thomasfermi {
 				\param ielem 要素
 				\return c
 			*/
-			dvector getc(std::size_t ielem) const;
+			dvector getc(std::size_t ielem) const override;
 
 			// #endregion メンバ関数
 

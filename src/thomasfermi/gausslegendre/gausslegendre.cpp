@@ -1,4 +1,4 @@
-﻿/*! \file Gauss_Legendre.cpp
+﻿/*! \file gausslegendre.cpp
     \brief Gauss-Legendre積分を行うクラスの実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
@@ -7,8 +7,8 @@
 
 #include "../../alglib/integration.h"	// for alglib
 #include "gausslegendre.h"
-#include <stdexcept>				// for std::runtime_error
-#include <boost/cast.hpp>			// for boost::numeric_cast
+#include <stdexcept>					// for std::runtime_error
+#include <boost/cast.hpp>				// for boost::numeric_cast
 
 namespace gausslegendre {
     // #region コンストラクタ
