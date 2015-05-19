@@ -204,6 +204,7 @@
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
+    <ClCompile Include="soelement.cpp" />
     <ClCompile Include="thomasfermimain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -218,12 +219,14 @@
     <ClInclude Include="iteration.h" />
     <ClInclude Include="linearequations.h" />
     <ClInclude Include="makerhoen\makerhoenergy.h" />
+    <ClInclude Include="mixing\simplemixing.h" />
     <ClInclude Include="mkl_allocator.h" />
     <ClInclude Include="myfunctional\functional.h" />
     <ClInclude Include="readinputfile.h" />
     <ClInclude Include="shoot\load2.h" />
     <ClInclude Include="shoot\shootf.h" />
     <ClInclude Include="shoot\shootfunc.h" />
+    <ClInclude Include="soelement.h" />
     <ClInclude Include="utility\deleter.h" />
     <ClInclude Include="utility\property.h" />
   </ItemGroup>
