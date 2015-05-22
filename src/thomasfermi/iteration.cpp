@@ -28,6 +28,7 @@ namespace thomasfermi {
 			ReadInputFile rif(arg);         // ファイルを読み込む
 			rif.readFile();
 			pdata_ = rif.PData;
+            pmix_ = std::make_unique<mixing::SimpleMixing>(pdata_);
 
 			auto const dx = pdata_->xmax_ / static_cast<double>(pdata_->grid_num_);
 

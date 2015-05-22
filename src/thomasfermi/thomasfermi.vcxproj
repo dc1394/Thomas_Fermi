@@ -93,7 +93,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>alglib_debug.lib;checkpoint.lib;gsl.lib;mkl_intel_c.lib;mkl_core.lib;mkl_intel_thread.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\mylib64\boost_1_58_0\stage\ia32\icl15\lib;C:\mylib64\alglib\lib\ia32;C:\Program Files (x86)\Intel\Composer XE 2015\mkl\lib\ia32;D:\DATA\PROGRAM\Source\Repos\thomasfermi\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\mylib64\boost_1_58_0\stage\ia32\icl15\lib;C:\mylib64\alglib\lib\ia32;C:\Program Files (x86)\Intel\Composer XE 2015\mkl\lib\ia32;D:\DATA\PROGRAM\Source\Repos\thomasfermi\src\thomasfermi\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -200,11 +200,11 @@
     <ClCompile Include="iteration.cpp" />
     <ClCompile Include="linearequations.cpp" />
     <ClCompile Include="makerhoen\makerhoenergy.cpp" />
+    <ClCompile Include="mixing\simplemixing.cpp" />
     <ClCompile Include="readinputfile.cpp" />
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
-    <ClCompile Include="soelement.cpp" />
     <ClCompile Include="thomasfermimain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -226,7 +226,6 @@
     <ClInclude Include="shoot\load2.h" />
     <ClInclude Include="shoot\shootf.h" />
     <ClInclude Include="shoot\shootfunc.h" />
-    <ClInclude Include="soelement.h" />
     <ClInclude Include="utility\deleter.h" />
     <ClInclude Include="utility\property.h" />
   </ItemGroup>

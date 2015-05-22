@@ -13,6 +13,7 @@
 #include "data.h"
 #include "foelement.h"
 #include "linearequations.h"
+#include "mixing/simplemixing.h"
 #include "shoot/shootfunc.h"
 #include "utility/property.h"
 #include <boost/optional.hpp>	// for boost::optional
@@ -117,7 +118,6 @@ namespace thomasfermi {
 			
 			//! A private member variable.
 			/*!
-				一次混合の値α
 			*/
 			std::vector<std::size_t> i_bc_given_;
 
@@ -144,7 +144,13 @@ namespace thomasfermi {
 				連立一次方程式のソルバーオブジェクト
 			*/
 			boost::optional<Linear_equations> ple_;
-			
+
+            //! A private member variable.
+            /*!
+                yの混合法
+            */
+            std::unique_ptr<mixing::SimpleMixing> pmix_;
+
 			//! A private member variable.
 			/*!
 			*/

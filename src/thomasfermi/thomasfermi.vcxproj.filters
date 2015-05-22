@@ -46,6 +46,9 @@
     <Filter Include="ヘッダー ファイル\mixing">
       <UniqueIdentifier>{79fd183a-717c-494e-b0c6-d6121932a70c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\simplemixing">
+      <UniqueIdentifier>{037f44d4-cd7d-4ab1-ae97-8c926b9845e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="result\result2.plt">
@@ -110,8 +113,8 @@
     <ClCompile Include="getcomlineoption.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="soelement.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="mixing\simplemixing.cpp">
+      <Filter>ソース ファイル\simplemixing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -174,9 +177,6 @@
     </ClInclude>
     <ClInclude Include="mixing\simplemixing.h">
       <Filter>ヘッダー ファイル\mixing</Filter>
-    </ClInclude>
-    <ClInclude Include="soelement.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
