@@ -145,12 +145,7 @@ namespace thomasfermi {
 
 		void Iteration::ymix()
 		{
-			auto const size = y_.size();
-			BOOST_ASSERT(size == ybefore_.size());
-
-			for (auto i = 0U; i < size; i++) {
-				y_[i] = ybefore_[i] + pdata_->iteration_mixing_weight_ * (y_[i] - ybefore_[i]);
-			}
+            y_ = (*pmix_)(y_);
 		}
 		
 		// #endregion privateメンバ関数
