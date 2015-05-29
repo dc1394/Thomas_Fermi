@@ -91,8 +91,7 @@ namespace thomasfermi {
 		public:
 			//! A property.
 			/*!
-				読み込んだデータを返す
-				\return 読み込んだデータ
+				読み込んだデータへのプロパティ
 			*/
 			utility::Property<std::shared_ptr<Data>> const PData;
 
@@ -177,12 +176,6 @@ namespace thomasfermi {
 			/*!
 			*/
 			double y2_;
-
-			//! A private member variable.
-			/*!
-				前回のループのyの値の可変長配列
-			*/
-			FEM::dmklvector ybefore_;
 
 			// #endregion メンバ変数
 						

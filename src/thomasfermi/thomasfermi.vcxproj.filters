@@ -66,6 +66,7 @@
     <None Include="Document\Thomas-Fermi方程式のFEMによる解法.pptx">
       <Filter>ドキュメント</Filter>
     </None>
+    <None Include="input.inp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thomasfermimain.cpp">
@@ -114,6 +115,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="mixing\simplemixing.cpp">
+      <Filter>ソース ファイル\simplemixing</Filter>
+    </ClCompile>
+    <ClCompile Include="mixing\gr_pulay.cpp">
       <Filter>ソース ファイル\simplemixing</Filter>
     </ClCompile>
   </ItemGroup>
@@ -176,6 +180,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="mixing\simplemixing.h">
+      <Filter>ヘッダー ファイル\mixing</Filter>
+    </ClInclude>
+    <ClInclude Include="mixing\gr_pulay.h">
       <Filter>ヘッダー ファイル\mixing</Filter>
     </ClInclude>
   </ItemGroup>

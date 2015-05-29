@@ -1,8 +1,8 @@
 ﻿/*! \file simplemixing.h
-	\brief 一次混合を行うクラスの宣言
+	\brief 一次混合法でyの合成を行うクラスの宣言
 
-Copyright ©  2015 @dc1394 All Rights Reserved.
-This software is released under the BSD-2 License.
+    Copyright ©  2015 @dc1394 All Rights Reserved.
+    This software is released under the BSD-2 License.
 */
 
 #ifndef _SIMPLEMIXING_H_
@@ -23,14 +23,15 @@ namespace thomasfermi {
             //! A constructor.
             /*!
                 唯一のコンストラクタ
+                \param pdata データオブジェクト
             */
             SimpleMixing(std::shared_ptr<Data> const & pdata);
 
             //! A destructor.
             /*!
-                デストラクタ
+                デフォルトデストラクタ
             */
-            virtual ~SimpleMixing() noexcept;
+            ~SimpleMixing() = default;
 
             // #endregion コンストラクタ・デストラクタ
 
@@ -39,26 +40,54 @@ namespace thomasfermi {
             //! A public member function.
             /*!
                 一次混合法によって、yの合成を行う関数
+                \param newy 合成前のy
+                \return 合成後のy
             */
             femall::FEM::dmklvector operator()(femall::FEM::dmklvector const & y);
 
+            //! A public member function.
+            /*!
+                一次混合法によって、yの合成を行う関数
+                \param newy 合成前の新しいy
+                \param oldy 古いy
+                \return 合成後のy
+            */
+            femall::FEM::dmklvector operator()(femall::FEM::dmklvector const & newy, femall::FEM::dmklvector const & oldy);
+
             // #endregion メンバ関数
 
-            // #region メンバ変数
+            // #region プロパティ
 
+        public:
+            //! A property.
+            /*!
+                前回のループのyの値の可変長配列へのプロパティ
+            */
+            utility::Property<femall::FEM::dmklvector> Ybefore;
+
+            // #endregion プロパティ
+
+            // #region privateメンバ変数
+
+        protected:
             //!  A private member variable.
+            /*!
+                前回のループのyの値
+            */
+            femall::FEM::dmklvector ybefore_;
+
+            // #endregion privateメンバ変数
+
+            // #region protectedメンバ変数
+
+        protected:
+            //!  A protected member variable.
             /*!
                 データオブジェクト
             */
             std::shared_ptr<Data> pdata_;
 
-            //! A private member variable.
-            /*!
-                前回のループのyの値の可変長配列
-            */
-            femall::FEM::dmklvector ybefore_;
-
-            // #endregion メンバ変数
+            // #endregion protectedメンバ変数
 
             // #region 禁止されたコンストラクタ・メンバ関数
 

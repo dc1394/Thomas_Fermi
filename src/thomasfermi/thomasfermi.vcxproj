@@ -185,6 +185,7 @@
   <ItemGroup>
     <None Include="Document\Thomas-Fermi.tex" />
     <None Include="Document\Thomas-Fermi方程式のFEMによる解法.pptx" />
+    <None Include="input.inp" />
     <None Include="result\result2.plt" />
     <None Include="result\result2_logscale.plt" />
     <None Include="result\result3.plt" />
@@ -200,6 +201,7 @@
     <ClCompile Include="iteration.cpp" />
     <ClCompile Include="linearequations.cpp" />
     <ClCompile Include="makerhoen\makerhoenergy.cpp" />
+    <ClCompile Include="mixing\gr_pulay.cpp" />
     <ClCompile Include="mixing\simplemixing.cpp" />
     <ClCompile Include="readinputfile.cpp" />
     <ClCompile Include="shoot\load2.cpp" />
@@ -219,6 +221,7 @@
     <ClInclude Include="iteration.h" />
     <ClInclude Include="linearequations.h" />
     <ClInclude Include="makerhoen\makerhoenergy.h" />
+    <ClInclude Include="mixing\gr_pulay.h" />
     <ClInclude Include="mixing\simplemixing.h" />
     <ClInclude Include="mkl_allocator.h" />
     <ClInclude Include="myfunctional\functional.h" />
