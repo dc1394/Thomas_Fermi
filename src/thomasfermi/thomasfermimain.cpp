@@ -4,6 +4,7 @@
 #include "iteration.h"
 #include "makerhoen/makerhoenergy.h"
 #include <cstdlib>                      // for EXIT_FAILURE, EXIT_SUCCESS
+#include <iostream>						// for std::cerr
 
 int main(int argc, char * argv[])
 {

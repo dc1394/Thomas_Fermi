@@ -25,11 +25,9 @@ namespace thomasfermi {
 			return std::move(y);
 		}
 
-		shootfunc::dblasvector shootfunc::score(shootfunc::state_type const & y)
+		Eigen::VectorXd shootfunc::score(shootfunc::state_type const & y)
 		{
-            shootfunc::dblasvector f(shootfunc::NVAR);
-			boost::copy(y, f.begin());
-
+			Eigen::VectorXd f = Eigen::VectorXd::Map(y.data(), y.size());
 			return std::move(f);
 		}
 

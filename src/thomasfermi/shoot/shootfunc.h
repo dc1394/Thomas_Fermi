@@ -16,8 +16,8 @@
     #define _SCL_SECURE_NO_WARNINGS
 #endif
 
-#include <array>							// for std::array
-#include <boost/numeric/ublas/matrix.hpp>	// for boost::numeric::ublas::vector
+#include <array>		// for std::array
+#include <Eigen/Core>	// Eigen::VectorXd
 
 namespace thomasfermi {
 	namespace shoot {
@@ -40,8 +40,6 @@ namespace thomasfermi {
 
             // #region 型エイリアス
 
-            using dblasvector = boost::numeric::ublas::vector<double>;
-
 			using state_type = std::array<double, NVAR>;
 
             // #region 型エイリアス
@@ -61,9 +59,9 @@ namespace thomasfermi {
             /*!
                 y0(x)の適合点xfにおける関数値および微分値の型を変換する
                 \param y y0(x)の適合点xfにおける関数値および微分値の型を変換する（std::array）
-                \return y0(x)のx（原点に近い点）における関数値および微分値（boost::numeric::ublas::vector<double>）
+                \return y0(x)のx（原点に近い点）における関数値および微分値（Eigen::VectorXd）
             */
-            static shootfunc::dblasvector score(shootfunc::state_type const & y);
+			static Eigen::VectorXd score(shootfunc::state_type const & y);
 
             //! A public static member function.
             /*!

@@ -11,9 +11,10 @@
 #include <boost/assert.hpp>				// for BOOST_ASSERT
 #include <boost/cast.hpp>				// for boost::numeric_cast
 #include <boost/numeric/odeint.hpp>		// for boost::numeric::odeint
-#include <boost/numeric/ublas/lu.hpp>	// for boost::numeric::ublas::lu_factorize, boost::numeric::ublas::lu_substitute, boost::numeric::ublas::permutation_matrix
 #include <boost/range/algorithm.hpp>	// for boost::find_if			
 #include <cilk/cilk.h>					// for cilk_spawn, cilk_sync
+#include <Eigen/Dense>
+#include <Eigen/LU>
 
 namespace thomasfermi {
 	namespace shoot {
@@ -49,8 +50,8 @@ namespace thomasfermi {
 			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf, - dx_);
 			auto const f2(score_(y2));
 
-			boost::numeric::ublas::matrix<double> dfdv(shootfunc::NVAR, shootfunc::NVAR);
-            
+			Eigen::MatrixXd dfdv(shootfunc::NVAR, shootfunc::NVAR);
+
             // x1で用いる境界条件を変える
 			auto const funcx1 = [&]
 			{
@@ -86,8 +87,9 @@ namespace thomasfermi {
 				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y, x2, xf, - dx_);
 				auto const f = score_(y);
 
-				for (auto i = 0U; i < shootfunc::NVAR; i++)
+				for (auto i = 0U; i < shootfunc::NVAR; i++) {
 					dfdv(i, 1) = (f2[i] - f[i]) / delv2_;
+				}
 			
 				v2_ = sav;
 			};
@@ -96,16 +98,15 @@ namespace thomasfermi {
 				cilk_sync;
 			}
 
-			shootfunc::dblasvector f(shootfunc::NVAR), ff(shootfunc::NVAR);
+			Eigen::VectorXd f(shootfunc::NVAR), ff(shootfunc::NVAR);
 			for (auto i = 0U; i < shootfunc::NVAR; i++) {
 				f[i] = f1[i] - f2[i];
 				ff[i] = - f[i];
 			}
 
-			boost::numeric::ublas::permutation_matrix<> pm(dfdv.size1());
-			boost::numeric::ublas::lu_factorize(dfdv, pm);              // 自由パラメータに対する増分を求める
-			boost::numeric::ublas::lu_substitute(dfdv, pm, ff);
-
+			Eigen::FullPivLU< Eigen::MatrixXd > lu(dfdv);
+			ff = lu.solve(ff);
+						
             v1_ += ff[0];                                               // x1の境界でのパラメータ値の増分
 
             v2_ += ff[1];                                               // x2の境界でのパラメータ値の増分

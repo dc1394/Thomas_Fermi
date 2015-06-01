@@ -7,9 +7,10 @@
 */
 
 #include "load2.h"
-#include <array>	// for std:array
-#include <cmath>	// for std::pow
-#include <utility>	// for std::move
+#include <array>				// for std:array
+#include <cmath>				// for std::pow
+#include <utility>				// for std::move
+#include <boost/assert.hpp>		// for BOOST_ASSERT
 
 namespace thomasfermi {
 	namespace shoot {

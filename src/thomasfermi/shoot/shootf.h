@@ -14,6 +14,7 @@
 #include "../myfunctional/functional.h"
 #include <functional>						// for std::function
 #include <utility>							// for std::pair
+#include <vector>							// for std::vector
 
 namespace thomasfermi {
     namespace shoot {
@@ -34,7 +35,7 @@ namespace thomasfermi {
 			using result_type = std::pair<dvector, dvector>;
 
         private:
-			using scorefunctype = std::function<shootfunc::dblasvector(shootfunc::state_type const &)>;
+			using scorefunctype = std::function<Eigen::VectorXd(shootfunc::state_type const &)>;
 
             // #endregion 型エイリアス
 

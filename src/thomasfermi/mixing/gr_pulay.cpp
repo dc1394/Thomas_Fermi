@@ -70,7 +70,7 @@ namespace thomasfermi {
                     }
 
                     // alpha from RDM
-                    Eigen::Matrix2d a;
+                    Eigen::MatrixXd a(nummix, nummix);
 
                     for (auto scfi = 0; scfi <= nummix; scfi++) {
                         for (auto scfj = scfi; scfj <= nummix; scfj++) {
@@ -87,7 +87,7 @@ namespace thomasfermi {
                         }
                     }
 
-                    auto const ia(a.inverse());
+					Eigen::MatrixXd ia(a.inverse());
 
                     auto denominator = 0.0;
                     for (auto scfi = 0; scfi <= nummix; scfi++) {
@@ -180,18 +180,11 @@ namespace thomasfermi {
                     }
                 }
 
+				return yarray_[0];
+
                 break;
             }
             }
-            femall::FEM::dmklvector newy(size);
-
-            for (auto i = 0U; i < size; i++) {
-                newy[i] = Ybefore()[i] + pdata_->iteration_mixing_weight_ * (y[i] - Ybefore()[i]);
-            }
-            
-            Ybefore = y;
-
-            return newy;
         }
 
         // #endregion publicメンバ関数
