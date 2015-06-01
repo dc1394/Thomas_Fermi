@@ -44,34 +44,41 @@ namespace thomasfermi {
                 \param scfiter SCFの回数
                 \param y 新しいy
             */
-            femall::FEM::dmklvector operator()(std::int32_t scfiter, femall::FEM::dmklvector const & y);
+            femall::FEM::dmklvector operator()(std::int32_t scfiter, femall::FEM::dvector const & x, femall::FEM::dmklvector const & y);
 
             // #endregion publicメンバ関数
 
             // #region privateメンバ関数
 
         private:
-            //! A private member function.
+            //! A private member variable (constant expression).
             /*!
-                残差ノルムを求める関数
-                \return 残差ノルム
+                SCF Mixing history
             */
-            std::vector<double> getry();
+            static auto constexpr NUM_MIXING_PDM = 5;
 
             //! A private member function.
             /*!
                 残差ノルムを求める関数
-                \param y 新しいy
                 \return 残差ノルム
             */
-            std::vector<double> getry(femall::FEM::dmklvector const & y);
+            femall::FEM::dmklvector getry();
+
+            //! A private member function.
+            /*!
+                残差ノルムを求める関数
+                \param newy 新しいy
+                \param oldy 古いy
+                \return 残差ノルム
+            */
+            femall::FEM::dmklvector getry(femall::FEM::dmklvector const & newy, femall::FEM::dmklvector const & oldy);
 
             //! A private member function.
             /*!
                 yと残差ノルムの履歴を求める関数
                 \param y 新しいy
             */
-            void setyryarray(femall::FEM::dmklvector const & y);
+            void setyryarray();
 
             // #endregion publicメンバ関数
 
@@ -79,15 +86,15 @@ namespace thomasfermi {
 
             //! A private member variable.
             /*!
-                残差ノルムの履歴を集めたstd::array
+                残差ノルムの履歴を集めたstd::vector
             */
-            std::array<std::vector<double>, 3> ryarray;
+            std::vector<femall::FEM::dmklvector> ryarray_;
             
             //! A private member variable.
             /*!
                 yの履歴を集めたstd::array
             */
-            std::array<femall::FEM::dmklvector, 3> yarray;
+            std::array<femall::FEM::dmklvector, 3> yarray_;
 
             // #endregion メンバ変数
 

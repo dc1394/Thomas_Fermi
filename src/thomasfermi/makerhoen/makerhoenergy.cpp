@@ -63,12 +63,12 @@ namespace thomasfermi {
                 xvec_.front(),
 				xvec_.back());
 
-            return -3.0 / 7.0 * alpha_ * Z_ * Z_ * sum;
+            return -3.0 / 7.0 * alpha_ * s_ * Z_ * Z_ * sum;
         }
 
         double MakeRhoEnergy::rho(double x) const
         {
-            return alpha_ * Z_ * s_ * std::sqrt(x) * y(x) * std::sqrt(y(x));
+            return alpha_ * s_ * Z_ * std::sqrt(x) * y(x) * std::sqrt(y(x));
         }
 
 		double MakeRhoEnergy::rhoTilde(double x) const
