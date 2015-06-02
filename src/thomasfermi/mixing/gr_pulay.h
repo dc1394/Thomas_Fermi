@@ -17,7 +17,7 @@
 
 namespace thomasfermi {
     namespace mixing {
-        class GR_Pulay : SimpleMixing {
+        class GR_Pulay : public SimpleMixing {
             // #region コンストラクタ・デストラクタ
 
         public:
@@ -42,7 +42,9 @@ namespace thomasfermi {
             /*!
                 guaranteed-reduction Pulay法によって、yの合成を行う関数
                 \param scfiter SCFの回数
+                \param x xのメッシュ
                 \param y 新しいy
+                \return 合成後のy
             */
             femall::FEM::dmklvector operator()(std::int32_t scfiter, femall::FEM::dvector const & x, femall::FEM::dmklvector const & y);
 
@@ -86,15 +88,21 @@ namespace thomasfermi {
 
             //! A private member variable.
             /*!
+                残差ノルム
+            */
+            femall::FEM::dmklvector py;
+
+            //! A private member variable.
+            /*!
                 残差ノルムの履歴を集めたstd::vector
             */
             std::vector<femall::FEM::dmklvector> ryarray_;
             
             //! A private member variable.
             /*!
-                yの履歴を集めたstd::array
+                yの履歴を集めたstd::vector
             */
-            std::array<femall::FEM::dmklvector, 3> yarray_;
+            std::vector<femall::FEM::dmklvector> yarray_;
 
             // #endregion メンバ変数
 

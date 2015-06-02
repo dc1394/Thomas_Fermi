@@ -13,7 +13,7 @@
 #include "data.h"
 #include "foelement.h"
 #include "linearequations.h"
-#include "mixing/simplemixing.h"
+#include "mixing/gr_pulay.h"
 #include "shoot/shootfunc.h"
 #include "utility/property.h"
 #include <boost/optional.hpp>	// for boost::optional
@@ -81,8 +81,10 @@ namespace thomasfermi {
 			//! A private member function.
 			/*!
 				yを合成する
+                \param scfiter SCFの回数
+                \param y 新しいy
 			*/
-			void ymix();
+            void ymix(std::int32_t scfiter, femall::FEM::dmklvector const & y);
 						
 			// #endregion privateメンバ関数
 
@@ -148,7 +150,7 @@ namespace thomasfermi {
             /*!
                 yの混合法
             */
-            std::unique_ptr<mixing::SimpleMixing> pmix_;
+            std::unique_ptr<mixing::GR_Pulay> pmix_;
 
 			//! A private member variable.
 			/*!

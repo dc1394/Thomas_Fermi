@@ -28,7 +28,7 @@ namespace thomasfermi {
 			ReadInputFile rif(arg);         // ファイルを読み込む
 			rif.readFile();
 			pdata_ = rif.PData;
-            pmix_ = std::make_unique<mixing::SimpleMixing>(pdata_);
+            pmix_ = std::make_unique<mixing::GR_Pulay>(pdata_);
 
 			auto const dx = pdata_->xmax_ / static_cast<double>(pdata_->grid_num_);
 
@@ -83,7 +83,6 @@ namespace thomasfermi {
 			auto normrd = Iteration::ITERATION_THRESHOLD;
 			double normrdbefore;
 			for (auto i = 1U; i < pdata_->iteration_maxiter_; i++) {
-				ymix();
 				pfem_->reset(Iteration::make_beta());
 				pfem_->stiff2();
 
@@ -91,13 +90,14 @@ namespace thomasfermi {
 				ple_->bound(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
                 pmix_->Ybefore = y_;
-				y_ = ple_->LEsolver();
+				//y_ = ;
+                ymix(i, ple_->LEsolver());
 				normrdbefore = normrd;
 				normrd = GetNormRD();
 
-				if (normrd > normrdbefore) {
+				/*if (normrd > normrdbefore) {
 					pdata_->iteration_mixing_weight_ *= Iteration::ITERATION_REDUCTION;
-				}
+				}*/
 
 				std::cout << "反復回数: " << i << "回, NormRD: " << boost::format("%.15f\n") % normrd;
 				if (normrd < pdata_->iteration_criterion_) {
@@ -121,7 +121,7 @@ namespace thomasfermi {
 		double Iteration::GetNormRD() const
 		{
 			auto const size = y_.size();
-			BOOST_ASSERT(size == ybefore_.size());
+            BOOST_ASSERT(size == pmix_->Ybefore().size());
 
 			auto sum = 0.0;
 			for (auto i = 0U; i < size; i++) {
@@ -144,9 +144,9 @@ namespace thomasfermi {
 			return std::move(beta);
 		}
 
-		void Iteration::ymix()
+        void Iteration::ymix(std::int32_t scfiter, femall::FEM::dmklvector const & y)
 		{
-            y_ = (*pmix_)(y_);
+            y_ = (*pmix_)(scfiter, x_, y);
 		}
 		
 		// #endregion privateメンバ関数
