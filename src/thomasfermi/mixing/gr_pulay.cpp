@@ -43,9 +43,6 @@ namespace thomasfermi {
 				return yarray_[0];
 
             case 2:
-				ryarray_[2] = getry(y, yarray_[1]);
-				yarray_[2] = yarray_[1];
-
 				setyryarray(y);
                 return yarray_[0];
                 break;
