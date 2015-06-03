@@ -14,7 +14,7 @@
 #include <boost/range/algorithm.hpp>	// for boost::find_if			
 #include <cilk/cilk.h>					// for cilk_spawn, cilk_sync
 #include <Eigen/Dense>
-#include <Eigen/LU>
+#include <Eigen/LU>						// for Eigen::FullPivLU
 
 namespace thomasfermi {
 	namespace shoot {

@@ -29,9 +29,9 @@ namespace thomasfermi {
 
             //! A destructor.
             /*!
-                デフォルトデストラクタ
+                デストラクタ
             */
-            ~SimpleMixing() = default;
+            virtual ~SimpleMixing() noexcept;
 
             // #endregion コンストラクタ・デストラクタ
 

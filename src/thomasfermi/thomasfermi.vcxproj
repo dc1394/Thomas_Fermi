@@ -92,7 +92,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>alglib_debug.lib;checkpoint.lib;gsl.lib;mkl_intel_c.lib;mkl_core.lib;mkl_intel_thread.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>alglib.lib;checkpoint.lib;gsl.lib;mkl_intel_c.lib;mkl_core.lib;mkl_intel_thread.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\mylib64\boost_1_58_0\stage\ia32\icl15\lib;C:\mylib64\alglib\lib\ia32;C:\Program Files (x86)\Intel\Composer XE 2015\mkl\lib\ia32;D:\DATA\PROGRAM\Source\Repos\thomasfermi\src\thomasfermi\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

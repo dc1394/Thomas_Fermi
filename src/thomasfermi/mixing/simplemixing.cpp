@@ -20,6 +20,10 @@ namespace thomasfermi {
         {
         }
 
+		SimpleMixing::~SimpleMixing() noexcept
+		{
+		}
+
         femall::FEM::dmklvector SimpleMixing::operator()(femall::FEM::dmklvector const & y)
         {
             auto const size = y.size();

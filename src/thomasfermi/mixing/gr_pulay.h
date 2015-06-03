@@ -32,7 +32,7 @@ namespace thomasfermi {
             /*!
                 デフォルトデストラクタ
             */
-            ~GR_Pulay() = default;
+            ~GR_Pulay() noexcept;
 
             // #endregion コンストラクタ・デストラクタ
 
@@ -77,10 +77,10 @@ namespace thomasfermi {
 
             //! A private member function.
             /*!
-                yと残差ノルムの履歴を求める関数
-                \param y 新しいy
+                yの履歴を更新する関数
+				\param newy 新しいy
             */
-            void setyryarray();
+			void setyryarray(femall::FEM::dmklvector const & newy);
 
             // #endregion publicメンバ関数
 

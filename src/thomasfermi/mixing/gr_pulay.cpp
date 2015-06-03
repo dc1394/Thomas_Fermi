@@ -7,8 +7,9 @@
 */
 
 #include "gr_pulay.h"
-#include <Eigen/Core>
+#include <Eigen/Core>		// Eigen::MatrixXd
 #include <Eigen/Dense>
+#include <iostream>
 
 namespace thomasfermi {
     namespace mixing {
@@ -21,6 +22,10 @@ namespace thomasfermi {
         {
         }
 
+		GR_Pulay::~GR_Pulay() noexcept
+		{
+		}
+
         // #region コンストラクタ
 
         // #region publicメンバ関数
@@ -32,29 +37,31 @@ namespace thomasfermi {
 
             switch (scfiter) {
             case 1:
-            case 2:
-                yarray_[0] = y;
-                yarray_[1] = Ybefore;
+				yarray_[0] = y;
+				yarray_[1] = Ybefore;
+				setyryarray(y);
+				return yarray_[0];
 
-                setyryarray();
+            case 2:
+				ryarray_[2] = getry(y, yarray_[1]);
+				yarray_[2] = yarray_[1];
+
+				setyryarray(y);
                 return yarray_[0];
                 break;
 
             default:
             {
-                yarray_[0] = y;
-                
+				yarray_[0] = y;
+
                 if (scfiter & 1) {
                     // Py
                     py = yarray_[0];
-                    
-                    // Calc of Ry1
-                    ryarray_[1] = getry();
 
-                    yarray_[1] = Ybefore;
-
-                    setyryarray();
-                    return yarray_[0];
+					// Calc of Ry1
+					ryarray_[1] = getry();
+					
+					return yarray_[0];
                 }
                 else {
                     // Calc of RDM0
@@ -73,14 +80,13 @@ namespace thomasfermi {
                     }
 
                     // alpha from RDM
-                    Eigen::MatrixXd a(nummix + 1, nummix + 1);
+					Eigen::MatrixXd a(nummix + 1, nummix + 1);
 
                     ryarray_.resize(nummix + 1);
                     for (auto scfi = 0; scfi <= nummix; scfi++) {
                         for (auto scfj = scfi; scfj <= nummix; scfj++) {
                             a(scfi, scfj) = 0.0;
 
-                            auto const size = ryarray_[scfi].size();
                             for (auto i = 0; i < size; i++){
                                 a(scfi, scfj) += ryarray_[scfi][i] * ryarray_[scfj][i];
                             }
@@ -89,7 +95,14 @@ namespace thomasfermi {
                         }
                     }
 
-					Eigen::MatrixXd ia(a.inverse());
+					auto const av_dia = a(0, 0);
+					for (auto scfi = 0; scfi <= nummix; scfi++) {
+						for (auto scfj = 0; scfj <= nummix; scfj++){
+							a(scfi, scfj) /= av_dia;
+						}
+					}
+
+					Eigen::MatrixXd const ia(a.inverse());
 
                     auto denominator = 0.0;
                     for (auto scfi = 0; scfi <= nummix; scfi++) {
@@ -97,8 +110,7 @@ namespace thomasfermi {
                             denominator += ia(scfi, scfj);
                         }
                     }
-
-                    auto sum = 0.0;
+					
                     std::vector<double> alden(nummix + 1);
                     for (auto scfi = 0; scfi <= nummix; scfi++) {
                         auto numerator = 0.0;
@@ -106,14 +118,12 @@ namespace thomasfermi {
                             numerator += ia(scfj, scfi);
                         }
                         alden[scfi] = numerator / denominator;
-                        sum += alden[scfi];
                     }
 
                     // Calculate an optimized residual rho
                     std::vector<double> optry(size);
 
                     auto optnorm_ry = 0.0;
-
                     for (auto i = 0U; i < size; i++) {
                         optry[i] = 0.0;
                         
@@ -129,7 +139,7 @@ namespace thomasfermi {
                             optry[i] += alden[pscfiter] * ryarray_[pscfiter][i];
                         }
 
-                        optnorm_ry += optry[i] * optry[i] * x[i] * x[i] * dx;
+                        optnorm_ry += optry[i] * optry[i] * dx;
                     }
 
                     double coef_optrdm = 0.0;
@@ -188,8 +198,6 @@ namespace thomasfermi {
                 }
 
 				return yarray_[0];
-
-                break;
             }
             }
         }
@@ -216,11 +224,11 @@ namespace thomasfermi {
             return ry;
         }
 
-        void GR_Pulay::setyryarray()
+		void GR_Pulay::setyryarray(femall::FEM::dmklvector const & newy)
         {
-            ryarray_[2] = getry();
+            ryarray_[2] = getry(newy, yarray_[1]);
 
-            yarray_[0] = SimpleMixing::operator()(yarray_[0], yarray_[1]);
+            yarray_[0] = SimpleMixing::operator()(newy, yarray_[1]);
             yarray_[2] = yarray_[1];
             yarray_[1] = yarray_[0];
         }
