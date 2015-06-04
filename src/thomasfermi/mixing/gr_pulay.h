@@ -53,12 +53,6 @@ namespace thomasfermi {
             // #region privateメンバ関数
 
         private:
-            //! A private member variable (constant expression).
-            /*!
-                SCF Mixing history
-            */
-            static auto constexpr NUM_MIXING_PDM = 5;
-
             //! A private member function.
             /*!
                 残差ノルムを求める関数
@@ -75,17 +69,31 @@ namespace thomasfermi {
             */
             femall::FEM::dmklvector getry(femall::FEM::dmklvector const & newy, femall::FEM::dmklvector const & oldy);
 
+			//! A private member function.
+			/*!
+				guaranteed-reduction Pulay法を行う関数
+				\param scfiter SCFの回数
+				\param x xのメッシュ
+				\return 合成後のy
+			*/
+			femall::FEM::dmklvector gr(std::int32_t scfiter, femall::FEM::dvector const & x);
+			
             //! A private member function.
             /*!
                 yの履歴を更新する関数
-				\param newy 新しいy
             */
-			void setyryarray(femall::FEM::dmklvector const & newy);
+			void setyryarray();
 
             // #endregion publicメンバ関数
 
             // #region メンバ変数
 
+			//! A private member variable (constant expression).
+			/*!
+				SCF Mixing history
+			*/
+			static auto constexpr NUM_MIXING_PDM = 5;
+			
             //! A private member variable.
             /*!
                 残差ノルム
