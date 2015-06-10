@@ -74,15 +74,15 @@ namespace thomasfermi {
 			*/
 			std::function<double(double, double, std::size_t)> const fun2_;
 
-			//! A private member variable (constant).
+			//! A private member variable.
 			/*!
-				関数オブジェクト
+				形状関数1を格納する関数オブジェクト
 			*/
 			std::function<double (double)> N1_;
 			
-			//! A private member variable (constant).
+			//! A private member variable.
 			/*!
-				関数オブジェクト
+				形状関数2を格納する関数オブジェクト
 			*/
 			std::function<double (double)> N2_;
 

@@ -31,7 +31,7 @@ namespace thomasfermi {
             /*!
                 デストラクタ
             */
-            virtual ~SimpleMixing() noexcept;
+            virtual ~SimpleMixing() noexcept = default;
 
             // #endregion コンストラクタ・デストラクタ
 

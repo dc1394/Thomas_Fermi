@@ -185,5 +185,8 @@
     <ClInclude Include="mixing\gr_pulay.h">
       <Filter>ヘッダー ファイル\mixing</Filter>
     </ClInclude>
+    <ClInclude Include="soelement.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

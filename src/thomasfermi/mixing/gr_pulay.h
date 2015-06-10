@@ -32,7 +32,7 @@ namespace thomasfermi {
             /*!
                 デフォルトデストラクタ
             */
-            ~GR_Pulay() noexcept;
+			~GR_Pulay() noexcept override = default;
 
             // #endregion コンストラクタ・デストラクタ
 

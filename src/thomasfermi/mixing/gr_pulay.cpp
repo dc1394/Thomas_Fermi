@@ -22,10 +22,6 @@ namespace thomasfermi {
         {
         }
 
-		GR_Pulay::~GR_Pulay() noexcept
-		{
-		}
-
         // #region コンストラクタ
 
         // #region publicメンバ関数
