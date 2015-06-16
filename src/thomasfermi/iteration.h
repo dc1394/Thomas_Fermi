@@ -150,7 +150,7 @@ namespace thomasfermi {
             /*!
                 yの混合法
             */
-            std::unique_ptr<mixing::GR_Pulay> pmix_;
+            std::unique_ptr<mixing::SimpleMixing> pmix_;
 
 			//! A private member variable.
 			/*!

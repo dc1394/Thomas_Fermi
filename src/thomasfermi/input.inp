@@ -21,5 +21,5 @@ gauss.legendre.integ.ene    100		    # default = 1000
 #
 
 iteration.maxIter           2000            # default = 200
-iteration.Mixing.Weight     0.3             # default = 0.05
+iteration.Mixing.Weight     0.05             # default = 0.05
 iteration.criterion         1.0E-13         # default = 1.0E-12

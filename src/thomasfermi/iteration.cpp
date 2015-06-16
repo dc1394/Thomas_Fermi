@@ -28,7 +28,7 @@ namespace thomasfermi {
 			ReadInputFile rif(arg);         // ファイルを読み込む
 			rif.readFile();
 			pdata_ = rif.PData;
-            pmix_ = std::make_unique<mixing::GR_Pulay>(pdata_);
+            pmix_ = std::make_unique<mixing::SimpleMixing>(pdata_);
 
 			auto const dx = pdata_->xmax_ / static_cast<double>(pdata_->grid_num_);
 
@@ -146,7 +146,7 @@ namespace thomasfermi {
 
         void Iteration::ymix(std::int32_t scfiter, femall::FEM::dmklvector const & y)
 		{
-            y_ = (*pmix_)(scfiter, x_, y);
+            y_ = (*pmix_)(y);
 		}
 		
 		// #endregion privateメンバ関数
