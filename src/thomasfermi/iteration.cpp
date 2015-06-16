@@ -51,7 +51,7 @@ namespace thomasfermi {
 			
 			x_ = std::get<0>(xytuple);
 			y_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
-            pmix_->Ybefore = y_;
+            pmix_->Yold = y_;
 
 			pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
 			pfem_->stiff();
@@ -89,7 +89,7 @@ namespace thomasfermi {
 				ple_->reset(pfem_->B);
 				ple_->bound(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
-                pmix_->Ybefore = y_;
+                pmix_->Yold = y_;
 				//y_ = ;
                 ymix(i, ple_->LEsolver());
 				normrdbefore = normrd;
@@ -121,11 +121,14 @@ namespace thomasfermi {
 		double Iteration::GetNormRD() const
 		{
 			auto const size = y_.size();
-            BOOST_ASSERT(size == pmix_->Ybefore().size());
+
+			auto const & yold(pmix_->getyold());
+
+            BOOST_ASSERT(size == yold.size());
 
 			auto sum = 0.0;
 			for (auto i = 0U; i < size; i++) {
-                sum += sqr(y_[i] - pmix_->Ybefore()[i]);
+                sum += sqr(y_[i] - yold[i]);
 			}
 
 			return std::sqrt(sum);

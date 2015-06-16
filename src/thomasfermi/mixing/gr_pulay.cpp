@@ -32,7 +32,7 @@ namespace thomasfermi {
 
 			switch (scfiter) {
 			case 1:
-				yarray_[1] = Ybefore;
+				yarray_[1] = Yold;
 				return gr(1, x);
 
 			default:
@@ -73,7 +73,7 @@ namespace thomasfermi {
 		femall::FEM::dmklvector GR_Pulay::gr(std::int32_t scfiter, femall::FEM::dvector const & x)
 		{
 			auto const size = x.size();
-			BOOST_ASSERT(size == Ybefore().size());
+			BOOST_ASSERT(size == Yold().size());
 
 			switch (scfiter) {
 			case 1:

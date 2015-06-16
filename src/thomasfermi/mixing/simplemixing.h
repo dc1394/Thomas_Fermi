@@ -37,6 +37,13 @@ namespace thomasfermi {
 
             // #region メンバ関数
 
+			//! A public member function.
+			/*!
+				yoldへのconst参照を返すgetter
+				\return yへのconst参照
+			*/
+			femall::FEM::dmklvector const & getyold();
+
             //! A public member function.
             /*!
                 一次混合法によって、yの合成を行う関数
@@ -63,7 +70,7 @@ namespace thomasfermi {
             /*!
                 前回のループのyの値の可変長配列へのプロパティ
             */
-            utility::Property<femall::FEM::dmklvector> Ybefore;
+            utility::Property<femall::FEM::dmklvector> Yold;
 
             // #endregion プロパティ
 
@@ -74,7 +81,7 @@ namespace thomasfermi {
             /*!
                 前回のループのyの値
             */
-            femall::FEM::dmklvector ybefore_;
+            femall::FEM::dmklvector yold_;
 
             // #endregion privateメンバ変数
 
