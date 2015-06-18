@@ -39,7 +39,23 @@ namespace thomasfermi {
 
 		// #endregion コンストラクタ
 
-		// #region メンバ関数
+		// #region publicメンバ関数
+		
+		std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> FOElement::createresult() const
+		{
+			return std::make_tuple(a1_, a2_, b_);
+		}
+
+		// #endregion publicメンバ関数
+
+		// #region privateメンバ関数
+
+		void FOElement::amerge(std::size_t ielem)
+		{
+			a1_[ielem] += (*pastiff_)[0][0];
+			a1_[ielem + 1] += (*pastiff_)[1][1];
+			a2_[ielem] = (*pastiff_)[0][1];
+		}
 
 		FEM::dvector FOElement::getc(std::size_t ielem) const
 		{
@@ -68,6 +84,6 @@ namespace thomasfermi {
 			return std::move(dndr);
 		}
 
-		// #endregion メンバ関数
+		// #endregion privateメンバ関数
 	}
 }

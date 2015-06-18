@@ -40,20 +40,6 @@ namespace thomasfermi {
 
             return newy;
         }
-
-        femall::FEM::dmklvector SimpleMixing::operator()(femall::FEM::dmklvector const & newy, femall::FEM::dmklvector const & oldy)
-        {
-            auto const size = newy.size();
-            BOOST_ASSERT(size == oldy.size());
-
-            femall::FEM::dmklvector y(size);
-
-            for (auto i = 0U; i < size; i++) {
-                y[i] = oldy[i] + pdata_->iteration_mixing_weight_ * (newy[i] - oldy[i]);
-            }
-
-            return y;
-        }
     }
 }
 

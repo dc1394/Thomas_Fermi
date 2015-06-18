@@ -40,15 +40,32 @@ namespace thomasfermi {
 
 			// #endregion コンストラクタ・デストラクタ 
 
-			// #region メンバ関数
+			// #region publicメンバ関数
+			
+			//! A public member function (constant).
+			/*!
+				結果を返す関数
+				\return 結果を集めたtuple
+			*/
+			std::tuple<dmklvector, dmklvector, dmklvector> createresult() const;
+
+			// #endregion publicメンバ関数
+
+			// #region privateメンバ関数
 
 		private:
+			//! A private member function.
+			/*!
+				\param ielem
+			*/
+			void amerge(std::size_t ielem) override;
+
 			//! A private member function (constant).
 			/*!
 				dn/drを返す関数
 				\return dn/dr
 			*/
-			dvector getdndr() const override;
+			dvector getdndr() const;
 
 			//! A private member function (constant).
 			/*!

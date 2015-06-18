@@ -43,22 +43,29 @@ namespace thomasfermi {
 		private:
 			//! A private member function (constant).
 			/*!
-			dn/drを返す関数
-			\return dn/dr
+				dn/drを返す関数
+				\param r rの値
+				\return dn/dr
 			*/
-			dvector getdndr() const override;
+			dvector getdndr(double r) const;
 
 			//! A private member function (constant).
 			/*!
-			cを返す関数
-			\param ielem 要素
-			\return c
+				cを返す関数
+				\param ielem 要素
+				\return c
 			*/
 			dvector getc(std::size_t ielem) const override;
 
 			// #endregion メンバ関数
 
 			// #region メンバ変数
+
+			//! A private member variable.
+			/*!
+				連立方程式Ax = Bの行列Aの三番目の要素
+			*/
+			dmklvector a3_;
 
 			//! A private member variable (constant).
 			/*!

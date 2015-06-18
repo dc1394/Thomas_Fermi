@@ -201,12 +201,12 @@
     <ClCompile Include="iteration.cpp" />
     <ClCompile Include="linearequations.cpp" />
     <ClCompile Include="makerhoen\makerhoenergy.cpp" />
-    <ClCompile Include="mixing\gr_pulay.cpp" />
     <ClCompile Include="mixing\simplemixing.cpp" />
     <ClCompile Include="readinputfile.cpp" />
     <ClCompile Include="shoot\load2.cpp" />
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
+    <ClCompile Include="soelement.cpp" />
     <ClCompile Include="thomasfermimain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -221,7 +221,6 @@
     <ClInclude Include="iteration.h" />
     <ClInclude Include="linearequations.h" />
     <ClInclude Include="makerhoen\makerhoenergy.h" />
-    <ClInclude Include="mixing\gr_pulay.h" />
     <ClInclude Include="mixing\simplemixing.h" />
     <ClInclude Include="mkl_allocator.h" />
     <ClInclude Include="myfunctional\functional.h" />

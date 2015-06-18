@@ -117,8 +117,8 @@
     <ClCompile Include="mixing\simplemixing.cpp">
       <Filter>ソース ファイル\simplemixing</Filter>
     </ClCompile>
-    <ClCompile Include="mixing\gr_pulay.cpp">
-      <Filter>ソース ファイル\simplemixing</Filter>
+    <ClCompile Include="soelement.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -180,9 +180,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="mixing\simplemixing.h">
-      <Filter>ヘッダー ファイル\mixing</Filter>
-    </ClInclude>
-    <ClInclude Include="mixing\gr_pulay.h">
       <Filter>ヘッダー ファイル\mixing</Filter>
     </ClInclude>
     <ClInclude Include="soelement.h">

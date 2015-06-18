@@ -52,15 +52,6 @@ namespace thomasfermi {
             */
             femall::FEM::dmklvector operator()(femall::FEM::dmklvector const & y);
 
-            //! A public member function.
-            /*!
-                一次混合法によって、yの合成を行う関数
-                \param newy 合成前の新しいy
-                \param oldy 古いy
-                \return 合成後のy
-            */
-            femall::FEM::dmklvector operator()(femall::FEM::dmklvector const & newy, femall::FEM::dmklvector const & oldy);
-
             // #endregion メンバ関数
 
             // #region プロパティ

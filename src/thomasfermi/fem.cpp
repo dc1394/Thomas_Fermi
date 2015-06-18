@@ -8,6 +8,7 @@
 
 #include "fem.h"
 #include <cstdint>				// for std::uint32_t
+#include <stdexcept>			// for std::domain_error
 #include <utility>				// for std::move
 #include <boost/assert.hpp>		// for BOOST_ASSERT
 #include <cilk/cilk.h>			// for cilik_for
@@ -40,9 +41,18 @@ namespace thomasfermi {
 
 		// #region publicメンバ関数
 
-		std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> FEM::createresult() const
+		FEM::dvector FEM::getdndr() const
 		{
-			return std::make_tuple(a1_, a2_, b_);
+			throw std::domain_error("この関数を呼び出してはいけません！");
+
+			return FEM::dvector();
+		}
+		
+		FEM::dvector FEM::getdndr(double r) const
+		{
+			throw std::domain_error("この関数を呼び出してはいけません！");
+
+			return FEM::dvector();
 		}
 
 		void FEM::reset(dvector const & beta)
@@ -102,13 +112,6 @@ namespace thomasfermi {
 		// #endregion protectedメンバ関数
 
 		// #region privateメンバ関数
-
-		void FEM::amerge(std::size_t ielem)
-		{
-			a1_[ielem] += (*pastiff_)[0][0];
-			a1_[ielem + 1] += (*pastiff_)[1][1];
-			a2_[ielem] = (*pastiff_)[0][1];
-		}
 
         void FEM::createb(std::size_t ielem)
         {

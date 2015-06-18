@@ -15,15 +15,15 @@
     #define _SCL_SECURE_NO_WARNINGS
 #endif
 
+#include <array>
 #include "beta.h"
 #include "gausslegendre/gausslegendre.h"
 #include "mkl_allocator.h"
 #include "utility/property.h"
 #include <functional>					// for std::function
 #include <memory>						// for std::unique_ptr, std::shared_ptr
-#include <tuple>						// for std::tuple
 #include <vector>						// for std::vector
-#include <boost/multi_array.hpp>		// for boost::multi_array
+#include <boost/container/flat_map.hpp> // for boost::container::flat_map
 
 namespace thomasfermi {
 	namespace femall {
@@ -37,12 +37,16 @@ namespace thomasfermi {
 			// #region 型エイリアス
 
 		public:
-			using dvector = std::vector<double>;
+			using dvector = std::vector < double >;
 
-			using dmklvector = std::vector<double, mkl_allocator<double>>;
+			using dmklvector = std::vector < double, mkl_allocator< double > >;
+
+			using resultmap = boost::container::flat_map < std::string, FEM::dmklvector > ;
 
 		private:
-			using dmatrix = boost::multi_array<double, 2>;
+			using dmatrix = std::array < std::array<double, 2>, 2 >;
+
+			// #endregion 型エイリアス
 
 			// #region コンストラクタ・デストラクタ
 
@@ -67,13 +71,13 @@ namespace thomasfermi {
 
 			// #region publicメンバ関数
 
-			//! A public member function (constant).
+			//! A public member function (virtual function - constant).
 			/*!
 				結果を返す関数
-				\return 結果を集めたtuple
+				\return 結果を集めたboost::container::flat_map
 			*/
-			std::tuple<dmklvector, dmklvector, dmklvector> createresult() const;
-	
+			virtual resultmap createresult() const;
+			
 			//! A public member function.
 			/*!
 				βの状態をリセットする
@@ -109,11 +113,11 @@ namespace thomasfermi {
 			// #region privateメンバ関数
 
 		private:
-			//! A private member function.
+			//! A private member function (pure virtual function).
 			/*!
 				\param ielem
 			*/
-			void amerge(std::size_t ielem);
+			virtual void amerge(std::size_t ielem) = 0;
 
             //! A private member function.
             /*!
@@ -133,13 +137,22 @@ namespace thomasfermi {
 				\param ielem
 			*/
 			virtual dvector getc(std::size_t ielem) const = 0;
-			
-			//! A private member function (pure virtual function).
-			/*!
 
+			//! A private member function (constant).
+			/*!
+				dn/drを返す関数
+				\return dn/dr
 			*/
-			virtual dvector getdndr() const = 0;
-						
+			virtual dvector getdndr() const;
+
+			//! A private member function (constant).
+			/*!
+				dn/drを返す関数
+				\param r rの値
+				\return dn/dr
+			*/
+			virtual dvector getdndr(double r) const;
+
 			// #endregion 
 
 			// #region プロパティ
@@ -147,19 +160,16 @@ namespace thomasfermi {
 		public:
 			//! A property.
 			/*!
-
 			*/
 			Property<FEM::dmklvector> const B;
 
 			//! A property.
 			/*!
-
 			*/
 			Property<std::size_t> const Nnode;
 
 			//! A property.
 			/*!
-				
 			*/
 			Property<std::size_t> const Ntnoel;
 
@@ -179,28 +189,32 @@ namespace thomasfermi {
 			*/
 			std::size_t const nnode_;
 
-		private:
 			//! A private member variable.
 			/*!
+				連立方程式Ax = Bの行列Aの対角要素
 			*/
 			dmklvector a1_;
 
 			//! A private member variable.
 			/*!
+				連立方程式Ax = Bの行列Aの三重対角要素
 			*/
 			dmklvector a2_;
 
 			//! A private member variable.
 			/*!
+				連立方程式Ax = BのベクトルB
 			*/
 			dmklvector b_;
 
+		private:
 			//! A private member variable (constant).
 			/*!
 				関数β
 			*/
 			dvector const beta_;
 			
+		protected:
 			//! A private member variable.
 			/*!
 			*/

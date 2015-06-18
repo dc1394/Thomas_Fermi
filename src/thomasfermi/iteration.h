@@ -13,7 +13,7 @@
 #include "data.h"
 #include "foelement.h"
 #include "linearequations.h"
-#include "mixing/gr_pulay.h"
+#include "mixing/simplemixing.h"
 #include "shoot/shootfunc.h"
 #include "utility/property.h"
 #include <boost/optional.hpp>	// for boost::optional
@@ -84,7 +84,7 @@ namespace thomasfermi {
                 \param scfiter SCFの回数
                 \param y 新しいy
 			*/
-            void ymix(std::int32_t scfiter, femall::FEM::dmklvector const & y);
+            void ymix(femall::FEM::dmklvector const & y);
 						
 			// #endregion privateメンバ関数
 
