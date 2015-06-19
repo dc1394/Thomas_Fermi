@@ -2,9 +2,11 @@
 
 namespace thomasfermi {
 	namespace femall {
+		// #region コンストラクタ
+
 		SOElement::SOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk)
 			:	FEM(std::move(beta), coords, nint, usecilk),
-				a3_(nnode_ - 1, 0.0)
+				a2_(nnode_ - 1, 0.0)
 		{
 			auto const N1tmp = [](double r) { return -0.5 * r * (1.0 - r); };
 			N1_ = std::cref(N1tmp);
@@ -26,7 +28,42 @@ namespace thomasfermi {
 				(*plnods_)[2][i] = 2 * i + 1;
 			}
 		}
+		
+		// #endregion コンストラクタ
 
+		// #region publicメンバ関数
+
+		FEM::resultmap SOElement::createresult() const
+		{
+			FEM::resultmap mymap;
+
+			mymap["a0"] = a0_;
+			mymap["a1"] = a1_;
+			mymap["a2"] = a2_;
+			mymap["b"] = b_;
+
+			return std::move(mymap);
+		}
+		
+		// #endregion publicメンバ関数
+
+		// #region privateメンバ関数
+
+		void SOElement::amerge(std::size_t ielem)
+		{
+			// 対角要素
+			a0_[ielem] += astiff_[0][0];
+			a0_[ielem + 1] += astiff_[1][1];
+			a0_[ielem + 2] += astiff_[2][2];
+
+			// 三重対角要素
+			a1_[ielem] = astiff_[0][1];
+			a1_[ielem + 1] = astiff_[1][2];
+
+			// その上の要素
+			a2_[ielem] = astiff_[0][2];
+		}
+		
 		FEM::dvector SOElement::getdndr(double r) const
 		{
 			dvector dndr(ntnoel_);

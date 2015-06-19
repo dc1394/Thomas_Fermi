@@ -2,7 +2,7 @@
 	\brief 微分方程式を反復法で解くクラスの宣言
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _ITERATION_H_
@@ -16,7 +16,6 @@
 #include "mixing/simplemixing.h"
 #include "shoot/shootfunc.h"
 #include "utility/property.h"
-#include <boost/optional.hpp>	// for boost::optional
 
 namespace thomasfermi {
 	namespace femall {
@@ -39,9 +38,9 @@ namespace thomasfermi {
 
 			//! A destructor.
 			/*!
-				デストラクタ
+				デフォルトデストラクタ
 			*/
-			~Iteration();
+			~Iteration() = default;
 
 			// #region コンストラクタ・デストラクタ
 			
@@ -144,7 +143,7 @@ namespace thomasfermi {
 			/*!
 				連立一次方程式のソルバーオブジェクト
 			*/
-			boost::optional<Linear_equations> ple_;
+			std::unique_ptr<Linear_equations> ple_;
 
             //! A private member variable.
             /*!

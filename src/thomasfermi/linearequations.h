@@ -2,7 +2,7 @@
 	\brief 連立方程式を解くクラスの宣言
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _LENEAREQUATIONS_H_
@@ -10,13 +10,8 @@
 
 #pragma once
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4819)
-#define _SCL_SECURE_NO_WARNINGS
-#endif
-
+#include "fem.h"
 #include "mkl_allocator.h"
-#include <tuple>			// for std::tuple
 #include <vector>			// for std::vexctor
 
 namespace thomasfermi {
@@ -25,11 +20,10 @@ namespace thomasfermi {
 		/*!
 			連立方程式を解くクラス
 		*/
-		class Linear_equations final {
+		class Linear_equations {
 			// #region 型エイリアス
 
-			using dvector = std::vector < double, mkl_allocator<double> > ;
-
+		protected:
 			using sivector = std::vector<std::size_t>;
 
 			// #endregion 型エイリアス
@@ -40,21 +34,21 @@ namespace thomasfermi {
 			//! A constructor.
 			/*!
 				唯一のコンストラクタ
-				\param res 連立方程式のベクトル
+				\param res 連立方程式の要素
 			*/
-			explicit Linear_equations(std::tuple<dvector, dvector, dvector> const & res);
+			explicit Linear_equations(FEM::resultmap const & res);
 
 			//! A destructor.
 			/*!
-				デストラクタ
+				デフォルトデストラクタ
 			*/
-			~Linear_equations() = default;
+			virtual ~Linear_equations() noexcept = default;
 
 			// #endregion コンストラクタ・デストラクタ 
 
 			// #region publicメンバ関数
 
-			//! A public member function.
+			//! A public member function (pure virtual function).
 			/*!
 				境界条件を定める
 				\param n_bc_given 既知量の数
@@ -63,56 +57,56 @@ namespace thomasfermi {
 				\param i_bc_nonzero 非零の既知量のインデックス
 				\param v_bc_nonzero 非零の既知量
 			*/
-			void bound(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero); 
+			virtual void bound(std::size_t n_bc_given, Linear_equations::sivector const & i_bc_given, std::size_t n_bc_nonzero, Linear_equations::sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero) = 0;
 			
-			//! A public member function.
-			/*!
-				ベクトルbを初期化する
-				\param b 対象のベクトルb
-			*/
-			void reset(dvector const & b);
-			
-			//! A public member function.
+			//! A public member function (pure virtual function).
 			/*!
 				連立一次方程式の解を求める
 				\return 連立一次方程式の解
 			*/
-			Linear_equations::dvector LEsolver();
+			virtual FEM::dmklvector LEsolver() = 0;
+			
+			//! A public member function (virtual function).
+			/*!
+				ベクトルbを初期化する
+				\param b 対象のベクトルb
+			*/
+			virtual void reset(FEM::dmklvector const & b);
 
 			// #endregion publicメンバ関数
 
-			// #region メンバ変数
+			// #region protectedメンバ変数
 
-		private:
+		protected:
 			//! A private member variable.
 			/*!
 				ベクトルa1
 			*/
-			dvector a1_;
+			FEM::dmklvector a0_;
 			
 			//! A private member variable (constant).
 			/*!
 				ベクトルa1の複製
 			*/
-			dvector const a1back_;
+			FEM::dmklvector const a0back_;
 
 			//! A private member variable.
 			/*!
 				ベクトルa2
 			*/
-			dvector a2_;
+			FEM::dmklvector a1_;
 
 			//! A private member variable (constant).
 			/*!
 				ベクトルs2の複製
 			*/
-			dvector const a2back_;
+			FEM::dmklvector const a1back_;
 
 			//! A private member variable.
 			/*!
 				ベクトルb
 			*/
-			dvector b_;
+			FEM::dmklvector b_;
 
 			//! A private member variable (constant).
 			/*!
@@ -120,7 +114,7 @@ namespace thomasfermi {
 			*/
 			std::size_t const n_;
 
-			// #endregion メンバ変数		
+			// #endregion protectedメンバ変数		
 			
 			// #region 禁止されたコンストラクタ・メンバ関数
 

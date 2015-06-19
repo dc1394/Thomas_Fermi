@@ -2,7 +2,7 @@
 	\brief 二次要素のクラスの宣言
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _SOELEMENT_H_
@@ -40,7 +40,27 @@ namespace thomasfermi {
 
 			// #endregion コンストラクタ・デストラクタ 
 
+			// #region publicメンバ関数
+
+			//! A public member function (constant).
+			/*!
+				結果を返す関数
+				\return 結果を集めたboost::container::flat_map
+			*/
+			FEM::resultmap createresult() const override;
+
+			// #endregion publicメンバ関数
+
+			// #region privateメンバ関数
+
 		private:
+			//! A private member function.
+			/*!
+				a0_、a1_とa2_にastiff_を足し込む関数
+				\param ielem
+			*/
+			void amerge(std::size_t ielem) override;
+
 			//! A private member function (constant).
 			/*!
 				dn/drを返す関数
@@ -65,7 +85,7 @@ namespace thomasfermi {
 			/*!
 				連立方程式Ax = Bの行列Aの三番目の要素
 			*/
-			dmklvector a3_;
+			dmklvector a2_;
 
 			//! A private member variable (constant).
 			/*!
@@ -107,22 +127,22 @@ namespace thomasfermi {
 
 			//! A private constructor (deleted).
 			/*!
-			デフォルトコンストラクタ（禁止）
+				デフォルトコンストラクタ（禁止）
 			*/
 			SOElement() = delete;
 
 			//! A private copy constructor (deleted).
 			/*!
-			コピーコンストラクタ（禁止）
-			\param コピー元のオブジェクト（未使用）
+				コピーコンストラクタ（禁止）
+				\param コピー元のオブジェクト（未使用）
 			*/
 			SOElement(SOElement const &) = delete;
 
 			//! A private member function (deleted).
 			/*!
-			operator=()の宣言（禁止）
-			\param コピー元のオブジェクト（未使用）
-			\return コピー元のオブジェクト
+				operator=()の宣言（禁止）
+				\param コピー元のオブジェクト（未使用）
+				\return コピー元のオブジェクト
 			*/
 			SOElement & operator=(SOElement const &) = delete;
 

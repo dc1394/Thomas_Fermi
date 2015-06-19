@@ -2,7 +2,7 @@
     \brief β(x)から電子密度とエネルギーを計算してファイルに記録するクラスの実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #include "makerhoenergy.h"
@@ -12,6 +12,11 @@
 #include <boost/cast.hpp>                       // for boost::numeric_cast
 #include <boost/format.hpp>                     // for boost::format
 #include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
+
+#ifdef _MSC_VER
+	#pragma warning(disable : 4819)
+	#define _SCL_SECURE_NO_WARNINGS
+#endif
 
 namespace thomasfermi {
 	namespace makerhoen {

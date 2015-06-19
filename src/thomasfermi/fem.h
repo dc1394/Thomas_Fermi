@@ -2,7 +2,7 @@
 	\brief 有限要素法のクラスの宣言
 
 	Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _FEM_H_
@@ -24,6 +24,7 @@
 #include <memory>						// for std::unique_ptr, std::shared_ptr
 #include <vector>						// for std::vector
 #include <boost/container/flat_map.hpp> // for boost::container::flat_map
+#include <boost/multi_array.hpp>		// for boost::multi_array
 
 namespace thomasfermi {
 	namespace femall {
@@ -44,7 +45,7 @@ namespace thomasfermi {
 			using resultmap = boost::container::flat_map < std::string, FEM::dmklvector > ;
 
 		private:
-			using dmatrix = std::array < std::array<double, 2>, 2 >;
+			using dmatrix = std::array < std::array<double, 3>, 3 >;
 
 			// #endregion 型エイリアス
 
@@ -71,12 +72,12 @@ namespace thomasfermi {
 
 			// #region publicメンバ関数
 
-			//! A public member function (virtual function - constant).
+			//! A public member function (constant - pure virtual function).
 			/*!
 				結果を返す関数
 				\return 結果を集めたboost::container::flat_map
 			*/
-			virtual resultmap createresult() const;
+			virtual FEM::resultmap createresult() const = 0;
 			
 			//! A public member function.
 			/*!
@@ -115,6 +116,7 @@ namespace thomasfermi {
 		private:
 			//! A private member function (pure virtual function).
 			/*!
+				a0_、a1_（とa2_）にastiff_を足し込む関数
 				\param ielem
 			*/
 			virtual void amerge(std::size_t ielem) = 0;
@@ -132,9 +134,11 @@ namespace thomasfermi {
 			*/
 			void element(std::size_t ielem);
 
-			//! A private member function (pure virtual function).
+			//! A private member function (constant - pure virtual function).
 			/*!
-				\param ielem
+				cを返す関数
+				\param ielem 要素
+				\return c
 			*/
 			virtual dvector getc(std::size_t ielem) const = 0;
 
@@ -191,15 +195,21 @@ namespace thomasfermi {
 
 			//! A private member variable.
 			/*!
+				有限要素の小行列
+			*/
+			dmatrix astiff_;
+
+			//! A private member variable.
+			/*!
 				連立方程式Ax = Bの行列Aの対角要素
 			*/
-			dmklvector a1_;
+			dmklvector a0_;
 
 			//! A private member variable.
 			/*!
 				連立方程式Ax = Bの行列Aの三重対角要素
 			*/
-			dmklvector a2_;
+			dmklvector a1_;
 
 			//! A private member variable.
 			/*!
@@ -214,12 +224,6 @@ namespace thomasfermi {
 			*/
 			dvector const beta_;
 			
-		protected:
-			//! A private member variable.
-			/*!
-			*/
-			std::unique_ptr<dmatrix> pastiff_;
-
 		protected:
 			//! A protected member variable (constant).
 			/*!
@@ -263,7 +267,7 @@ namespace thomasfermi {
 			//! A protected member variable.
 			/*!
 			*/
-			std::unique_ptr<boost::multi_array<std::size_t, 2>> plnods_;
+			std::unique_ptr < boost::multi_array< std::size_t, 2 > > plnods_;
 			
 			//! A protected member variable.
 			/*!

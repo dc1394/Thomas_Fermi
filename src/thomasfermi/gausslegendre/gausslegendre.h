@@ -2,7 +2,7 @@
     \brief Gauss-Legendre積分を行うクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _GAUSS_LEGENDRE_H_

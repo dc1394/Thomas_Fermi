@@ -195,6 +195,7 @@
     <ClCompile Include="ci_string.cpp" />
     <ClCompile Include="fem.cpp" />
     <ClCompile Include="foelement.cpp" />
+    <ClCompile Include="folinearequations.cpp" />
     <ClCompile Include="gausslegendre\gausslegendre.cpp" />
     <ClCompile Include="getcomlineoption.cpp" />
     <ClCompile Include="goexit.cpp" />
@@ -207,6 +208,7 @@
     <ClCompile Include="shoot\shootf.cpp" />
     <ClCompile Include="shoot\shootfunc.cpp" />
     <ClCompile Include="soelement.cpp" />
+    <ClCompile Include="solinearequations.cpp" />
     <ClCompile Include="thomasfermimain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -215,6 +217,7 @@
     <ClInclude Include="data.h" />
     <ClInclude Include="fem.h" />
     <ClInclude Include="foelement.h" />
+    <ClInclude Include="folinearequations.h" />
     <ClInclude Include="gausslegendre\gausslegendre.h" />
     <ClInclude Include="getcomlineoption.h" />
     <ClInclude Include="goexit.h" />
@@ -229,6 +232,7 @@
     <ClInclude Include="shoot\shootf.h" />
     <ClInclude Include="shoot\shootfunc.h" />
     <ClInclude Include="soelement.h" />
+    <ClInclude Include="solinearequations.h" />
     <ClInclude Include="utility\deleter.h" />
     <ClInclude Include="utility\property.h" />
   </ItemGroup>

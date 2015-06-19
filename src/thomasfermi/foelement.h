@@ -2,7 +2,7 @@
 	\brief 一次要素のクラスの宣言
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _FOELEMENT_H_
@@ -42,12 +42,12 @@ namespace thomasfermi {
 
 			// #region publicメンバ関数
 			
-			//! A public member function (constant).
+			//! A public member function (constant - override).
 			/*!
 				結果を返す関数
-				\return 結果を集めたtuple
+				\return 結果を集めたboost::container::flat_map
 			*/
-			std::tuple<dmklvector, dmklvector, dmklvector> createresult() const;
+			FEM::resultmap createresult() const override;
 
 			// #endregion publicメンバ関数
 
@@ -56,6 +56,7 @@ namespace thomasfermi {
 		private:
 			//! A private member function.
 			/*!
+				a0_とa1_にastiff_を足し込む関数
 				\param ielem
 			*/
 			void amerge(std::size_t ielem) override;
@@ -67,7 +68,7 @@ namespace thomasfermi {
 			*/
 			dvector getdndr() const;
 
-			//! A private member function (constant).
+			//! A private member function (constant - override).
 			/*!
 				cを返す関数
 				\param ielem 要素

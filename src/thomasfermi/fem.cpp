@@ -3,7 +3,7 @@
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
 	(but this is originally adapted by 渡辺浩志 for stiff5.c from http://www.sml.k.u-tokyo.ac.jp/members/nabe/FEM/FEM.pdf )
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #include "fem.h"
@@ -23,8 +23,8 @@ namespace thomasfermi {
 			Ntnoel([this] { return ntnoel_; }, nullptr),
 			PBeta([this] { return pbeta_; }, nullptr),
 			nnode_(coords.size()),
-			a1_(nnode_, 0.0),
-			a2_(nnode_ - 1, 0.0),
+			a0_(nnode_, 0.0),
+			a1_(nnode_ - 1, 0.0),
 			b_(nnode_, 0.0),
 			beta_(std::move(beta)),
 			coords_(coords),
@@ -105,7 +105,6 @@ namespace thomasfermi {
 
 		void FEM::initialize()
 		{
-			pastiff_.reset(new dmatrix(boost::extents[ntnoel_][ntnoel_]));
 			plnods_.reset(new boost::multi_array<std::size_t, 2>(boost::extents[ntnoel_][nelem_]));
 		}
 
@@ -125,7 +124,7 @@ namespace thomasfermi {
 		{
 			for (auto i = 0U; i < ntnoel_; i++)
 				for (auto j = 0U; j < ntnoel_; j++)
-					(*pastiff_)[i][j] = 0.0;
+					astiff_[i][j] = 0.0;
 
 			for (auto ir = 0U; ir < nint_; ir++) {
 				auto const dndr(getdndr());
@@ -146,7 +145,7 @@ namespace thomasfermi {
 				auto const detwei = detjac * gl_.W()[ir];
 				for (auto i = 0U; i < ntnoel_; i++) {
 					for (auto j = 0U; j < ntnoel_; j++) {
-						(*pastiff_)[i][j] += detwei * dndx[i] * dndx[j];
+						astiff_[i][j] += detwei * dndx[i] * dndx[j];
 					}
 				}
 			}

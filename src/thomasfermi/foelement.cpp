@@ -3,7 +3,7 @@
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
 	(but this is originally adapted by 渡辺浩志 for stiff5.c from http://www.sml.k.u-tokyo.ac.jp/members/nabe/FEM/FEM.pdf )
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #include "foelement.h"
@@ -41,9 +41,15 @@ namespace thomasfermi {
 
 		// #region publicメンバ関数
 		
-		std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> FOElement::createresult() const
+		FEM::resultmap FOElement::createresult() const
 		{
-			return std::make_tuple(a1_, a2_, b_);
+			FEM::resultmap mymap;
+
+			mymap["a0"] = a0_;
+			mymap["a1"] = a1_;
+			mymap["b"] = b_;
+
+			return std::move(mymap);
 		}
 
 		// #endregion publicメンバ関数
@@ -52,9 +58,9 @@ namespace thomasfermi {
 
 		void FOElement::amerge(std::size_t ielem)
 		{
-			a1_[ielem] += (*pastiff_)[0][0];
-			a1_[ielem + 1] += (*pastiff_)[1][1];
-			a2_[ielem] = (*pastiff_)[0][1];
+			a0_[ielem] += astiff_[0][0];
+			a0_[ielem + 1] += astiff_[1][1];
+			a1_[ielem] = astiff_[0][1];
 		}
 
 		FEM::dvector FOElement::getc(std::size_t ielem) const

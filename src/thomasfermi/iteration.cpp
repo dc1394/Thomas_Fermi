@@ -2,9 +2,10 @@
 	\brief 微分方程式を反復法で解くクラスの実装
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
+#include "folinearequations.h"
 #include "iteration.h"
 #include "readinputfile.h"
 #include "shoot/shootf.h"
@@ -13,7 +14,6 @@
 #include <boost/cast.hpp>						// for boost::numeric_cast
 #include <boost/format.hpp>						// for boost::format
 #include <boost/assert.hpp>						// for BOOST_ASSERT
-#include <boost/utility/in_place_factory.hpp>	// for boost::in_place
 
 namespace thomasfermi {
 	namespace femall {
@@ -62,18 +62,13 @@ namespace thomasfermi {
 			v_bc_nonzero_.reserve(Iteration::N_BC_GIVEN);
 			v_bc_nonzero_ = { y1_, y2_ };
 
-			ple_ = boost::in_place(pfem_->createresult());
+			ple_ = std::make_unique<FOLinear_equations>(pfem_->createresult());
 
 			ple_->bound(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
 			y_ = ple_->LEsolver();
 		}
-
-		Iteration::~Iteration()
-		{
-			ple_ = boost::none;
-		}
-
+		
 		// #endregion コンストラクタ・デストラクタ
 
 		// #region publicメンバ関数
