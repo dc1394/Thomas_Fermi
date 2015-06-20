@@ -17,6 +17,13 @@
 
 namespace thomasfermi {
 	template <typename T>
+	//! A function.
+	/*!
+		MKL用にメモリを確保するtemplate関数
+	*/
+	T * mymklalloc(std::size_t size);
+	
+	template <typename T>
 	//! A class.
 	/*!
 		MKL用のアロケータクラス
@@ -89,13 +96,7 @@ namespace thomasfermi {
 		*/
 		pointer allocate(size_type size, const_pointer hint = 0)
 		{
-			auto const p = mkl_malloc(size * sizeof(T), 64);
-			
-			if (!p) {
-				throw std::bad_alloc();
-			}
-
-			return reinterpret_cast<pointer>(p);
+			return mymklalloc<T>(size);
 		}
 
 		//! A public member function.
@@ -187,6 +188,18 @@ namespace thomasfermi {
 	inline bool operator !=(mkl_allocator<T> const &, const mkl_allocator<U>)
 	{
 		return false;
+	}
+
+	template <typename T>
+	T * mymklalloc(std::size_t size)
+	{
+		auto const p = mkl_malloc(size * sizeof(T), 64);
+
+		if (!p) {
+			throw std::bad_alloc();
+		}
+
+		return reinterpret_cast<T *>(p);
 	}
 }
 
