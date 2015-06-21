@@ -5,10 +5,13 @@
 	This software is released under the BSD 2-Clause License.
 */
 
+#include "foelement.h"
 #include "folinearequations.h"
 #include "iteration.h"
 #include "readinputfile.h"
 #include "shoot/shootf.h"
+#include "soelement.h"
+#include "solinearequations.h"
 #include <iostream>								// for std::cout
 #include <stdexcept>							// for std::runtime_error
 #include <boost/cast.hpp>						// for boost::numeric_cast
@@ -53,7 +56,7 @@ namespace thomasfermi {
 			y_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
             pmix_->Yold = y_;
 
-			pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
+			pfem_.reset(new femall::SOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
 			pfem_->stiff();
 
 			i_bc_given_.reserve(Iteration::N_BC_GIVEN);
@@ -62,7 +65,7 @@ namespace thomasfermi {
 			v_bc_nonzero_.reserve(Iteration::N_BC_GIVEN);
 			v_bc_nonzero_ = { y1_, y2_ };
 
-			ple_ = std::make_unique<FOLinear_equations>(pfem_->createresult());
+			ple_ = std::make_unique<SOLinear_equations>(pfem_->createresult());
 
 			ple_->bound(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 

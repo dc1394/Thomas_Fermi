@@ -6,7 +6,7 @@ namespace thomasfermi {
 
 		SOElement::SOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk)
 			:	FEM(std::move(beta), coords, nint, usecilk),
-				a2_(nnode_ - 1, 0.0)
+				a2_(nnode_ - 2, 0.0)
 		{
 			auto const N1tmp = [](double r) { return -0.5 * r * (1.0 - r); };
 			N1_ = std::cref(N1tmp);
@@ -64,6 +64,17 @@ namespace thomasfermi {
 			a2_[ielem] = astiff_[0][2];
 		}
 		
+		void SOElement::element(std::size_t ielem)
+		{
+			astiffclear();
+
+			for (auto ir = 0U; ir < nint_; ir++) {
+				auto const dndr(getdndr(gl_.X()[ir]));
+
+				FEM::element(dndr, ielem, ir);
+			}
+		}
+
 		FEM::dvector SOElement::getdndr(double r) const
 		{
 			dvector dndr(ntnoel_);
@@ -98,5 +109,7 @@ namespace thomasfermi {
 
 			return c;
 		}
+
+		// #endregion privateƒƒ“ƒoŠÖ”
 	}
 }

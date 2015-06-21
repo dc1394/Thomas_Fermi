@@ -105,6 +105,21 @@ namespace thomasfermi {
 		protected:
 			//! A protected member function.
 			/*!
+				astiff_を0に初期化する
+			*/
+			void astiffclear();
+			
+			//! A protected member function.
+			/*!
+				小行列の要素を生成する
+				\param dndr dn/dr
+				\param ielem
+				\param ir
+			*/
+			void element(std::vector<double> const & dndr, std::size_t ielem, std::size_t ir);
+
+			//! A protected member function.
+			/*!
 				\param beta 新しいβ
 			*/
 			void initialize();
@@ -128,12 +143,13 @@ namespace thomasfermi {
             */
             void createb(std::size_t ielem);
 
-			//! A private member function.
+			//! A private member function (pure virtual function).
 			/*!
+				小行列の要素を生成する
 				\param ielem
 			*/
-			void element(std::size_t ielem);
-
+			virtual void element(std::size_t ielem) = 0;
+			
 			//! A private member function (constant - pure virtual function).
 			/*!
 				cを返す関数

@@ -87,7 +87,7 @@
       <AdditionalIncludeDirectories>C:\mylib64\alglib\include;C:\Program Files (x86)\Intel\Composer XE 2015\mkl\include;D:\DATA\PROGRAM\Source\Repos\thomasfermi\checkpoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <OpenMP>GenerateParallelCode</OpenMP>
-      <WarningLevel>Level5</WarningLevel>
+      <WarningLevel>Level1</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

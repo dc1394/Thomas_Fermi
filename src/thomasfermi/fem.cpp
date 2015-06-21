@@ -68,8 +68,9 @@ namespace thomasfermi {
 
 		void FEM::stiff()
 		{
-			for (auto ielem = 0U; ielem < nelem_; ielem++)
+			for (auto ielem = 0U; ielem < nelem_; ielem++) {
 				element(ielem);
+			}
 
 			if (usecilk_) {
 				cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
@@ -80,9 +81,10 @@ namespace thomasfermi {
 			else {
 				for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					amerge(ielem);
-                    createb(ielem);
+					createb(ielem);
 				}
 			}
+			int i = 1;
 		}
 
 		void FEM::stiff2()
@@ -103,6 +105,39 @@ namespace thomasfermi {
 
 		// #region protectedメンバ関数
 
+		void FEM::astiffclear()
+		{
+			for (auto i = 0U; i < ntnoel_; i++) {
+				for (auto j = 0U; j < ntnoel_; j++) {
+					astiff_[i][j] = 0.0;
+				}
+			}
+		}
+
+		void FEM::element(std::vector<double> const & dndr, std::size_t ielem, std::size_t ir)
+		{
+			auto ajacob = 0.0;
+
+			for (auto i = 0U; i < ntnoel_; i++) {
+				ajacob += dndr[i] * coords_[(*plnods_)[i][ielem]];
+			}
+
+			auto const detjac = ajacob;
+			auto const ajainv = 1.0 / ajacob;
+
+			dvector dndx(ntnoel_);
+			for (auto i = 0U; i < ntnoel_; i++) {
+				dndx[i] = dndr[i] * ajainv;
+			}
+
+			auto const detwei = detjac * gl_.W()[ir];
+			for (auto i = 0U; i < ntnoel_; i++) {
+				for (auto j = 0U; j < ntnoel_; j++) {
+					astiff_[i][j] += detwei * dndx[i] * dndx[j];
+				}
+			}
+		}
+
 		void FEM::initialize()
 		{
 			plnods_.reset(new boost::multi_array<std::size_t, 2>(boost::extents[ntnoel_][nelem_]));
@@ -119,37 +154,6 @@ namespace thomasfermi {
                 b_[(*plnods_)[i][ielem]] += c[i];
             }
         }
-
-		void FEM::element(std::size_t ielem)
-		{
-			for (auto i = 0U; i < ntnoel_; i++)
-				for (auto j = 0U; j < ntnoel_; j++)
-					astiff_[i][j] = 0.0;
-
-			for (auto ir = 0U; ir < nint_; ir++) {
-				auto const dndr(getdndr());
-				auto ajacob = 0.0;
-
-				for (auto i = 0U; i < ntnoel_; i++) {
-					ajacob += dndr[i] * coords_[(*plnods_)[i][ielem]];
-				}
-
-				auto const detjac = ajacob;
-				auto const ajainv = 1.0 / ajacob;
-				
-				dvector dndx(ntnoel_);
-				for (auto i = 0U; i < ntnoel_; i++) {
-					dndx[i] = dndr[i] * ajainv;
-				}
-
-				auto const detwei = detjac * gl_.W()[ir];
-				for (auto i = 0U; i < ntnoel_; i++) {
-					for (auto j = 0U; j < ntnoel_; j++) {
-						astiff_[i][j] += detwei * dndx[i] * dndx[j];
-					}
-				}
-			}
-		}
 
 		// #endregion privateメンバ関数
 	}

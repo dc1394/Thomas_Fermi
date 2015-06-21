@@ -41,21 +41,17 @@ namespace thomasfermi {
 
 			//! A public member function.
 			/*!
-				境界条件を定める
-				\param n_bc_given 既知量の数
-				\param i_bc_given 既知量のインデックス
-				\param n_bc_nonzero 非零の既知量の数
-				\param i_bc_nonzero 非零の既知量のインデックス
-				\param v_bc_nonzero 非零の既知量
-			*/
-			void bound(std::size_t n_bc_given, Linear_equations::sivector const & i_bc_given, std::size_t n_bc_nonzero, Linear_equations::sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero) override;
-
-			//! A public member function.
-			/*!
 				連立一次方程式の解を求める
 				\return 連立一次方程式の解
 			*/
 			FEM::dmklvector LEsolver() override;
+
+			//! A public member function (pure virtual function).
+			/*!
+				初期化する
+				\param b 対象のベクトルb
+			*/
+			void reset(FEM::dmklvector const & b) override;
 
 			// #endregion publicメンバ関数
 

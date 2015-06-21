@@ -69,9 +69,15 @@ namespace gausslegendre {
 	public:
 		//! A property.
 		/*!
-
+			Gauss-Legendreの重みへのプロパティ
 		*/
 		utility::Property<std::vector<double>> const W;
+
+		//! A property.
+		/*!
+			Gauss-Legendreの節へのプロパティ
+		*/
+		utility::Property<std::vector<double>> const X;
 
 		// #endregion プロパティ
 
@@ -79,7 +85,7 @@ namespace gausslegendre {
 
         //! A private member variable (constant).
         /*!
-            Gauss-Legendreの分点
+            Gauss-Legendreの分点数
         */
         std::uint32_t const n_;
 

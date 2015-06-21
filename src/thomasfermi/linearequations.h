@@ -57,7 +57,7 @@ namespace thomasfermi {
 				\param i_bc_nonzero 非零の既知量のインデックス
 				\param v_bc_nonzero 非零の既知量
 			*/
-			virtual void bound(std::size_t n_bc_given, Linear_equations::sivector const & i_bc_given, std::size_t n_bc_nonzero, Linear_equations::sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero) = 0;
+			virtual void bound(std::size_t n_bc_given, Linear_equations::sivector const & i_bc_given, std::size_t n_bc_nonzero, Linear_equations::sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero);
 			
 			//! A public member function (pure virtual function).
 			/*!
@@ -66,12 +66,12 @@ namespace thomasfermi {
 			*/
 			virtual FEM::dmklvector LEsolver() = 0;
 			
-			//! A public member function (virtual function).
+			//! A public member function (pure virtual function).
 			/*!
-				ベクトルbを初期化する
+				初期化する
 				\param b 対象のベクトルb
 			*/
-			virtual void reset(FEM::dmklvector const & b);
+			virtual void reset(FEM::dmklvector const & b) = 0;
 
 			// #endregion publicメンバ関数
 

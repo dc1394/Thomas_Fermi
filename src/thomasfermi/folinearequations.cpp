@@ -35,22 +35,6 @@ namespace thomasfermi {
 
 		// #region publicメンバ関数
 
-		void FOLinear_equations::bound(std::size_t n_bc_given, Linear_equations::sivector const & i_bc_given, std::size_t n_bc_nonzero, Linear_equations::sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero)
-		{
-			// Dirichlet boundary condition
-			b_[i_bc_nonzero[0] + 1] -= v_bc_nonzero[0] * a1_[i_bc_nonzero[0]];
-			b_[i_bc_nonzero[1] - 1] -= v_bc_nonzero[1] * a1_[i_bc_nonzero[1] - 1];
-
-			for (auto i = 0U; i < n_bc_nonzero; i++) {
-				b_[i_bc_nonzero[i]] = v_bc_nonzero[i];
-			}
-
-			for (auto i = 0U; i < n_bc_given; i++) {
-				a0_[i_bc_given[i]] = 1.0;
-				a1_[i_bc_given[i] - i] = 0.0;
-			}
-		}
-
 		FEM::dmklvector FOLinear_equations::LEsolver()
 		{
 			auto const n = boost::numeric_cast<lapack_int>(n_);
@@ -73,6 +57,13 @@ namespace thomasfermi {
 			}
 
 			return std::move(b_);
+		}
+
+		void FOLinear_equations::reset(FEM::dmklvector const & b)
+		{
+			a0_ = a0back_;
+			a1_ = a1back_;
+			b_ = b;
 		}
 
 		// #endregion publicメンバ関数

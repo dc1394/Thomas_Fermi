@@ -61,13 +61,20 @@ namespace thomasfermi {
 			*/
 			void amerge(std::size_t ielem) override;
 
+			//! A private member function.
+			/*!
+				小行列の要素を生成する
+				\param ielem
+			*/
+			void element(std::size_t ielem) override;
+
 			//! A private member function (constant).
 			/*!
 				dn/drを返す関数
 				\param r rの値
 				\return dn/dr
 			*/
-			dvector getdndr(double r) const;
+			dvector getdndr(double r) const override;
 
 			//! A private member function (constant).
 			/*!

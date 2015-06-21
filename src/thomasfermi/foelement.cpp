@@ -63,6 +63,17 @@ namespace thomasfermi {
 			a1_[ielem] = astiff_[0][1];
 		}
 
+		void FOElement::element(std::size_t ielem)
+		{
+			astiffclear();
+
+			for (auto ir = 0U; ir < nint_; ir++) {
+				auto const dndr(getdndr());
+				
+				FEM::element(dndr, ielem, ir);
+			}
+		}
+
 		FEM::dvector FOElement::getc(std::size_t ielem) const
 		{
 			auto const xl = coords_[(*plnods_)[1][ielem]] - coords_[(*plnods_)[0][ielem]];

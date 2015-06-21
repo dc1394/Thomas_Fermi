@@ -61,6 +61,13 @@ namespace thomasfermi {
 			*/
 			void amerge(std::size_t ielem) override;
 
+			//! A private member function (pure virtual function).
+			/*!
+				小行列の要素を生成する
+				\param ielem
+			*/
+			void element(std::size_t ielem) override;
+			
 			//! A private member function (constant).
 			/*!
 				dn/drを返す関数
