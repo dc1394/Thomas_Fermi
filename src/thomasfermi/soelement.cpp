@@ -101,7 +101,7 @@ namespace thomasfermi {
 				   { return - N2_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]] + N3_(r) * coords_[(*plnods_)[2][ielem]]); }),
 				   -1.0,
 				   1.0) * xl * 0.5;
-			c[0] = gl_.qgauss(
+			c[2] = gl_.qgauss(
 				myfunctional::make_functional([this, ielem](double r)
 				   { return - N3_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]] + N3_(r) * coords_[(*plnods_)[2][ielem]]); }),
 				   -1.0,

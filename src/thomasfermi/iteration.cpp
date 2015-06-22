@@ -63,7 +63,7 @@ namespace thomasfermi {
 
 			i_bc_given_ = { 0, pfem_->Nnode - 1 };
 			v_bc_nonzero_.reserve(Iteration::N_BC_GIVEN);
-			v_bc_nonzero_ = { y1_, y2_ };
+			v_bc_nonzero_ = { x_[0] * x_[0] * 0.5, x_.back() * x_.back() * 0.5 }; //{ y1_, y2_ };
 
 			ple_ = std::make_unique<SOLinear_equations>(pfem_->createresult());
 
@@ -138,7 +138,7 @@ namespace thomasfermi {
 			FEM::dvector beta(size);
 
 			for (auto i = 0U; i < size; i++) {
-				beta[i] = y_[i] * std::sqrt(y_[i] / x_[i]);
+				beta[i] = x_[i];//y_[i] * std::sqrt(y_[i] / x_[i]);
 			}
 
 			return std::move(beta);

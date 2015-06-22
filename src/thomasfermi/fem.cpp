@@ -73,18 +73,23 @@ namespace thomasfermi {
 			}
 
 			if (usecilk_) {
-				cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
+				cilk_for(auto ielem = 0U; ielem < nnode_ - 2; ielem++) {
 					amerge(ielem);
+				}
+
+				cilk_for(auto ielem = 0U; ielem < nelem_; ielem++) {
 					createb(ielem);
 				}
 			}
 			else {
-				for (auto ielem = 0U; ielem < nelem_; ielem++) {
+				for (auto ielem = 0U; ielem < nnode_ - 2; ielem++) {
 					amerge(ielem);
+				}
+
+				for (auto ielem = 0U; ielem < nelem_; ielem++) {
 					createb(ielem);
 				}
 			}
-			int i = 1;
 		}
 
 		void FEM::stiff2()
