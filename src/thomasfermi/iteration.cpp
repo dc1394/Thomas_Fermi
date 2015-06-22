@@ -35,26 +35,31 @@ namespace thomasfermi {
 
 			auto const dx = pdata_->xmax_ / static_cast<double>(pdata_->grid_num_);
 
-			load2 l2;
-			shootf s(
-				shootfunc::DELV,
-				shootfunc::DELV,
-				dx,
-				shootfunc::DELV * 0.1,
-				shootfunc::load1,
-				l2,
-				shootfunc::score,
-				shootfunc::V1,
-				l2.make_v2(pdata_->xmax_));
-			
+			//load2 l2;
+			//shootf s(
+			//	shootfunc::DELV,
+			//	shootfunc::DELV,
+			//	dx,
+			//	shootfunc::DELV * 0.1,
+			//	shootfunc::load1,
+			//	l2,
+			//	shootfunc::score,
+			//	shootfunc::V1,
+			//	l2.make_v2(pdata_->xmax_));
+			//
 			auto const usecilk = std::get<1>(arg);
-			auto const xytuple(s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
-			y1_ = std::get<1>(xytuple)[0];
-			y2_ = std::get<1>(xytuple).back();
-			
-			x_ = std::get<0>(xytuple);
-			y_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
-            pmix_->Yold = y_;
+            x_.resize(pdata_->grid_num_ + 1);
+
+            for (auto i = 0; i <= pdata_->grid_num_; i++) {
+                x_[i] = (double)(i)* dx;
+            }
+			//auto const xytuple(s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
+			//y1_ = std::get<1>(xytuple)[0];
+			//y2_ = std::get<1>(xytuple).back();
+			//
+			//x_ = std::get<0>(xytuple);
+			//y_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
+   //         pmix_->Yold = y_;
 
 			pfem_.reset(new femall::SOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
 			pfem_->stiff();
@@ -63,7 +68,7 @@ namespace thomasfermi {
 
 			i_bc_given_ = { 0, pfem_->Nnode - 1 };
 			v_bc_nonzero_.reserve(Iteration::N_BC_GIVEN);
-			v_bc_nonzero_ = { x_[0] * x_[0] * 0.5, x_.back() * x_.back() * 0.5 }; //{ y1_, y2_ };
+			v_bc_nonzero_ = { 1.0, 2.0 }; //{ y1_, y2_ };
 
 			ple_ = std::make_unique<SOLinear_equations>(pfem_->createresult());
 
@@ -133,7 +138,8 @@ namespace thomasfermi {
 
 		FEM::dvector Iteration::make_beta() const
 		{
-			auto const size = y_.size();
+			//auto const size = y_.size();
+            auto const size = x_.size();
 			BOOST_ASSERT(size == x_.size());
 			FEM::dvector beta(size);
 
