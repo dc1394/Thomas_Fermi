@@ -68,8 +68,8 @@ namespace thomasfermi {
 			// ピボッティングありのLU分解を行うために(KD + 1)× N必要
 			FEM::dmklvector ab(nb * n);
 			
-			for (auto j = 0; j < n; j++) {
-				for (auto i = std::max(0, j - kd); i <= std::min(n - 1, j + kd); i++) {
+			for (auto i = 0; i < n; i++) {
+                for (auto j = 0; j < n; j++) {
 					if (i == j) {
 						ab[(j) * nb + (kd + (i) - (j))] = a0_[i];
 					}
