@@ -73,20 +73,14 @@ namespace thomasfermi {
 			}
 
 			if (usecilk_) {
-				cilk_for(auto ielem = 0U; ielem < nnode_ - 2; ielem++) {
+                cilk_for(auto ielem = 0U; ielem < nelem_; ielem++) {
 					amerge(ielem);
-				}
-
-				cilk_for(auto ielem = 0U; ielem < nelem_; ielem++) {
 					createb(ielem);
 				}
 			}
 			else {
-				for (auto ielem = 0U; ielem < nnode_ - 2; ielem++) {
-					amerge(ielem);
-				}
-
 				for (auto ielem = 0U; ielem < nelem_; ielem++) {
+					amerge(ielem);
 					createb(ielem);
 				}
 			}
@@ -124,7 +118,7 @@ namespace thomasfermi {
 			auto ajacob = 0.0;
 
 			for (auto i = 0U; i < ntnoel_; i++) {
-				ajacob += dndr[i] * coords_[(*plnods_)[i][ielem]];
+                ajacob += dndr[i] * coords_[(*plnods_)[ielem][i]];
 			}
 
 			auto const detjac = ajacob;
@@ -145,7 +139,7 @@ namespace thomasfermi {
 
 		void FEM::initialize()
 		{
-			plnods_.reset(new boost::multi_array<std::size_t, 2>(boost::extents[ntnoel_][nelem_]));
+            plnods_.reset(new boost::multi_array<std::size_t, 2>(boost::extents[nelem_][ntnoel_]));
 		}
 
 		// #endregion protectedメンバ関数
@@ -156,7 +150,7 @@ namespace thomasfermi {
         {
             auto const c(getc(ielem));
             for (auto i = 0U; i < ntnoel_; i++) {
-                b_[(*plnods_)[i][ielem]] += c[i];
+                b_[(*plnods_)[ielem][i]] += c[i];
             }
         }
 

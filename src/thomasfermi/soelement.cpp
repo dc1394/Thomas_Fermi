@@ -23,9 +23,9 @@ namespace thomasfermi {
 			initialize();
 
 			for (auto i = 0U; i < nelem_; i++) {
-				(*plnods_)[0][i] = 2 * i;
-				(*plnods_)[1][i] = 2 * i + 2;
-				(*plnods_)[2][i] = 2 * i + 1;
+                (*plnods_)[i][0] = 2 * i;
+                (*plnods_)[i][1] = 2 * i + 2;
+                (*plnods_)[i][2] = 2 * i + 1;
 			}
 		}
 		
@@ -51,17 +51,21 @@ namespace thomasfermi {
 
 		void SOElement::amerge(std::size_t ielem)
 		{
-			// ‘ÎŠp—v‘f
-			a0_[ielem] += astiff_[0][0];
-			a0_[ielem + 1] += astiff_[1][1];
-			a0_[ielem + 2] += astiff_[2][2];
-
-			// ŽOd‘ÎŠp—v‘f
-			a1_[ielem] = astiff_[0][1];
-			a1_[ielem + 1] = astiff_[1][2];
-
-			// ‚»‚Ìã‚Ì—v‘f
-			a2_[ielem] = astiff_[0][2];
+            for (auto i = 0; i < ntnoel_; i++) {
+                for (auto j = 0; j < ntnoel_; j++) {
+                    auto const lnodi = (*plnods_)[ielem][i];
+                    auto const lnodj = (*plnods_)[ielem][j];
+                    if (lnodi == lnodj) {
+                        a0_[lnodi] += astiff_[i][j];
+                    }
+                    else if (lnodi == lnodj - 1 && lnodi < nnode_ - 1) {
+                        a1_[lnodi] += astiff_[i][j];
+                    }
+                    else if (lnodi == lnodj - 2 && lnodi < nnode_ - 2) {
+                        a2_[lnodi] += astiff_[i][j];
+                    }
+                }
+            }
 		}
 		
 		void SOElement::element(std::size_t ielem)
@@ -87,23 +91,23 @@ namespace thomasfermi {
 
 		FEM::dvector SOElement::getc(std::size_t ielem) const
 		{
-			auto const xl = coords_[(*plnods_)[1][ielem]] - coords_[(*plnods_)[0][ielem]];
+            auto const xl = coords_[(*plnods_)[ielem][1]] - coords_[(*plnods_)[ielem][0]];
 
 			dvector c(ntnoel_);
 			c[0] = gl_.qgauss(
 				myfunctional::make_functional(
 					[this, ielem](double r)
-				   { return - N1_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]] + N3_(r) * coords_[(*plnods_)[2][ielem]]); }),
+				   { return - N1_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]] + N3_(r) * coords_[(*plnods_)[ielem][2]]); }),
 				   -1.0,
 				   1.0) * xl * 0.5;
 			c[1] = gl_.qgauss(
 				myfunctional::make_functional([this, ielem](double r)
-				   { return - N2_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]] + N3_(r) * coords_[(*plnods_)[2][ielem]]); }),
+				   { return - N2_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]] + N3_(r) * coords_[(*plnods_)[ielem][2]]); }),
 				   -1.0,
 				   1.0) * xl * 0.5;
 			c[2] = gl_.qgauss(
 				myfunctional::make_functional([this, ielem](double r)
-				   { return - N3_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]] + N3_(r) * coords_[(*plnods_)[2][ielem]]); }),
+				   { return - N3_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]] + N3_(r) * coords_[(*plnods_)[ielem][2]]); }),
 				   -1.0,
 				   1.0) * xl * 0.5;
 

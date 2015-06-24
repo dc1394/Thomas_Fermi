@@ -144,7 +144,7 @@ namespace thomasfermi {
 			FEM::dvector beta(size);
 
 			for (auto i = 0U; i < size; i++) {
-				beta[i] = x_[i];//y_[i] * std::sqrt(y_[i] / x_[i]);
+				beta[i] = -1.0;//y_[i] * std::sqrt(y_[i] / x_[i]);
 			}
 
 			return std::move(beta);

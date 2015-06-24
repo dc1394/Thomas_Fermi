@@ -16,9 +16,9 @@ namespace thomasfermi {
 		FOElement::FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk) :
 			FEM(std::move(beta), coords, nint, usecilk),
 			fun1_([this](double r, double xl, std::size_t ielem)
-			{ return -N1_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]]) * xl * 0.5; }),
+            { return -N1_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]]) * xl * 0.5; }),
 			fun2_([this](double r, double xl, std::size_t ielem)
-			{ return -N2_(r) * func_(N1_(r) * coords_[(*plnods_)[0][ielem]] + N2_(r) * coords_[(*plnods_)[1][ielem]]) * xl * 0.5; })
+            { return -N2_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]]) * xl * 0.5; })
 		{
 			auto const N1tmp = [](double r) { return 0.5 * (1.0 - r); };
 			N1_ = std::cref(N1tmp);
@@ -32,8 +32,8 @@ namespace thomasfermi {
 			initialize();
 			
 			for (auto i = 0U; i < nelem_; i++) {
-				(*plnods_)[0][i] = i;
-				(*plnods_)[1][i] = i + 1;
+                (*plnods_)[i][0] = i;
+                (*plnods_)[i][1] = i + 1;
 			}
 		}
 
@@ -76,7 +76,7 @@ namespace thomasfermi {
 
 		FEM::dvector FOElement::getc(std::size_t ielem) const
 		{
-			auto const xl = coords_[(*plnods_)[1][ielem]] - coords_[(*plnods_)[0][ielem]];
+            auto const xl = coords_[(*plnods_)[ielem][1]] - coords_[(*plnods_)[ielem][0]];
 			dvector c(ntnoel_);
 
 			c[0] = gl_.qgauss(
