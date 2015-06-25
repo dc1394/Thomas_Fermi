@@ -12,6 +12,9 @@ namespace thomasfermi {
 		// #region コンストラクタ
 
 		Beta::Beta(std::vector<double> const & xvec, std::vector<double> const & yvec) :
+			Size([this] { return size_; }, nullptr),
+			Xvec([this] { return xvec_; }, nullptr),
+			Yvec([this] { return yvec_; }, nullptr),
 			size_(xvec.size()),
 			xvec_(xvec),
 			yvec_(yvec)

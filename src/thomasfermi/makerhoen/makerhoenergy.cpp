@@ -24,11 +24,11 @@ namespace thomasfermi {
 
         MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, MakeRhoEnergy::parameter_type const & pt, double Z) :
 			alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
+			fobeta_(std::get<0>(pt)),
 			xvec_(std::get<1>(pt)),
 			dx_(xvec_[2] - xvec_[1]),
             fp_(nullptr, fcloser),
 			gl_(n),
-            pbeta_(std::get<0>(pt)),
             size_(xvec_.size()),
 			max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
             Z_(Z)
@@ -114,7 +114,7 @@ namespace thomasfermi {
 
         double MakeRhoEnergy::y(double x) const
         {
-            return std::pow(x * (*pbeta_)(x) * (*pbeta_)(x), 1.0 / 3.0);
+            return std::pow(x * fobeta_(x) * fobeta_(x), 1.0 / 3.0);
         }
 
         // #endregion privateメンバ関数

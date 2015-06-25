@@ -126,6 +126,9 @@
     <ClCompile Include="beta.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="foelementbeta.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gausslegendre\gausslegendre.h">

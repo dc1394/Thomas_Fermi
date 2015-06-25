@@ -195,6 +195,7 @@
     <ClCompile Include="ci_string.cpp" />
     <ClCompile Include="fem.cpp" />
     <ClCompile Include="foelement.cpp" />
+    <ClCompile Include="foelementbeta.cpp" />
     <ClCompile Include="folinearequations.cpp" />
     <ClCompile Include="gausslegendre\gausslegendre.cpp" />
     <ClCompile Include="getcomlineoption.cpp" />

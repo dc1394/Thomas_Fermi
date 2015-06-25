@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "../beta.h"
+#include "../foelementbeta.h"
 #include "../gausslegendre/gausslegendre.h"
 #include <cstdint>                              // for std::int32_t
 #include <cstdio>								// for FILE, std::fclose
@@ -132,62 +132,62 @@ namespace thomasfermi {
 
             // #region メンバ変数
 
-            //! A private variable (constant).
+            //! A private member variable (constant).
             /*!
                 エネルギーを計算するときの定数の値
             */
             double const alpha_;
 			
-			//! A private variable (constant).
+			//! A private member variable (constant).
+			/*!
+				一次要素のβ(x)のクラス
+			*/
+			femall::FoelementBeta const fobeta_;
+
+			//! A private member variable (constant).
 			/*!
 				x方向のメッシュが格納された動的配列
 			*/
 			std::vector<double> const xvec_;
 
-			//! A private variable (constant).
+			//! A private member variable (constant).
 			/*!
 				x方向のメッシュの刻み幅
 			*/
 			double const dx_;
 			
-			//! A private variable (constant).
+			//! A private member variable (constant).
 			/*!
 				ファイルポインタ
 			*/
 			std::unique_ptr<FILE, decltype(fcloser)> fp_;
 
-			//! A private variable (constant).
+			//! A private member variable (constant).
 			/*!
 				Gauss-Legendreの積分を行うオブジェクト
 			*/
 			gausslegendre::Gauss_Legendre const gl_;
 
-            //! A private variable (constant).
-            /*!
-                Betaクラスのオブジェクトへのスマートポインタ
-            */
-            std::shared_ptr<femall::Beta> const pbeta_;
-
-            //! A private variable (constant).
+            //! A private member variable (constant).
             /*!
                 x方向のメッシュが格納された動的配列のサイズ
             */
             std::size_t const size_;
 
-			//! A private variable (constant).
+			//! A private member variable (constant).
 			/*!
 				ファイル出力するときのループの最大数
 			*/
 			std::int32_t const max_;
 
-			//! A private variable.
+			//! A private member variable.
 			/*!
 				規格化のための定数
 				s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
 			*/
 			double s_;
             
-            //! A private variable (constant).
+            //! A private member variable (constant).
             /*!
                 原子番号
             */

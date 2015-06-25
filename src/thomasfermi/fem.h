@@ -16,7 +16,7 @@
 #endif
 
 #include <array>
-#include "beta.h"
+#include "foelementbeta.h"
 #include "gausslegendre/gausslegendre.h"
 #include "mkl_allocator.h"
 #include "utility/property.h"
@@ -245,6 +245,12 @@ namespace thomasfermi {
 			/*!
 			*/
 			dvector const coords_;
+
+			//! A protected member variable (constant).
+			/*!
+				一次要素のβ(x)のクラス
+			*/
+			FoelementBeta const fobeta_;
 
 			//! A protected member variable.
 			/*!

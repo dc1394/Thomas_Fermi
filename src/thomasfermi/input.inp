@@ -8,12 +8,12 @@ chemical.number             1
 # Parameters for solving 1D-differential equations
 #
 
-grid.xmin                   0.0          # default = 1.0E-5
-grid.xmax                   1.0           # default = 100.0
-grid.num                    10          # default = 20000
+grid.xmin                   1.0E-7          # default = 1.0E-5
+grid.xmax                   100.0           # default = 100.0
+grid.num                    20000           # default = 20000
 eps                         1.0E-15         # default = 1.0E-15
-matching.point              0.5            # default = 15.0
-gauss.legendre.integ        3             # default = 5
+matching.point              15.0            # default = 15.0
+gauss.legendre.integ        5               # default = 5
 gauss.legendre.integ.ene    1000			# default = 1000
 
 #
