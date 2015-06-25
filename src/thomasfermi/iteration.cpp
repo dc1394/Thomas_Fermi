@@ -12,11 +12,11 @@
 #include "shoot/shootf.h"
 #include "soelement.h"
 #include "solinearequations.h"
-#include <iostream>								// for std::cout
-#include <stdexcept>							// for std::runtime_error
-#include <boost/cast.hpp>						// for boost::numeric_cast
-#include <boost/format.hpp>						// for boost::format
-#include <boost/assert.hpp>						// for BOOST_ASSERT
+#include <iostream>			    // for std::cout
+#include <stdexcept>		    // for std::runtime_error
+#include <boost/cast.hpp>	    // for boost::numeric_cast
+#include <boost/format.hpp>	    // for boost::format
+#include <boost/assert.hpp>	    // for BOOST_ASSERT
 
 namespace thomasfermi {
 	namespace femall {

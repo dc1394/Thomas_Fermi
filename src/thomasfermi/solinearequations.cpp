@@ -61,7 +61,7 @@ namespace thomasfermi {
 			// 行列{B}の列数。通常通り1
 			lapack_int const nrhs = 1;
 
-			// 配列ABの1次元目の大きさ（=KD+1）
+			// 配列ABの1次元目の大きさ（= KD + 1）
 			auto const nb = kd + 1;
 
 			// 係数行列の帯の外を省略して詰め込んだ2次元配列
