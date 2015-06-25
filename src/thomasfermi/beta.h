@@ -1,5 +1,5 @@
 ﻿/*! \file beta.h
-    \brief β(x)を計算するクラスの宣言
+    \brief β(x)を計算するクラスの宣言と実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 	This software is released under the BSD 2-Clause License.
@@ -15,12 +15,11 @@
 
 namespace thomasfermi {
 	namespace femall {
-        //! A class.
-        /*!
-            β(x)を計算するクラス
-        */
-		class Beta final
-		{
+		//! A class.
+		/*!
+			β(x)を計算するクラス
+		*/
+		class Beta {
         public:
             // #region コンストラクタ・デストラクタ
 
@@ -32,7 +31,6 @@ namespace thomasfermi {
             */
 			Beta(std::vector<double> const & xvec, std::vector<double> const & yvec);
 			
-
             //! A destructor.
             /*!
                 デフォルトデストラクタ
@@ -71,7 +69,7 @@ namespace thomasfermi {
 
             //!  A private variable (constant).
             /*!
-            y方向のメッシュが格納された動的配列
+				y方向のメッシュが格納された動的配列
             */
             std::vector<double> const yvec_;
 
@@ -81,13 +79,13 @@ namespace thomasfermi {
 
             //! A private constructor (deleted).
             /*!
-            デフォルトコンストラクタ（禁止）
+				デフォルトコンストラクタ（禁止）
             */
             Beta() = delete;
 
             //! A private copy constructor (deleted).
             /*!
-            コピーコンストラクタ（禁止）
+				コピーコンストラクタ（禁止）
             */
 			Beta(Beta const &) = delete;
 
@@ -101,29 +99,10 @@ namespace thomasfermi {
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
 		};
-		
+
 		// #region メンバ関数
 
-		//inline double Beta::operator()(double x) const
-		//{
-		//	auto klo = 0U;
-		//	auto khi = static_cast<std::uint32_t>(size_ - 1);
-
-		//	// 表の中の正しい位置を二分探索で求める
-		//	while (khi - klo > 1) {
-		//		auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
-
-		//		if (xvec_[k] > x) {
-		//			khi = k;
-		//		}
-		//		else {
-		//			klo = k;
-		//		}
-		//	}
-
-		//	// yvec[i] = f(xvec[i]), yvec[i + 1] = f(xvec[i + 1])の二点を通る直線を代入
-		//	return (yvec_[khi] - yvec_[klo]) / (xvec_[khi] - xvec_[klo]) * (x - xvec_[klo]) + yvec_[klo];
-		//}
+		
 
         inline double Beta::operator()(double x) const
         {

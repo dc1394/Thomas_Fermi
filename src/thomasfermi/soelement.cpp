@@ -1,8 +1,16 @@
+ï»¿/*! \file soelement.h
+	\brief äºŒæ¬¡è¦ç´ ã®ã‚¯ãƒ©ã‚¹ã®å®Ÿè£…
+
+	Copyright Â©  2015 @dc1394 All Rights Reserved.
+	This software is released under the BSD 2-Clause License.
+*/
+
+
 #include "SOElement.h"
 
 namespace thomasfermi {
 	namespace femall {
-		// #region ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+		// #region ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 
 		SOElement::SOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk)
 			:	FEM(std::move(beta), coords, nint, usecilk),
@@ -29,9 +37,9 @@ namespace thomasfermi {
 			}
 		}
 		
-		// #endregion ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+		// #endregion ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 
-		// #region publicƒƒ“ƒoŠÖ”
+		// #region publicãƒ¡ãƒ³ãƒé–¢æ•°
 
 		FEM::resultmap SOElement::createresult() const
 		{
@@ -45,9 +53,9 @@ namespace thomasfermi {
 			return std::move(mymap);
 		}
 		
-		// #endregion publicƒƒ“ƒoŠÖ”
+		// #endregion publicãƒ¡ãƒ³ãƒé–¢æ•°
 
-		// #region privateƒƒ“ƒoŠÖ”
+		// #region privateãƒ¡ãƒ³ãƒé–¢æ•°
 
 		void SOElement::amerge(std::size_t ielem)
 		{
@@ -114,6 +122,6 @@ namespace thomasfermi {
 			return c;
 		}
 
-		// #endregion privateƒƒ“ƒoŠÖ”
+		// #endregion privateãƒ¡ãƒ³ãƒé–¢æ•°
 	}
 }
