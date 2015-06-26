@@ -69,14 +69,14 @@ namespace thomasfermi {
 			FEM::dmklvector ab(nb * n);
 			
 			for (auto i = 0; i < n; i++) {
-                for (auto j = std::min(0, i + kd); j < n; j++) {
-					if (i == j) {
+                for (auto j = i; j <= i + 2; j++) {
+					if (j == i) {
 						ab[(j) * nb + (kd + (i) - (j))] = a0_[i];
 					}
-					else if (i == j - 1 && i < n - 1) {
+					else if (j == i + 1) {
 						ab[(j) * nb + (kd + (i) - (j))] = a1_[i];
 					}
-					else if (i == j - 2 && i < n - 2) {
+					else if (j == i + 2) {
 						ab[(j) * nb + (kd + (i) - (j))] = a2_[i];
 					}
 				}

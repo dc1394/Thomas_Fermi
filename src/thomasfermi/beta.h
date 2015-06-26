@@ -1,5 +1,5 @@
 ﻿/*! \file beta.h
-    \brief β(x)を計算するクラスの宣言と実装
+    \brief β(x)を計算するクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 	This software is released under the BSD 2-Clause License.
@@ -112,23 +112,7 @@ namespace thomasfermi {
 
 		
 
-        //inline double Beta::operator()(double x) const
-        //{
-        //    auto klo = 0U;
-        //    auto const max = static_cast<std::uint32_t>(size_ - 1);
-        //    auto khi = max;
-
-        //    // 表の中の正しい位置を二分探索で求める
-        //    while (khi - klo > 1) {
-        //        auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
-
-        //        if (xvec_[k] > x) {
-        //            khi = k;
-        //        }
-        //        else {
-        //            klo = k;
-        //        }
-        //    }
+        
 
         //    // yvec[i] = f(xvec[i]), yvec[i + 1] = f(xvec[i + 1]), yvec[i + 2] = f(xvec[i + 2])の三点を通る放物線を生成
         //    
