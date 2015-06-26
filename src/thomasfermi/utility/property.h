@@ -95,7 +95,7 @@ namespace utility {
         /*!
             getterに対応するstd::function<T()>
         */
-        std::function<T const &()> const get;
+        std::function<T()> const get;
 
         //! A private member variable.
         /*!

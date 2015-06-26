@@ -168,6 +168,12 @@ namespace thomasfermi {
 			*/
 			gausslegendre::Gauss_Legendre const gl_;
 
+            //! A private variable (constant).
+            /*!
+                Betaクラスのオブジェクトへのスマートポインタ
+            */
+            std::shared_ptr<femall::Beta> const pbeta_;
+
             //! A private member variable (constant).
             /*!
                 x方向のメッシュが格納された動的配列のサイズ

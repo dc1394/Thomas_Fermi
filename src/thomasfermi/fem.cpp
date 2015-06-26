@@ -28,7 +28,8 @@ namespace thomasfermi {
 			b_(nnode_, 0.0),
 			beta_(std::move(beta)),
 			coords_(coords),
-			func_([this](double x) { return (*pbeta_)(x); }),
+            fobeta_(),
+			func_([this](double x) { return (*pbeta_)(fobeta_, x); }),
 			gl_(nint),
 			nint_(nint),
 			pbeta_(std::make_shared<Beta>(coords_, beta_)),
@@ -59,7 +60,7 @@ namespace thomasfermi {
 		{
 			pbeta_.reset();
 			pbeta_ = std::make_shared<Beta>(coords_, beta);
-			func_ = [this](double x) { return (*pbeta_)(x); };
+			func_ = [this](double x) { return (*pbeta_)(fobeta_, x); };
 
 			for (double & v : b_) {
 				v = 0.0;

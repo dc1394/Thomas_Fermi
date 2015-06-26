@@ -50,9 +50,6 @@ namespace thomasfermi {
 			auto const usecilk = std::get<1>(arg);
             x_.resize(pdata_->grid_num_ + 1);
 
-            for (auto i = 0; i <= pdata_->grid_num_; i++) {
-                x_[i] = (double)(i)* dx;
-            }
 			auto const xytuple(s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
 			y1_ = std::get<1>(xytuple)[0];
 			y2_ = std::get<1>(xytuple).back();

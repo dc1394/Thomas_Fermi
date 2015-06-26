@@ -12,6 +12,7 @@
 
 #include "utility/property.h"
 #include <cstdint>				// for std::uint32_t
+#include <memory>               // for std::shared_ptr
 #include <vector>				// for std::vector
 
 namespace thomasfermi {
@@ -21,9 +22,9 @@ namespace thomasfermi {
 			β(x)を計算するクラス
 		*/
 		class Beta final {
-        public:
             // #region コンストラクタ・デストラクタ
 
+        public:
             //! A constructor.
             /*!
 				コンストラクタ
@@ -41,24 +42,40 @@ namespace thomasfermi {
             // #endregion コンストラクタ・デストラクタ
 
 			// #region プロパティ
+            
+            //! A property.
+            /*!
+                x方向のメッシュが格納された動的配列へのスマートポインタのプロパティ
+            */
+            utility::Property < std::unique_ptr < std::vector < double > > > const Pxvec;
+
+            //! A property.
+            /*!
+                y方向のメッシュが格納された動的配列へのスマートポインタのプロパティ
+            */
+            utility::Property < std::unique_ptr < std::vector < double > > > const Pyvec;
 
 			//! A property.
 			/*!
 				メッシュが格納された動的配列のサイズへのプロパティ
 			*/
 			utility::Property<std::size_t> const Size;
-			
-			//! A property.
-			/*!
-				x方向のメッシュが格納された動的配列へのプロパティ
-			*/
-			utility::Property<std::vector<double>> const Xvec;
 
-			//! A property.
-			/*!
-				y方向のメッシュが格納された動的配列へのプロパティ
-			*/
-			utility::Property<std::vector<double>> const Yvec;
+            // #endregion プロパティ
+
+            // #region メンバ関数
+
+            template <typename Element>
+            //! A public member function (const).
+            /*!
+                operator()(double x)の宣言
+                β(x)を計算して返す
+                \param x xの値
+                \return β(x)の値
+            */
+            double operator()(Element const & element, double x) const;
+
+            // #endregion メンバ関数
 
         private:
             // #region メンバ変数
@@ -110,9 +127,12 @@ namespace thomasfermi {
 
 		// #region メンバ関数
 
-		
-
-        
+        template <typename Element>
+        inline double Beta::operator()(Element const & element, double x) const
+        {
+            return element(*this, x);
+        }
+		       
 
         //    // yvec[i] = f(xvec[i]), yvec[i + 1] = f(xvec[i + 1]), yvec[i + 2] = f(xvec[i + 2])の三点を通る放物線を生成
         //    
