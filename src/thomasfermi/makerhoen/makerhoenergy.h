@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "../foelementbeta.h"
+#include "../beta.h"
 #include "../gausslegendre/gausslegendre.h"
 #include <cstdint>                              // for std::int32_t
 #include <cstdio>								// for FILE, std::fclose
@@ -137,12 +137,6 @@ namespace thomasfermi {
                 エネルギーを計算するときの定数の値
             */
             double const alpha_;
-			
-			//! A private member variable (constant).
-			/*!
-				一次要素のβ(x)のクラス
-			*/
-			femall::FoelementBeta const fobeta_;
 
 			//! A private member variable (constant).
 			/*!

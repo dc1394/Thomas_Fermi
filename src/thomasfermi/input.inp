@@ -9,10 +9,10 @@ chemical.number             1
 #
 
 grid.xmin                   1.0E-5          # default = 1.0E-5
-grid.xmax                   20.0           # default = 100.0
-grid.num                    5000           # default = 20000
+grid.xmax                   100.0           # default = 100.0
+grid.num                    20000           # default = 20000
 eps                         1.0E-15         # default = 1.0E-15
-matching.point              5.0            # default = 15.0
+matching.point              15.0            # default = 15.0
 gauss.legendre.integ        10              # default = 5
 gauss.legendre.integ.ene    1000			# default = 1000
 

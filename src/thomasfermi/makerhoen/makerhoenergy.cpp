@@ -24,7 +24,6 @@ namespace thomasfermi {
 
         MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, MakeRhoEnergy::parameter_type const & pt, double Z) :
 			alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
-			fobeta_(),
 			xvec_(std::get<1>(pt)),
 			dx_(xvec_[2] - xvec_[1]),
             fp_(nullptr, fcloser),
@@ -62,7 +61,7 @@ namespace thomasfermi {
         double MakeRhoEnergy::makeEnergy() const
         {
             auto const func = 
-                myfunctional::make_functional([this](double x) { return (*pbeta_)(fobeta_, x); });
+                myfunctional::make_functional([this](double x) { return pbeta_->operator()<femall::Element::First>(x); });
 
             auto const sum = gl_.qgauss(
                 func,
@@ -115,7 +114,7 @@ namespace thomasfermi {
 
         double MakeRhoEnergy::y(double x) const
         {
-            return std::pow(x * (*pbeta_)(fobeta_, x) * (*pbeta_)(fobeta_, x), 1.0 / 3.0);
+			return std::pow(x * pbeta_->operator()<femall::Element::First>(x)* pbeta_->operator()<femall::Element::First>(x), 1.0 / 3.0);
         }
 
         // #endregion privateメンバ関数

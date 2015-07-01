@@ -197,7 +197,7 @@
     <ClInclude Include="folinearequations.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="foelementbeta.h">
+    <ClInclude Include="element.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

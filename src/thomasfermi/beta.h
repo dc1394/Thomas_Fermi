@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "element.h"
 #include "utility/property.h"
 #include <cstdint>				// for std::uint32_t
 #include <memory>               // for std::shared_ptr
@@ -41,39 +42,17 @@ namespace thomasfermi {
 
             // #endregion コンストラクタ・デストラクタ
 
-			// #region プロパティ
-            
-            //! A property.
-            /*!
-                x方向のメッシュが格納された動的配列へのスマートポインタのプロパティ
-            */
-            utility::Property < std::unique_ptr < std::vector < double > > > const Pxvec;
-
-            //! A property.
-            /*!
-                y方向のメッシュが格納された動的配列へのスマートポインタのプロパティ
-            */
-            utility::Property < std::unique_ptr < std::vector < double > > > const Pyvec;
-
-			//! A property.
-			/*!
-				メッシュが格納された動的配列のサイズへのプロパティ
-			*/
-			utility::Property<std::size_t> const Size;
-
-            // #endregion プロパティ
-
             // #region メンバ関数
 
-            template <typename Element>
+			template <Element E>
             //! A public member function (const).
             /*!
                 operator()(double x)の宣言
-                β(x)を計算して返す
+                一次要素でβ(x)を計算して返す
                 \param x xの値
                 \return β(x)の値
             */
-            double operator()(Element const & element, double x) const;
+            double operator()(double x) const;
 
             // #endregion メンバ関数
 
@@ -127,14 +106,31 @@ namespace thomasfermi {
 
 		// #region メンバ関数
 
-        template <typename Element>
-        inline double Beta::operator()(Element const & element, double x) const
-        {
-            return element(*this, x);
-        }
+		template <>
+		double Beta::operator()<Element::First>(double x) const
+		{
+			auto klo = 0U;
+			auto const max = static_cast<std::uint32_t>(size_ - 1);
+			auto khi = max;
+
+			// 表の中の正しい位置を二分探索で求める
+			while (khi - klo > 1) {
+				auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
+
+				if (xvec_[k] > x) {
+					khi = k;
+				}
+				else {
+					klo = k;
+				}
+			}
+
+			// yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1])の二点を通る直線を代入
+			return (yvec_[khi] - yvec_[klo]) / (xvec_[khi] - xvec_[klo]) * (x - xvec_[klo]) + yvec_[klo];
+		}
 		       
 
-        //    // yvec[i] = f(xvec[i]), yvec[i + 1] = f(xvec[i + 1]), yvec[i + 2] = f(xvec[i + 2])の三点を通る放物線を生成
+        //    // yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1]), yvec_[i + 2] = f(xvec_[i + 2])の三点を通る放物線を生成
         //    
         //    // もし、配列の外にはみ出るときは
         //    if (khi >= max - 1) {

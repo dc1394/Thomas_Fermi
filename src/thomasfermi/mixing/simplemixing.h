@@ -37,13 +37,6 @@ namespace thomasfermi {
 
             // #region メンバ関数
 
-			//! A public member function.
-			/*!
-				yoldへのconst参照を返すgetter
-				\return yへのconst参照
-			*/
-			femall::FEM::dmklvector const & getyold();
-
             //! A public member function.
             /*!
                 一次混合法によって、yの合成を行う関数
@@ -61,7 +54,7 @@ namespace thomasfermi {
             /*!
                 前回のループのyの値の可変長配列へのプロパティ
             */
-            utility::Property<femall::FEM::dmklvector> Yold;
+            utility::Property<femall::FEM::dmklvector const &> Yold;
 
             // #endregion プロパティ
 
@@ -97,15 +90,15 @@ namespace thomasfermi {
 
             //! A private copy constructor (deleted).
             /*!
-            コピーコンストラクタ（禁止）
+				コピーコンストラクタ（禁止）
             */
             SimpleMixing(const SimpleMixing &) = delete;
 
             //! A private member function (deleted).
             /*!
-            operator=()の宣言（禁止）
-            \param コピー元のオブジェクト（未使用）
-            \return コピー元のオブジェクト
+				operator=()の宣言（禁止）
+				\param コピー元のオブジェクト（未使用）
+				\return コピー元のオブジェクト
             */
             SimpleMixing & operator=(const SimpleMixing &) = delete;
 

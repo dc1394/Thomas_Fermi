@@ -215,9 +215,9 @@
     <ClInclude Include="beta.h" />
     <ClInclude Include="ci_string.h" />
     <ClInclude Include="data.h" />
+    <ClInclude Include="element.h" />
     <ClInclude Include="fem.h" />
     <ClInclude Include="foelement.h" />
-    <ClInclude Include="foelementbeta.h" />
     <ClInclude Include="folinearequations.h" />
     <ClInclude Include="gausslegendre\gausslegendre.h" />
     <ClInclude Include="getcomlineoption.h" />

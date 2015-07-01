@@ -11,7 +11,7 @@ namespace thomasfermi {
     namespace mixing {
         SimpleMixing::SimpleMixing(std::shared_ptr<Data> const & pdata) :
             Yold(
-                nullptr,
+				[this] { return std::cref(yold_); },
                 [this](femall::FEM::dmklvector const & val) { 
                     yold_ = val;
                     return val;
@@ -19,11 +19,6 @@ namespace thomasfermi {
             pdata_(pdata)
         {
         }
-
-		femall::FEM::dmklvector const & SimpleMixing::getyold()
-		{
-			return yold_;
-		}
 
 		femall::FEM::dmklvector SimpleMixing::operator()(femall::FEM::dmklvector const & y)
         {
