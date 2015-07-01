@@ -121,7 +121,7 @@ namespace thomasfermi {
 		{
 			auto const size = y_.size();
 
-			auto const & yold(pmix_->getyold());
+			auto const & yold(pmix_->Yold());
 
             BOOST_ASSERT(size == yold.size());
 
