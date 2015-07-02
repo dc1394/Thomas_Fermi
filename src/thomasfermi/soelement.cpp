@@ -59,8 +59,8 @@ namespace thomasfermi {
 
 		void SOElement::amerge(std::size_t ielem)
 		{
-            for (auto i = 0; i < ntnoel_; i++) {
-                for (auto j = 0; j < ntnoel_; j++) {
+            for (auto i = 0UL; i < ntnoel_; i++) {
+                for (auto j = 0UL; j < ntnoel_; j++) {
                     auto const lnodi = (*plnods_)[ielem][i];
                     auto const lnodj = (*plnods_)[ielem][j];
                     if (lnodi == lnodj) {
