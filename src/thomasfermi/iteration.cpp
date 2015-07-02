@@ -2,28 +2,25 @@
 	\brief 微分方程式を反復法で解くクラスの実装
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+	This software is released under the BSD-2 License.
 */
 
-#include "foelement.h"
-#include "folinearequations.h"
 #include "iteration.h"
 #include "readinputfile.h"
 #include "shoot/shootf.h"
-#include "soelement.h"
-#include "solinearequations.h"
-#include <iostream>			    // for std::cout
-#include <stdexcept>		    // for std::runtime_error
-#include <boost/cast.hpp>	    // for boost::numeric_cast
-#include <boost/format.hpp>	    // for boost::format
-#include <boost/assert.hpp>	    // for BOOST_ASSERT
+#include <iostream>								// for std::cout
+#include <stdexcept>							// for std::runtime_error
+#include <boost/cast.hpp>						// for boost::numeric_cast
+#include <boost/format.hpp>						// for boost::format
+#include <boost/assert.hpp>						// for BOOST_ASSERT
+#include <boost/utility/in_place_factory.hpp>	// for boost::in_place
 
 namespace thomasfermi {
 	namespace femall {
 		// #region コンストラクタ・デストラクタ
 
 		Iteration::Iteration(std::pair<std::string, bool> const & arg) :
-			PData([this] { return pdata_; }, nullptr)
+			PData([this] { return std::cref(pdata_); }, nullptr)
 		{
 			using namespace thomasfermi;
 			using namespace thomasfermi::shoot;
@@ -48,8 +45,6 @@ namespace thomasfermi {
 				l2.make_v2(pdata_->xmax_));
 			
 			auto const usecilk = std::get<1>(arg);
-            x_.resize(pdata_->grid_num_ + 1);
-
 			auto const xytuple(s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
 			y1_ = std::get<1>(xytuple)[0];
 			y2_ = std::get<1>(xytuple).back();
@@ -67,13 +62,18 @@ namespace thomasfermi {
 			v_bc_nonzero_.reserve(Iteration::N_BC_GIVEN);
 			v_bc_nonzero_ = { y1_, y2_ };
 
-			ple_ = std::make_unique<FOLinear_equations>(pfem_->createresult());
+			ple_ = boost::in_place(pfem_->createresult());
 
 			ple_->bound(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
 			y_ = ple_->LEsolver();
 		}
-		
+
+		Iteration::~Iteration()
+		{
+			ple_ = boost::none;
+		}
+
 		// #endregion コンストラクタ・デストラクタ
 
 		// #region publicメンバ関数
@@ -83,7 +83,7 @@ namespace thomasfermi {
 			auto normrd = Iteration::ITERATION_THRESHOLD;
 			double normrdbefore;
 			for (auto i = 1U; i < pdata_->iteration_maxiter_; i++) {
-				pfem_->reset(make_beta());
+				pfem_->reset(Iteration::make_beta());
 				pfem_->stiff2();
 
 				ple_->reset(pfem_->B);
@@ -136,7 +136,7 @@ namespace thomasfermi {
 		FEM::dvector Iteration::make_beta() const
 		{
 			auto const size = y_.size();
-            BOOST_ASSERT(size == x_.size());
+			BOOST_ASSERT(size == x_.size());
 			FEM::dvector beta(size);
 
 			for (auto i = 0U; i < size; i++) {

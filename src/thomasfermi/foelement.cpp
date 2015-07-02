@@ -41,15 +41,15 @@ namespace thomasfermi {
 
 		// #region publicメンバ関数
 		
-		FEM::resultmap FOElement::createresult() const
+		std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> FOElement::createresult() const
 		{
-			FEM::resultmap mymap;
+			//FEM::resultmap mymap;
 
-			mymap["a0"] = a0_;
-			mymap["a1"] = a1_;
-			mymap["b"] = b_;
+			//mymap["a0"] = a0_;
+			//mymap["a1"] = a1_;
+			//mymap["b"] = b_;
 
-			return std::move(mymap);
+			return std::make_tuple(a0_, a1_, dmklvector(), b_);
 		}
 
 		// #endregion publicメンバ関数

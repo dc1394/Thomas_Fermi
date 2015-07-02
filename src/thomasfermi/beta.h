@@ -107,7 +107,7 @@ namespace thomasfermi {
 		// #region メンバ関数
 
 		template <>
-		double Beta::operator()<Element::First>(double x) const
+		inline double Beta::operator()<Element::First>(double x) const
 		{
 			auto klo = 0U;
 			auto const max = static_cast<std::uint32_t>(size_ - 1);

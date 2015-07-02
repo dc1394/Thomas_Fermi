@@ -77,7 +77,7 @@ namespace thomasfermi {
 				結果を返す関数
 				\return 結果を集めたboost::container::flat_map
 			*/
-			virtual FEM::resultmap createresult() const = 0;
+			virtual std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> createresult() const = 0;
 			
 			//! A public member function.
 			/*!
@@ -181,7 +181,7 @@ namespace thomasfermi {
 			//! A property.
 			/*!
 			*/
-			Property<FEM::dmklvector> const B;
+			Property<FEM::dmklvector const &> const B;
 
 			//! A property.
 			/*!
@@ -197,7 +197,7 @@ namespace thomasfermi {
 			/*!
 				βのスマートポインタへのプロパティ
 			*/
-			Property<std::shared_ptr<Beta>> const PBeta;
+			Property<std::shared_ptr<Beta> const &> const PBeta;
 
 			// #endregion プロパティ
 

@@ -71,13 +71,13 @@ namespace gausslegendre {
 		/*!
 			Gauss-Legendreの重みへのプロパティ
 		*/
-		utility::Property<std::vector<double>> const W;
+		utility::Property<std::vector<double> const &> const W;
 
 		//! A property.
 		/*!
 			Gauss-Legendreの節へのプロパティ
 		*/
-		utility::Property<std::vector<double>> const X;
+		utility::Property<std::vector<double> const &> const X;
 
 		// #endregion プロパティ
 

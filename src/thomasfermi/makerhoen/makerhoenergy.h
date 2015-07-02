@@ -2,7 +2,7 @@
     \brief β(x)から電子密度とエネルギーを計算してファイルに記録するクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+	This software is released under the BSD-2 License.
 */
 
 #ifndef _MAKERHOENERGY_H_
@@ -132,31 +132,31 @@ namespace thomasfermi {
 
             // #region メンバ変数
 
-            //! A private member variable (constant).
+            //! A private variable (constant).
             /*!
                 エネルギーを計算するときの定数の値
             */
             double const alpha_;
-
-			//! A private member variable (constant).
+			
+			//! A private variable (constant).
 			/*!
 				x方向のメッシュが格納された動的配列
 			*/
 			std::vector<double> const xvec_;
 
-			//! A private member variable (constant).
+			//! A private variable (constant).
 			/*!
 				x方向のメッシュの刻み幅
 			*/
 			double const dx_;
 			
-			//! A private member variable (constant).
+			//! A private variable (constant).
 			/*!
 				ファイルポインタ
 			*/
 			std::unique_ptr<FILE, decltype(fcloser)> fp_;
 
-			//! A private member variable (constant).
+			//! A private variable (constant).
 			/*!
 				Gauss-Legendreの積分を行うオブジェクト
 			*/
@@ -168,26 +168,26 @@ namespace thomasfermi {
             */
             std::shared_ptr<femall::Beta> const pbeta_;
 
-            //! A private member variable (constant).
+            //! A private variable (constant).
             /*!
                 x方向のメッシュが格納された動的配列のサイズ
             */
             std::size_t const size_;
 
-			//! A private member variable (constant).
+			//! A private variable (constant).
 			/*!
 				ファイル出力するときのループの最大数
 			*/
 			std::int32_t const max_;
 
-			//! A private member variable.
+			//! A private variable.
 			/*!
 				規格化のための定数
 				s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
 			*/
 			double s_;
             
-            //! A private member variable (constant).
+            //! A private variable (constant).
             /*!
                 原子番号
             */

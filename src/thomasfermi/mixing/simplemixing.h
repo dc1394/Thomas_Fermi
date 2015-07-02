@@ -2,7 +2,7 @@
 	\brief 一次混合法でyの合成を行うクラスの宣言
 
     Copyright ©  2015 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    This software is released under the BSD-2 License.
 */
 
 #ifndef _SIMPLEMIXING_H_
@@ -90,15 +90,15 @@ namespace thomasfermi {
 
             //! A private copy constructor (deleted).
             /*!
-				コピーコンストラクタ（禁止）
+            コピーコンストラクタ（禁止）
             */
             SimpleMixing(const SimpleMixing &) = delete;
 
             //! A private member function (deleted).
             /*!
-				operator=()の宣言（禁止）
-				\param コピー元のオブジェクト（未使用）
-				\return コピー元のオブジェクト
+            operator=()の宣言（禁止）
+            \param コピー元のオブジェクト（未使用）
+            \return コピー元のオブジェクト
             */
             SimpleMixing & operator=(const SimpleMixing &) = delete;
 

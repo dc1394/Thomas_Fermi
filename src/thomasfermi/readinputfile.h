@@ -2,7 +2,7 @@
     \brief インプットファイルの読み込みを行うクラスの宣言
 
     Copyright ©  2015 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    This software is released under the BSD-2 License.
 */
 
 #ifndef _READINPUTFILE_H_
@@ -170,7 +170,7 @@ namespace thomasfermi {
             読み込んだデータを返す
             \return 読み込んだデータ
         */
-        utility::Property<std::shared_ptr<Data>> const PData;
+        utility::Property<std::shared_ptr<Data> const &> const PData;
 
         // #endregion プロパティ
 

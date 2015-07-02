@@ -3,7 +3,7 @@
     関数値とその微分値を求めるクラスの実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+	This software is released under the BSD-2 License.
 */
 
 #include "load2.h"

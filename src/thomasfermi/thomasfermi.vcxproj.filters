@@ -78,6 +78,9 @@
     <ClCompile Include="makerhoen\makerhoenergy.cpp">
       <Filter>ソース ファイル\makerhoen</Filter>
     </ClCompile>
+    <ClCompile Include="beta.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="shoot\load2.cpp">
       <Filter>ソース ファイル\shoot</Filter>
     </ClCompile>
@@ -115,15 +118,6 @@
       <Filter>ソース ファイル\simplemixing</Filter>
     </ClCompile>
     <ClCompile Include="soelement.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="solinearequations.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="folinearequations.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="beta.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -189,15 +183,6 @@
       <Filter>ヘッダー ファイル\mixing</Filter>
     </ClInclude>
     <ClInclude Include="soelement.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="solinearequations.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="folinearequations.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="element.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

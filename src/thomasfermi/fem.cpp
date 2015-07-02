@@ -18,10 +18,10 @@ namespace thomasfermi {
 		// #region コンストラクタ
 
 		FEM::FEM(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk) :
-			B([this] { return b_; }, nullptr),
+			B([this] { return std::cref(b_); }, nullptr),
 			Nnode([this] { return nnode_; }, nullptr),
 			Ntnoel([this] { return ntnoel_; }, nullptr),
-			PBeta([this] { return pbeta_; }, nullptr),
+			PBeta([this] { return std::cref(pbeta_); }, nullptr),
 			nnode_(coords.size()),
 			a0_(nnode_, 0.0),
 			a1_(nnode_ - 1, 0.0),

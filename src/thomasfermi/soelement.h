@@ -47,7 +47,7 @@ namespace thomasfermi {
 				結果を返す関数
 				\return 結果を集めたboost::container::flat_map
 			*/
-			FEM::resultmap createresult() const override;
+			std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> createresult() const override;
 
 			// #endregion publicメンバ関数
 

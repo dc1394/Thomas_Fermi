@@ -3,7 +3,7 @@
 
     Copyright ©  2015 @dc1394 All Rights Reserved.
     (but this is originally adapted by επιστημη for list-07 from http://codezine.jp/article/detail/7571 )
-    This software is released under the BSD 2-Clause License.
+    This software is released under the BSD-2 License.
 */
 
 #ifndef _PROPERTY_H_
@@ -93,7 +93,7 @@ namespace utility {
 
         //! A private member variable.
         /*!
-            getterに対応するstd::function<T()>
+            getterに対応するstd::function<T const &()>
         */
         std::function<T()> const get;
 

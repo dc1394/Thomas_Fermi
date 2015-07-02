@@ -14,8 +14,8 @@ namespace gausslegendre {
     // #region コンストラクタ
 
     Gauss_Legendre::Gauss_Legendre(std::int32_t n) :
-		W([this] { return w_; }, nullptr),
-		X([this] { return x_; }, nullptr),
+		W([this] { return std::cref(w_); }, nullptr),
+		X([this] { return std::cref(x_); }, nullptr),
 		n_(n)
     {
         alglib::ae_int_t info = 0;
