@@ -86,27 +86,27 @@ namespace thomasfermi {
 		private:
 			//! A private member variable.
 			/*!
-				ベクトルa1
+				ベクトルa0
 			*/
-			dvector a1_;
+			dvector a0_;
 			
 			//! A private member variable (constant).
 			/*!
-				ベクトルa1の複製
+				ベクトルa0の複製
 			*/
-			dvector const a1back_;
+			dvector const a0back_;
 
 			//! A private member variable.
 			/*!
-				ベクトルa2
+				ベクトルa1
 			*/
-			dvector a2_;
+			dvector a1_;
 
 			//! A private member variable (constant).
 			/*!
 				ベクトルs2の複製
 			*/
-			dvector const a2back_;
+			dvector const a1back_;
 
 			//! A private member variable.
 			/*!

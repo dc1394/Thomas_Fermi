@@ -28,10 +28,10 @@ namespace thomasfermi {
 		// #region コンストラクタ
 
 		Linear_equations::Linear_equations(std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> const & res) :
-			a1_(std::get<0>(res)),
+			a0_(std::get<0>(res)),
+			a0back_(a0_),
+			a1_(std::get<1>(res)),
 			a1back_(a1_),
-			a2_(std::get<1>(res)),
-			a2back_(a2_),
 			b_(std::get<3>(res)),
 			n_(std::get<0>(res).size())
 		{
@@ -43,16 +43,16 @@ namespace thomasfermi {
 
 		void Linear_equations::bound(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero)
 		{
-			b_[i_bc_nonzero[0] + 1] -= v_bc_nonzero[0] * a2_[i_bc_nonzero[0]];
-			b_[i_bc_nonzero[1] - 1] -= v_bc_nonzero[1] * a2_[i_bc_nonzero[1] - 1];
+			b_[i_bc_nonzero[0] + 1] -= v_bc_nonzero[0] * a1_[i_bc_nonzero[0]];
+			b_[i_bc_nonzero[1] - 1] -= v_bc_nonzero[1] * a1_[i_bc_nonzero[1] - 1];
 
 			for (auto i = 0U; i < n_bc_nonzero; i++) {
 				b_[i_bc_nonzero[i]] = v_bc_nonzero[i];
 			}
 
 			for (auto i = 0U; i < n_bc_given; i++) {
-				a1_[i_bc_given[i]] = 1.0;
-				a2_[i_bc_given[i] - i] = 0.0;
+				a0_[i_bc_given[i]] = 1.0;
+				a1_[i_bc_given[i] - i] = 0.0;
 			}
 		}
 		
@@ -63,8 +63,8 @@ namespace thomasfermi {
 								LAPACK_COL_MAJOR,
 								n,
 								1,
+								a0_.data(),
 								a1_.data(),
-								a2_.data(),
 								b_.data(),
 								n);
 
@@ -81,8 +81,8 @@ namespace thomasfermi {
 
 		void Linear_equations::reset(dvector const & b)
 		{
+			a0_ = a0back_;
 			a1_ = a1back_;
-			a2_ = a2back_;
 			b_ = b;
 		}
 	}
