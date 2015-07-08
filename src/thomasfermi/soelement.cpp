@@ -56,14 +56,15 @@ namespace thomasfermi {
                 for (auto j = 0UL; j < ntnoel_; j++) {
                     auto const lnodi = (*plnods_)[ielem][i];
                     auto const lnodj = (*plnods_)[ielem][j];
-                    if (lnodi == lnodj) {
-                        a0_[lnodi] += astiff_[i][j];
+
+                    if (lnodj == lnodi) {
+                        a0_[lnodj] += astiff_[i][j];
                     }
-                    else if (lnodi == lnodj - 1 && lnodi < nnode_ - 1) {
-                        a1_[lnodi] += astiff_[i][j];
+                    else if (lnodj == lnodi - 1 && lnodj < nnode_ - 1) {
+                        a1_[lnodj] += astiff_[i][j];
                     }
-                    else if (lnodi == lnodj - 2 && lnodi < nnode_ - 2) {
-                        a2_[lnodi] += astiff_[i][j];
+                    else if (lnodj == lnodi - 2 && lnodj < nnode_ - 2) {
+                        a2_[lnodj] += astiff_[i][j];
                     }
                 }
             }

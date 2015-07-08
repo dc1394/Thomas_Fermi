@@ -54,20 +54,20 @@ namespace thomasfermi {
 			y_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
             pmix_->Yold = y_;
 
-			pfem_.reset(new femall::SOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
+			pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
 			pfem_->stiff();
 
 			i_bc_given_.reserve(Iteration::N_BC_GIVEN);
 
 			i_bc_given_ = { 0, pfem_->Nnode - 1 };
 			v_bc_nonzero_.reserve(Iteration::N_BC_GIVEN);
-			v_bc_nonzero_ = { y1_, y2_ };
+			v_bc_nonzero_ = { 1.0, 2.0 };
 
 			ple_ = boost::in_place(pfem_->createresult());
 
-			ple_->bound<Element::Second>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
+			ple_->bound<Element::First>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
-			y_ = ple_->LEsolver<Element::Second>();
+			y_ = ple_->LEsolver<Element::First>();
 		}
 
 		Iteration::~Iteration()
@@ -88,10 +88,10 @@ namespace thomasfermi {
 				pfem_->stiff2();
 
 				ple_->reset(pfem_->B);
-				ple_->bound<Element::Second>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
+				ple_->bound<Element::First>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
                 pmix_->Yold = y_;
-				ymix(ple_->LEsolver<Element::Second>());
+				ymix(ple_->LEsolver<Element::First>());
 				normrdbefore = normrd;
 				normrd = GetNormRD();
 

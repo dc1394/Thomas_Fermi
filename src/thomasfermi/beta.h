@@ -163,19 +163,18 @@ namespace thomasfermi {
 
             auto const denom = x2mx1 * x0mx2 * x1mx0;
 
-            auto const a = -(x2mx1 * yvec_[klo] + x0mx2 * yvec_[khi] + x1mx0 * yvec_[khi + 1]) / denom;
+            auto const a = -(x2mx1 * yvec_[klo] + x0mx2 * yvec_[khi] + x1mx0 * yvec_[khi + 1]);
             
 			auto b = x2mx1 * (xvec_[khi + 1] + xvec_[khi]) * yvec_[klo];
             b += x0mx2 * (xvec_[klo] + xvec_[khi + 1]) * yvec_[khi];
             b += x1mx0 * (xvec_[khi] + xvec_[klo]) * yvec_[khi + 1];
-            b /= denom;
 
 			auto c = x2mx1 * xvec_[khi] * xvec_[khi + 1] * yvec_[klo];
 			c += x0mx2 * xvec_[klo] * xvec_[khi + 1] * yvec_[khi];
 			c += x1mx0 * xvec_[klo] * xvec_[khi] * yvec_[khi + 1];
-			c /= -denom;
+			c *= -1.0;
 
-			return (a * x + b) * x + c;
+			return ((a * x + b) * x + c) / denom;
         }
 
 		// #endregion メンバ関数
