@@ -129,32 +129,54 @@ namespace thomasfermi {
 			return (yvec_[khi] - yvec_[klo]) / (xvec_[khi] - xvec_[klo]) * (x - xvec_[klo]) + yvec_[klo];
 		}
 		       
+		template <>
+		inline double Beta::operator()<Element::Second>(double x) const
+		{
+			auto klo = 0U;
+			auto const max = static_cast<std::uint32_t>(size_ - 1);
+			auto khi = max;
 
-        //    // yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1]), yvec_[i + 2] = f(xvec_[i + 2])の三点を通る放物線を生成
-        //    
-        //    // もし、配列の外にはみ出るときは
-        //    if (khi >= max - 1) {
-        //        // 一つ前の値を使う
-        //        khi--;
-        //        klo--;
-        //    }
+			// 表の中の正しい位置を二分探索で求める
+			while (khi - klo > 1) {
+				auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
 
-        //    auto const x2mx1 = xvec_[khi + 1] - xvec_[khi];
-        //    auto const x0mx2 = xvec_[klo] - xvec_[khi + 1];
-        //    auto const x1mx0 = xvec_[khi] - xvec_[klo];
+				if (xvec_[k] > x) {
+					khi = k;
+				}
+				else {
+					klo = k;
+				}
+			}
+            
+			// yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1]), yvec_[i + 2] = f(xvec_[i + 2])の三点を通る放物線を生成
+            
+            // もし、配列の外にはみ出るときは
+            if (khi >= max - 1) {
+                // 一つ前の値を使う
+                khi--;
+                klo--;
+            }
 
-        //    auto const denom = x2mx1 * x0mx2 * x1mx0;
+            auto const x2mx1 = xvec_[khi + 1] - xvec_[khi];
+            auto const x0mx2 = xvec_[klo] - xvec_[khi + 1];
+            auto const x1mx0 = xvec_[khi] - xvec_[klo];
 
-        //    auto const a = -(x2mx1 * yvec_[klo] + x0mx2 * yvec_[khi] + x1mx0 * yvec_[khi + 1]) / denom;
-        //    auto b = x2mx1 * (xvec_[khi + 1] + xvec_[khi]) * yvec_[klo];
-        //    b += x0mx2 * (xvec_[klo] + xvec_[khi + 1]) * yvec_[khi];
-        //    b += x1mx0 * (xvec_[khi] + xvec_[klo]) * yvec_[khi + 1];
-        //    b /= denom;
+            auto const denom = x2mx1 * x0mx2 * x1mx0;
 
+            auto const a = -(x2mx1 * yvec_[klo] + x0mx2 * yvec_[khi] + x1mx0 * yvec_[khi + 1]);
+            
+			auto b = x2mx1 * (xvec_[khi + 1] + xvec_[khi]) * yvec_[klo];
+            b += x0mx2 * (xvec_[klo] + xvec_[khi + 1]) * yvec_[khi];
+            b += x1mx0 * (xvec_[khi] + xvec_[klo]) * yvec_[khi + 1];
 
-        //    
+			auto c = x2mx1 * xvec_[khi] * xvec_[khi + 1] * yvec_[klo];
+			c += x0mx2 * xvec_[klo] * xvec_[khi + 1] * yvec_[khi];
+			c += x1mx0 * xvec_[klo] * xvec_[khi] * yvec_[khi + 1];
+			c *= -1.0;
 
-        //}
+			return ((a * x + b) * x + c) / denom;
+        }
+
 		// #endregion メンバ関数
 	}
 }
