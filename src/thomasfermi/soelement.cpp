@@ -41,15 +41,8 @@ namespace thomasfermi {
 
 		// #region publicメンバ関数
 
-		std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> SOElement::createresult() const
+		FEM::resulttuple SOElement::createresult() const
 		{
-			//FEM::resultmap mymap;
-
-			//mymap["a0"] = a0_;
-			//mymap["a1"] = a1_;
-			//mymap["a2"] = a2_;
-			//mymap["b"] = b_;
-
 			return std::make_tuple(a0_, a1_, a2_, b_);
 		}
 		
@@ -63,14 +56,15 @@ namespace thomasfermi {
                 for (auto j = 0UL; j < ntnoel_; j++) {
                     auto const lnodi = (*plnods_)[ielem][i];
                     auto const lnodj = (*plnods_)[ielem][j];
-                    if (lnodi == lnodj) {
-                        a0_[lnodi] += astiff_[i][j];
+
+                    if (lnodj == lnodi) {
+                        a0_[lnodj] += astiff_[i][j];
                     }
-                    else if (lnodi == lnodj - 1 && lnodi < nnode_ - 1) {
-                        a1_[lnodi] += astiff_[i][j];
+                    else if (lnodj == lnodi - 1 && lnodj < nnode_ - 1) {
+                        a1_[lnodj] += astiff_[i][j];
                     }
-                    else if (lnodi == lnodj - 2 && lnodi < nnode_ - 2) {
-                        a2_[lnodi] += astiff_[i][j];
+                    else if (lnodj == lnodi - 2 && lnodj < nnode_ - 2) {
+                        a2_[lnodj] += astiff_[i][j];
                     }
                 }
             }

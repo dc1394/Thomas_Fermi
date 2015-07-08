@@ -23,7 +23,6 @@
 #include <functional>					// for std::function
 #include <memory>						// for std::unique_ptr, std::shared_ptr
 #include <vector>						// for std::vector
-#include <boost/container/flat_map.hpp> // for boost::container::flat_map
 #include <boost/multi_array.hpp>		// for boost::multi_array
 
 namespace thomasfermi {
@@ -42,7 +41,7 @@ namespace thomasfermi {
 
 			using dmklvector = std::vector < double, mkl_allocator< double > >;
 
-			using resultmap = boost::container::flat_map < std::string, FEM::dmklvector > ;
+			using resulttuple = std::tuple < FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector >;
 
 		private:
 			using dmatrix = std::array < std::array<double, 3>, 3 >;
@@ -77,7 +76,7 @@ namespace thomasfermi {
 				結果を返す関数
 				\return 結果を集めたboost::container::flat_map
 			*/
-			virtual std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> createresult() const = 0;
+			virtual FEM::resulttuple createresult() const = 0;
 			
 			//! A public member function.
 			/*!
