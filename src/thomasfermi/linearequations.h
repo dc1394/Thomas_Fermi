@@ -15,6 +15,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 #endif
 
+#include "element.h"
 #include "mkl_allocator.h"
 #include <tuple>			// for std::tuple
 #include <vector>			// for std::vexctor
@@ -54,6 +55,7 @@ namespace thomasfermi {
 
 			// #region publicメンバ関数
 
+			template <Element E>
 			//! A public member function.
 			/*!
 				境界条件を定める
@@ -72,6 +74,7 @@ namespace thomasfermi {
 			*/
 			void reset(dvector const & b);
 			
+			template <Element E>
 			//! A public member function.
 			/*!
 				連立一次方程式の解を求める
@@ -104,9 +107,21 @@ namespace thomasfermi {
 
 			//! A private member variable (constant).
 			/*!
-				ベクトルs2の複製
+				ベクトルa1の複製
 			*/
 			dvector const a1back_;
+
+			//! A private member variable.
+			/*!
+				ベクトルa2
+			*/
+			dvector a2_;
+
+			//! A private member variable (constant).
+			/*!
+				ベクトルa2の複製
+			*/
+			dvector const a2back_;
 
 			//! A private member variable.
 			/*!
