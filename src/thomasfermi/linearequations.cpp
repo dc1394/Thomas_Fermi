@@ -27,13 +27,14 @@ namespace thomasfermi {
 	namespace femall {
 		// #region コンストラクタ
 
-		Linear_equations::Linear_equations(std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> const & res) :
-			a1_(std::get<0>(res)),
-			a1back_(a1_),
-			a2_(std::get<1>(res)),
-			a2back_(a2_),
-			b_(std::get<3>(res)),
-			n_(std::get<0>(res).size())
+		Linear_equations::Linear_equations(FEM::resulttuple const & res) :
+            a0_(std::get<0>(res)),
+            a0back_(a0_),
+            a1_(std::get<1>(res)),
+            a1back_(a1_),
+            a2_(std::get<2>(res)),
+            b_(std::get<3>(res)),
+            n_(std::get<0>(res).size())
 		{
 		}
 
@@ -63,8 +64,8 @@ namespace thomasfermi {
 								LAPACK_COL_MAJOR,
 								n,
 								1,
+								a0_.data(),
 								a1_.data(),
-								a2_.data(),
 								b_.data(),
 								n);
 
@@ -81,8 +82,8 @@ namespace thomasfermi {
 
 		void Linear_equations::reset(dvector const & b)
 		{
+			a0_ = a0back_;
 			a1_ = a1back_;
-			a2_ = a2back_;
 			b_ = b;
 		}
 	}
