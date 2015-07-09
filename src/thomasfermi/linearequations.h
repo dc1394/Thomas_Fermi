@@ -43,7 +43,7 @@ namespace thomasfermi {
 				唯一のコンストラクタ
 				\param res 連立方程式のベクトル
 			*/
-			explicit Linear_equations(std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> const & res);
+			explicit Linear_equations(FEM::resulttuple const & res);
 
 			//! A destructor.
 			/*!
@@ -55,7 +55,6 @@ namespace thomasfermi {
 
 			// #region publicメンバ関数
 
-			template <Element E>
 			//! A public member function.
 			/*!
 				境界条件を定める
@@ -74,7 +73,7 @@ namespace thomasfermi {
 			*/
 			void reset(dvector const & b);
 			
-			template <Element E>
+            //template <Element E>
 			//! A public member function.
 			/*!
 				連立一次方程式の解を求める
@@ -87,41 +86,35 @@ namespace thomasfermi {
 			// #region メンバ変数
 
 		private:
-			//! A private member variable.
-			/*!
-				ベクトルa0
-			*/
-			dvector a0_;
-			
-			//! A private member variable (constant).
-			/*!
-				ベクトルa0の複製
-			*/
-			dvector const a0back_;
+            //! A private member variable.
+            /*!
+                ベクトルa0
+            */
+            dvector a0_;
 
-			//! A private member variable.
-			/*!
-				ベクトルa1
-			*/
-			dvector a1_;
+            //! A private member variable (constant).
+            /*!
+                ベクトルa0の複製
+            */
+            dvector const a0back_;
 
-			//! A private member variable (constant).
-			/*!
-				ベクトルa1の複製
-			*/
-			dvector const a1back_;
+            //! A private member variable.
+            /*!
+                ベクトルa1
+            */
+            dvector a1_;
 
-			//! A private member variable.
-			/*!
-				ベクトルa2
-			*/
-			dvector a2_;
+            //! A private member variable (constant).
+            /*!
+                ベクトルa1の複製
+            */
+            dvector const a1back_;
 
-			//! A private member variable (constant).
-			/*!
-				ベクトルa2の複製
-			*/
-			dvector const a2back_;
+            //! A private member variable.
+            /*!
+                ベクトルa2
+            */
+            dvector a2_;
 
 			//! A private member variable.
 			/*!
