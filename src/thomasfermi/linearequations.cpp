@@ -42,7 +42,8 @@ namespace thomasfermi {
 
 		// #region publicメンバ関数 
 
-		void Linear_equations::bound(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero)
+		template <>
+		void Linear_equations::bound<Element::First>(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero)
 		{
 			b_[i_bc_nonzero[0] + 1] -= v_bc_nonzero[0] * a1_[i_bc_nonzero[0]];
 			b_[i_bc_nonzero[1] - 1] -= v_bc_nonzero[1] * a1_[i_bc_nonzero[1] - 1];
@@ -86,5 +87,17 @@ namespace thomasfermi {
 			a1_ = a1back_;
 			b_ = b;
 		}
+
+		// #endregion publicメンバ関数
+
+		// #region templateメンバ関数の実体化
+
+		template <>
+		void Linear_equations::bound<Element::First>(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero);
+
+		//template <>
+		//void Linear_equations::bound<Element::Second>(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero);
+
+		// #endregion templateメンバ関数の実体化
 	}
 }

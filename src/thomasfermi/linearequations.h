@@ -55,6 +55,7 @@ namespace thomasfermi {
 
 			// #region publicメンバ関数
 
+			template <Element E>
 			//! A public member function.
 			/*!
 				境界条件を定める
@@ -73,7 +74,6 @@ namespace thomasfermi {
 			*/
 			void reset(dvector const & b);
 			
-            //template <Element E>
 			//! A public member function.
 			/*!
 				連立一次方程式の解を求める

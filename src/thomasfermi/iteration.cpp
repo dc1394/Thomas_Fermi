@@ -64,7 +64,7 @@ namespace thomasfermi {
 
 			ple_ = boost::in_place(pfem_->createresult());
 
-			ple_->bound(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
+			ple_->bound<Element::First>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
 			y_ = ple_->LEsolver();
 		}
@@ -87,7 +87,7 @@ namespace thomasfermi {
 				pfem_->stiff2();
 
 				ple_->reset(pfem_->B);
-				ple_->bound(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
+				ple_->bound<Element::First>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
                 pmix_->Yold = y_;
                 ymix(ple_->LEsolver());
