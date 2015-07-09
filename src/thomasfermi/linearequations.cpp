@@ -58,18 +58,18 @@ namespace thomasfermi {
 			}
 		}
 		
-		//template <>
-		//void Linear_equations::bound<Element::Second>(std::size_t n_bc_given, Linear_equations::sivector const & i_bc_given, std::size_t n_bc_nonzero, Linear_equations::sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero)
-		//{
-		//	// Dirichlet boundary condition
-		//	Linear_equations::bound<Element::First>(n_bc_given, i_bc_given, n_bc_nonzero, i_bc_nonzero, v_bc_nonzero);
+		template <>
+		void Linear_equations::bound<Element::Second>(std::size_t n_bc_given, Linear_equations::sivector const & i_bc_given, std::size_t n_bc_nonzero, Linear_equations::sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero)
+		{
+			// Dirichlet boundary condition
+			Linear_equations::bound<Element::First>(n_bc_given, i_bc_given, n_bc_nonzero, i_bc_nonzero, v_bc_nonzero);
 
-		//	b_[i_bc_nonzero[0] + 2] -= v_bc_nonzero[0] * a2_[i_bc_nonzero[0]];
-		//	b_[i_bc_nonzero[1] - 2] -= v_bc_nonzero[1] * a2_[i_bc_nonzero[1] - 2];
+			b_[i_bc_nonzero[0] + 2] -= v_bc_nonzero[0] * a2_[i_bc_nonzero[0]];
+			b_[i_bc_nonzero[1] - 2] -= v_bc_nonzero[1] * a2_[i_bc_nonzero[1] - 2];
 
-		//	a2_[i_bc_given[0]] = 0.0;
-		//	a2_[i_bc_given[1] - 2] = 0.0;
-		//}
+			a2_[i_bc_given[0]] = 0.0;
+			a2_[i_bc_given[1] - 2] = 0.0;
+		}
 
 		template <>
 		Linear_equations::dvector Linear_equations::LEsolver<Element::First>()
@@ -164,8 +164,8 @@ namespace thomasfermi {
 		template <>
 		void Linear_equations::bound<Element::First>(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero);
 
-		//template <>
-		//void Linear_equations::bound<Element::Second>(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero);
+		template <>
+		void Linear_equations::bound<Element::Second>(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero);
 
 		template <>
 		Linear_equations::dvector Linear_equations::LEsolver<Element::First>();
