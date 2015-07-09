@@ -44,16 +44,16 @@ namespace thomasfermi {
 
 		void Linear_equations::bound(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero)
 		{
-			b_[i_bc_nonzero[0] + 1] -= v_bc_nonzero[0] * a2_[i_bc_nonzero[0]];
-			b_[i_bc_nonzero[1] - 1] -= v_bc_nonzero[1] * a2_[i_bc_nonzero[1] - 1];
+			b_[i_bc_nonzero[0] + 1] -= v_bc_nonzero[0] * a1_[i_bc_nonzero[0]];
+			b_[i_bc_nonzero[1] - 1] -= v_bc_nonzero[1] * a1_[i_bc_nonzero[1] - 1];
 
 			for (auto i = 0U; i < n_bc_nonzero; i++) {
 				b_[i_bc_nonzero[i]] = v_bc_nonzero[i];
 			}
 
 			for (auto i = 0U; i < n_bc_given; i++) {
-				a1_[i_bc_given[i]] = 1.0;
-				a2_[i_bc_given[i] - i] = 0.0;
+				a0_[i_bc_given[i]] = 1.0;
+				a1_[i_bc_given[i] - i] = 0.0;
 			}
 		}
 		

@@ -43,7 +43,7 @@ namespace thomasfermi {
 				唯一のコンストラクタ
 				\param res 連立方程式のベクトル
 			*/
-			explicit Linear_equations(std::tuple<FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector> const & res);
+			explicit Linear_equations(FEM::resulttuple const & res);
 
 			//! A destructor.
 			/*!
@@ -73,7 +73,7 @@ namespace thomasfermi {
 			*/
 			void reset(dvector const & b);
 			
-            template <Element E>
+            //template <Element E>
 			//! A public member function.
 			/*!
 				連立一次方程式の解を求める
