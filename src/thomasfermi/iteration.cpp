@@ -66,7 +66,7 @@ namespace thomasfermi {
 
 			ple_->bound<Element::First>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
-			y_ = ple_->LEsolver();
+			y_ = ple_->LEsolver<Element::First>();
 		}
 
 		Iteration::~Iteration()
@@ -90,7 +90,7 @@ namespace thomasfermi {
 				ple_->bound<Element::First>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
                 pmix_->Yold = y_;
-                ymix(ple_->LEsolver());
+				ymix(ple_->LEsolver<Element::First>());
 				normrdbefore = normrd;
 				normrd = GetNormRD();
 

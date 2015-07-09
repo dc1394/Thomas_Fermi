@@ -74,6 +74,7 @@ namespace thomasfermi {
 			*/
 			void reset(dvector const & b);
 			
+			template <Element E>
 			//! A public member function.
 			/*!
 				連立一次方程式の解を求める
