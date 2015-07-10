@@ -8,6 +8,8 @@
 #include "iteration.h"
 #include "readinputfile.h"
 #include "shoot/shootf.h"
+#include "foelement.h"
+#include "soelement.h"
 #include <iostream>								// for std::cout
 #include <stdexcept>							// for std::runtime_error
 #include <boost/cast.hpp>						// for boost::numeric_cast

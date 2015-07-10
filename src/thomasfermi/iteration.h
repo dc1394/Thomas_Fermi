@@ -11,7 +11,7 @@
 #pragma once
 
 #include "data.h"
-#include "foelement.h"
+#include "fem.h"
 #include "linearequations.h"
 #include "mixing/simplemixing.h"
 #include "shoot/shootfunc.h"
