@@ -2,12 +2,13 @@
 	\brief 微分方程式を反復法で解くクラスの実装
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #include "iteration.h"
 #include "readinputfile.h"
 #include "shoot/shootf.h"
+#include "foelement.h"
 #include "soelement.h"
 #include <iostream>								// for std::cout
 #include <stdexcept>							// for std::runtime_error
@@ -61,7 +62,7 @@ namespace thomasfermi {
 
 			i_bc_given_ = { 0, pfem_->Nnode - 1 };
 			v_bc_nonzero_.reserve(Iteration::N_BC_GIVEN);
-			v_bc_nonzero_ = { 1.0, 2.0 };
+			v_bc_nonzero_ = { y1_, y2_ };
 
 			ple_ = boost::in_place(pfem_->createresult());
 

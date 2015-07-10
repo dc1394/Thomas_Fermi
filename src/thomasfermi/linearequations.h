@@ -2,7 +2,7 @@
 	\brief 連立方程式を解くクラスの宣言
 
 	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _LENEAREQUATIONS_H_
@@ -55,6 +55,7 @@ namespace thomasfermi {
 
 			// #region publicメンバ関数
 
+			template <Element E>
 			//! A public member function.
 			/*!
 				境界条件を定める
@@ -73,7 +74,7 @@ namespace thomasfermi {
 			*/
 			void reset(dvector const & b);
 			
-            //template <Element E>
+			template <Element E>
 			//! A public member function.
 			/*!
 				連立一次方程式の解を求める
