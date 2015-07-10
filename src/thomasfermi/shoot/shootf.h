@@ -2,7 +2,7 @@
     \brief 狙い撃ち法により、y(x)を求めるクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _SHOOTF_H_
@@ -12,9 +12,9 @@
 
 #include "load2.h"
 #include "../myfunctional/functional.h"
-#include <functional>						// for std::function
-#include <utility>							// for std::pair
-#include <vector>							// for std::vector
+#include <functional>					// for std::function
+#include <tuple>						// for std::tuple
+#include <vector>						// for std::vector
 
 namespace thomasfermi {
     namespace shoot {
@@ -32,7 +32,7 @@ namespace thomasfermi {
 			using loadfunctype = std::function<shootfunc::state_type(double, double)>;
 
         public:
-			using result_type = std::pair<dvector, dvector>;
+			using result_type = std::tuple<dvector, dvector, double>;
 
         private:
 			using scorefunctype = std::function<Eigen::VectorXd(shootfunc::state_type const &)>;
@@ -84,7 +84,7 @@ namespace thomasfermi {
                 \param xf 適合点に近いxの値
                 \return xのメッシュとそれに対応したyの値のtuple
             */
-            shootf::result_type createResult(dvector const & res1, dvector const & res2, double x1, double xf) const;
+			shootf::result_type createResult(dvector const & res1, dvector const & res2, double x1, double xf) const;
 
         public:
             //! A public member function (const).
@@ -96,7 +96,7 @@ namespace thomasfermi {
                 \param xf 適合点のxの値
                 \return xのメッシュとそれに対応したyの値のtuple
             */
-            shootf::result_type operator()(bool usecilk, double x1, double x2, double xf);
+			shootf::result_type operator()(bool usecilk, double x1, double x2, double xf);
 
             // #endregion メンバ関数
 

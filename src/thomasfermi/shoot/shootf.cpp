@@ -2,7 +2,7 @@
     \brief 狙い撃ち法により、y(x)を求めるクラスの実装
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD-2 License.
+	This software is released under the BSD 2-Clause License.
 */
 
 #include "shootf.h"
@@ -148,7 +148,7 @@ namespace thomasfermi {
 				cilk_sync;
 			}
 
-            return createResult(res1, res2, x1, xf);
+            return createResult(res1, res2, v1_, x1, xf);
 		}
 
         shootf::result_type shootf::createResult(dvector const & res1, dvector const & res2, double x1, double xf) const
@@ -202,7 +202,7 @@ namespace thomasfermi {
 
 			BOOST_ASSERT(xp.size() == yp.size());
 
-			return std::make_pair(std::move(xp), std::move(yp));
+			return std::make_tuple(std::move(xp), std::move(yp), v1_);
 		}
 	}
 }
