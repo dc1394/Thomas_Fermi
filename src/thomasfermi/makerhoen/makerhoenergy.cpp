@@ -56,15 +56,7 @@ namespace thomasfermi {
 
         double MakeRhoEnergy::makeEnergy() const
         {
-            auto const func = 
-				myfunctional::make_functional([this](double x) { return pbeta_->operator()<femall::Element::First>(x); });
-
-            auto const sum = gl_.qgauss(
-                func,
-                xvec_.front(),
-				xvec_.back());
-
-            return -3.0 / 7.0 * alpha_ * s_ * Z_ * Z_ * sum;
+            return 3.0 / 7.0 * alpha_ * Z_ * Z_ * v1_;
         }
 
         double MakeRhoEnergy::rho(double x) const
