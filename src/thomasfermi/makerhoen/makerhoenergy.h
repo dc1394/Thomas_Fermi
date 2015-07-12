@@ -12,10 +12,10 @@
 
 #include "../beta.h"
 #include "../gausslegendre/gausslegendre.h"
-#include <cstdint>                              // for std::int32_t
-#include <cstdio>								// for FILE, std::fclose
-#include <memory>                               // for std::shared_ptr
-#include <utility>                              // for std::pair
+#include <cstdint>                          // for std::int32_t
+#include <cstdio>							// for FILE, std::fclose
+#include <memory>                           // for std::shared_ptr
+#include <tuple>                            // for std::tuple
 
 namespace thomasfermi {
 	//! A lambda expression.
@@ -38,7 +38,7 @@ namespace thomasfermi {
 		class MakeRhoEnergy final {
             // #region 型エイリアス
 
-            using parameter_type = std::pair < std::shared_ptr<femall::Beta>, std::vector<double> > ;
+            using parameter_type = std::tuple < std::vector<double>, std::shared_ptr<femall::Beta>, double >;
 
             // #endregion 型エイリアス
 
@@ -49,7 +49,7 @@ namespace thomasfermi {
             /*!
 				唯一のコンストラクタ
                 \param n Gauss-Legendreの分点
-                \param pt std::shared_ptr<Beta>とstd::vector<double>のタプル
+                \param pt std::vector<double>、std::shared_ptr<Beta>、doubleのstd::tuple
                 \param Z 原子番号
             */
             MakeRhoEnergy(std::int32_t n, parameter_type const & pt, double Z);
@@ -186,7 +186,13 @@ namespace thomasfermi {
 				s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
 			*/
 			double s_;
-            
+
+            //! A private member variable.
+            /*!
+                原点に近いxにおけるyの微分値
+            */
+            double const v1_;
+
             //! A private variable (constant).
             /*!
                 原子番号

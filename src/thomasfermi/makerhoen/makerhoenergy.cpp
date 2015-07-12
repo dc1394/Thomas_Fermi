@@ -19,13 +19,14 @@ namespace thomasfermi {
 
         MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, MakeRhoEnergy::parameter_type const & pt, double Z) :
 			alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
-			xvec_(std::get<1>(pt)),
+			xvec_(std::get<0>(pt)),
 			dx_(xvec_[2] - xvec_[1]),
             fp_(nullptr, fcloser),
 			gl_(n),
-            pbeta_(std::get<0>(pt)),
+            pbeta_(std::get<1>(pt)),
             size_(xvec_.size()),
 			max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
+            v1_(std::get<2>(pt)),
             Z_(Z)
         {
             auto const func = myfunctional::make_functional(

@@ -47,12 +47,12 @@ namespace thomasfermi {
 				l2.make_v2(pdata_->xmax_));
 			
 			auto const usecilk = std::get<1>(arg);
-			auto const xytuple(s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
-			y1_ = std::get<1>(xytuple)[0];
-			y2_ = std::get<1>(xytuple).back();
+			auto const xyvtuple(s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
+			y1_ = std::get<1>(xyvtuple)[0];
+			y2_ = std::get<1>(xyvtuple).back();
 			
-			x_ = std::get<0>(xytuple);
-			y_ = FEM::dmklvector(std::get<1>(xytuple).begin(), std::get<1>(xytuple).end());
+			x_ = std::get<0>(xyvtuple);
+			y_ = FEM::dmklvector(std::get<1>(xyvtuple).begin(), std::get<1>(xyvtuple).end());
             pmix_->Yold = y_;
 
 			pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
