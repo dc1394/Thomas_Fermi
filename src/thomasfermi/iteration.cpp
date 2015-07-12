@@ -53,6 +53,7 @@ namespace thomasfermi {
 			
 			x_ = std::get<0>(xyvtuple);
 			y_ = FEM::dmklvector(std::get<1>(xyvtuple).begin(), std::get<1>(xyvtuple).end());
+			v1_ = std::get<2>(xyvtuple);
             pmix_->Yold = y_;
 
 			pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
@@ -112,7 +113,7 @@ namespace thomasfermi {
 
 		Iteration::result_type Iteration::makeresult()
 		{
-			return std::make_pair(std::move(pbeta_), std::move(x_));
+			return std::make_tuple(std::move(pbeta_), std::move(x_), v1_);
 		}
 
 		// #endregion publicメンバ関数

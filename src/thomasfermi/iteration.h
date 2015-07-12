@@ -24,7 +24,7 @@ namespace thomasfermi {
 			// #region 型エイリアス
 
 		public:
-			using result_type = std::pair<std::shared_ptr<Beta>, FEM::dvector>;
+			using result_type = std::tuple<std::shared_ptr<Beta>, FEM::dvector, double>;
 
 			// #endregion 型エイリアス
 
@@ -151,6 +151,12 @@ namespace thomasfermi {
                 yの混合法
             */
             std::unique_ptr<mixing::SimpleMixing> pmix_;
+
+			//! A private member variable.
+			/*!
+				原点に近いxにおけるyの微分値
+			*/
+			double v1_;
 
 			//! A private member variable.
 			/*!

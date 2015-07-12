@@ -148,7 +148,7 @@ namespace thomasfermi {
 				cilk_sync;
 			}
 
-            return createResult(res1, res2, v1_, x1, xf);
+            return createResult(res1, res2, x1, xf);
 		}
 
         shootf::result_type shootf::createResult(dvector const & res1, dvector const & res2, double x1, double xf) const

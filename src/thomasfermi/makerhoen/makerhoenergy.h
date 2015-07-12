@@ -38,7 +38,7 @@ namespace thomasfermi {
 		class MakeRhoEnergy final {
             // #region 型エイリアス
 
-            using parameter_type = std::tuple < std::vector<double>, std::shared_ptr<femall::Beta>, double >;
+			using parameter_type = std::tuple < std::shared_ptr<femall::Beta>, std::vector<double>, double >;
 
             // #endregion 型エイリアス
 
