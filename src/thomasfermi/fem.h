@@ -78,12 +78,12 @@ namespace thomasfermi {
 			*/
 			virtual FEM::resulttuple createresult() const = 0;
 			
-			//! A public member function.
+			//! A public member function (pure virtual function).
 			/*!
 				βの状態をリセットする
 				\param beta 対象のβ
 			*/
-			void reset(dvector const & beta);
+			virtual void reset(dvector const & beta) = 0;
 			
 			//! A public member function.
 			/*!
@@ -244,12 +244,6 @@ namespace thomasfermi {
 			/*!
 			*/
 			dvector const coords_;
-
-			//! A protected member variable.
-			/*!
-				double func(double)の形の関数オブジェクト
-			*/
-			std::function<double(double)> func_;
 
 			//! A protected member variable.
 			/*!

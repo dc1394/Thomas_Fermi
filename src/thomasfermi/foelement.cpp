@@ -15,6 +15,7 @@ namespace thomasfermi {
 
 		FOElement::FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk) :
 			FEM(std::move(beta), coords, nint, usecilk),
+			func_([this](double x) { return pbeta_->operator() < Element::First > (x); }),
 			fun1_([this](double r, double xl, std::size_t ielem)
             { return -N1_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]]) * xl * 0.5; }),
 			fun2_([this](double r, double xl, std::size_t ielem)
@@ -44,6 +45,12 @@ namespace thomasfermi {
 		FEM::resulttuple FOElement::createresult() const
 		{
 			return std::make_tuple(a0_, a1_, dmklvector(), b_);
+		}
+
+		void FOElement::reset(dvector const & beta)
+		{
+			FEM::reset(beta);
+			func_ = [this](double x) { return pbeta_->operator()<Element::First>(x); };
 		}
 
 		// #endregion publicメンバ関数

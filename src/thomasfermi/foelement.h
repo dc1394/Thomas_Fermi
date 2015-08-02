@@ -49,6 +49,13 @@ namespace thomasfermi {
 			*/
 			FEM::resulttuple createresult() const override;
 
+			//! A public member function (override).
+			/*!
+				βの状態をリセットする
+				\param beta 対象のβ
+			*/
+			void reset(dvector const & beta) override;
+
 			// #endregion publicメンバ関数
 
 			// #region privateメンバ関数
@@ -87,6 +94,12 @@ namespace thomasfermi {
 
 			// #region メンバ変数
 			
+			//! A private member variable.
+			/*!
+				double func(double)の形の関数オブジェクト
+			*/
+			std::function<double(double)> func_;
+
 			//! A private member variable (constant).
 			/*!
 				関数オブジェクト

@@ -48,6 +48,13 @@ namespace thomasfermi {
 				\return 結果を集めたboost::container::flat_map
 			*/
 			FEM::resulttuple createresult() const override;
+			
+			//! A public member function (override).
+			/*!
+				βの状態をリセットする
+				\param beta 対象のβ
+			*/
+			void reset(dvector const & beta) override;
 
 			// #endregion publicメンバ関数
 
@@ -93,6 +100,12 @@ namespace thomasfermi {
 				連立方程式Ax = Bの行列Aの三番目の要素
 			*/
 			dmklvector a2_;
+
+			//! A private member variable.
+			/*!
+				double func(double)の形の関数オブジェクト
+			*/
+			std::function<double(double)> func_;
 
 			//! A private member variable (constant).
 			/*!

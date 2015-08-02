@@ -14,6 +14,7 @@ namespace thomasfermi {
 
 		SOElement::SOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk)
 			:	FEM(std::move(beta), coords, nint, usecilk),
+				func_([this](double x) { return pbeta_->operator() < Element::Second > (x); }),
 				a2_(nnode_ - 2, 0.0)
 		{
 			auto const N1tmp = [](double r) { return -0.5 * r * (1.0 - r); };
@@ -46,6 +47,12 @@ namespace thomasfermi {
 			return std::make_tuple(a0_, a1_, a2_, b_);
 		}
 		
+		void SOElement::reset(dvector const & beta)
+		{
+			FEM::reset(beta);
+			func_ = [this](double x) { return pbeta_->operator()< Element::Second >(x); };
+		}
+
 		// #endregion publicメンバ関数
 
 		// #region privateメンバ関数

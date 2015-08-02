@@ -93,13 +93,11 @@ namespace thomasfermi {
 				ple_->bound<Element::First>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
                 pmix_->Yold = y_;
+
 				ymix(ple_->LEsolver<Element::First>());
+
 				normrdbefore = normrd;
 				normrd = GetNormRD();
-
-				/*if (normrd > normrdbefore) {
-					pdata_->iteration_mixing_weight_ *= Iteration::ITERATION_REDUCTION;
-				}*/
 
 				std::cout << "反復回数: " << i << "回, NormRD: " << boost::format("%.15f\n") % normrd;
 				if (normrd < pdata_->iteration_criterion_) {
