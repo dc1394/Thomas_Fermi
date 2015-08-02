@@ -9,7 +9,7 @@ chemical.number             1
 #
 
 grid.xmin                   1.0E-7          # default = 1.0E-5
-grid.xmax                   60.0           # default = 100.0
+grid.xmax                   100.0           # default = 100.0
 grid.num                    100000          # default = 20000
 eps                         1.0E-15         # default = 1.0E-15
 matching.point              15.0            # default = 15.0
@@ -22,4 +22,4 @@ gauss.legendre.integ.ene    1000			# default = 1000
 
 iteration.maxIter           10000           # default = 10000
 iteration.Mixing.Weight     0.05            # default = 0.05
-iteration.criterion         1.0E-10         # default = 1.0E-13
+iteration.criterion         5.0E-14         # default = 1.0E-13
