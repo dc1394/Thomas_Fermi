@@ -188,7 +188,7 @@
     <None Include="input.inp" />
     <None Include="result\rho.plt" />
     <None Include="result\rhoTilde.plt" />
-    <None Include="result\rho_logscale.plt" />
+    <None Include="result\rhoTilde_logscale.plt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="beta.cpp" />

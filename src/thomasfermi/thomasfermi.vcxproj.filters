@@ -58,13 +58,13 @@
       <Filter>ドキュメント</Filter>
     </None>
     <None Include="input.inp" />
-    <None Include="result\rho.plt">
-      <Filter>result</Filter>
-    </None>
-    <None Include="result\rho_logscale.plt">
-      <Filter>result</Filter>
-    </None>
     <None Include="result\rhoTilde.plt">
+      <Filter>result</Filter>
+    </None>
+    <None Include="result\rhoTilde_logscale.plt">
+      <Filter>result</Filter>
+    </None>
+    <None Include="result\rho.plt">
       <Filter>result</Filter>
     </None>
   </ItemGroup>
