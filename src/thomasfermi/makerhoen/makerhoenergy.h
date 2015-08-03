@@ -29,7 +29,7 @@ namespace thomasfermi {
 			std::fclose(fp);
 		}
 	};
-
+	
 	namespace makerhoen {
         //! A class.
         /*!
@@ -74,7 +74,23 @@ namespace thomasfermi {
 
         private:
             // #region privateメンバ関数
+			
+			//! A private member function (const).
+			/*!
+				厳密な電子密度の関数
+				\param r 原点からの距離（原子単位）
+				\return 厳密な電子密度
+			*/
+			double exactrho(double r) const;
 
+			//! A private member function (const).
+			/*!
+				厳密な電子密度の関数（4πr ** 2で割っている）
+				\param r 原点からの距離（原子単位）
+				\return 厳密な電子密度の関数（4πr ** 2で割っている）
+			*/
+			double exactrhoTilde(double r) const;
+			
             //! A private member function (const).
             /*!
                 原子のエネルギーを求める
@@ -134,10 +150,22 @@ namespace thomasfermi {
 
             //! A private variable (constant).
             /*!
-                エネルギーを計算するときの定数の値
+                α = [128 / (9π ** 2)]^(1 / 3) * Z^(1 / 3)
             */
             double const alpha_;
 			
+			//! A private variable (constant).
+			/*!
+				原子番号
+			*/
+			double const Z_;
+
+			//! A private variable (constant).
+			/*!
+				b = 32 / (9π ** 3) * Z ** 2
+			*/
+			double const b_;
+
 			//! A private variable (constant).
 			/*!
 				x方向のメッシュが格納された動的配列
@@ -192,12 +220,6 @@ namespace thomasfermi {
                 原点に近いxにおけるyの微分値
             */
             double const v1_;
-
-            //! A private variable (constant).
-            /*!
-                原子番号
-            */
-            double const Z_;
 			            
             // #endregion メンバ変数
 

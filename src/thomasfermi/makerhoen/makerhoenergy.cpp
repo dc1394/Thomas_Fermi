@@ -6,7 +6,7 @@
 */
 
 #include "makerhoenergy.h"
-#include <cmath>                                // for std::pow
+#include <cmath>                                // for std::exp, std::pow
 #include <iostream>                             // for std::cout
 #include <utility>                              // for std::get
 #include <boost/cast.hpp>                       // for boost::numeric_cast
@@ -19,6 +19,8 @@ namespace thomasfermi {
 
         MakeRhoEnergy::MakeRhoEnergy(std::int32_t n, MakeRhoEnergy::parameter_type const & pt, double Z) :
 			alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
+			Z_(Z),
+			b_(32.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 3)) * Z_ * Z_),
 			xvec_(std::get<1>(pt)),
 			dx_(xvec_[2] - xvec_[1]),
             fp_(nullptr, fcloser),
@@ -26,8 +28,7 @@ namespace thomasfermi {
             pbeta_(std::get<0>(pt)),
             size_(xvec_.size()),
 			max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
-            v1_(std::get<2>(pt)),
-            Z_(Z)
+            v1_(std::get<2>(pt))
         {
             auto const func = myfunctional::make_functional(
                 [this](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
@@ -36,6 +37,7 @@ namespace thomasfermi {
                 func,
                 xvec_.front(),
                 xvec_.back());
+			s_ *= (4.0 * boost::math::constants::pi<double>() / Z_);
         }
 
         // #endregion コンストラクタ
@@ -44,7 +46,7 @@ namespace thomasfermi {
 
 		void MakeRhoEnergy::saveresult()
 		{
-			std::cout << boost::format("Energy = %.15f") % makeEnergy() << '\n';
+			std::cout << boost::format("Energy = %.15f (Hartree)") % makeEnergy() << '\n';
 			saverho("rho.csv");
 			saverhoTilde("rhoTilde.csv");
 			savey("y.csv");
@@ -53,6 +55,16 @@ namespace thomasfermi {
 		// #endregion publicメンバ関数
 
 		// #region privateメンバ関数
+		
+		double MakeRhoEnergy::exactrho(double r) const
+		{
+			return 4.0 * r * r * std::pow(Z_, 3) * std::exp(-2.0 * Z_ * r);
+		}
+
+		double MakeRhoEnergy::exactrhoTilde(double r) const
+		{
+			return 4.0 * std::pow(Z_, 3) * std::exp(-2.0 * Z_ * r);
+		}
 
         double MakeRhoEnergy::makeEnergy() const
         {
@@ -61,14 +73,12 @@ namespace thomasfermi {
 
         double MakeRhoEnergy::rho(double x) const
         {
-            return alpha_ * s_ * Z_ * std::sqrt(x) * y(x) * std::sqrt(y(x));
+			return s_ * b_ * std::pow(1.0 / alpha_, 2) * std::sqrt(x) * y(x) * std::sqrt(y(x));
         }
 
 		double MakeRhoEnergy::rhoTilde(double x) const
 		{
-            auto const b = 32.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 3)) * Z_ * Z_;
-
-			return b * s_ * (y(x) / x) * std::sqrt(y(x) / x);
+			return s_ * b_ * (y(x) / x) * std::sqrt(y(x) / x);
 		}
 
         void MakeRhoEnergy::saverho(std::string const & filename)
@@ -77,7 +87,7 @@ namespace thomasfermi {
 
             for (auto i = 1; i <= max_; i++) {
                 auto const r = static_cast<double>(i) * dx_;
-                std::fprintf(fp_.get(), "%.15f, %.15f\n", r, rho(alpha_ * r));
+                std::fprintf(fp_.get(), "%.15f, %.15f, %.15f\n", r, rho(alpha_ * r), exactrho(r));
             }
         }
 
@@ -86,8 +96,8 @@ namespace thomasfermi {
 			fp_.reset(std::fopen(filename.c_str(), "w"));
 
             for (auto i = 1; i <= max_; i++) {
-                auto const r = static_cast<double>(i) * dx_;
-				std::fprintf(fp_.get(), "%.15f, %.15f\n", r, rhoTilde(alpha_ * r));
+				auto const r = static_cast<double>(i) * dx_;
+				std::fprintf(fp_.get(), "%.15f, %.15f, %.15f\n", r, rhoTilde(alpha_ * r), exactrhoTilde(r));
             }
         }
                 

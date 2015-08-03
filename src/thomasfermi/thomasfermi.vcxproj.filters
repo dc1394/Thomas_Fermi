@@ -51,15 +51,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="result\result2.plt">
-      <Filter>result</Filter>
-    </None>
-    <None Include="result\result2_logscale.plt">
-      <Filter>result</Filter>
-    </None>
-    <None Include="result\result3.plt">
-      <Filter>result</Filter>
-    </None>
     <None Include="Document\Thomas-Fermi.tex">
       <Filter>ドキュメント</Filter>
     </None>
@@ -67,6 +58,15 @@
       <Filter>ドキュメント</Filter>
     </None>
     <None Include="input.inp" />
+    <None Include="result\rho.plt">
+      <Filter>result</Filter>
+    </None>
+    <None Include="result\rho_logscale.plt">
+      <Filter>result</Filter>
+    </None>
+    <None Include="result\rhoTilde.plt">
+      <Filter>result</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thomasfermimain.cpp">
