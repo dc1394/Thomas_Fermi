@@ -14,8 +14,8 @@ namespace thomasfermi {
 
 		SOElement::SOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk)
 			:	FEM(std::move(beta), coords, nint, usecilk),
-				func_([this](double x) { return pbeta_->operator() < Element::Second > (x); }),
-				a2_(nnode_ - 2, 0.0)
+				a2_(nnode_ - 2, 0.0),
+				func_([this](double x) { return pbeta_->operator() < Element::Second > (x); })
 		{
 			auto const N1tmp = [](double r) { return -0.5 * r * (1.0 - r); };
 			N1_ = std::cref(N1tmp);
