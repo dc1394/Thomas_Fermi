@@ -32,12 +32,11 @@ namespace thomasfermi {
         {
             auto const func = myfunctional::make_functional(
                 [this](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
-
-            s_ = 1.0 / gl_.qgauss(
-                func,
-                xvec_.front(),
-                xvec_.back());
-			s_ *= (4.0 * boost::math::constants::pi<double>() / Z_);
+			
+			s_ = 4.0 * boost::math::constants::pi<double>() / (gl_.qgauss(
+				func,
+				xvec_.front(),
+				xvec_.back()) * Z_);
         }
 
         // #endregion コンストラクタ
@@ -46,7 +45,7 @@ namespace thomasfermi {
 
 		void MakeRhoEnergy::saveresult()
 		{
-			std::cout << boost::format("Energy = %.15f (Hartree)") % makeEnergy() << '\n';
+			std::cout << boost::format("Energy = %.15f (Hartree)\n") % makeEnergy();
 			saverho("rho.csv");
 			saverhoTilde("rhoTilde.csv");
 			savey("y.csv");
@@ -68,7 +67,7 @@ namespace thomasfermi {
 
         double MakeRhoEnergy::makeEnergy() const
         {
-            return 3.0 / 7.0 * alpha_ * Z_ * Z_ * v1_;
+            return 3.0 / 7.0 * alpha_ * std::pow(Z_, 7.0 / 3.0) * v1_;
         }
 
         double MakeRhoEnergy::rho(double x) const
