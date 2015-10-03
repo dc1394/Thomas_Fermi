@@ -3,16 +3,18 @@ SRCS :=	alglibinternal.cpp alglibmisc.cpp ap.cpp dataanalysis.cpp diffequations.
 		fasttransforms.cpp integration.cpp interpolation.cpp linalg.cpp optimization.cpp \
 		solvers.cpp specialfunctions.cpp specialfunctions.cpp statistics.cpp \
 		checkpoint.cpp \
-		beta.cpp ci_string.cpp fem.cpp foelement.cpp gausslegendre.cpp \
-		getcomlineoption.cpp goexit.cpp iteration.cpp linearequations.cpp \
-		makerhoenergy.cpp readinputfile.cpp load2.cpp shootf.cpp shootfunc.cpp \
+		beta.cpp ci_string.cpp fem.cpp foelement.cpp folinearequations.cpp gausslegendre.cpp \
+		getcomlineoption.cpp goexit.cpp iteration.cpp linearequations.cpp makerhoenergy.cpp \
+		readinputfile.cpp sinmplemixing.cpp load2.cpp shootf.cpp shootfunc.cpp soelement.cpp \
+		solinearequations.cpp \ 
 		thomasfermimain.cpp
 
 OBJS :=	$(SRCS:%.cpp=%.o)
 DEPS :=	$(SRCS:%.cpp=%.d)
 
-VPATH  = src/alglib src/checkpoint src/thomasfermi src/thomasfermi/gausslegendre \
-		 src/thomasfermi/makerhoen src/thomasfermi/shoot 
+VPATH  = src/alglib src/checkpoint src/mixing src/thomasfermi \
+		 src/thomasfermi/gausslegendre src/thomasfermi/makerhoen \
+		 src/thomasfermi/shoot 
 CXX = icc
 CXXFLAGS = -Wextra -O3 -pipe -std=c++11 -openmp -I${MKLROOT}/include
 LDFLAGS = -L/home/dc1394/oss/boost_1_57_0/stage/icc/lib/ -lboost_program_options \
