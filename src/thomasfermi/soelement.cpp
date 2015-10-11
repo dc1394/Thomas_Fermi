@@ -6,7 +6,7 @@
 */
 
 
-#include "SOElement.h"
+#include "soelement.h"
 
 namespace thomasfermi {
 	namespace femall {
@@ -95,7 +95,7 @@ namespace thomasfermi {
 			dndr[1] = r + 0.5;
 			dndr[2] = - 2.0 * r;
 
-			return dndr;
+			return std::move(dndr);
 		}
 
 		FEM::dvector SOElement::getc(std::size_t ielem) const

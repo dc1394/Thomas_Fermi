@@ -15,11 +15,11 @@
     #define _SCL_SECURE_NO_WARNINGS
 #endif
 
-#include <array>
 #include "beta.h"
 #include "gausslegendre/gausslegendre.h"
 #include "mkl_allocator.h"
 #include "utility/property.h"
+#include <array>                        // for std::array
 #include <functional>					// for std::function
 #include <memory>						// for std::unique_ptr, std::shared_ptr
 #include <vector>						// for std::vector
@@ -156,21 +156,6 @@ namespace thomasfermi {
 				\return c
 			*/
 			virtual dvector getc(std::size_t ielem) const = 0;
-
-			//! A private member function (constant).
-			/*!
-				dn/drを返す関数
-				\return dn/dr
-			*/
-			virtual dvector getdndr() const;
-
-			//! A private member function (constant).
-			/*!
-				dn/drを返す関数
-				\param r rの値
-				\return dn/dr
-			*/
-			virtual dvector getdndr(double r) const;
 
 			// #endregion 
 

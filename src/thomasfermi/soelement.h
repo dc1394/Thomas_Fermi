@@ -81,7 +81,7 @@ namespace thomasfermi {
 				\param r rの値
 				\return dn/dr
 			*/
-			dvector getdndr(double r) const override;
+			dvector getdndr(double r) const;
 
 			//! A private member function (constant).
 			/*!

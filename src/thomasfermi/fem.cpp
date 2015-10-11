@@ -8,7 +8,6 @@
 
 #include "fem.h"
 #include <cstdint>				// for std::uint32_t
-#include <stdexcept>			// for std::domain_error
 #include <utility>				// for std::move
 #include <boost/assert.hpp>		// for BOOST_ASSERT
 #include <cilk/cilk.h>			// for cilik_for
@@ -39,20 +38,6 @@ namespace thomasfermi {
 		// #endregion コンストラクタ
 
 		// #region publicメンバ関数
-
-		FEM::dvector FEM::getdndr() const
-		{
-			throw std::domain_error("この関数を呼び出してはいけません！");
-
-			return FEM::dvector();
-		}
-		
-		FEM::dvector FEM::getdndr(double r) const
-		{
-			throw std::domain_error("この関数を呼び出してはいけません！");
-
-			return FEM::dvector();
-		}
 
 		void FEM::reset(dvector const & beta)
 		{
