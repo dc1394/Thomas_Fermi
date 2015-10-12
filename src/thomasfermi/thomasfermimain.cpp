@@ -65,6 +65,7 @@ int main(int argc, char * argv[])
 	std::cout << "正常終了しました。結果をファイルに出力しました。\n";
 	
 	cp.checkpoint_print();
+    cp.totalpassageoftime();
 	checkpoint::usedmem();
 
 	thomasfermi::goexit();
