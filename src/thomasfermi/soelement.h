@@ -99,7 +99,7 @@ namespace thomasfermi {
 			/*!
 				連立方程式Ax = Bの行列Aの三番目の要素
 			*/
-			dmklvector a2_;
+			FEM::tbbvec a2_;
 
 			//! A private member variable.
 			/*!

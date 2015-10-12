@@ -72,7 +72,7 @@ namespace thomasfermi {
 				ベクトルbを初期化する
 				\param b 対象のベクトルb
 			*/
-			void reset(dvector const & b);
+			void reset(FEM::tbbvec const & b);
 			
 			template <Element E>
 			//! A public member function.
@@ -97,7 +97,7 @@ namespace thomasfermi {
             /*!
                 ベクトルa0の複製
             */
-            dvector const a0back_;
+            dvector a0back_;
 
             //! A private member variable.
             /*!
@@ -109,7 +109,7 @@ namespace thomasfermi {
             /*!
                 ベクトルa1の複製
             */
-            dvector const a1back_;
+            dvector a1back_;
 
             //! A private member variable.
             /*!

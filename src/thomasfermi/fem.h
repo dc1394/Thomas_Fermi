@@ -24,6 +24,7 @@
 #include <memory>						// for std::unique_ptr, std::shared_ptr
 #include <vector>						// for std::vector
 #include <boost/multi_array.hpp>		// for boost::multi_array
+#include <tbb/concurrent_vector.h>      // for tbb::concurrent_vector
 
 namespace thomasfermi {
 	namespace femall {
@@ -41,7 +42,9 @@ namespace thomasfermi {
 
 			using dmklvector = std::vector < double, mkl_allocator< double > >;
 
-			using resulttuple = std::tuple < FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector >;
+            using tbbvec = tbb::concurrent_vector<double>;
+
+			using resulttuple = std::tuple < tbbvec, tbbvec, tbbvec, tbbvec >;
 
 		private:
 			using dmatrix = std::array < std::array<double, 3>, 3 >;
@@ -165,7 +168,7 @@ namespace thomasfermi {
 			//! A property.
 			/*!
 			*/
-			Property<FEM::dmklvector const &> const B;
+			Property<FEM::tbbvec const &> const B;
 
 			//! A property.
 			/*!
@@ -203,19 +206,19 @@ namespace thomasfermi {
 			/*!
 				連立方程式Ax = Bの行列Aの対角要素
 			*/
-			dmklvector a0_;
+			tbb::concurrent_vector<double> a0_;
 
 			//! A private member variable.
 			/*!
 				連立方程式Ax = Bの行列Aの三重対角要素
 			*/
-			dmklvector a1_;
+            tbb::concurrent_vector<double> a1_;
 
 			//! A private member variable.
 			/*!
 				連立方程式Ax = BのベクトルB
 			*/
-			dmklvector b_;
+            tbb::concurrent_vector<double> b_;
 
 		private:
 			//! A private member variable (constant).

@@ -31,7 +31,7 @@ namespace thomasfermi {
 	/*!
 		エネルギーを求めるときのGauss-Legendre積分の分点のデフォルト値
 	*/
-	static auto constexpr GAUSS_LEGENDRE_INTEG_ENE_DEFAULT = 1000U;
+	static auto constexpr GAUSS_LEGENDRE_INTEG_NORM_DEFAULT = 1000U;
 	
     //! A global variable (constant expression).
     /*!
@@ -96,9 +96,9 @@ namespace thomasfermi {
 		
 		//!  A public member variable.
 		/*!
-			エネルギーを求めるときのGauss-Legendre積分の分点
+			正規化を行う時のGauss-Legendre積分の分点
 		*/
-		std::uint32_t gauss_legendre_integ_ene_ = GAUSS_LEGENDRE_INTEG_ENE_DEFAULT;
+		std::uint32_t gauss_legendre_integ_norm_ = GAUSS_LEGENDRE_INTEG_NORM_DEFAULT;
 
         //!  A public member variable.
         /*!

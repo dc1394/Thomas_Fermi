@@ -70,7 +70,7 @@ namespace thomasfermi {
 		readValue("gauss.legendre.integ", GAUSS_LEGENDRE_INTEG_DEFAULT, pdata_->gauss_legendre_integ_);
 		
 		// エネルギーを求めるときのGauss-Legendre積分の分点を読み込む
-		readValue("gauss.legendre.integ.ene", GAUSS_LEGENDRE_INTEG_DEFAULT, pdata_->gauss_legendre_integ_ene_);
+		readValue("gauss.legendre.integ.norm", GAUSS_LEGENDRE_INTEG_NORM_DEFAULT, pdata_->gauss_legendre_integ_norm_);
         
 		// Iterationの最大ループ回数を読み込む
 		readValue("iteration.maxIter", ITERATION_MAXITER_DEFAULT, pdata_->iteration_maxiter_);

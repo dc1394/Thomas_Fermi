@@ -1,5 +1,5 @@
 #
-# Chemical Symbol and orbital
+# Chemical Number
 #
 
 chemical.number             1
@@ -14,7 +14,7 @@ grid.num                    100000          # default = 20000
 eps                         1.0E-15         # default = 1.0E-15
 matching.point              15.0            # default = 15.0
 gauss.legendre.integ        5               # default = 5
-gauss.legendre.integ.ene    1000			# default = 1000
+gauss.legendre.integ.norm   1000            # default = 1000
 
 #
 # Iteration

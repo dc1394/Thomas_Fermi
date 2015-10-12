@@ -83,8 +83,6 @@ namespace thomasfermi {
 		
 		void Iteration::Iterationloop()
 		{
-			auto normrd = Iteration::ITERATION_THRESHOLD;
-			double normrdbefore;
 			for (auto i = 1U; i < pdata_->iteration_maxiter_; i++) {
 				pfem_->reset(Iteration::make_beta());
 				pfem_->stiff2();
@@ -96,8 +94,7 @@ namespace thomasfermi {
 
 				ymix(ple_->LEsolver<Element::First>());
 
-				normrdbefore = normrd;
-				normrd = GetNormRD();
+				auto const normrd = GetNormRD();
 
 				std::cout << "反復回数: " << i << "回, NormRD: " << boost::format("%.15f\n") % normrd;
 				if (normrd < pdata_->iteration_criterion_) {

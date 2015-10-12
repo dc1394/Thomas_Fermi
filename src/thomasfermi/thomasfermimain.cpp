@@ -41,7 +41,7 @@ int main(int argc, char * argv[])
 		iter.Iterationloop();
 
 		cp.checkpoint("Iterationループ処理", __LINE__);
-		thomasfermi::makerhoen::MakeRhoEnergy mre(iter.PData()->gauss_legendre_integ_ene_, iter.makeresult(), iter.PData()->Z_);
+		thomasfermi::makerhoen::MakeRhoEnergy mre(iter.PData()->gauss_legendre_integ_norm_, iter.makeresult(), iter.PData()->Z_);
 		mre.saveresult();
 
 		cp.checkpoint("結果出力処理", __LINE__);

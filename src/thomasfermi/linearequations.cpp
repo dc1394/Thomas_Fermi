@@ -28,14 +28,21 @@ namespace thomasfermi {
 		// #region コンストラクタ
 
 		Linear_equations::Linear_equations(FEM::resulttuple const & res) :
-            a0_(std::get<0>(res)),
-            a0back_(a0_),
-            a1_(std::get<1>(res)),
-            a1back_(a1_),
-            a2_(std::get<2>(res)),
-            b_(std::get<3>(res)),
             n_(std::get<0>(res).size())
 		{
+            auto const & a0tmp = std::get<0>(res);
+            a0_.assign(a0tmp.begin(), a0tmp.end());
+            a0back_ = a0_;
+
+            auto const & a1tmp = std::get<1>(res);
+            a1_.assign(a1tmp.begin(), a1tmp.end());
+            a1back_ = a1_;
+
+            auto const & a2tmp = std::get<2>(res);
+            a2_.assign(a2tmp.begin(), a2tmp.end());
+
+            auto const & btmp = std::get<3>(res);
+            b_.assign(btmp.begin(), btmp.end());
 		}
 
 		// #endregion コンストラクタ
@@ -150,11 +157,11 @@ namespace thomasfermi {
 			return std::move(b_);
 		}
 
-		void Linear_equations::reset(dvector const & b)
+		void Linear_equations::reset(FEM::tbbvec const & b)
 		{
 			a0_ = a0back_;
 			a1_ = a1back_;
-			b_ = b;
+			b_.assign(b.begin(), b.end());
 		}
 
 		// #endregion publicメンバ関数
