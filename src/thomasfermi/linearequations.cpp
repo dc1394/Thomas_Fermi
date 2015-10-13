@@ -1,8 +1,8 @@
 ﻿/*! \file linearequations.cpp
-	\brief 連立方程式を解くクラスの実装
+\brief 連立方程式を解くクラスの実装
 
-	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+Copyright ©  2015 @dc1394 All Rights Reserved.
+This software is released under the BSD 2-Clause License.
 */
 
 #include "fem.h"
@@ -28,21 +28,14 @@ namespace thomasfermi {
 		// #region コンストラクタ
 
 		Linear_equations::Linear_equations(FEM::resulttuple const & res) :
-            n_(std::get<0>(res).size())
+			a0_(std::get<0>(res)),
+			a0back_(a0_),
+			a1_(std::get<1>(res)),
+			a1back_(a1_),
+			a2_(std::get<2>(res)),
+			b_(std::get<3>(res)),
+			n_(std::get<0>(res).size())
 		{
-            auto const & a0tmp = std::get<0>(res);
-            a0_.assign(a0tmp.begin(), a0tmp.end());
-            a0back_ = a0_;
-
-            auto const & a1tmp = std::get<1>(res);
-            a1_.assign(a1tmp.begin(), a1tmp.end());
-            a1back_ = a1_;
-
-            auto const & a2tmp = std::get<2>(res);
-            a2_.assign(a2tmp.begin(), a2tmp.end());
-
-            auto const & btmp = std::get<3>(res);
-            b_.assign(btmp.begin(), btmp.end());
 		}
 
 		// #endregion コンストラクタ
@@ -64,7 +57,7 @@ namespace thomasfermi {
 				a1_[i_bc_given[i] - i] = 0.0;
 			}
 		}
-		
+
 		template <>
 		void Linear_equations::bound<Element::Second>(std::size_t n_bc_given, Linear_equations::sivector const & i_bc_given, std::size_t n_bc_nonzero, Linear_equations::sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero)
 		{
@@ -83,17 +76,18 @@ namespace thomasfermi {
 		{
 			auto const n = boost::numeric_cast<lapack_int>(n_);
 			auto const info = LAPACKE_dptsv(
-								LAPACK_COL_MAJOR,
-								n,
-								1,
-								a0_.data(),
-								a1_.data(),
-								b_.data(),
-								n);
+				LAPACK_COL_MAJOR,
+				n,
+				1,
+				a0_.data(),
+				a1_.data(),
+				b_.data(),
+				n);
 
 			if (info > 0) {
 				throw std::logic_error("U is singular");
-			} else if (info < 0) {
+			}
+			else if (info < 0) {
 				auto const str = (boost::format("%d-th argument has illegal value") % std::abs(info)).str();
 
 				throw std::invalid_argument(str);
@@ -123,13 +117,13 @@ namespace thomasfermi {
 			for (auto i = 0; i < n; i++) {
 				for (auto j = i; j <= i + 2; j++) {
 					if (j == i) {
-						ab[(j) * nb + (kd + i - j)] = a0_[i];
+						ab[(j)* nb + (kd + i - j)] = a0_[i];
 					}
 					else if (j == i + 1 && j < n - 1) {
-						ab[(j) * nb + (kd + i - j)] = a1_[i];
+						ab[(j)* nb + (kd + i - j)] = a1_[i];
 					}
 					else if (j == i + 2 && j < n - 2) {
-						ab[(j) * nb + (kd + i - j)] = a2_[i];
+						ab[(j)* nb + (kd + i - j)] = a2_[i];
 					}
 				}
 			}
@@ -157,11 +151,11 @@ namespace thomasfermi {
 			return std::move(b_);
 		}
 
-		void Linear_equations::reset(FEM::tbbvec const & b)
+		void Linear_equations::reset(Linear_equations::dvector const & b)
 		{
 			a0_ = a0back_;
 			a1_ = a1back_;
-			b_.assign(b.begin(), b.end());
+			b_ = b;
 		}
 
 		// #endregion publicメンバ関数

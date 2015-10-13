@@ -72,7 +72,7 @@ namespace thomasfermi {
 				ベクトルbを初期化する
 				\param b 対象のベクトルb
 			*/
-			void reset(FEM::tbbvec const & b);
+			void reset(Linear_equations::dvector const & b);
 			
 			template <Element E>
 			//! A public member function.

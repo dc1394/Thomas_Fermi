@@ -44,7 +44,7 @@ namespace thomasfermi {
 		
 		FEM::resulttuple FOElement::createresult() const
 		{
-			return std::make_tuple(a0_, a1_, tbbvec(), b_);
+			return std::make_tuple(a0_, a1_, FEM::dmklvector(), b_);
 		}
 
 		void FOElement::reset(dvector const & beta)

@@ -44,8 +44,7 @@ namespace thomasfermi {
 
 		FEM::resulttuple SOElement::createresult() const
 		{
-			//return std::make_tuple(a0_, a1_, a2_, b_);
-            return std::make_tuple(tbbvec(), tbbvec(), tbbvec(), tbbvec());
+			return std::make_tuple(a0_, a1_, a2_, b_);
 		}
 		
 		void SOElement::reset(dvector const & beta)
