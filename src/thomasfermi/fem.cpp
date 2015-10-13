@@ -33,6 +33,11 @@ namespace thomasfermi {
 			usecilk_(usecilk)
 		{
 			BOOST_ASSERT(coords_.size() == beta_.size());
+
+            astiff_.resize(3);
+            for (auto & e : astiff_) {
+                e.resize(3);
+            }
 		}
 		
 		// #endregion コンストラクタ

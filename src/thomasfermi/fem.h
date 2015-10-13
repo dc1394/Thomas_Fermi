@@ -19,12 +19,12 @@
 #include "gausslegendre/gausslegendre.h"
 #include "mkl_allocator.h"
 #include "utility/property.h"
-#include <array>                        // for std::array
-#include <functional>					// for std::function
-#include <memory>						// for std::unique_ptr, std::shared_ptr
-#include <vector>						// for std::vector
-#include <boost/multi_array.hpp>		// for boost::multi_array
-#include <tbb/concurrent_vector.h>      // for tbb::concurrent_vector
+#include <array>                    // for std::array
+#include <functional>				// for std::function
+#include <memory>					// for std::unique_ptr, std::shared_ptr
+#include <vector>					// for std::vector
+#include <boost/multi_array.hpp>	// for boost::multi_array
+#include <tbb/concurrent_vector.h>  // for tbb::concurrent_vector
 
 namespace thomasfermi {
 	namespace femall {
@@ -47,7 +47,7 @@ namespace thomasfermi {
 			using resulttuple = std::tuple < tbbvec, tbbvec, tbbvec, tbbvec >;
 
 		private:
-			using dmatrix = std::array < std::array<double, 3>, 3 >;
+			using dmatrix = tbb::concurrent_vector < tbbvec >;
 
 			// #endregion 型エイリアス
 
