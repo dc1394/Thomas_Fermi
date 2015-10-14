@@ -43,7 +43,7 @@ namespace thomasfermi {
     /*!
         マッチングポイント（xmin〜xmaxまでの間でなければならない）のデフォルト値
     */
-	static auto constexpr MATCH_POINT_DEFAULT = 10.0;
+	static auto constexpr MATCH_POINT_DEFAULT = 12.5;
         
     //! A global variable (constant expression).
     /*!
