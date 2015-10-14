@@ -20,7 +20,6 @@
 	#pragma comment(lib, "Psapi.Lib")
 #else
     #include <errno.h>          // for errno 
-    #include <sys/time.h>       // for struct timeval
     #include <sys/resource.h>   // for getrusage
 #endif
 
