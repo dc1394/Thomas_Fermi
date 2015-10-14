@@ -41,7 +41,7 @@ namespace thomasfermi {
 
 			using dmklvector = std::vector < double, mkl_allocator< double > >;
 
-			using resulttuple = std::tuple < FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector>;
+			using resulttuple = std::tuple < FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector >;
 
 		private:
 			using dmatrix = std::array < std::array<double, 3>, 3 >;
