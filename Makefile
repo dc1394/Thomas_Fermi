@@ -13,10 +13,10 @@ DEPS :=	$(SRCS:%.cpp=%.d)
 VPATH  = src/alglib src/checkpoint src/thomasfermi src/thomasfermi/gausslegendre \
 		 src/thomasfermi/makerhoen src/thomasfermi/mixing src/thomasfermi/shoot 
 CXX = icpc
-CXXFLAGS = -Wextra -xHOST -O3 -ipo -pipe -std=c++14 -openmp -I${MKLROOT}/include
+CXXFLAGS = -Wextra -inline-level=2 -ipo -O3 -parallel -xHost -pipe -std=c++14 -openmp -I${MKLROOT}/include
 LDFLAGS = -L/home/dc1394/oss/boost_1_59_0/stage/icc/lib/ -lboost_program_options \
 		  -lgsl -lgslcblas -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core \
-		  -lmkl_intel_thread -lpthread -L/home/dc1394/oss/tbb44_20150728oss/lib/intel64/gcc4.4 -ltbb
+		  -lmkl_intel_thread -lpthread
 
 all: $(PROG) ;
 #rm -f $(OBJS) $(DEPS)
