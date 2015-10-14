@@ -184,12 +184,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="Document\Thomas-Fermi.tex" />
     <None Include="Document\Thomas-Fermi方程式のFEMによる解法.pptx" />
     <None Include="input.inp" />
+    <None Include="result\rho.csv" />
     <None Include="result\rho.plt" />
+    <None Include="result\rhoTilde.csv" />
     <None Include="result\rhoTilde.plt" />
     <None Include="result\rhoTilde_logscale.plt" />
+    <None Include="result\y.csv" />
+    <None Include="result\y.plt" />
+    <None Include="result\y_logscale.plt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="beta.cpp" />
