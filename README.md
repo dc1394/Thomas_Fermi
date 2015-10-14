@@ -10,6 +10,7 @@
 　・Intel® Parallel Studio XE 2016 for C++
 　ビルドには、以下のライブラリが必要です。
 　・Boost C++ Libraries 1.59.0
+　・Eigen
 　・GNU Scientific Library
 
 ★更新履歴
@@ -92,6 +93,9 @@
 *
 * ALGLIB is a registered trademark of the ALGLIB Project.
 */
+
+　thomasfermiにはEigen projectによるEigenを使用しています。こちらのライセンスは
+　MPL2になります。
 
   thomasfermiにはGNU ProjectによるGNU Scientific Libraryを使用しています。こち
 　らのライセンスは GNU General Public License になります。
