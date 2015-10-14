@@ -10,11 +10,6 @@
 
 #pragma once
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4819)
-#define _SCL_SECURE_NO_WARNINGS
-#endif
-
 #include "element.h"
 #include "mkl_allocator.h"
 #include <tuple>			// for std::tuple

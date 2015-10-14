@@ -10,11 +10,6 @@
 
 #pragma once
 
-#ifdef _MSC_VER
-    #pragma warning(disable : 4819)
-    #define _SCL_SECURE_NO_WARNINGS
-#endif
-
 #include "beta.h"
 #include "gausslegendre/gausslegendre.h"
 #include "mkl_allocator.h"

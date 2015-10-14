@@ -11,11 +11,6 @@
 
 #pragma once
 
-#ifdef _MSC_VER
-    #pragma warning(disable : 4819)
-    #define _SCL_SECURE_NO_WARNINGS
-#endif
-
 #include <array>		// for std::array
 #include <Eigen/Core>	// Eigen::VectorXd
 
