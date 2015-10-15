@@ -2,7 +2,7 @@
     \brief β(x)を計算するクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _BETA_H_
@@ -12,39 +12,39 @@
 
 #include "element.h"
 #include "utility/property.h"
-#include <cstdint>				// for std::uint32_t
+#include <cstdint>              // for std::uint32_t
 #include <memory>               // for std::shared_ptr
-#include <vector>				// for std::vector
+#include <vector>               // for std::vector
 
 namespace thomasfermi {
-	namespace femall {
-		//! A class.
-		/*!
-			β(x)を計算するクラス
-		*/
-		class Beta final {
+    namespace femall {
+        //! A class.
+        /*!
+            β(x)を計算するクラス
+        */
+        class Beta final {
             // #region コンストラクタ・デストラクタ
 
         public:
             //! A constructor.
             /*!
-				コンストラクタ
+                コンストラクタ
                 \param xvec x方向のメッシュ
                 \param yvec y方向のメッシュ
             */
-			Beta(std::vector<double> const & xvec, std::vector<double> const & yvec);
-			
+            Beta(std::vector<double> const & xvec, std::vector<double> const & yvec);
+            
             //! A destructor.
             /*!
                 デフォルトデストラクタ
             */
-			~Beta() = default;
+            ~Beta() = default;
 
             // #endregion コンストラクタ・デストラクタ
 
             // #region メンバ関数
 
-			template <Element E>
+            template <Element E>
             //! A public member function (const).
             /*!
                 operator()(double x)の宣言
@@ -73,7 +73,7 @@ namespace thomasfermi {
 
             //!  A private member variable (constant).
             /*!
-				y方向のメッシュが格納された動的配列
+                y方向のメッシュが格納された動的配列
             */
             std::vector<double> const yvec_;
 
@@ -83,15 +83,15 @@ namespace thomasfermi {
 
             //! A private constructor (deleted).
             /*!
-				デフォルトコンストラクタ（禁止）
+                デフォルトコンストラクタ（禁止）
             */
             Beta() = delete;
 
             //! A private copy constructor (deleted).
             /*!
-				コピーコンストラクタ（禁止）
+                コピーコンストラクタ（禁止）
             */
-			Beta(Beta const &) = delete;
+            Beta(Beta const &) = delete;
 
             //! A private member function (deleted).
             /*!
@@ -99,56 +99,56 @@ namespace thomasfermi {
                 \param コピー元のオブジェクト（未使用）
                 \return コピー元のオブジェクト
             */
-			Beta & operator=(Beta const &) = delete;
+            Beta & operator=(Beta const &) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
-		};
+        };
 
-		// #region メンバ関数
+        // #region メンバ関数
 
-		template <>
-		inline double Beta::operator()<Element::First>(double x) const
-		{
-			auto klo = 0U;
-			auto const max = static_cast<std::uint32_t>(size_ - 1);
-			auto khi = max;
+        template <>
+        inline double Beta::operator()<Element::First>(double x) const
+        {
+            auto klo = 0U;
+            auto const max = static_cast<std::uint32_t>(size_ - 1);
+            auto khi = max;
 
-			// 表の中の正しい位置を二分探索で求める
-			while (khi - klo > 1) {
-				auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
+            // 表の中の正しい位置を二分探索で求める
+            while (khi - klo > 1) {
+                auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
 
-				if (xvec_[k] > x) {
-					khi = k;
-				}
-				else {
-					klo = k;
-				}
-			}
+                if (xvec_[k] > x) {
+                    khi = k;
+                }
+                else {
+                    klo = k;
+                }
+            }
 
-			// yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1])の二点を通る直線を代入
-			return (yvec_[khi] - yvec_[klo]) / (xvec_[khi] - xvec_[klo]) * (x - xvec_[klo]) + yvec_[klo];
-		}
-		       
-		template <>
-		inline double Beta::operator()<Element::Second>(double x) const
-		{
-			auto klo = 0U;
-			auto const max = static_cast<std::uint32_t>(size_ - 1);
-			auto khi = max;
+            // yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1])の二点を通る直線を代入
+            return (yvec_[khi] - yvec_[klo]) / (xvec_[khi] - xvec_[klo]) * (x - xvec_[klo]) + yvec_[klo];
+        }
+               
+        template <>
+        inline double Beta::operator()<Element::Second>(double x) const
+        {
+            auto klo = 0U;
+            auto const max = static_cast<std::uint32_t>(size_ - 1);
+            auto khi = max;
 
-			// 表の中の正しい位置を二分探索で求める
-			while (khi - klo > 1) {
-				auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
+            // 表の中の正しい位置を二分探索で求める
+            while (khi - klo > 1) {
+                auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
 
-				if (xvec_[k] > x) {
-					khi = k;
-				}
-				else {
-					klo = k;
-				}
-			}
+                if (xvec_[k] > x) {
+                    khi = k;
+                }
+                else {
+                    klo = k;
+                }
+            }
             
-			// yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1]), yvec_[i + 2] = f(xvec_[i + 2])の三点を通る放物線を生成
+            // yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1]), yvec_[i + 2] = f(xvec_[i + 2])の三点を通る放物線を生成
             
             // もし、配列の外にはみ出るときは
             if (khi >= max - 1) {
@@ -165,20 +165,20 @@ namespace thomasfermi {
 
             auto const a = -(x2mx1 * yvec_[klo] + x0mx2 * yvec_[khi] + x1mx0 * yvec_[khi + 1]);
             
-			auto b = x2mx1 * (xvec_[khi + 1] + xvec_[khi]) * yvec_[klo];
+            auto b = x2mx1 * (xvec_[khi + 1] + xvec_[khi]) * yvec_[klo];
             b += x0mx2 * (xvec_[klo] + xvec_[khi + 1]) * yvec_[khi];
             b += x1mx0 * (xvec_[khi] + xvec_[klo]) * yvec_[khi + 1];
 
-			auto c = x2mx1 * xvec_[khi] * xvec_[khi + 1] * yvec_[klo];
-			c += x0mx2 * xvec_[klo] * xvec_[khi + 1] * yvec_[khi];
-			c += x1mx0 * xvec_[klo] * xvec_[khi] * yvec_[khi + 1];
-			c *= -1.0;
+            auto c = x2mx1 * xvec_[khi] * xvec_[khi + 1] * yvec_[klo];
+            c += x0mx2 * xvec_[klo] * xvec_[khi + 1] * yvec_[khi];
+            c += x1mx0 * xvec_[klo] * xvec_[khi] * yvec_[khi + 1];
+            c *= -1.0;
 
-			return ((a * x + b) * x + c) / denom;
+            return ((a * x + b) * x + c) / denom;
         }
 
-		// #endregion メンバ関数
-	}
+        // #endregion メンバ関数
+    }
 }
 
-#endif	// _BETA_H_
+#endif  // _BETA_H_

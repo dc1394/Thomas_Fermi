@@ -44,7 +44,7 @@ namespace thomasfermi {
             throw std::runtime_error("インプットファイルが異常です");
         };
 
-		// 原子番号を読み込む
+        // 原子番号を読み込む
         if (!readAtom()) {
             errorendfunc();
         }
@@ -53,27 +53,27 @@ namespace thomasfermi {
         readValue("grid.xmin", XMIN_DEFAULT, pdata_->xmin_);
 
         // グリッドの最大値を読み込む
-		readValue("grid.xmax", XMAX_DEFAULT, pdata_->xmax_);
+        readValue("grid.xmax", XMAX_DEFAULT, pdata_->xmax_);
 
         // グリッドのサイズを読み込む
-		readValue("grid.num", GRID_NUM_DEFAULT, pdata_->grid_num_);
+        readValue("grid.num", GRID_NUM_DEFAULT, pdata_->grid_num_);
 
         // 許容誤差を読み込む
-		readValue("eps", EPS_DEFAULT, pdata_->eps_);
-		        
+        readValue("eps", EPS_DEFAULT, pdata_->eps_);
+                
         // マッチングポイントを読み込む
-		if (!readMatchPoint()) {
-			errorendfunc();
-		}
-		
-		// Gauss-Legendre積分の分点を読み込む
-		readValue("gauss.legendre.integ", GAUSS_LEGENDRE_INTEG_DEFAULT, pdata_->gauss_legendre_integ_);
-		
-		// エネルギーを求めるときのGauss-Legendre積分の分点を読み込む
-		readValue("gauss.legendre.integ.norm", GAUSS_LEGENDRE_INTEG_NORM_DEFAULT, pdata_->gauss_legendre_integ_norm_);
+        if (!readMatchPoint()) {
+            errorendfunc();
+        }
         
-		// Iterationの最大ループ回数を読み込む
-		readValue("iteration.maxIter", ITERATION_MAXITER_DEFAULT, pdata_->iteration_maxiter_);
+        // Gauss-Legendre積分の分点を読み込む
+        readValue("gauss.legendre.integ", GAUSS_LEGENDRE_INTEG_DEFAULT, pdata_->gauss_legendre_integ_);
+        
+        // エネルギーを求めるときのGauss-Legendre積分の分点を読み込む
+        readValue("gauss.legendre.integ.norm", GAUSS_LEGENDRE_INTEG_NORM_DEFAULT, pdata_->gauss_legendre_integ_norm_);
+        
+        // Iterationの最大ループ回数を読み込む
+        readValue("iteration.maxIter", ITERATION_MAXITER_DEFAULT, pdata_->iteration_maxiter_);
 
         // Iterationの一次混合の重みを読み込む
         if (!readIterationMixingWeight()) {
@@ -81,7 +81,7 @@ namespace thomasfermi {
         }
         
         // Iterationの収束判定条件の値を読み込む
-		readValue("iteration.criterion", ITERATION_CRITERION_DEFAULT, pdata_->iteration_criterion_);
+        readValue("iteration.criterion", ITERATION_CRITERION_DEFAULT, pdata_->iteration_criterion_);
     }
     
     // #endregion publicメンバ関数
@@ -139,11 +139,11 @@ namespace thomasfermi {
         auto const chemsym(readData(ReadInputFile::CHEMICAL_NUMBER));
         if (!chemsym) {
             return false;
-		}
-		else {
-			pdata_->Z_ = std::stod(std::string(chemsym->c_str()));
-			return true;
-		}
+        }
+        else {
+            pdata_->Z_ = std::stod(std::string(chemsym->c_str()));
+            return true;
+        }
     }
 
     boost::optional<ci_string> ReadInputFile::readData(ci_string const & article)
@@ -296,25 +296,25 @@ namespace thomasfermi {
         }
     }
     
-	bool ReadInputFile::readIterationMixingWeight()
-	{
-		readValue("iteration.Mixing.Weight", ITERATION_MIXING_WEIGHT_DEFAULT, pdata_->iteration_mixing_weight_);
-		if (pdata_->iteration_mixing_weight_ <= 0.0 || pdata_->iteration_mixing_weight_ > 1.0) {
-			std::cerr << "インプットファイルの[iteration.Mixing.Weight]の行が正しくありません" << std::endl;
-			return false;
-		}
-		return true;
-	}
+    bool ReadInputFile::readIterationMixingWeight()
+    {
+        readValue("iteration.Mixing.Weight", ITERATION_MIXING_WEIGHT_DEFAULT, pdata_->iteration_mixing_weight_);
+        if (pdata_->iteration_mixing_weight_ <= 0.0 || pdata_->iteration_mixing_weight_ > 1.0) {
+            std::cerr << "インプットファイルの[iteration.Mixing.Weight]の行が正しくありません" << std::endl;
+            return false;
+        }
+        return true;
+    }
 
-	bool ReadInputFile::readMatchPoint()
-	{
-		readValue("matching.point", MATCH_POINT_DEFAULT, pdata_->match_point_);
-		if (pdata_->match_point_ <= pdata_->xmin_ || pdata_->match_point_ >= pdata_->xmax_) {
-			std::cerr << "インプットファイルの[matching.point]の行が正しくありません" << std::endl;
-			return false;
-		}
-		return true;
-	}
+    bool ReadInputFile::readMatchPoint()
+    {
+        readValue("matching.point", MATCH_POINT_DEFAULT, pdata_->match_point_);
+        if (pdata_->match_point_ <= pdata_->xmin_ || pdata_->match_point_ >= pdata_->xmax_) {
+            std::cerr << "インプットファイルの[matching.point]の行が正しくありません" << std::endl;
+            return false;
+        }
+        return true;
+    }
 
     
     // #endregion privateメンバ関数

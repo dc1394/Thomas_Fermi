@@ -1,15 +1,15 @@
 ﻿/*! \file goexit.h
-	\brief プログラムを終了するときの関数の実装
+    \brief プログラムを終了するときの関数の実装
 
-	Copyright ©  2015 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    Copyright ©  2015 @dc1394 All Rights Reserved.
+    This software is released under the BSD 2-Clause License.
 */
 
 #include "goexit.h"
-#include <iostream>		// for std::cout, std::endl
+#include <iostream>     // for std::cout, std::endl
 
 #if defined(_WIN32) || defined(_WIN64)
-    #include <conio.h>	// for _getch
+    #include <conio.h>  // for _getch
 #else
     #include <cstdio>   // for std::getchar 
 #endif

@@ -21,18 +21,18 @@ namespace thomasfermi {
     */
     static auto constexpr EPS_DEFAULT = 1.0E-15;
 
-	//! A global variable (constant expression).
-	/*!
-		Gauss-Legendre積分の分点のデフォルト値
-	*/
-	static auto constexpr GAUSS_LEGENDRE_INTEG_DEFAULT = 5U;
+    //! A global variable (constant expression).
+    /*!
+        Gauss-Legendre積分の分点のデフォルト値
+    */
+    static auto constexpr GAUSS_LEGENDRE_INTEG_DEFAULT = 5U;
 
-	//! A global variable (constant expression).
-	/*!
-		エネルギーを求めるときのGauss-Legendre積分の分点のデフォルト値
-	*/
-	static auto constexpr GAUSS_LEGENDRE_INTEG_NORM_DEFAULT = 1000U;
-	
+    //! A global variable (constant expression).
+    /*!
+        エネルギーを求めるときのGauss-Legendre積分の分点のデフォルト値
+    */
+    static auto constexpr GAUSS_LEGENDRE_INTEG_NORM_DEFAULT = 1000U;
+    
     //! A global variable (constant expression).
     /*!
         微分方程式を解くときのメッシュの数のデフォルト値
@@ -43,7 +43,7 @@ namespace thomasfermi {
     /*!
         マッチングポイント（xmin〜xmaxまでの間でなければならない）のデフォルト値
     */
-	static auto constexpr MATCH_POINT_DEFAULT = 12.5;
+    static auto constexpr MATCH_POINT_DEFAULT = 12.5;
         
     //! A global variable (constant expression).
     /*!
@@ -79,7 +79,7 @@ namespace thomasfermi {
     /*!
         インプットファイルの各種データの構造体
     */
-	struct Data final {
+    struct Data final {
         // #region メンバ変数
         
         //!  A public member variable.
@@ -88,17 +88,17 @@ namespace thomasfermi {
         */
         double eps_ = EPS_DEFAULT;
 
-		//!  A public member variable.
-		/*!
-			Gauss-Legendre積分の分点
-		*/
-		std::uint32_t gauss_legendre_integ_ = GAUSS_LEGENDRE_INTEG_DEFAULT;
-		
-		//!  A public member variable.
-		/*!
-			正規化を行う時のGauss-Legendre積分の分点
-		*/
-		std::uint32_t gauss_legendre_integ_norm_ = GAUSS_LEGENDRE_INTEG_NORM_DEFAULT;
+        //!  A public member variable.
+        /*!
+            Gauss-Legendre積分の分点
+        */
+        std::uint32_t gauss_legendre_integ_ = GAUSS_LEGENDRE_INTEG_DEFAULT;
+        
+        //!  A public member variable.
+        /*!
+            正規化を行う時のGauss-Legendre積分の分点
+        */
+        std::uint32_t gauss_legendre_integ_norm_ = GAUSS_LEGENDRE_INTEG_NORM_DEFAULT;
 
         //!  A public member variable.
         /*!
@@ -158,5 +158,5 @@ namespace thomasfermi {
     };
 }
 
-#endif	// _DATA_H_
+#endif  // _DATA_H_
 

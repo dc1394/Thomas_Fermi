@@ -126,19 +126,19 @@ namespace thomasfermi {
         */
         boost::optional<ci_string> readDataAuto(ci_string const & article);
 
-		//! A private member function.
-		/*!
-			マッチングポイントの値を読み込む
-			\return 読み込みが成功したかどうか
-		*/
-		bool readMatchPoint();
+        //! A private member function.
+        /*!
+            マッチングポイントの値を読み込む
+            \return 読み込みが成功したかどうか
+        */
+        bool readMatchPoint();
 
         //! A private member function.
         /*!
             Iterationの一次混合の重みを読み込む
             \return 読み込みが成功したかどうか
         */
-		bool readIterationMixingWeight();
+        bool readIterationMixingWeight();
 
         template <typename T>
         //! A private member function.
@@ -237,7 +237,6 @@ namespace thomasfermi {
     template <typename T>
     boost::optional<T> ReadInputFile::readData(ci_string const & article, T const & default_value)
     {
-        // グリッドを読み込む
         for (; true; lineindex_++) {
             auto const ret = getToken(article);
             switch (std::get<0>(ret))
