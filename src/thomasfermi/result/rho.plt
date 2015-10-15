@@ -2,7 +2,7 @@
 #
 #    
 #    	G N U P L O T
-#    	Version 5.0 patchlevel 0    last modified 2015-01-01 
+#    	Version 5.0 patchlevel 1    last modified 2015-06-07 
 #    
 #    	Copyright (C) 1986-1993, 1998, 2004, 2007-2015
 #    	Thomas Williams, Colin Kelley and many others
@@ -11,7 +11,7 @@
 #    	faq, bugs, etc:   type "help FAQ"
 #    	immediate help:   type "help"  (plot window: hit 'h')
 # set terminal wxt 0 enhanced
-# set output
+# set output 'rho.png'
 unset clip points
 set clip one
 unset clip two
@@ -40,7 +40,7 @@ set angles radians
 unset grid
 set raxis
 set style parallel front  lt black linewidth 2.000 dashtype solid
-set key title ""
+set key title "" center
 set key inside right top vertical Right noreverse enhanced autotitle nobox
 set key noinvert samplen 4 spacing 1 width 0 height 0 
 set key maxcolumns 0 maxrows 0
@@ -83,7 +83,7 @@ set yzeroaxis lt nodraw linewidth 1.000 dashtype solid
 set zzeroaxis lt nodraw linewidth 1.000 dashtype solid
 set x2zeroaxis lt nodraw linewidth 1.000 dashtype solid
 set y2zeroaxis lt nodraw linewidth 1.000 dashtype solid
-set ticslevel 0.5
+set xyplane relative 0.5
 set tics scale  1, 0.5, 1, 1, 1
 set mxtics default
 set mytics default
@@ -93,17 +93,17 @@ set my2tics default
 set mcbtics default
 set mrtics default
 set xtics border in scale 1,0.5 nomirror norotate  autojustify
-set xtics autofreq  norangelimit
-set ytics border in scale 1,0.5 mirror norotate  autojustify
-set ytics autofreq  norangelimit
+set xtics  norangelimit autofreq 
+set ytics border in scale 1,0.5 nomirror norotate  autojustify
+set ytics  norangelimit autofreq 
 set ztics border in scale 1,0.5 nomirror norotate  autojustify
-set ztics autofreq  norangelimit
+set ztics  norangelimit autofreq 
 unset x2tics
 unset y2tics
 set cbtics border in scale 1,0.5 mirror norotate  autojustify
-set cbtics autofreq  norangelimit
+set cbtics  norangelimit autofreq 
 set rtics axis in scale 1,0.5 nomirror norotate  autojustify
-set rtics autofreq  norangelimit
+set rtics  norangelimit autofreq 
 unset paxis 1 tics
 unset paxis 2 tics
 unset paxis 3 tics
@@ -126,7 +126,7 @@ set x2label ""
 set x2label  font "" textcolor lt -1 norotate
 set xrange [ 0.00000 : 5.00000 ] noreverse nowriteback
 set x2range [ * : * ] noreverse nowriteback
-set ylabel "Density distribution" 
+set ylabel "Charge distribution" 
 set ylabel  font "" textcolor lt -1 rotate by -270
 set y2label "" 
 set y2label  font "" textcolor lt -1 rotate by -270
@@ -168,5 +168,5 @@ ARGC = 0
 ARG0 = ""
 x = 0.0
 ## Last datafile plotted: "rho.csv"
-p "rho.csv" u 1:2 w l title "Thomas-Fermi distribution","rho.csv" u 1:3 w l title "Exact distribution"
+p "rho.csv" u 1:2 w l title "Thomas-Fermi distribution" linecolor rgb "red","rho.csv" u 1:3 w l title "Exact distribution"
 #    EOF
