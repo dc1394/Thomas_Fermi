@@ -19,9 +19,6 @@
     <Filter Include="ヘッダー ファイル\shoot">
       <UniqueIdentifier>{be582795-cd40-4cd4-8862-f00a9fb5b304}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ドキュメント">
-      <UniqueIdentifier>{70810ab2-51c2-4b6b-943c-b015653a2c0c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="result">
       <UniqueIdentifier>{f2ca450d-760c-4fc0-bd7c-70c43bf855d6}</UniqueIdentifier>
     </Filter>
@@ -51,9 +48,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Document\Thomas-Fermi方程式のFEMによる解法.pptx">
-      <Filter>ドキュメント</Filter>
-    </None>
     <None Include="input.inp" />
     <None Include="result\rhoTilde.plt">
       <Filter>result</Filter>

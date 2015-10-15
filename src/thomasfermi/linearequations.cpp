@@ -9,7 +9,7 @@ This software is released under the BSD 2-Clause License.
 #include "linearequations.h"
 #include <cmath>                // for std::abs
 #include <utility>              // for std::move
-#include <stdexcept>            // for std::logic_error
+#include <stdexcept>            // for std::logic_error, std::invalid_argument
 #include <boost/cast.hpp>       // for boost::numeric_cast
 #include <boost/format.hpp>     // for boost::format
 #include <mkl.h>                // for LAPACKE_dptsv
