@@ -223,7 +223,7 @@ namespace thomasfermi {
         \param x 対象の値
         \return 対象の値の二乗
     */
-    inline T sqr(T x)
+    constexpr inline T sqr(T x) noexcept
     { return x * x; }
 }
 

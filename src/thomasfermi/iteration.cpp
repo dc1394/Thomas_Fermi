@@ -56,7 +56,7 @@ namespace thomasfermi {
             y2_ = std::get<1>(xyvtuple).back();
             
             x_ = std::get<0>(xyvtuple);
-            y_ = FEM::dmklvector(std::get<1>(xyvtuple).begin(), std::get<1>(xyvtuple).end());
+            y_ = FEM::dmklvector(std::get<1>(xyvtuple).cbegin(), std::get<1>(xyvtuple).cend());
             v1_ = std::get<2>(xyvtuple);
             pmix_->Yold = y_;
 

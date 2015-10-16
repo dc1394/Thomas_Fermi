@@ -55,27 +55,27 @@ namespace thomasfermi {
 
 		// #region privateメンバ関数
 		
-		double MakeRhoEnergy::exactrho(double r) const
+		double MakeRhoEnergy::exactrho(double r) const noexcept
 		{
 			return 4.0 * r * r * std::pow(Z_, 3) * std::exp(-2.0 * Z_ * r);
 		}
 
-		double MakeRhoEnergy::exactrhoTilde(double r) const
+		double MakeRhoEnergy::exactrhoTilde(double r) const noexcept
 		{
 			return 4.0 * std::pow(Z_, 3) * std::exp(-2.0 * Z_ * r);
 		}
 
-        double MakeRhoEnergy::makeEnergy() const
+        double MakeRhoEnergy::makeEnergy() const noexcept
         {
             return 3.0 / 7.0 * alpha_ * std::pow(Z_, 7.0 / 3.0) * v1_;
         }
 
-        double MakeRhoEnergy::rho(double x) const
+        double MakeRhoEnergy::rho(double x) const noexcept
         {
 			return s_ * b_ * std::pow(1.0 / alpha_, 2) * std::sqrt(x) * y(x) * std::sqrt(y(x));
         }
 
-		double MakeRhoEnergy::rhoTilde(double x) const
+		double MakeRhoEnergy::rhoTilde(double x) const noexcept
 		{
 			return s_ * b_ * (y(x) / x) * std::sqrt(y(x) / x);
 		}
