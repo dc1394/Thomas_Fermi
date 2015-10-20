@@ -120,12 +120,12 @@ namespace thomasfermi {
 			auto const funcx1toxf = [&]
 			{
 				// 得られた条件でx1...dxまで微分方程式を解く
-				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](shootfunc::state_type const & y, double const)
+				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](auto const & y, auto const)
 				{ res1.push_back(y[0]);	});									// x1...dxの結果を得る
 				res1.pop_back();
 
 				// 得られた条件でdx...xfまで微分方程式を解く
-				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](shootfunc::state_type const & y, double const)
+				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](auto const & y, double const)
 				{ res1.push_back(y[0]); });									// dx...xf + x1の結果を得る
 			};
 
@@ -141,7 +141,7 @@ namespace thomasfermi {
 			
             dvector res2;
 			res2.reserve(boost::numeric_cast<std::size_t>((x2 - xf) / dx_) + 1);
-			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](const shootfunc::state_type & y, double const)
+			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](auto const & y, double const)
 			{ res2.push_back(y[0]); });									// x2...xf - x1の結果を得る
 
 			if (usecilk) {
@@ -196,7 +196,7 @@ namespace thomasfermi {
                     iter2,
                     boost::find_if(
                         yp,
-				        [&, s](double x) { return std::fabs(x - res2[s - 2]) < EPS; })));
+				        [&res2, s](auto x) { return std::fabs(x - res2[s - 2]) < EPS; })));
 
 			yp.insert(iter2, gsl_spline_eval(spline.get(), xf, acc.get()));
 

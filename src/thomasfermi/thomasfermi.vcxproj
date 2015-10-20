@@ -195,7 +195,6 @@
     <None Include="result\y_logscale.plt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="beta.cpp" />
     <ClCompile Include="ci_string.cpp" />
     <ClCompile Include="fem.cpp" />
     <ClCompile Include="foelement.cpp" />

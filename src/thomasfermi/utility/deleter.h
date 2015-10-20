@@ -19,7 +19,7 @@ namespace utility {
         gsl_interp_accelへのポインタを解放するラムダ式
         \param acc gsl_interp_accelへのポインタ
     */
-    static auto const gsl_interp_accel_deleter = [](gsl_interp_accel * acc) {
+    static auto const gsl_interp_accel_deleter = [](auto acc) noexcept {
         gsl_interp_accel_free(acc);
     };
 
@@ -28,7 +28,7 @@ namespace utility {
         gsl_splineへのポインタを解放するラムダ式
         \param spline gsl_splineへのポインタ
     */
-    static auto const gsl_spline_deleter = [](gsl_spline * spline) {
+    static auto const gsl_spline_deleter = [](auto spline) noexcept {
         gsl_spline_free(spline);
     };
 }

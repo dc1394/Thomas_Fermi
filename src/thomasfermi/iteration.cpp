@@ -140,7 +140,7 @@ namespace thomasfermi {
                 beta[i] = y_[i] * std::sqrt(y_[i] / x_[i]);
             }
 
-            return std::move(beta);
+            return beta;
         }
 
         void Iteration::ymix(femall::FEM::dmklvector const & y)

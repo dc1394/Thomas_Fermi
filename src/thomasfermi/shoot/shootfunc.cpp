@@ -8,7 +8,6 @@
 
 #include "shootfunc.h"
 #include <cmath>						// for std::sqrt
-#include <utility>						// for std::move
 #include <boost/range/algorithm.hpp>	// for boost::copy
 
 namespace thomasfermi {
@@ -22,13 +21,12 @@ namespace thomasfermi {
 			//y[1] = v1[0] + 2.0 * std::sqrt(x1) + v1[0] * x1 * std::sqrt(x1) + x1 * x1 + 0.15 * v1[0] * x1 * x1 * std::sqrt(x1);
 			y[1] = ((0.15 * v1 * std::sqrt(x1) + 1.0) * x1 + v1 * std::sqrt(x1)) * x1 + 2.0 * std::sqrt(x1) + v1;
 
-			return std::move(y);
+			return y;
 		}
 
 		Eigen::VectorXd shootfunc::score(shootfunc::state_type const & y)
 		{
-			Eigen::VectorXd f = Eigen::VectorXd::Map(y.data(), y.size());
-			return std::move(f);
+			return Eigen::VectorXd::Map(y.data(), y.size());
 		}
 
 		void shootfunc::rhs(const shootfunc::state_type & y, shootfunc::state_type & dydx, const double x)

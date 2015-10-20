@@ -9,11 +9,12 @@
 #include "load2.h"
 #include <array>				// for std:array
 #include <cmath>				// for std::pow
-#include <utility>				// for std::move
 #include <boost/assert.hpp>		// for BOOST_ASSERT
 
 namespace thomasfermi {
 	namespace shoot {
+        // #region コンストラクタ
+
 		load2::load2() :
 			acc_(gsl_interp_accel_alloc(), utility::gsl_interp_accel_deleter),
 			spline_(gsl_spline_alloc(gsl_interp_cspline, load2::XYSIZE), utility::gsl_spline_deleter)
@@ -87,26 +88,35 @@ namespace thomasfermi {
 			gsl_spline_init(spline_.get(), x.data(), y.data(), x.size());
 		}
 
-        double load2::dy0(double x)
+        // #endregion publicメンバ関数
+
+        // #region public staticメンバ関数
+
+        double load2::dy0(double x) noexcept
         {
             auto const a = -3.0 * std::pow(load2::K, 3.0 / load2::LAMBDA) * std::pow(x, 3.0 / load2::LAMBDA - 1.0);
             return a * std::pow((1.0 + std::pow(load2::K * x, 3.0 / load2::LAMBDA)), -load2::LAMBDA - 1.0);
         }
+        
+        double load2::y0(double x) noexcept
+        {
+            return std::pow((1.0 + std::pow(load2::K * x, 3.0 / load2::LAMBDA)), -load2::LAMBDA);
+        }
 
-        double load2::make_v2(double x2) const
+        // #endregion private staticメンバ関数
+        
+        // #region publicメンバ関数
+
+        double load2::make_v2(double x2) const noexcept
         {
             return x2 > load2::THRESHOLD ? load2::dy0(x2) : gsl_spline_eval_deriv(spline_.get(), x2, acc_.get());
         }
 
         shootfunc::state_type load2::operator()(double x2, double v2) const
         {
-			shootfunc::state_type y = { (x2 > load2::THRESHOLD ? load2::y0(x2) : gsl_spline_eval(spline_.get(), x2, acc_.get())), v2 };
-            return std::move(y);
+			return { (x2 > load2::THRESHOLD ? load2::y0(x2) : gsl_spline_eval(spline_.get(), x2, acc_.get())), v2 };
         }
 
-        double load2::y0(double x)
-        {
-            return std::pow((1.0 + std::pow(load2::K * x, 3.0 / load2::LAMBDA)), -load2::LAMBDA);
-        }
+        // #endregion publicメンバ関数
 	}
 }

@@ -15,7 +15,7 @@
 #endif
 
 namespace thomasfermi {
-    void goexit()
+    void goexit() noexcept
     {
         std::cout << "終了するには何かキーを押してください..." << std::endl;
 

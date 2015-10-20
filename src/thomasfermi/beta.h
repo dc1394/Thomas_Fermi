@@ -104,6 +104,17 @@ namespace thomasfermi {
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
 
+        // #region コンストラクタ
+
+        inline Beta::Beta(std::vector<double> const & xvec, std::vector<double> const & yvec) :
+            size_(xvec.size()),
+            xvec_(xvec),
+            yvec_(yvec)
+        {
+        }
+
+        // #endregion コンストラクタ
+
         // #region メンバ関数
 
         template <>

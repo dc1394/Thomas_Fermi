@@ -60,7 +60,7 @@ namespace thomasfermi {
             /*!
                 デストラクタ
             */
-            virtual ~FEM() noexcept = default;
+            virtual ~FEM() = default;
             
             // #endregion コンストラクタ・デストラクタ 
 

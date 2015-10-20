@@ -237,9 +237,9 @@ namespace thomasfermi {
     template <typename T>
     boost::optional<T> ReadInputFile::readData(ci_string const & article, T const & default_value)
     {
-        for (; true; lineindex_++) {
+        for (; ; lineindex_++) {
             auto const ret = getToken(article);
-            switch (std::get<0>(ret))
+            switch (ret.first)
             {
             case -1:
                 return boost::none;
@@ -247,7 +247,7 @@ namespace thomasfermi {
 
             case 0:
             {
-                auto const tokens = *(std::get<1>(ret));
+                auto const tokens = *(ret.second);
                 auto itr(++tokens.begin());
 
                 lineindex_++;

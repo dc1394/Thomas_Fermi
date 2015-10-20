@@ -36,7 +36,7 @@ namespace thomasfermi {
             /*!
                 デストラクタ
             */
-            ~SOElement() noexcept override = default;
+            ~SOElement() override = default;
 
             // #endregion コンストラクタ・デストラクタ 
 

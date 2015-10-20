@@ -6,5 +6,5 @@
 */
 
 namespace thomasfermi {
-    void goexit();
+    void goexit() noexcept;
 }

@@ -48,7 +48,7 @@ namespace thomasfermi {
                 \param x xの値
                 \return dy0(x) / dxの値
             */
-            static double dy0(double x);
+            static double dy0(double x) noexcept;
 
             //! A public static member function.
             /*!
@@ -56,7 +56,7 @@ namespace thomasfermi {
                 \param x xの値
                 \return y0(x)の値
             */
-            static double y0(double x);
+            static double y0(double x) noexcept;
 
             //! A public member function (const).
             /*!
@@ -64,7 +64,7 @@ namespace thomasfermi {
             \param x2 端点
             \return y0(x)の端点における微分値
             */
-            double make_v2(double x2) const;
+            double make_v2(double x2) const noexcept;
 
             //! A public member function (const).
             /*!

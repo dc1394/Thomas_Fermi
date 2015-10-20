@@ -90,7 +90,7 @@ namespace thomasfermi {
                 -1.0,
                 1.0);
 
-            return std::move(c);
+            return c;
         }
 
         FEM::dvector FOElement::getdndr() const
@@ -99,7 +99,7 @@ namespace thomasfermi {
             dndr[0] = - 0.5;
             dndr[1] = 0.5;
 
-            return std::move(dndr);
+            return dndr;
         }
 
         // #endregion privateメンバ関数

@@ -74,7 +74,7 @@ namespace thomasfermi {
         /*!
             デフォルトデストラクタ
         */
-        ~mkl_allocator() noexcept = default;
+        ~mkl_allocator() = default;
 
         // #endregion コンストラクタ・デストラクタ
 
