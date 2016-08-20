@@ -47,12 +47,20 @@ namespace thomasfermi {
             template <Element E>
             //! A public member function (const).
             /*!
-                operator()(double x)の宣言
                 一次要素でβ(x)を計算して返す
                 \param x xの値
                 \return β(x)の値
             */
             double operator()(double x) const;
+
+            template <Element E>
+            //! A public member function (const).
+            /*!
+                一次要素でβ(x)/dxを計算して返す
+                \param x xの値
+                \return dβ(x)/dxの値
+            */
+            double dxdbeta(double x) const;
 
             // #endregion メンバ関数
 
@@ -186,6 +194,29 @@ namespace thomasfermi {
             c *= -1.0;
 
             return ((a * x + b) * x + c) / denom;
+        }
+
+        template <>
+        inline double Beta::dxdbeta<Element::First>(double x) const
+        {
+            auto klo = 0U;
+            auto const max = static_cast<std::uint32_t>(size_ - 1);
+            auto khi = max;
+
+            // 表の中の正しい位置を二分探索で求める
+            while (khi - klo > 1) {
+                auto const k = static_cast<std::uint32_t>((khi + klo) >> 1);
+
+                if (xvec_[k] > x) {
+                    khi = k;
+                }
+                else {
+                    klo = k;
+                }
+            }
+
+            // yvec_[i] = f(xvec_[i]), yvec_[i + 1] = f(xvec_[i + 1])の二点を通る直線の傾き
+            return (yvec_[khi] - yvec_[klo]) / (xvec_[khi] - xvec_[klo]);
         }
 
         // #endregion メンバ関数

@@ -137,7 +137,7 @@
       <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
       <UseProcessorExtensions>None</UseProcessorExtensions>
       <OpenMP>GenerateParallelCode</OpenMP>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\Composer XE 2015\mkl\include;D:\DATA\PROGRAM\Source\Repos\thomasfermi\src\checkpoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2016.3.207\windows\mkl\include;D:\DATA\PROGRAM\Source\Repos\thomasfermi\src\checkpoint;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeedHighLevel</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
@@ -148,7 +148,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>alglib.lib;checkpoint.lib;gsl.lib;mkl_intel_c.lib;mkl_core.lib;mkl_intel_thread.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\mylib64\boost_1_59_0\stage\ia32\icl16\lib;C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2016.0.110\windows\mkl\lib\ia32_win;D:\DATA\PROGRAM\Source\Repos\thomasfermi\src\thomasfermi\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\mylib64\boost_1_61_0\stage\ia32\icl16\lib;C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2016.3.207\windows\mkl\lib\ia32_win;D:\DATA\PROGRAM\Source\Repos\thomasfermi\src\thomasfermi\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/LTCG /NODEFAULTLIB:LIBCMTD %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
