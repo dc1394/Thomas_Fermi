@@ -107,9 +107,9 @@ namespace thomasfermi {
 			Eigen::FullPivLU< Eigen::MatrixXd > lu(dfdv);
 			ff = lu.solve(ff);
 						
-            v1_ += ff[0];                                               // x1の境界でのパラメータ値の増分
+            v1_ += ff[0];                       // x1の境界でのパラメータ値の増分
 
-            v2_ += ff[1];                                               // x2の境界でのパラメータ値の増分
+            v2_ += ff[1];                       // x2の境界でのパラメータ値の増分
 
 			y1 = load1_(x1, v1_);
 
@@ -121,12 +121,12 @@ namespace thomasfermi {
 			{
 				// 得られた条件でx1...dxまで微分方程式を解く
 				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](auto const & y, auto const)
-				{ res1.push_back(y[0]);	});									// x1...dxの結果を得る
+				{ res1.push_back(y[0]);	});     // x1...dxの結果を得る
 				res1.pop_back();
 
 				// 得られた条件でdx...xfまで微分方程式を解く
 				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](auto const & y, double const)
-				{ res1.push_back(y[0]); });									// dx...xf + x1の結果を得る
+				{ res1.push_back(y[0]); });     // dx...xf + x1の結果を得る
 			};
 
 			if (usecilk) {
@@ -142,7 +142,7 @@ namespace thomasfermi {
             dvector res2;
 			res2.reserve(boost::numeric_cast<std::size_t>((x2 - xf) / dx_) + 1);
 			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](auto const & y, double const)
-			{ res2.push_back(y[0]); });									// x2...xf - x1の結果を得る
+			{ res2.push_back(y[0]); });         // x2...xf - x1の結果を得る
 
 			if (usecilk) {
 				cilk_sync;
@@ -202,7 +202,7 @@ namespace thomasfermi {
 
 			BOOST_ASSERT(xp.size() == yp.size());
 
-			return std::make_tuple(std::move(xp), std::move(yp), v1_);
+			return std::forward_as_tuple(std::move(xp), std::move(yp), v1_);
 		}
 	}
 }

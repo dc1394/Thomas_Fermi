@@ -107,7 +107,7 @@ namespace thomasfermi {
 
         Iteration::result_type Iteration::makeresult()
         {
-            return std::make_tuple(std::move(pbeta_), std::move(x_), v1_);
+            return std::forward_as_tuple(std::move(pbeta_), std::move(x_), v1_);
         }
 
         // #endregion publicメンバ関数
