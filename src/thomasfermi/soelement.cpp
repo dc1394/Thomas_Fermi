@@ -32,9 +32,9 @@ namespace thomasfermi {
             initialize();
 
             for (auto i = 0U; i < nelem_; i++) {
-                (*plnods_)[i][0] = 2 * i;
-                (*plnods_)[i][1] = 2 * i + 2;
-                (*plnods_)[i][2] = 2 * i + 1;
+                lnods_[i][0] = 2 * i;
+                lnods_[i][1] = 2 * i + 2;
+                lnods_[i][2] = 2 * i + 1;
             }
         }
         
@@ -61,8 +61,8 @@ namespace thomasfermi {
         {
             for (auto i = 0UL; i < ntnoel_; i++) {
                 for (auto j = 0UL; j < ntnoel_; j++) {
-                    auto const lnodi = (*plnods_)[ielem][i];
-                    auto const lnodj = (*plnods_)[ielem][j];
+                    auto const lnodi = lnods_[ielem][i];
+                    auto const lnodj = lnods_[ielem][j];
 
                     if (lnodj == lnodi) {
                         a0_[lnodj] += astiff_[i][j];
@@ -100,23 +100,23 @@ namespace thomasfermi {
 
         FEM::dvector SOElement::getc(std::size_t ielem) const
         {
-            auto const xl = coords_[(*plnods_)[ielem][1]] - coords_[(*plnods_)[ielem][0]];
+            auto const xl = coords_[lnods_[ielem][1]] - coords_[lnods_[ielem][0]];
 
             dvector c(ntnoel_);
             c[0] = gl_.qgauss(
                 myfunctional::make_functional(
                     [this, ielem](double r)
-                   { return - N1_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]] + N3_(r) * coords_[(*plnods_)[ielem][2]]); }),
+                   { return - N1_(r) * func_(N1_(r) * coords_[lnods_[ielem][0]] + N2_(r) * coords_[lnods_[ielem][1]] + N3_(r) * coords_[lnods_[ielem][2]]); }),
                    -1.0,
                    1.0) * xl * 0.5;
             c[1] = gl_.qgauss(
                 myfunctional::make_functional([this, ielem](double r)
-                   { return - N2_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]] + N3_(r) * coords_[(*plnods_)[ielem][2]]); }),
+                   { return - N2_(r) * func_(N1_(r) * coords_[lnods_[ielem][0]] + N2_(r) * coords_[lnods_[ielem][1]] + N3_(r) * coords_[lnods_[ielem][2]]); }),
                    -1.0,
                    1.0) * xl * 0.5;
             c[2] = gl_.qgauss(
                 myfunctional::make_functional([this, ielem](double r)
-                   { return - N3_(r) * func_(N1_(r) * coords_[(*plnods_)[ielem][0]] + N2_(r) * coords_[(*plnods_)[ielem][1]] + N3_(r) * coords_[(*plnods_)[ielem][2]]); }),
+                   { return - N3_(r) * func_(N1_(r) * coords_[lnods_[ielem][0]] + N2_(r) * coords_[lnods_[ielem][1]] + N3_(r) * coords_[lnods_[ielem][2]]); }),
                    -1.0,
                    1.0) * xl * 0.5;
 

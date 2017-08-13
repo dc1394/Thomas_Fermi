@@ -7,10 +7,11 @@
 */
 
 #include "fem.h"
-#include <cstdint>              // for std::uint32_t
-#include <utility>              // for std::move
-#include <boost/assert.hpp>     // for BOOST_ASSERT
-#include <cilk/cilk.h>          // for cilik_for
+#include <cstdint>							// for std::uint32_t
+#include <utility>							// for std::move
+#include <boost/range/algorithm/fill.hpp>	// for boost::fill
+#include <boost/assert.hpp>					// for BOOST_ASSERT
+#include <cilk/cilk.h>						// for cilik_for
 
 namespace thomasfermi {
     namespace femall {
@@ -44,9 +45,7 @@ namespace thomasfermi {
             pbeta_.reset();
             pbeta_ = std::make_shared<Beta>(coords_, beta);
 
-            for (double & v : b_) {
-                v = 0.0;
-            }
+			boost::fill(b_, 0.0);
         }
 
         void FEM::stiff()
@@ -56,7 +55,7 @@ namespace thomasfermi {
             }
 
             if (usecilk_) {
-                cilk_for(auto ielem = 0U; ielem < nelem_; ielem++) {
+                cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
                     amerge(ielem);
                     createb(ielem);
                 }
@@ -101,7 +100,7 @@ namespace thomasfermi {
             auto ajacob = 0.0;
 
             for (auto i = 0U; i < ntnoel_; i++) {
-                ajacob += dndr[i] * coords_[(*plnods_)[ielem][i]];
+                ajacob += dndr[i] * coords_[lnods_[ielem][i]];
             }
 
             auto const detjac = ajacob;
@@ -122,7 +121,7 @@ namespace thomasfermi {
 
         void FEM::initialize()
         {
-            plnods_.reset(new boost::multi_array<std::size_t, 2>(boost::extents[nelem_][ntnoel_]));
+            lnods_.resize(boost::extents[nelem_][ntnoel_]);
         }
 
         // #endregion protectedメンバ関数
@@ -133,7 +132,7 @@ namespace thomasfermi {
         {
             auto const c(getc(ielem));
             for (auto i = 0U; i < ntnoel_; i++) {
-                b_[(*plnods_)[ielem][i]] += c[i];
+                b_[lnods_[ielem][i]] += c[i];
             }
         }
 

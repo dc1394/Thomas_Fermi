@@ -116,13 +116,13 @@ namespace thomasfermi {
             for (auto i = 0; i < n; i++) {
                 for (auto j = i; j <= i + 2; j++) {
                     if (j == i) {
-                        ab[(j)* nb + (kd + i - j)] = a0_[i];
+                        ab[(j) * nb + (kd + i - j)] = a0_[i];
                     }
                     else if (j == i + 1 && j < n - 1) {
-                        ab[(j)* nb + (kd + i - j)] = a1_[i];
+                        ab[(j) * nb + (kd + i - j)] = a1_[i];
                     }
                     else if (j == i + 2 && j < n - 2) {
-                        ab[(j)* nb + (kd + i - j)] = a2_[i];
+                        ab[(j) * nb + (kd + i - j)] = a2_[i];
                     }
                 }
             }

@@ -231,6 +231,11 @@ namespace thomasfermi {
             */
             gausslegendre::Gauss_Legendre gl_;
 
+			//! A protected member variable.
+			/*!
+			*/
+			boost::multi_array< std::size_t, 2 > lnods_;
+			
             //! A protected member variable.
             /*!
             */
@@ -252,11 +257,6 @@ namespace thomasfermi {
                 βオブジェクトへのスマートポインタ
             */
             std::shared_ptr<Beta> pbeta_;
-            
-            //! A protected member variable.
-            /*!
-            */
-            std::unique_ptr < boost::multi_array< std::size_t, 2 > > plnods_;
             
             //! A protected member variable.
             /*!
