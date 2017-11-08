@@ -15,9 +15,9 @@
 #include "utility/property.h"
 #include <fstream>                  // for std::ifstream
 #include <memory>                   // for std::shared_ptr
+#include <optional>					// for std::optional
 #include <vector>                   // for std::vector
 #include <boost/lexical_cast.hpp>   // for boost::lexical_cast
-#include <boost/optional.hpp>       // for boost::optional
 
 namespace thomasfermi {
     //! A class.
@@ -82,7 +82,7 @@ namespace thomasfermi {
             \param article 解析対象の文字列
             \return 関数が成功したかどうかと、トークンのstd::pair
         */
-        std::pair<std::int32_t, boost::optional<ReadInputFile::strvec>> getToken(ci_string const & article);
+        std::pair<std::int32_t, std::optional<ReadInputFile::strvec>> getToken(ci_string const & article);
 
         //! A private member function.
         /*!
@@ -97,7 +97,7 @@ namespace thomasfermi {
             \param article 解析対象の文字列
             \return 読みこんだ文字列データ
         */
-        boost::optional<ci_string> readData(ci_string const & article);
+        std::optional<ci_string> readData(ci_string const & article);
         
         //! A private member function.
         /*!
@@ -106,7 +106,7 @@ namespace thomasfermi {
             \param def デフォルトの文字列
             \return 読みこんだ文字列
         */
-        boost::optional<ci_string> readData(ci_string const & article, ci_string const & def);
+        std::optional<ci_string> readData(ci_string const & article, ci_string const & def);
 
         template <typename T>
         //! A private member function (template function).
@@ -116,15 +116,15 @@ namespace thomasfermi {
             \param default_value デフォルト値
             \return 読みこんだ文字列
         */
-        boost::optional<T> readData(ci_string const & article, T const & default_value);
+        std::optional<T> readData(ci_string const & article, T const & default_value);
         
         //! A private member function.
         /*!
             データを読み込む
             \param article 解析対象の文字列
-            \return 読みこんだ文字列（読み込みに失敗したならboost::none）
+            \return 読みこんだ文字列（読み込みに失敗したならstd::nullopt）
         */
-        boost::optional<ci_string> readDataAuto(ci_string const & article);
+        std::optional<ci_string> readDataAuto(ci_string const & article);
 
         //! A private member function.
         /*!
@@ -158,7 +158,7 @@ namespace thomasfermi {
             \param value 読み込んだ値
             \return 読み込みが成功したかどうか
         */
-        bool readValueAuto(ci_string const & article, boost::optional<T> & value);
+        bool readValueAuto(ci_string const & article, std::optional<T> & value);
 
         // #endregion メンバ関数
 
@@ -235,14 +235,14 @@ namespace thomasfermi {
     };
 
     template <typename T>
-    boost::optional<T> ReadInputFile::readData(ci_string const & article, T const & default_value)
+    std::optional<T> ReadInputFile::readData(ci_string const & article, T const & default_value)
     {
         for (; ; lineindex_++) {
             auto const ret = getToken(article);
             switch (ret.first)
             {
             case -1:
-                return boost::none;
+                return std::nullopt;
                 break;
 
             case 0:
@@ -255,21 +255,21 @@ namespace thomasfermi {
                 switch (tokens.size()) {
                 case 1:
                     // デフォルト値を返す
-                    return boost::optional<T>(default_value);
+                    return std::make_optional<T>(default_value);
                     break;
 
                 case 2:
                     if (*(++itr) == "DEFAULT") {
                         // デフォルト値を返す
-                        return boost::optional<T>(default_value);
+                        return std::make_optional<T>(default_value);
                     }
                     else {
                         try {
-                            return boost::optional<T>(boost::lexical_cast<T>(itr->c_str()));
+                            return std::make_optional<T>(boost::lexical_cast<T>(itr->c_str()));
                         }
                         catch (boost::bad_lexical_cast const &) {
                             errorMessage(lineindex_ - 1, article, *itr);
-                            return boost::none;
+                            return std::nullopt;
                         }
                     }
 
@@ -278,19 +278,19 @@ namespace thomasfermi {
                     auto val = *itr;
 
                     if (val == "DEFAULT" || val[0] == '#') {
-                        return boost::optional<T>(default_value);
+                        return std::make_optional<T>(default_value);
                     }
                     else if ((*(++itr))[0] != '#') {
                         errorMessage(lineindex_ - 1, article, *itr);
-                        return boost::none;
+                        return std::nullopt;
                     }
 
                     try {
-                        return boost::optional<T>(boost::lexical_cast<T>(val.c_str()));
+                        return std::make_optional<T>(boost::lexical_cast<T>(val.c_str()));
                     }
                     catch (boost::bad_lexical_cast const &) {
                         errorMessage(lineindex_ - 1, article, val);
-                        return boost::none;
+                        return std::nullopt;
                     }
                 }
                 }
@@ -319,7 +319,7 @@ namespace thomasfermi {
     }
 
     template <typename T>
-    bool ReadInputFile::readValueAuto(ci_string const & article, boost::optional<T> & value)
+    bool ReadInputFile::readValueAuto(ci_string const & article, std::optional<T> & value)
     {
         if (auto const val = readDataAuto(article)) {
             if (!val->empty()) {
@@ -329,7 +329,7 @@ namespace thomasfermi {
                     if (idx != val->length()) {
                         throw std::invalid_argument("");
                     }
-                    value = boost::optional<double>(v);
+                    value = std::make_optional<double>(v);
                 }
                 catch (std::invalid_argument const &) {
                     errorMessage(lineindex_ - 1, article, *val);
@@ -337,7 +337,7 @@ namespace thomasfermi {
                 }
             }
             else {
-                value = boost::none;
+                value = std::nullopt;
             }
         }
         else {

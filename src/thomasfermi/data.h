@@ -12,7 +12,6 @@
 #include "ci_string.h"
 #include <array>                // for std::array
 #include <cstdint>              // for std::uint32_t, std::uint8_t
-#include <boost/optional.hpp>   // for boost::optional
 
 namespace thomasfermi {
     //! A global variable (constant expression).

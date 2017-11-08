@@ -99,9 +99,6 @@
     <ClCompile Include="iteration.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="linearequations.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="goexit.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -122,6 +119,9 @@
     </ClCompile>
     <ClCompile Include="makerhoen\makerhoenergy.cpp">
       <Filter>ソース ファイル\makerhoen</Filter>
+    </ClCompile>
+    <ClCompile Include="linearequations.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
