@@ -1,33 +1,76 @@
-PROG := thomasfermi
-SRCS :=	alglibinternal.cpp alglibmisc.cpp ap.cpp dataanalysis.cpp diffequations.cpp \
-		fasttransforms.cpp integration.cpp interpolation.cpp linalg.cpp optimization.cpp \
-		solvers.cpp specialfunctions.cpp specialfunctions.cpp statistics.cpp \
-		checkpoint.cpp \
-		beta.cpp ci_string.cpp fem.cpp foelement.cpp gausslegendre.cpp getcomlineoption.cpp \
-		goexit.cpp iteration.cpp linearequations.cpp makerhoenergy.cpp readinputfile.cpp \
-		simplemixing.cpp load2.cpp shootf.cpp shootfunc.cpp soelement.cpp thomasfermimain.cpp
+#
+# プログラム名
+#
+PROG = thomasfermi
 
-OBJS :=	$(SRCS:%.cpp=%.o)
-DEPS :=	$(SRCS:%.cpp=%.d)
+#
+# ソースコードが存在する相対パス
+#
+VPATH = src/alglib src/checkpoint src/thomasfermi src/thomasfermi/gausslegendre \
+		src/thomasfermi/makerhoen src/thomasfermi/mixing src/thomasfermi/myfunctional \
+		src/thomasfermi/shoot src/tho
 
-VPATH  = src/alglib src/checkpoint src/thomasfermi src/thomasfermi/gausslegendre \
-		 src/thomasfermi/makerhoen src/thomasfermi/mixing src/thomasfermi/shoot 
+#
+# コンパイル対象のソースファイル群（カレントディレクトリ以下の*.cppファイル）
+#
+SRCS = $(shell find * -name "*.cpp")
+
+#
+# ターゲットファイルを生成するために利用するオブジェクトファイル
+#
+OBJDIR = 
+ifeq "$(strip $(OBJDIR))" ""
+  OBJDIR = .
+endif
+
+OBJS = $(addprefix $(OBJDIR)/, $(notdir $(SRCS:.cpp=.o)))
+
+#
+# *.cppファイルの依存関係が書かれた*.dファイル
+#
+DEPS = $(OBJS:.o=.d)
+
+#
+# C++コンパイラの指定
+#
 CXX = icpc
-CXXFLAGS = -Wextra -inline-level=2 -ipo -O3 -parallel -xHost -pipe -std=c++14 -openmp -I${MKLROOT}/include
-LDFLAGS = -L/home/dc1394/oss/boost_1_59_0/stage/icc/lib/ -lboost_program_options \
+
+#
+# C++コンパイラに与える、（最適化等の）オプション
+#
+CXXFLAGS = -Wextra -inline-level=2 -ipo -O3 -parallel -xHost -pipe -std=c++17 -qopenmp -I${MKLROOT}/include
+
+#
+# リンク対象に含めるライブラリの指定
+#
+LDFLAGS = -L/home/dc1394/oss/boost_1_65_1/stage/icc/lib/ -lboost_program_options \
 		  -lgsl -lgslcblas -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core \
 		  -lmkl_intel_thread -lpthread
 
+#
+# makeの動作
+#
 all: $(PROG) ;
-#rm -f $(OBJS) $(DEPS)
 
+#
+# 依存関係を解決するためのinclude文
+#
 -include $(DEPS)
 
+#
+# プログラムのリンク
+#
 $(PROG): $(OBJS)
 		$(CXX) $(LDFLAGS) $(CXXFLAGS) -o $@ $^
 
+#
+# プログラムのコンパイル
+#
 %.o: %.cpp
 		$(CXX) $(CXXFLAGS) -c -MMD -MP $<
 
+#
+# make cleanの動作
+#
 clean:
 		rm -f $(PROG) $(OBJS) $(DEPS)
