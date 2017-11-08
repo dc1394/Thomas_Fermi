@@ -38,15 +38,14 @@ CXX = icpc
 #
 # C++コンパイラに与える、（最適化等の）オプション
 #
-CXXFLAGS = -Wextra -inline-level=2 -ipo -O3 -parallel -xHost -pipe -std=c++17 -qopenmp -I${MKLROOT}/include
+CXXFLAGS = -Wextra -O3 -xCORE-AVX512 -ip -no-prec-div -DMKL_ILP64 -pipe -std=c++17 -I/home/dc1394/openblas/include 
 
 #
 # リンク対象に含めるライブラリの指定
 #
-LDFLAGS = -L/home/dc1394/oss/boost_1_65_1/stage/icc/lib/ -lboost_program_options \
-		  -lgsl -lgslcblas -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core \
-		  -lmkl_intel_thread -lpthread
-
+LDFLAGS = -L/home/dc1394/oss/boost_1_65_1/stage/icc/lib -L/home/dc1394/openblas/lib \
+          -lboost_program_options -ldl -lgsl -lgslcblas -lifcore -liomp5 -lm -lopenblas \
+		  -lpthread -lcilkrts
 #
 # makeの動作
 #
