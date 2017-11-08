@@ -12,10 +12,10 @@
 #include "soelement.h"
 #include <iostream>                             // for std::cout
 #include <stdexcept>                            // for std::runtime_error
+#include <utility>							    // for std::in_place
 #include <boost/assert.hpp>                     // for BOOST_ASSERT
 #include <boost/cast.hpp>                       // for boost::numeric_cast
 #include <boost/format.hpp>                     // for boost::format
-#include <boost/utility/in_place_factory.hpp>   // for boost::in_place
 
 namespace thomasfermi {
     namespace femall {
@@ -69,7 +69,7 @@ namespace thomasfermi {
             v_bc_nonzero_.reserve(Iteration::N_BC_GIVEN);
             v_bc_nonzero_ = { y1_, y2_ };
 
-            ple_ = boost::in_place(pfem_->createresult());
+            ple_.emplace(pfem_->createresult());
 
             ple_->bound<Element::First>(Iteration::N_BC_GIVEN, i_bc_given_, Iteration::N_BC_GIVEN, i_bc_given_, v_bc_nonzero_);
 
