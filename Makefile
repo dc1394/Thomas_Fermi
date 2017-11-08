@@ -38,7 +38,7 @@ CXX = icpc
 #
 # C++コンパイラに与える、（最適化等の）オプション
 #
-CXXFLAGS = -Wextra -O3 -xCORE-AVX512 -ip -no-prec-div -DMKL_ILP64 -pipe -std=c++17 -I/home/dc1394/openblas/include 
+CXXFLAGS = -Wextra -O3 -std=c++17 -xCORE-AVX512 -ip -no-prec-div -DMKL_ILP64 -pipe -I/home/dc1394/openblas/include 
 
 #
 # リンク対象に含めるライブラリの指定
