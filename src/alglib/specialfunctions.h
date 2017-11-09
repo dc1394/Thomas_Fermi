@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -333,38 +333,404 @@ Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
 double invincompletegammac(const double a, const double y0);
 
 /*************************************************************************
-Airy function
+Complete elliptic integral of the first kind
 
-Solution of the differential equation
+Approximates the integral
 
-y"(x) = xy.
 
-The function returns the two independent solutions Ai, Bi
-and their first derivatives Ai'(x), Bi'(x).
 
-Evaluation is by power series summation for small x,
-by rational minimax approximations for large x.
+           pi/2
+            -
+           | |
+           |           dt
+K(m)  =    |    ------------------
+           |                   2
+         | |    sqrt( 1 - m sin t )
+          -
+           0
+
+using the approximation
+
+    P(x)  -  log x Q(x).
+
+ACCURACY:
+
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE       0,1        30000       2.5e-16     6.8e-17
+
+Cephes Math Library, Release 2.8:  June, 2000
+Copyright 1984, 1987, 2000 by Stephen L. Moshier
+*************************************************************************/
+double ellipticintegralk(const double m);
+
+
+/*************************************************************************
+Complete elliptic integral of the first kind
+
+Approximates the integral
+
+
+
+           pi/2
+            -
+           | |
+           |           dt
+K(m)  =    |    ------------------
+           |                   2
+         | |    sqrt( 1 - m sin t )
+          -
+           0
+
+where m = 1 - m1, using the approximation
+
+    P(x)  -  log x Q(x).
+
+The argument m1 is used rather than m so that the logarithmic
+singularity at m = 1 will be shifted to the origin; this
+preserves maximum accuracy.
+
+K(0) = pi/2.
+
+ACCURACY:
+
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE       0,1        30000       2.5e-16     6.8e-17
+
+Cephes Math Library, Release 2.8:  June, 2000
+Copyright 1984, 1987, 2000 by Stephen L. Moshier
+*************************************************************************/
+double ellipticintegralkhighprecision(const double m1);
+
+
+/*************************************************************************
+Incomplete elliptic integral of the first kind F(phi|m)
+
+Approximates the integral
+
+
+
+               phi
+                -
+               | |
+               |           dt
+F(phi_\m)  =    |    ------------------
+               |                   2
+             | |    sqrt( 1 - m sin t )
+              -
+               0
+
+of amplitude phi and modulus m, using the arithmetic -
+geometric mean algorithm.
+
 
 
 
 ACCURACY:
-Error criterion is absolute when function <= 1, relative
-when function > 1, except * denotes relative error criterion.
-For large negative x, the absolute error increases as x^1.5.
-For large positive x, the relative error increases as x^1.5.
 
-Arithmetic  domain   function  # trials      peak         rms
-IEEE        -10, 0     Ai        10000       1.6e-15     2.7e-16
-IEEE          0, 10    Ai        10000       2.3e-14*    1.8e-15*
-IEEE        -10, 0     Ai'       10000       4.6e-15     7.6e-16
-IEEE          0, 10    Ai'       10000       1.8e-14*    1.5e-15*
-IEEE        -10, 10    Bi        30000       4.2e-15     5.3e-16
-IEEE        -10, 10    Bi'       30000       4.9e-15     7.3e-16
+Tested at random points with m in [0, 1] and phi as indicated.
+
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE     -10,10       200000      7.4e-16     1.0e-16
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 2000 by Stephen L. Moshier
+*************************************************************************/
+double incompleteellipticintegralk(const double phi, const double m);
+
+
+/*************************************************************************
+Complete elliptic integral of the second kind
+
+Approximates the integral
+
+
+           pi/2
+            -
+           | |                 2
+E(m)  =    |    sqrt( 1 - m sin t ) dt
+         | |
+          -
+           0
+
+using the approximation
+
+     P(x)  -  x log x Q(x).
+
+ACCURACY:
+
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE       0, 1       10000       2.1e-16     7.3e-17
+
+Cephes Math Library, Release 2.8: June, 2000
+Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
+*************************************************************************/
+double ellipticintegrale(const double m);
+
+
+/*************************************************************************
+Incomplete elliptic integral of the second kind
+
+Approximates the integral
+
+
+               phi
+                -
+               | |
+               |                   2
+E(phi_\m)  =    |    sqrt( 1 - m sin t ) dt
+               |
+             | |
+              -
+               0
+
+of amplitude phi and modulus m, using the arithmetic -
+geometric mean algorithm.
+
+ACCURACY:
+
+Tested at random arguments with phi in [-10, 10] and m in
+[0, 1].
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE     -10,10      150000       3.3e-15     1.4e-16
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 1993, 2000 by Stephen L. Moshier
+*************************************************************************/
+double incompleteellipticintegrale(const double phi, const double m);
+
+/*************************************************************************
+Calculation of the value of the Hermite polynomial.
+
+Parameters:
+    n   -   degree, n>=0
+    x   -   argument
+
+Result:
+    the value of the Hermite polynomial Hn at x
+*************************************************************************/
+double hermitecalculate(const ae_int_t n, const double x);
+
+
+/*************************************************************************
+Summation of Hermite polynomials using Clenshaw's recurrence formula.
+
+This routine calculates
+    c[0]*H0(x) + c[1]*H1(x) + ... + c[N]*HN(x)
+
+Parameters:
+    n   -   degree, n>=0
+    x   -   argument
+
+Result:
+    the value of the Hermite polynomial at x
+*************************************************************************/
+double hermitesum(const real_1d_array &c, const ae_int_t n, const double x);
+
+
+/*************************************************************************
+Representation of Hn as C[0] + C[1]*X + ... + C[N]*X^N
+
+Input parameters:
+    N   -   polynomial degree, n>=0
+
+Output parameters:
+    C   -   coefficients
+*************************************************************************/
+void hermitecoefficients(const ae_int_t n, real_1d_array &c);
+
+/*************************************************************************
+Dawson's Integral
+
+Approximates the integral
+
+                            x
+                            -
+                     2     | |        2
+ dawsn(x)  =  exp( -x  )   |    exp( t  ) dt
+                         | |
+                          -
+                          0
+
+Three different rational approximations are employed, for
+the intervals 0 to 3.25; 3.25 to 6.25; and 6.25 up.
+
+ACCURACY:
+
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE      0,10        10000       6.9e-16     1.0e-16
 
 Cephes Math Library Release 2.8:  June, 2000
 Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
 *************************************************************************/
-void airy(const double x, double &ai, double &aip, double &bi, double &bip);
+double dawsonintegral(const double x);
+
+/*************************************************************************
+Sine and cosine integrals
+
+Evaluates the integrals
+
+                         x
+                         -
+                        |  cos t - 1
+  Ci(x) = eul + ln x +  |  --------- dt,
+                        |      t
+                       -
+                        0
+            x
+            -
+           |  sin t
+  Si(x) =  |  ----- dt
+           |    t
+          -
+           0
+
+where eul = 0.57721566490153286061 is Euler's constant.
+The integrals are approximated by rational functions.
+For x > 8 auxiliary functions f(x) and g(x) are employed
+such that
+
+Ci(x) = f(x) sin(x) - g(x) cos(x)
+Si(x) = pi/2 - f(x) cos(x) - g(x) sin(x)
+
+
+ACCURACY:
+   Test interval = [0,50].
+Absolute error, except relative when > 1:
+arithmetic   function   # trials      peak         rms
+   IEEE        Si        30000       4.4e-16     7.3e-17
+   IEEE        Ci        30000       6.9e-16     5.1e-17
+
+Cephes Math Library Release 2.1:  January, 1989
+Copyright 1984, 1987, 1989 by Stephen L. Moshier
+*************************************************************************/
+void sinecosineintegrals(const double x, double &si, double &ci);
+
+
+/*************************************************************************
+Hyperbolic sine and cosine integrals
+
+Approximates the integrals
+
+                           x
+                           -
+                          | |   cosh t - 1
+  Chi(x) = eul + ln x +   |    -----------  dt,
+                        | |          t
+                         -
+                         0
+
+              x
+              -
+             | |  sinh t
+  Shi(x) =   |    ------  dt
+           | |       t
+            -
+            0
+
+where eul = 0.57721566490153286061 is Euler's constant.
+The integrals are evaluated by power series for x < 8
+and by Chebyshev expansions for x between 8 and 88.
+For large x, both functions approach exp(x)/2x.
+Arguments greater than 88 in magnitude return MAXNUM.
+
+
+ACCURACY:
+
+Test interval 0 to 88.
+                     Relative error:
+arithmetic   function  # trials      peak         rms
+   IEEE         Shi      30000       6.9e-16     1.6e-16
+       Absolute error, except relative when |Chi| > 1:
+   IEEE         Chi      30000       8.4e-16     1.4e-16
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 2000 by Stephen L. Moshier
+*************************************************************************/
+void hyperbolicsinecosineintegrals(const double x, double &shi, double &chi);
+
+/*************************************************************************
+Poisson distribution
+
+Returns the sum of the first k+1 terms of the Poisson
+distribution:
+
+  k         j
+  --   -m  m
+  >   e    --
+  --       j!
+ j=0
+
+The terms are not summed directly; instead the incomplete
+gamma integral is employed, according to the relation
+
+y = pdtr( k, m ) = igamc( k+1, m ).
+
+The arguments must both be positive.
+ACCURACY:
+
+See incomplete gamma function
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
+*************************************************************************/
+double poissondistribution(const ae_int_t k, const double m);
+
+
+/*************************************************************************
+Complemented Poisson distribution
+
+Returns the sum of the terms k+1 to infinity of the Poisson
+distribution:
+
+ inf.       j
+  --   -m  m
+  >   e    --
+  --       j!
+ j=k+1
+
+The terms are not summed directly; instead the incomplete
+gamma integral is employed, according to the formula
+
+y = pdtrc( k, m ) = igam( k+1, m ).
+
+The arguments must both be positive.
+
+ACCURACY:
+
+See incomplete gamma function
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
+*************************************************************************/
+double poissoncdistribution(const ae_int_t k, const double m);
+
+
+/*************************************************************************
+Inverse Poisson distribution
+
+Finds the Poisson variable x such that the integral
+from 0 to x of the Poisson density is equal to the
+given probability y.
+
+This is accomplished using the inverse gamma integral
+function and the relation
+
+   m = igami( k+1, y ).
+
+ACCURACY:
+
+See inverse incomplete gamma function
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
+*************************************************************************/
+double invpoissondistribution(const ae_int_t k, const double y);
 
 /*************************************************************************
 Bessel function of order zero
@@ -651,30 +1017,6 @@ Copyright 1984, 1987, 1988, 2000 by Stephen L. Moshier
 double besselkn(const ae_int_t nn, const double x);
 
 /*************************************************************************
-Beta function
-
-
-                  -     -
-                 | (a) | (b)
-beta( a, b )  =  -----------.
-                    -
-                   | (a+b)
-
-For large arguments the logarithm of the function is
-evaluated using lgam(), then exponentiated.
-
-ACCURACY:
-
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE       0,30       30000       8.1e-14     1.1e-14
-
-Cephes Math Library Release 2.0:  April, 1987
-Copyright 1984, 1987 by Stephen L. Moshier
-*************************************************************************/
-double beta(const double a, const double b);
-
-/*************************************************************************
 Incomplete beta integral
 
 Returns incomplete beta integral of the arguments, evaluated
@@ -747,519 +1089,6 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1984, 1996, 2000 by Stephen L. Moshier
 *************************************************************************/
 double invincompletebeta(const double a, const double b, const double y);
-
-/*************************************************************************
-Binomial distribution
-
-Returns the sum of the terms 0 through k of the Binomial
-probability density:
-
-  k
-  --  ( n )   j      n-j
-  >   (   )  p  (1-p)
-  --  ( j )
- j=0
-
-The terms are not summed directly; instead the incomplete
-beta integral is employed, according to the formula
-
-y = bdtr( k, n, p ) = incbet( n-k, k+1, 1-p ).
-
-The arguments must be positive, with p ranging from 0 to 1.
-
-ACCURACY:
-
-Tested at random points (a,b,p), with p between 0 and 1.
-
-              a,b                     Relative error:
-arithmetic  domain     # trials      peak         rms
- For p between 0.001 and 1:
-   IEEE     0,100       100000      4.3e-15     2.6e-16
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
-*************************************************************************/
-double binomialdistribution(const ae_int_t k, const ae_int_t n, const double p);
-
-
-/*************************************************************************
-Complemented binomial distribution
-
-Returns the sum of the terms k+1 through n of the Binomial
-probability density:
-
-  n
-  --  ( n )   j      n-j
-  >   (   )  p  (1-p)
-  --  ( j )
- j=k+1
-
-The terms are not summed directly; instead the incomplete
-beta integral is employed, according to the formula
-
-y = bdtrc( k, n, p ) = incbet( k+1, n-k, p ).
-
-The arguments must be positive, with p ranging from 0 to 1.
-
-ACCURACY:
-
-Tested at random points (a,b,p).
-
-              a,b                     Relative error:
-arithmetic  domain     # trials      peak         rms
- For p between 0.001 and 1:
-   IEEE     0,100       100000      6.7e-15     8.2e-16
- For p between 0 and .001:
-   IEEE     0,100       100000      1.5e-13     2.7e-15
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
-*************************************************************************/
-double binomialcdistribution(const ae_int_t k, const ae_int_t n, const double p);
-
-
-/*************************************************************************
-Inverse binomial distribution
-
-Finds the event probability p such that the sum of the
-terms 0 through k of the Binomial probability density
-is equal to the given cumulative probability y.
-
-This is accomplished using the inverse beta integral
-function and the relation
-
-1 - p = incbi( n-k, k+1, y ).
-
-ACCURACY:
-
-Tested at random points (a,b,p).
-
-              a,b                     Relative error:
-arithmetic  domain     # trials      peak         rms
- For p between 0.001 and 1:
-   IEEE     0,100       100000      2.3e-14     6.4e-16
-   IEEE     0,10000     100000      6.6e-12     1.2e-13
- For p between 10^-6 and 0.001:
-   IEEE     0,100       100000      2.0e-12     1.3e-14
-   IEEE     0,10000     100000      1.5e-12     3.2e-14
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
-*************************************************************************/
-double invbinomialdistribution(const ae_int_t k, const ae_int_t n, const double y);
-
-/*************************************************************************
-Calculation of the value of the Chebyshev polynomials of the
-first and second kinds.
-
-Parameters:
-    r   -   polynomial kind, either 1 or 2.
-    n   -   degree, n>=0
-    x   -   argument, -1 <= x <= 1
-
-Result:
-    the value of the Chebyshev polynomial at x
-*************************************************************************/
-double chebyshevcalculate(const ae_int_t r, const ae_int_t n, const double x);
-
-
-/*************************************************************************
-Summation of Chebyshev polynomials using Clenshaw’s recurrence formula.
-
-This routine calculates
-    c[0]*T0(x) + c[1]*T1(x) + ... + c[N]*TN(x)
-or
-    c[0]*U0(x) + c[1]*U1(x) + ... + c[N]*UN(x)
-depending on the R.
-
-Parameters:
-    r   -   polynomial kind, either 1 or 2.
-    n   -   degree, n>=0
-    x   -   argument
-
-Result:
-    the value of the Chebyshev polynomial at x
-*************************************************************************/
-double chebyshevsum(const real_1d_array &c, const ae_int_t r, const ae_int_t n, const double x);
-
-
-/*************************************************************************
-Representation of Tn as C[0] + C[1]*X + ... + C[N]*X^N
-
-Input parameters:
-    N   -   polynomial degree, n>=0
-
-Output parameters:
-    C   -   coefficients
-*************************************************************************/
-void chebyshevcoefficients(const ae_int_t n, real_1d_array &c);
-
-
-/*************************************************************************
-Conversion of a series of Chebyshev polynomials to a power series.
-
-Represents A[0]*T0(x) + A[1]*T1(x) + ... + A[N]*Tn(x) as
-B[0] + B[1]*X + ... + B[N]*X^N.
-
-Input parameters:
-    A   -   Chebyshev series coefficients
-    N   -   degree, N>=0
-
-Output parameters
-    B   -   power series coefficients
-*************************************************************************/
-void fromchebyshev(const real_1d_array &a, const ae_int_t n, real_1d_array &b);
-
-/*************************************************************************
-Chi-square distribution
-
-Returns the area under the left hand tail (from 0 to x)
-of the Chi square probability density function with
-v degrees of freedom.
-
-
-                                  x
-                                   -
-                       1          | |  v/2-1  -t/2
- P( x | v )   =   -----------     |   t      e     dt
-                   v/2  -       | |
-                  2    | (v/2)   -
-                                  0
-
-where x is the Chi-square variable.
-
-The incomplete gamma integral is used, according to the
-formula
-
-y = chdtr( v, x ) = igam( v/2.0, x/2.0 ).
-
-The arguments must both be positive.
-
-ACCURACY:
-
-See incomplete gamma function
-
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 2000 by Stephen L. Moshier
-*************************************************************************/
-double chisquaredistribution(const double v, const double x);
-
-
-/*************************************************************************
-Complemented Chi-square distribution
-
-Returns the area under the right hand tail (from x to
-infinity) of the Chi square probability density function
-with v degrees of freedom:
-
-                                 inf.
-                                   -
-                       1          | |  v/2-1  -t/2
- P( x | v )   =   -----------     |   t      e     dt
-                   v/2  -       | |
-                  2    | (v/2)   -
-                                  x
-
-where x is the Chi-square variable.
-
-The incomplete gamma integral is used, according to the
-formula
-
-y = chdtr( v, x ) = igamc( v/2.0, x/2.0 ).
-
-The arguments must both be positive.
-
-ACCURACY:
-
-See incomplete gamma function
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 2000 by Stephen L. Moshier
-*************************************************************************/
-double chisquarecdistribution(const double v, const double x);
-
-
-/*************************************************************************
-Inverse of complemented Chi-square distribution
-
-Finds the Chi-square argument x such that the integral
-from x to infinity of the Chi-square density is equal
-to the given cumulative probability y.
-
-This is accomplished using the inverse gamma integral
-function and the relation
-
-   x/2 = igami( df/2, y );
-
-ACCURACY:
-
-See inverse incomplete gamma function
-
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 2000 by Stephen L. Moshier
-*************************************************************************/
-double invchisquaredistribution(const double v, const double y);
-
-/*************************************************************************
-Dawson's Integral
-
-Approximates the integral
-
-                            x
-                            -
-                     2     | |        2
- dawsn(x)  =  exp( -x  )   |    exp( t  ) dt
-                         | |
-                          -
-                          0
-
-Three different rational approximations are employed, for
-the intervals 0 to 3.25; 3.25 to 6.25; and 6.25 up.
-
-ACCURACY:
-
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE      0,10        10000       6.9e-16     1.0e-16
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
-*************************************************************************/
-double dawsonintegral(const double x);
-
-/*************************************************************************
-Complete elliptic integral of the first kind
-
-Approximates the integral
-
-
-
-           pi/2
-            -
-           | |
-           |           dt
-K(m)  =    |    ------------------
-           |                   2
-         | |    sqrt( 1 - m sin t )
-          -
-           0
-
-using the approximation
-
-    P(x)  -  log x Q(x).
-
-ACCURACY:
-
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE       0,1        30000       2.5e-16     6.8e-17
-
-Cephes Math Library, Release 2.8:  June, 2000
-Copyright 1984, 1987, 2000 by Stephen L. Moshier
-*************************************************************************/
-double ellipticintegralk(const double m);
-
-
-/*************************************************************************
-Complete elliptic integral of the first kind
-
-Approximates the integral
-
-
-
-           pi/2
-            -
-           | |
-           |           dt
-K(m)  =    |    ------------------
-           |                   2
-         | |    sqrt( 1 - m sin t )
-          -
-           0
-
-where m = 1 - m1, using the approximation
-
-    P(x)  -  log x Q(x).
-
-The argument m1 is used rather than m so that the logarithmic
-singularity at m = 1 will be shifted to the origin; this
-preserves maximum accuracy.
-
-K(0) = pi/2.
-
-ACCURACY:
-
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE       0,1        30000       2.5e-16     6.8e-17
-
-Cephes Math Library, Release 2.8:  June, 2000
-Copyright 1984, 1987, 2000 by Stephen L. Moshier
-*************************************************************************/
-double ellipticintegralkhighprecision(const double m1);
-
-
-/*************************************************************************
-Incomplete elliptic integral of the first kind F(phi|m)
-
-Approximates the integral
-
-
-
-               phi
-                -
-               | |
-               |           dt
-F(phi_\m)  =    |    ------------------
-               |                   2
-             | |    sqrt( 1 - m sin t )
-              -
-               0
-
-of amplitude phi and modulus m, using the arithmetic -
-geometric mean algorithm.
-
-
-
-
-ACCURACY:
-
-Tested at random points with m in [0, 1] and phi as indicated.
-
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE     -10,10       200000      7.4e-16     1.0e-16
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 2000 by Stephen L. Moshier
-*************************************************************************/
-double incompleteellipticintegralk(const double phi, const double m);
-
-
-/*************************************************************************
-Complete elliptic integral of the second kind
-
-Approximates the integral
-
-
-           pi/2
-            -
-           | |                 2
-E(m)  =    |    sqrt( 1 - m sin t ) dt
-         | |
-          -
-           0
-
-using the approximation
-
-     P(x)  -  x log x Q(x).
-
-ACCURACY:
-
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE       0, 1       10000       2.1e-16     7.3e-17
-
-Cephes Math Library, Release 2.8: June, 2000
-Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
-*************************************************************************/
-double ellipticintegrale(const double m);
-
-
-/*************************************************************************
-Incomplete elliptic integral of the second kind
-
-Approximates the integral
-
-
-               phi
-                -
-               | |
-               |                   2
-E(phi_\m)  =    |    sqrt( 1 - m sin t ) dt
-               |
-             | |
-              -
-               0
-
-of amplitude phi and modulus m, using the arithmetic -
-geometric mean algorithm.
-
-ACCURACY:
-
-Tested at random arguments with phi in [-10, 10] and m in
-[0, 1].
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE     -10,10      150000       3.3e-15     1.4e-16
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 1993, 2000 by Stephen L. Moshier
-*************************************************************************/
-double incompleteellipticintegrale(const double phi, const double m);
-
-/*************************************************************************
-Exponential integral Ei(x)
-
-              x
-               -     t
-              | |   e
-   Ei(x) =   -|-   ---  dt .
-            | |     t
-             -
-            -inf
-
-Not defined for x <= 0.
-See also expn.c.
-
-
-
-ACCURACY:
-
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE       0,100       50000      8.6e-16     1.3e-16
-
-Cephes Math Library Release 2.8:  May, 1999
-Copyright 1999 by Stephen L. Moshier
-*************************************************************************/
-double exponentialintegralei(const double x);
-
-
-/*************************************************************************
-Exponential integral En(x)
-
-Evaluates the exponential integral
-
-                inf.
-                  -
-                 | |   -xt
-                 |    e
-     E (x)  =    |    ----  dt.
-      n          |      n
-               | |     t
-                -
-                 1
-
-
-Both n and x must be nonnegative.
-
-The routine employs either a power series, a continued
-fraction, or an asymptotic formula depending on the
-relative values of n and x.
-
-ACCURACY:
-
-                     Relative error:
-arithmetic   domain     # trials      peak         rms
-   IEEE      0, 30       10000       1.7e-15     3.6e-16
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1985, 2000 by Stephen L. Moshier
-*************************************************************************/
-double exponentialintegralen(const double x, const ae_int_t n);
 
 /*************************************************************************
 F distribution
@@ -1417,46 +1246,6 @@ Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
 void fresnelintegral(const double x, double &c, double &s);
 
 /*************************************************************************
-Calculation of the value of the Hermite polynomial.
-
-Parameters:
-    n   -   degree, n>=0
-    x   -   argument
-
-Result:
-    the value of the Hermite polynomial Hn at x
-*************************************************************************/
-double hermitecalculate(const ae_int_t n, const double x);
-
-
-/*************************************************************************
-Summation of Hermite polynomials using Clenshaw’s recurrence formula.
-
-This routine calculates
-    c[0]*H0(x) + c[1]*H1(x) + ... + c[N]*HN(x)
-
-Parameters:
-    n   -   degree, n>=0
-    x   -   argument
-
-Result:
-    the value of the Hermite polynomial at x
-*************************************************************************/
-double hermitesum(const real_1d_array &c, const ae_int_t n, const double x);
-
-
-/*************************************************************************
-Representation of Hn as C[0] + C[1]*X + ... + C[N]*X^N
-
-Input parameters:
-    N   -   polynomial degree, n>=0
-
-Output parameters:
-    C   -   coefficients
-*************************************************************************/
-void hermitecoefficients(const ae_int_t n, real_1d_array &c);
-
-/*************************************************************************
 Jacobian Elliptic Functions
 
 Evaluates the Jacobian elliptic functions sn(u|m), cn(u|m),
@@ -1499,163 +1288,6 @@ Copyright 1984, 1987, 2000 by Stephen L. Moshier
 void jacobianellipticfunctions(const double u, const double m, double &sn, double &cn, double &dn, double &ph);
 
 /*************************************************************************
-Calculation of the value of the Laguerre polynomial.
-
-Parameters:
-    n   -   degree, n>=0
-    x   -   argument
-
-Result:
-    the value of the Laguerre polynomial Ln at x
-*************************************************************************/
-double laguerrecalculate(const ae_int_t n, const double x);
-
-
-/*************************************************************************
-Summation of Laguerre polynomials using Clenshaw’s recurrence formula.
-
-This routine calculates c[0]*L0(x) + c[1]*L1(x) + ... + c[N]*LN(x)
-
-Parameters:
-    n   -   degree, n>=0
-    x   -   argument
-
-Result:
-    the value of the Laguerre polynomial at x
-*************************************************************************/
-double laguerresum(const real_1d_array &c, const ae_int_t n, const double x);
-
-
-/*************************************************************************
-Representation of Ln as C[0] + C[1]*X + ... + C[N]*X^N
-
-Input parameters:
-    N   -   polynomial degree, n>=0
-
-Output parameters:
-    C   -   coefficients
-*************************************************************************/
-void laguerrecoefficients(const ae_int_t n, real_1d_array &c);
-
-/*************************************************************************
-Calculation of the value of the Legendre polynomial Pn.
-
-Parameters:
-    n   -   degree, n>=0
-    x   -   argument
-
-Result:
-    the value of the Legendre polynomial Pn at x
-*************************************************************************/
-double legendrecalculate(const ae_int_t n, const double x);
-
-
-/*************************************************************************
-Summation of Legendre polynomials using Clenshaw’s recurrence formula.
-
-This routine calculates
-    c[0]*P0(x) + c[1]*P1(x) + ... + c[N]*PN(x)
-
-Parameters:
-    n   -   degree, n>=0
-    x   -   argument
-
-Result:
-    the value of the Legendre polynomial at x
-*************************************************************************/
-double legendresum(const real_1d_array &c, const ae_int_t n, const double x);
-
-
-/*************************************************************************
-Representation of Pn as C[0] + C[1]*X + ... + C[N]*X^N
-
-Input parameters:
-    N   -   polynomial degree, n>=0
-
-Output parameters:
-    C   -   coefficients
-*************************************************************************/
-void legendrecoefficients(const ae_int_t n, real_1d_array &c);
-
-/*************************************************************************
-Poisson distribution
-
-Returns the sum of the first k+1 terms of the Poisson
-distribution:
-
-  k         j
-  --   -m  m
-  >   e    --
-  --       j!
- j=0
-
-The terms are not summed directly; instead the incomplete
-gamma integral is employed, according to the relation
-
-y = pdtr( k, m ) = igamc( k+1, m ).
-
-The arguments must both be positive.
-ACCURACY:
-
-See incomplete gamma function
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
-*************************************************************************/
-double poissondistribution(const ae_int_t k, const double m);
-
-
-/*************************************************************************
-Complemented Poisson distribution
-
-Returns the sum of the terms k+1 to infinity of the Poisson
-distribution:
-
- inf.       j
-  --   -m  m
-  >   e    --
-  --       j!
- j=k+1
-
-The terms are not summed directly; instead the incomplete
-gamma integral is employed, according to the formula
-
-y = pdtrc( k, m ) = igam( k+1, m ).
-
-The arguments must both be positive.
-
-ACCURACY:
-
-See incomplete gamma function
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
-*************************************************************************/
-double poissoncdistribution(const ae_int_t k, const double m);
-
-
-/*************************************************************************
-Inverse Poisson distribution
-
-Finds the Poisson variable x such that the integral
-from 0 to x of the Poisson density is equal to the
-given probability y.
-
-This is accomplished using the inverse gamma integral
-function and the relation
-
-   m = igami( k+1, y ).
-
-ACCURACY:
-
-See inverse incomplete gamma function
-
-Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
-*************************************************************************/
-double invpoissondistribution(const ae_int_t k, const double y);
-
-/*************************************************************************
 Psi (digamma) function
 
              d      -
@@ -1695,6 +1327,324 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1984, 1987, 1992, 2000 by Stephen L. Moshier
 *************************************************************************/
 double psi(const double x);
+
+/*************************************************************************
+Exponential integral Ei(x)
+
+              x
+               -     t
+              | |   e
+   Ei(x) =   -|-   ---  dt .
+            | |     t
+             -
+            -inf
+
+Not defined for x <= 0.
+See also expn.c.
+
+
+
+ACCURACY:
+
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE       0,100       50000      8.6e-16     1.3e-16
+
+Cephes Math Library Release 2.8:  May, 1999
+Copyright 1999 by Stephen L. Moshier
+*************************************************************************/
+double exponentialintegralei(const double x);
+
+
+/*************************************************************************
+Exponential integral En(x)
+
+Evaluates the exponential integral
+
+                inf.
+                  -
+                 | |   -xt
+                 |    e
+     E (x)  =    |    ----  dt.
+      n          |      n
+               | |     t
+                -
+                 1
+
+
+Both n and x must be nonnegative.
+
+The routine employs either a power series, a continued
+fraction, or an asymptotic formula depending on the
+relative values of n and x.
+
+ACCURACY:
+
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE      0, 30       10000       1.7e-15     3.6e-16
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1985, 2000 by Stephen L. Moshier
+*************************************************************************/
+double exponentialintegralen(const double x, const ae_int_t n);
+
+/*************************************************************************
+Calculation of the value of the Laguerre polynomial.
+
+Parameters:
+    n   -   degree, n>=0
+    x   -   argument
+
+Result:
+    the value of the Laguerre polynomial Ln at x
+*************************************************************************/
+double laguerrecalculate(const ae_int_t n, const double x);
+
+
+/*************************************************************************
+Summation of Laguerre polynomials using Clenshaw's recurrence formula.
+
+This routine calculates c[0]*L0(x) + c[1]*L1(x) + ... + c[N]*LN(x)
+
+Parameters:
+    n   -   degree, n>=0
+    x   -   argument
+
+Result:
+    the value of the Laguerre polynomial at x
+*************************************************************************/
+double laguerresum(const real_1d_array &c, const ae_int_t n, const double x);
+
+
+/*************************************************************************
+Representation of Ln as C[0] + C[1]*X + ... + C[N]*X^N
+
+Input parameters:
+    N   -   polynomial degree, n>=0
+
+Output parameters:
+    C   -   coefficients
+*************************************************************************/
+void laguerrecoefficients(const ae_int_t n, real_1d_array &c);
+
+/*************************************************************************
+Chi-square distribution
+
+Returns the area under the left hand tail (from 0 to x)
+of the Chi square probability density function with
+v degrees of freedom.
+
+
+                                  x
+                                   -
+                       1          | |  v/2-1  -t/2
+ P( x | v )   =   -----------     |   t      e     dt
+                   v/2  -       | |
+                  2    | (v/2)   -
+                                  0
+
+where x is the Chi-square variable.
+
+The incomplete gamma integral is used, according to the
+formula
+
+y = chdtr( v, x ) = igam( v/2.0, x/2.0 ).
+
+The arguments must both be positive.
+
+ACCURACY:
+
+See incomplete gamma function
+
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 2000 by Stephen L. Moshier
+*************************************************************************/
+double chisquaredistribution(const double v, const double x);
+
+
+/*************************************************************************
+Complemented Chi-square distribution
+
+Returns the area under the right hand tail (from x to
+infinity) of the Chi square probability density function
+with v degrees of freedom:
+
+                                 inf.
+                                   -
+                       1          | |  v/2-1  -t/2
+ P( x | v )   =   -----------     |   t      e     dt
+                   v/2  -       | |
+                  2    | (v/2)   -
+                                  x
+
+where x is the Chi-square variable.
+
+The incomplete gamma integral is used, according to the
+formula
+
+y = chdtr( v, x ) = igamc( v/2.0, x/2.0 ).
+
+The arguments must both be positive.
+
+ACCURACY:
+
+See incomplete gamma function
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 2000 by Stephen L. Moshier
+*************************************************************************/
+double chisquarecdistribution(const double v, const double x);
+
+
+/*************************************************************************
+Inverse of complemented Chi-square distribution
+
+Finds the Chi-square argument x such that the integral
+from x to infinity of the Chi-square density is equal
+to the given cumulative probability y.
+
+This is accomplished using the inverse gamma integral
+function and the relation
+
+   x/2 = igami( df/2, y );
+
+ACCURACY:
+
+See inverse incomplete gamma function
+
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 2000 by Stephen L. Moshier
+*************************************************************************/
+double invchisquaredistribution(const double v, const double y);
+
+/*************************************************************************
+Calculation of the value of the Legendre polynomial Pn.
+
+Parameters:
+    n   -   degree, n>=0
+    x   -   argument
+
+Result:
+    the value of the Legendre polynomial Pn at x
+*************************************************************************/
+double legendrecalculate(const ae_int_t n, const double x);
+
+
+/*************************************************************************
+Summation of Legendre polynomials using Clenshaw's recurrence formula.
+
+This routine calculates
+    c[0]*P0(x) + c[1]*P1(x) + ... + c[N]*PN(x)
+
+Parameters:
+    n   -   degree, n>=0
+    x   -   argument
+
+Result:
+    the value of the Legendre polynomial at x
+*************************************************************************/
+double legendresum(const real_1d_array &c, const ae_int_t n, const double x);
+
+
+/*************************************************************************
+Representation of Pn as C[0] + C[1]*X + ... + C[N]*X^N
+
+Input parameters:
+    N   -   polynomial degree, n>=0
+
+Output parameters:
+    C   -   coefficients
+*************************************************************************/
+void legendrecoefficients(const ae_int_t n, real_1d_array &c);
+
+/*************************************************************************
+Beta function
+
+
+                  -     -
+                 | (a) | (b)
+beta( a, b )  =  -----------.
+                    -
+                   | (a+b)
+
+For large arguments the logarithm of the function is
+evaluated using lgam(), then exponentiated.
+
+ACCURACY:
+
+                     Relative error:
+arithmetic   domain     # trials      peak         rms
+   IEEE       0,30       30000       8.1e-14     1.1e-14
+
+Cephes Math Library Release 2.0:  April, 1987
+Copyright 1984, 1987 by Stephen L. Moshier
+*************************************************************************/
+double beta(const double a, const double b);
+
+/*************************************************************************
+Calculation of the value of the Chebyshev polynomials of the
+first and second kinds.
+
+Parameters:
+    r   -   polynomial kind, either 1 or 2.
+    n   -   degree, n>=0
+    x   -   argument, -1 <= x <= 1
+
+Result:
+    the value of the Chebyshev polynomial at x
+*************************************************************************/
+double chebyshevcalculate(const ae_int_t r, const ae_int_t n, const double x);
+
+
+/*************************************************************************
+Summation of Chebyshev polynomials using Clenshaw's recurrence formula.
+
+This routine calculates
+    c[0]*T0(x) + c[1]*T1(x) + ... + c[N]*TN(x)
+or
+    c[0]*U0(x) + c[1]*U1(x) + ... + c[N]*UN(x)
+depending on the R.
+
+Parameters:
+    r   -   polynomial kind, either 1 or 2.
+    n   -   degree, n>=0
+    x   -   argument
+
+Result:
+    the value of the Chebyshev polynomial at x
+*************************************************************************/
+double chebyshevsum(const real_1d_array &c, const ae_int_t r, const ae_int_t n, const double x);
+
+
+/*************************************************************************
+Representation of Tn as C[0] + C[1]*X + ... + C[N]*X^N
+
+Input parameters:
+    N   -   polynomial degree, n>=0
+
+Output parameters:
+    C   -   coefficients
+*************************************************************************/
+void chebyshevcoefficients(const ae_int_t n, real_1d_array &c);
+
+
+/*************************************************************************
+Conversion of a series of Chebyshev polynomials to a power series.
+
+Represents A[0]*T0(x) + A[1]*T1(x) + ... + A[N]*Tn(x) as
+B[0] + B[1]*X + ... + B[N]*X^N.
+
+Input parameters:
+    A   -   Chebyshev series coefficients
+    N   -   degree, N>=0
+
+Output parameters
+    B   -   power series coefficients
+*************************************************************************/
+void fromchebyshev(const real_1d_array &a, const ae_int_t n, real_1d_array &b);
 
 /*************************************************************************
 Student's t distribution
@@ -1760,88 +1710,138 @@ Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
 double invstudenttdistribution(const ae_int_t k, const double p);
 
 /*************************************************************************
-Sine and cosine integrals
+Binomial distribution
 
-Evaluates the integrals
+Returns the sum of the terms 0 through k of the Binomial
+probability density:
 
-                         x
-                         -
-                        |  cos t - 1
-  Ci(x) = eul + ln x +  |  --------- dt,
-                        |      t
-                       -
-                        0
-            x
-            -
-           |  sin t
-  Si(x) =  |  ----- dt
-           |    t
-          -
-           0
+  k
+  --  ( n )   j      n-j
+  >   (   )  p  (1-p)
+  --  ( j )
+ j=0
 
-where eul = 0.57721566490153286061 is Euler's constant.
-The integrals are approximated by rational functions.
-For x > 8 auxiliary functions f(x) and g(x) are employed
-such that
+The terms are not summed directly; instead the incomplete
+beta integral is employed, according to the formula
 
-Ci(x) = f(x) sin(x) - g(x) cos(x)
-Si(x) = pi/2 - f(x) cos(x) - g(x) sin(x)
+y = bdtr( k, n, p ) = incbet( n-k, k+1, 1-p ).
 
+The arguments must be positive, with p ranging from 0 to 1.
 
 ACCURACY:
-   Test interval = [0,50].
-Absolute error, except relative when > 1:
-arithmetic   function   # trials      peak         rms
-   IEEE        Si        30000       4.4e-16     7.3e-17
-   IEEE        Ci        30000       6.9e-16     5.1e-17
 
-Cephes Math Library Release 2.1:  January, 1989
-Copyright 1984, 1987, 1989 by Stephen L. Moshier
+Tested at random points (a,b,p), with p between 0 and 1.
+
+              a,b                     Relative error:
+arithmetic  domain     # trials      peak         rms
+ For p between 0.001 and 1:
+   IEEE     0,100       100000      4.3e-15     2.6e-16
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
 *************************************************************************/
-void sinecosineintegrals(const double x, double &si, double &ci);
+double binomialdistribution(const ae_int_t k, const ae_int_t n, const double p);
 
 
 /*************************************************************************
-Hyperbolic sine and cosine integrals
+Complemented binomial distribution
 
-Approximates the integrals
+Returns the sum of the terms k+1 through n of the Binomial
+probability density:
 
-                           x
-                           -
-                          | |   cosh t - 1
-  Chi(x) = eul + ln x +   |    -----------  dt,
-                        | |          t
-                         -
-                         0
+  n
+  --  ( n )   j      n-j
+  >   (   )  p  (1-p)
+  --  ( j )
+ j=k+1
 
-              x
-              -
-             | |  sinh t
-  Shi(x) =   |    ------  dt
-           | |       t
-            -
-            0
+The terms are not summed directly; instead the incomplete
+beta integral is employed, according to the formula
 
-where eul = 0.57721566490153286061 is Euler's constant.
-The integrals are evaluated by power series for x < 8
-and by Chebyshev expansions for x between 8 and 88.
-For large x, both functions approach exp(x)/2x.
-Arguments greater than 88 in magnitude return MAXNUM.
+y = bdtrc( k, n, p ) = incbet( k+1, n-k, p ).
 
+The arguments must be positive, with p ranging from 0 to 1.
 
 ACCURACY:
 
-Test interval 0 to 88.
-                     Relative error:
-arithmetic   function  # trials      peak         rms
-   IEEE         Shi      30000       6.9e-16     1.6e-16
-       Absolute error, except relative when |Chi| > 1:
-   IEEE         Chi      30000       8.4e-16     1.4e-16
+Tested at random points (a,b,p).
+
+              a,b                     Relative error:
+arithmetic  domain     # trials      peak         rms
+ For p between 0.001 and 1:
+   IEEE     0,100       100000      6.7e-15     8.2e-16
+ For p between 0 and .001:
+   IEEE     0,100       100000      1.5e-13     2.7e-15
 
 Cephes Math Library Release 2.8:  June, 2000
-Copyright 1984, 1987, 2000 by Stephen L. Moshier
+Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
 *************************************************************************/
-void hyperbolicsinecosineintegrals(const double x, double &shi, double &chi);
+double binomialcdistribution(const ae_int_t k, const ae_int_t n, const double p);
+
+
+/*************************************************************************
+Inverse binomial distribution
+
+Finds the event probability p such that the sum of the
+terms 0 through k of the Binomial probability density
+is equal to the given cumulative probability y.
+
+This is accomplished using the inverse beta integral
+function and the relation
+
+1 - p = incbi( n-k, k+1, y ).
+
+ACCURACY:
+
+Tested at random points (a,b,p).
+
+              a,b                     Relative error:
+arithmetic  domain     # trials      peak         rms
+ For p between 0.001 and 1:
+   IEEE     0,100       100000      2.3e-14     6.4e-16
+   IEEE     0,10000     100000      6.6e-12     1.2e-13
+ For p between 10^-6 and 0.001:
+   IEEE     0,100       100000      2.0e-12     1.3e-14
+   IEEE     0,10000     100000      1.5e-12     3.2e-14
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 1995, 2000 by Stephen L. Moshier
+*************************************************************************/
+double invbinomialdistribution(const ae_int_t k, const ae_int_t n, const double y);
+
+/*************************************************************************
+Airy function
+
+Solution of the differential equation
+
+y"(x) = xy.
+
+The function returns the two independent solutions Ai, Bi
+and their first derivatives Ai'(x), Bi'(x).
+
+Evaluation is by power series summation for small x,
+by rational minimax approximations for large x.
+
+
+
+ACCURACY:
+Error criterion is absolute when function <= 1, relative
+when function > 1, except * denotes relative error criterion.
+For large negative x, the absolute error increases as x^1.5.
+For large positive x, the relative error increases as x^1.5.
+
+Arithmetic  domain   function  # trials      peak         rms
+IEEE        -10, 0     Ai        10000       1.6e-15     2.7e-16
+IEEE          0, 10    Ai        10000       2.3e-14*    1.8e-15*
+IEEE        -10, 0     Ai'       10000       4.6e-15     7.6e-16
+IEEE          0, 10    Ai'       10000       1.8e-14*    1.5e-15*
+IEEE        -10, 10    Bi        30000       4.2e-15     5.3e-16
+IEEE        -10, 10    Bi'       30000       4.9e-15     7.3e-16
+
+Cephes Math Library Release 2.8:  June, 2000
+Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
+*************************************************************************/
+void airy(const double x, double &ai, double &aip, double &bi, double &bip);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -1861,12 +1861,31 @@ double invnormaldistribution(double y0, ae_state *_state);
 double incompletegamma(double a, double x, ae_state *_state);
 double incompletegammac(double a, double x, ae_state *_state);
 double invincompletegammac(double a, double y0, ae_state *_state);
-void airy(double x,
-     double* ai,
-     double* aip,
-     double* bi,
-     double* bip,
+double ellipticintegralk(double m, ae_state *_state);
+double ellipticintegralkhighprecision(double m1, ae_state *_state);
+double incompleteellipticintegralk(double phi, double m, ae_state *_state);
+double ellipticintegrale(double m, ae_state *_state);
+double incompleteellipticintegrale(double phi, double m, ae_state *_state);
+double hermitecalculate(ae_int_t n, double x, ae_state *_state);
+double hermitesum(/* Real    */ ae_vector* c,
+     ae_int_t n,
+     double x,
      ae_state *_state);
+void hermitecoefficients(ae_int_t n,
+     /* Real    */ ae_vector* c,
+     ae_state *_state);
+double dawsonintegral(double x, ae_state *_state);
+void sinecosineintegrals(double x,
+     double* si,
+     double* ci,
+     ae_state *_state);
+void hyperbolicsinecosineintegrals(double x,
+     double* shi,
+     double* chi,
+     ae_state *_state);
+double poissondistribution(ae_int_t k, double m, ae_state *_state);
+double poissoncdistribution(ae_int_t k, double m, ae_state *_state);
+double invpoissondistribution(ae_int_t k, double y, ae_state *_state);
 double besselj0(double x, ae_state *_state);
 double besselj1(double x, ae_state *_state);
 double besseljn(ae_int_t n, double x, ae_state *_state);
@@ -1878,21 +1897,45 @@ double besseli1(double x, ae_state *_state);
 double besselk0(double x, ae_state *_state);
 double besselk1(double x, ae_state *_state);
 double besselkn(ae_int_t nn, double x, ae_state *_state);
-double beta(double a, double b, ae_state *_state);
 double incompletebeta(double a, double b, double x, ae_state *_state);
 double invincompletebeta(double a, double b, double y, ae_state *_state);
-double binomialdistribution(ae_int_t k,
-     ae_int_t n,
-     double p,
-     ae_state *_state);
-double binomialcdistribution(ae_int_t k,
-     ae_int_t n,
-     double p,
-     ae_state *_state);
-double invbinomialdistribution(ae_int_t k,
-     ae_int_t n,
+double fdistribution(ae_int_t a, ae_int_t b, double x, ae_state *_state);
+double fcdistribution(ae_int_t a, ae_int_t b, double x, ae_state *_state);
+double invfdistribution(ae_int_t a,
+     ae_int_t b,
      double y,
      ae_state *_state);
+void fresnelintegral(double x, double* c, double* s, ae_state *_state);
+void jacobianellipticfunctions(double u,
+     double m,
+     double* sn,
+     double* cn,
+     double* dn,
+     double* ph,
+     ae_state *_state);
+double psi(double x, ae_state *_state);
+double exponentialintegralei(double x, ae_state *_state);
+double exponentialintegralen(double x, ae_int_t n, ae_state *_state);
+double laguerrecalculate(ae_int_t n, double x, ae_state *_state);
+double laguerresum(/* Real    */ ae_vector* c,
+     ae_int_t n,
+     double x,
+     ae_state *_state);
+void laguerrecoefficients(ae_int_t n,
+     /* Real    */ ae_vector* c,
+     ae_state *_state);
+double chisquaredistribution(double v, double x, ae_state *_state);
+double chisquarecdistribution(double v, double x, ae_state *_state);
+double invchisquaredistribution(double v, double y, ae_state *_state);
+double legendrecalculate(ae_int_t n, double x, ae_state *_state);
+double legendresum(/* Real    */ ae_vector* c,
+     ae_int_t n,
+     double x,
+     ae_state *_state);
+void legendrecoefficients(ae_int_t n,
+     /* Real    */ ae_vector* c,
+     ae_state *_state);
+double beta(double a, double b, ae_state *_state);
 double chebyshevcalculate(ae_int_t r,
      ae_int_t n,
      double x,
@@ -1909,68 +1952,25 @@ void fromchebyshev(/* Real    */ ae_vector* a,
      ae_int_t n,
      /* Real    */ ae_vector* b,
      ae_state *_state);
-double chisquaredistribution(double v, double x, ae_state *_state);
-double chisquarecdistribution(double v, double x, ae_state *_state);
-double invchisquaredistribution(double v, double y, ae_state *_state);
-double dawsonintegral(double x, ae_state *_state);
-double ellipticintegralk(double m, ae_state *_state);
-double ellipticintegralkhighprecision(double m1, ae_state *_state);
-double incompleteellipticintegralk(double phi, double m, ae_state *_state);
-double ellipticintegrale(double m, ae_state *_state);
-double incompleteellipticintegrale(double phi, double m, ae_state *_state);
-double exponentialintegralei(double x, ae_state *_state);
-double exponentialintegralen(double x, ae_int_t n, ae_state *_state);
-double fdistribution(ae_int_t a, ae_int_t b, double x, ae_state *_state);
-double fcdistribution(ae_int_t a, ae_int_t b, double x, ae_state *_state);
-double invfdistribution(ae_int_t a,
-     ae_int_t b,
-     double y,
-     ae_state *_state);
-void fresnelintegral(double x, double* c, double* s, ae_state *_state);
-double hermitecalculate(ae_int_t n, double x, ae_state *_state);
-double hermitesum(/* Real    */ ae_vector* c,
-     ae_int_t n,
-     double x,
-     ae_state *_state);
-void hermitecoefficients(ae_int_t n,
-     /* Real    */ ae_vector* c,
-     ae_state *_state);
-void jacobianellipticfunctions(double u,
-     double m,
-     double* sn,
-     double* cn,
-     double* dn,
-     double* ph,
-     ae_state *_state);
-double laguerrecalculate(ae_int_t n, double x, ae_state *_state);
-double laguerresum(/* Real    */ ae_vector* c,
-     ae_int_t n,
-     double x,
-     ae_state *_state);
-void laguerrecoefficients(ae_int_t n,
-     /* Real    */ ae_vector* c,
-     ae_state *_state);
-double legendrecalculate(ae_int_t n, double x, ae_state *_state);
-double legendresum(/* Real    */ ae_vector* c,
-     ae_int_t n,
-     double x,
-     ae_state *_state);
-void legendrecoefficients(ae_int_t n,
-     /* Real    */ ae_vector* c,
-     ae_state *_state);
-double poissondistribution(ae_int_t k, double m, ae_state *_state);
-double poissoncdistribution(ae_int_t k, double m, ae_state *_state);
-double invpoissondistribution(ae_int_t k, double y, ae_state *_state);
-double psi(double x, ae_state *_state);
 double studenttdistribution(ae_int_t k, double t, ae_state *_state);
 double invstudenttdistribution(ae_int_t k, double p, ae_state *_state);
-void sinecosineintegrals(double x,
-     double* si,
-     double* ci,
+double binomialdistribution(ae_int_t k,
+     ae_int_t n,
+     double p,
      ae_state *_state);
-void hyperbolicsinecosineintegrals(double x,
-     double* shi,
-     double* chi,
+double binomialcdistribution(ae_int_t k,
+     ae_int_t n,
+     double p,
+     ae_state *_state);
+double invbinomialdistribution(ae_int_t k,
+     ae_int_t n,
+     double y,
+     ae_state *_state);
+void airy(double x,
+     double* ai,
+     double* aip,
+     double* bi,
+     double* bip,
      ae_state *_state);
 
 }

@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -95,9 +95,11 @@ namespace alglib_impl
 #define AE_SM_DEFAULT 0
 #define AE_SM_ALLOC 1
 #define AE_SM_READY2S 2
-#define AE_SM_TO_STRING 10
-#define AE_SM_FROM_STRING 20
+#define AE_SM_TO_STRING    10
 #define AE_SM_TO_CPPSTRING 11
+#define AE_SM_TO_STREAM    12
+#define AE_SM_FROM_STRING  20
+#define AE_SM_FROM_STREAM  22
 
 #define AE_LOCK_CYCLES 512
 #define AE_LOCK_TESTS_BEFORE_YIELD 16
@@ -1040,6 +1042,9 @@ void ae_matrix_attach_to_x(ae_matrix *dst, x_matrix *src, ae_state *state)
     rows = (ae_int_t)src->rows;
     cols = (ae_int_t)src->cols;
     
+    /* check that X-source is densely packed */
+    ae_assert(src->cols==src->stride, "ae_matrix_attach_to_x(): unsupported stride", NULL);
+    
     /* ensure that size is correct */
     ae_assert(rows==src->rows,      "ae_matrix_attach_to_x(): 32/64 overflow", NULL);
     ae_assert(cols==src->cols,      "ae_matrix_attach_to_x(): 32/64 overflow", NULL);
@@ -1541,6 +1546,10 @@ For  non-NULL  state  it  allows  to  gracefully  leave  ALGLIB  session,
 removing all frames and deallocating registered dynamic data structure.
 
 For NULL state it just abort()'s program.
+
+IMPORTANT: this function ALWAYS evaluates its argument.  It  can  not  be
+           replaced by macro which does nothing. So, you may place actual
+           function calls at cond, and these will always be performed.
 ************************************************************************/
 void ae_assert(ae_bool cond, const char *msg, ae_state *state)
 {
@@ -3728,6 +3737,11 @@ void ae_serializer_alloc_entry(ae_serializer *serializer)
     serializer->entries_needed++;
 }
 
+/************************************************************************
+After allocation phase is done, this function returns  required  size  of
+the output string buffer (including trailing zero symbol). Actual size of
+the data being stored can be a few characters smaller than requested.
+************************************************************************/
 ae_int_t ae_serializer_get_alloc_size(ae_serializer *serializer)
 {
     ae_int_t rows, lastrowsize, result;
@@ -3737,7 +3751,7 @@ ae_int_t ae_serializer_get_alloc_size(ae_serializer *serializer)
     /* if no entries needes (degenerate case) */
     if( serializer->entries_needed==0 )
     {
-        serializer->bytes_asked = 1;
+        serializer->bytes_asked = 4; /* a pair of chars for \r\n, one for dot, one for trailing zero */
         return serializer->bytes_asked;
     }
     
@@ -3751,9 +3765,11 @@ ae_int_t ae_serializer_get_alloc_size(ae_serializer *serializer)
     }
     
     /* calculate result size */
-    result  = ((rows-1)*AE_SER_ENTRIES_PER_ROW+lastrowsize)*AE_SER_ENTRY_LENGTH;
-    result +=  (rows-1)*(AE_SER_ENTRIES_PER_ROW-1)+(lastrowsize-1);
-    result += rows*2;
+    result  = ((rows-1)*AE_SER_ENTRIES_PER_ROW+lastrowsize)*AE_SER_ENTRY_LENGTH;    /* data size */
+    result +=  (rows-1)*(AE_SER_ENTRIES_PER_ROW-1)+(lastrowsize-1);                 /* space symbols */
+    result += rows*2;                                                               /* newline symbols */
+    result += 1;                                                                    /* trailing dot */
+    result += 1;                                                                    /* trailing zero */
     serializer->bytes_asked = result;
     return result;
 }
@@ -3766,13 +3782,60 @@ void ae_serializer_sstart_str(ae_serializer *serializer, std::string *buf)
     serializer->entries_saved = 0;
     serializer->bytes_written = 0;
 }
-#endif
 
-#ifdef AE_USE_CPP_SERIALIZATION
 void ae_serializer_ustart_str(ae_serializer *serializer, const std::string *buf)
 {
     serializer->mode = AE_SM_FROM_STRING;
     serializer->in_str = buf->c_str();
+}
+
+static char cpp_writer(const char *p_string, ae_int_t aux)
+{
+    std::ostream *stream = reinterpret_cast<std::ostream*>(aux);
+    stream->write(p_string, strlen(p_string));
+    return stream->bad() ? 1 : 0;
+}
+
+static char cpp_reader(ae_int_t aux, ae_int_t cnt, char *p_buf)
+{
+    std::istream *stream = reinterpret_cast<std::istream*>(aux);
+    int c;
+    if( cnt<=0 )
+        return 1; /* unexpected cnt */
+    for(;;)
+    {
+        c = stream->get();
+        if( c<0 || c>255 )
+            return 1; /* failure! */
+        if( c!=' ' && c!='\t' && c!='\n' && c!='\r' )
+            break;
+    }
+    p_buf[0] = (char)c;
+    for(int k=1; k<cnt; k++)
+    {
+        c = stream->get();
+        if( c<0 || c>255 || c==' ' || c=='\t' || c=='\n' || c=='\r' )
+            return 1; /* failure! */
+        p_buf[k] = (char)c;
+    }
+    p_buf[cnt] = 0;
+    return 0; /* success */
+}
+
+void ae_serializer_sstart_stream(ae_serializer *serializer, std::ostream *stream)
+{
+    serializer->mode = AE_SM_TO_STREAM;
+    serializer->stream_writer = cpp_writer;
+    serializer->stream_aux = reinterpret_cast<ae_int_t>(stream);
+    serializer->entries_saved = 0;
+    serializer->bytes_written = 0;
+}
+
+void ae_serializer_ustart_stream(ae_serializer *serializer, const std::istream *stream)
+{
+    serializer->mode = AE_SM_FROM_STREAM;
+    serializer->stream_reader = cpp_reader;
+    serializer->stream_aux = reinterpret_cast<ae_int_t>(stream);
 }
 #endif
 
@@ -3791,6 +3854,22 @@ void ae_serializer_ustart_str(ae_serializer *serializer, const char *buf)
     serializer->in_str = buf;
 }
 
+void ae_serializer_sstart_stream(ae_serializer *serializer, ae_stream_writer writer, ae_int_t aux)
+{
+    serializer->mode = AE_SM_TO_STREAM;
+    serializer->stream_writer = writer;
+    serializer->stream_aux = aux;
+    serializer->entries_saved = 0;
+    serializer->bytes_written = 0;
+}
+
+void ae_serializer_ustart_stream(ae_serializer *serializer, ae_stream_reader reader, ae_int_t aux)
+{
+    serializer->mode = AE_SM_FROM_STREAM;
+    serializer->stream_reader = reader;
+    serializer->stream_aux = aux;
+}
+
 void ae_serializer_serialize_bool(ae_serializer *serializer, ae_bool v, ae_state *state)
 {
     char buf[AE_SER_ENTRY_LENGTH+2+1];
@@ -3805,8 +3884,7 @@ void ae_serializer_serialize_bool(ae_serializer *serializer, ae_bool v, ae_state
     else
         strcat(buf, "\r\n");
     bytes_appended = (ae_int_t)strlen(buf);
-    if( serializer->bytes_written+bytes_appended > serializer->bytes_asked )
-        ae_break(state, ERR_ASSERTION_FAILED, emsg);
+    ae_assert(serializer->bytes_written+bytes_appended<serializer->bytes_asked, emsg, state); /* strict "less" because we need space for trailing zero */
     serializer->bytes_written += bytes_appended;
         
     /* append to buffer */
@@ -3821,6 +3899,11 @@ void ae_serializer_serialize_bool(ae_serializer *serializer, ae_bool v, ae_state
     {
         strcat(serializer->out_str, buf);
         serializer->out_str += bytes_appended;
+        return;
+    }
+    if( serializer->mode==AE_SM_TO_STREAM )
+    {
+        ae_assert(serializer->stream_writer(buf, serializer->stream_aux)==0, "serializer: error writing to stream", state);
         return;
     }
     ae_break(state, ERR_ASSERTION_FAILED, emsg);
@@ -3840,8 +3923,7 @@ void ae_serializer_serialize_int(ae_serializer *serializer, ae_int_t v, ae_state
     else
         strcat(buf, "\r\n");
     bytes_appended = (ae_int_t)strlen(buf);
-    if( serializer->bytes_written+bytes_appended > serializer->bytes_asked )
-        ae_break(state, ERR_ASSERTION_FAILED, emsg);
+    ae_assert(serializer->bytes_written+bytes_appended<serializer->bytes_asked, emsg, state); /* strict "less" because we need space for trailing zero */
     serializer->bytes_written += bytes_appended;
         
     /* append to buffer */
@@ -3856,6 +3938,11 @@ void ae_serializer_serialize_int(ae_serializer *serializer, ae_int_t v, ae_state
     {
         strcat(serializer->out_str, buf);
         serializer->out_str += bytes_appended;
+        return;
+    }
+    if( serializer->mode==AE_SM_TO_STREAM )
+    {
+        ae_assert(serializer->stream_writer(buf, serializer->stream_aux)==0, "serializer: error writing to stream", state);
         return;
     }
     ae_break(state, ERR_ASSERTION_FAILED, emsg);
@@ -3875,8 +3962,7 @@ void ae_serializer_serialize_double(ae_serializer *serializer, double v, ae_stat
     else
         strcat(buf, "\r\n");
     bytes_appended = (ae_int_t)strlen(buf);
-    if( serializer->bytes_written+bytes_appended > serializer->bytes_asked )
-        ae_break(state, ERR_ASSERTION_FAILED, emsg);
+    ae_assert(serializer->bytes_written+bytes_appended<serializer->bytes_asked, emsg, state); /* strict "less" because we need space for trailing zero */
     serializer->bytes_written += bytes_appended;
         
     /* append to buffer */
@@ -3893,26 +3979,115 @@ void ae_serializer_serialize_double(ae_serializer *serializer, double v, ae_stat
         serializer->out_str += bytes_appended;
         return;
     }
+    if( serializer->mode==AE_SM_TO_STREAM )
+    {
+        ae_assert(serializer->stream_writer(buf, serializer->stream_aux)==0, "serializer: error writing to stream", state);
+        return;
+    }
     ae_break(state, ERR_ASSERTION_FAILED, emsg);
 }
 
 void ae_serializer_unserialize_bool(ae_serializer *serializer, ae_bool *v, ae_state *state)
 {
-    *v = ae_str2bool(serializer->in_str, state, &serializer->in_str);
+    if( serializer->mode==AE_SM_FROM_STRING )
+    {
+        *v = ae_str2bool(serializer->in_str, state, &serializer->in_str);
+        return;
+    }
+    if( serializer->mode==AE_SM_FROM_STREAM )
+    {
+        char buf[AE_SER_ENTRY_LENGTH+2+1];
+        const char *p = buf;
+        ae_assert(serializer->stream_reader(serializer->stream_aux, AE_SER_ENTRY_LENGTH, buf)==0, "serializer: error reading from stream", state);
+        *v = ae_str2bool(buf, state, &p);
+        return;
+    }
+    ae_break(state, ERR_ASSERTION_FAILED, "ae_serializer: integrity check failed");
 }
 
 void ae_serializer_unserialize_int(ae_serializer *serializer, ae_int_t *v, ae_state *state)
 {
-    *v = ae_str2int(serializer->in_str, state, &serializer->in_str);
+    if( serializer->mode==AE_SM_FROM_STRING )
+    {
+        *v = ae_str2int(serializer->in_str, state, &serializer->in_str);
+        return;
+    }
+    if( serializer->mode==AE_SM_FROM_STREAM )
+    {
+        char buf[AE_SER_ENTRY_LENGTH+2+1];
+        const char *p = buf;
+        ae_assert(serializer->stream_reader(serializer->stream_aux, AE_SER_ENTRY_LENGTH, buf)==0, "serializer: error reading from stream", state);
+        *v = ae_str2int(buf, state, &p);
+        return;
+    }
+    ae_break(state, ERR_ASSERTION_FAILED, "ae_serializer: integrity check failed");
 }
 
 void ae_serializer_unserialize_double(ae_serializer *serializer, double *v, ae_state *state)
 {
-    *v = ae_str2double(serializer->in_str, state, &serializer->in_str);
+    if( serializer->mode==AE_SM_FROM_STRING )
+    {
+        *v = ae_str2double(serializer->in_str, state, &serializer->in_str);
+        return;
+    }
+    if( serializer->mode==AE_SM_FROM_STREAM )
+    {
+        char buf[AE_SER_ENTRY_LENGTH+2+1];
+        const char *p = buf;
+        ae_assert(serializer->stream_reader(serializer->stream_aux, AE_SER_ENTRY_LENGTH, buf)==0, "serializer: error reading from stream", state);
+        *v = ae_str2double(buf, state, &p);
+        return;
+    }
+    ae_break(state, ERR_ASSERTION_FAILED, "ae_serializer: integrity check failed");
 }
 
-void ae_serializer_stop(ae_serializer *serializer)
+void ae_serializer_stop(ae_serializer *serializer, ae_state *state)
 {
+#ifdef AE_USE_CPP_SERIALIZATION
+    if( serializer->mode==AE_SM_TO_CPPSTRING )
+    {
+        ae_assert(serializer->bytes_written+1<serializer->bytes_asked, "ae_serializer: integrity check failed", state);/* strict "less" because we need space for trailing zero */
+        serializer->bytes_written++;
+        *(serializer->out_cppstr) += ".";
+        return;
+    }
+#endif
+    if( serializer->mode==AE_SM_TO_STRING )
+    {
+        ae_assert(serializer->bytes_written+1<serializer->bytes_asked, "ae_serializer: integrity check failed", state); /* strict "less" because we need space for trailing zero */
+        serializer->bytes_written++;
+        strcat(serializer->out_str, ".");
+        serializer->out_str += 1;
+        return;
+    }
+    if( serializer->mode==AE_SM_TO_STREAM )
+    {
+        ae_assert(serializer->bytes_written+1<serializer->bytes_asked, "ae_serializer: integrity check failed", state); /* strict "less" because we need space for trailing zero */
+        serializer->bytes_written++;
+        ae_assert(serializer->stream_writer(".", serializer->stream_aux)==0, "ae_serializer: error writing to stream", state);
+        return;
+    }
+    if( serializer->mode==AE_SM_FROM_STRING )
+    {
+        /*
+         * because input string may be from pre-3.11 serializer,
+         * which does not include trailing dot, we do not test
+         * string for presence of "." symbol. Anyway, because string
+         * is not stream, we do not have to read ALL trailing symbols.
+         */
+        return;
+    }
+    if( serializer->mode==AE_SM_FROM_STREAM )
+    {
+        /*
+         * Read trailing dot, perform integrity check
+         */
+        char buf[2];
+        ae_assert(serializer->stream_reader(serializer->stream_aux, 1, buf)==0, "ae_serializer: error reading from stream", state);
+        ae_assert(buf[0]=='.', "ae_serializer: trailing . is not found in the stream", state);
+        return;
+    }
+    ae_break(state, ERR_ASSERTION_FAILED, "ae_serializer: integrity check failed");
 }
 
 
@@ -5009,10 +5184,10 @@ void alglib::ap_error::make_assertion(bool bClause)
         throw ap_error(); 
 }
 
-void alglib::ap_error::make_assertion(bool bClause, const char *msg)
+void alglib::ap_error::make_assertion(bool bClause, const char *p_msg)
 { 
     if(!bClause) 
-        throw ap_error(msg); 
+        throw ap_error(p_msg); 
 }
 
 
@@ -7633,6 +7808,136 @@ bool alglib::fp_isfinite(double x)
 }
 
 /********************************************************************
+CSV functions
+********************************************************************/
+void alglib::read_csv(const char *filename, char separator, int flags, alglib::real_2d_array &out)
+{
+    int flag;
+    
+    //
+    // Parameters
+    //
+    bool skip_first_row = (flags&CSV_SKIP_HEADERS)!=0;
+    
+    //
+    // Prepare empty output array
+    //
+    out.setlength(0,0);
+    
+    //
+    // Open file, determine size, read contents
+    //
+    FILE *f_in = fopen(filename, "rb");
+    if( f_in==NULL )
+        throw alglib::ap_error("read_csv: unable to open input file");
+    flag = fseek(f_in, 0, SEEK_END);
+    AE_CRITICAL_ASSERT(flag==0);
+    long int _filesize = ftell(f_in);
+    AE_CRITICAL_ASSERT(_filesize>=0);
+    if( _filesize==0 )
+    {
+        // empty file, return empty array, success
+        fclose(f_in);
+        return;
+    }
+    size_t filesize = _filesize;
+    std::vector<char> v_buf;
+    v_buf.resize(filesize+2, 0);
+    char *p_buf = &v_buf[0];
+    flag = fseek(f_in, 0, SEEK_SET);
+    AE_CRITICAL_ASSERT(flag==0);
+    size_t bytes_read = fread ((void*)p_buf, 1, filesize, f_in);
+    AE_CRITICAL_ASSERT(bytes_read==filesize);
+    fclose(f_in);
+    
+    //
+    // Normalize file contents:
+    // * replace 0x0 by spaces
+    // * remove trailing spaces and newlines
+    // * append trailing '\n' and '\0' characters
+    // Return if file contains only spaces/newlines.
+    //
+    for(size_t i=0; i<filesize; i++)
+        if( p_buf[i]==0 )
+            p_buf[i] = ' ';
+    for(; filesize>0; )
+    {
+        char c = p_buf[filesize-1];
+        if( c==' ' || c=='\t' || c=='\n' || c=='\r' )
+        {
+            filesize--;
+            continue;
+        }
+        break;
+    }
+    if( filesize==0 )
+        return;
+    p_buf[filesize+0] = '\n';
+    p_buf[filesize+1] = '\0';
+    filesize+=2;
+    
+    //
+    // Scan dataset.
+    //
+    size_t rows_count = 0, cols_count = 0, max_length = 0;
+    std::vector<size_t> offsets, lengths;
+    for(size_t row_start=0; p_buf[row_start]!=0x0; )
+    {
+        // determine row length
+        size_t row_length;
+        for(row_length=0; p_buf[row_start+row_length]!='\n'; row_length++);
+        
+        // determine cols count, perform integrity check
+        size_t cur_cols_cnt=1;
+        for(size_t idx=0; idx<row_length; idx++)
+            if( p_buf[row_start+idx]==separator )
+                cur_cols_cnt++;
+        if( cols_count>0 && cols_count!=cur_cols_cnt )
+            throw alglib::ap_error("read_csv: non-rectangular contents, rows have different sizes");
+        cols_count = cur_cols_cnt;
+        
+        // store offsets and lengths of the fields
+        size_t cur_offs = 0;
+        for(size_t idx=0; idx<row_length+1; idx++)
+            if( p_buf[row_start+idx]==separator || p_buf[row_start+idx]=='\n' )
+            {
+                offsets.push_back(row_start+cur_offs);
+                lengths.push_back(idx-cur_offs);
+                max_length = idx-cur_offs>max_length ? idx-cur_offs : max_length;
+                cur_offs = idx+1;
+            }
+        
+        // advance row start
+        rows_count++;
+        row_start = row_start+row_length+1;
+    }
+    AE_CRITICAL_ASSERT(rows_count>=1);
+    AE_CRITICAL_ASSERT(cols_count>=1);
+    AE_CRITICAL_ASSERT(cols_count*rows_count==offsets.size());
+    AE_CRITICAL_ASSERT(cols_count*rows_count==lengths.size());
+    if( rows_count==1 && skip_first_row ) // empty output, return
+        return;
+    
+    //
+    // Convert
+    //
+    size_t row0 = skip_first_row ? 1 : 0;
+    size_t row1 = rows_count;
+    lconv *loc  = localeconv();
+    out.setlength(row1-row0, cols_count);
+    for(size_t ridx=row0; ridx<row1; ridx++)
+        for(size_t cidx=0; cidx<cols_count; cidx++)
+        {
+            char *p_field = p_buf+offsets[ridx*cols_count+cidx];
+            size_t       field_len = lengths[ridx*cols_count+cidx];
+            for(size_t idx=0; idx<field_len; idx++)
+                if( p_field[idx]=='.' || p_field[idx]==',' )
+                    p_field[idx] = *loc->decimal_point;
+            out[ridx-row0][cidx] = atof(p_field);
+        }
+}
+
+/********************************************************************
 Dataset functions
 ********************************************************************/
 /*bool alglib::readstrings(std::string file, std::list<std::string> *pOutput)
@@ -10214,6 +10519,11 @@ ae_bool _ialglib_i_rmatrixgemmf(ae_int_t m,
      ae_int_t ic,
      ae_int_t jc)
 {
+    /* handle degenerate cases like zero matrices by ALGLIB - greatly simplifies passing data to ALGLIB kernel */
+    if( alpha==0.0 || k==0 || n==0 || m==0)
+        return ae_false;
+    
+    /* handle with optimized ALGLIB kernel */
     return _ialglib_rmatrixgemm(m, n, k, alpha, _a->ptr.pp_double[ia]+ja, _a->stride, optypea, _b->ptr.pp_double[ib]+jb, _b->stride, optypeb, beta, _c->ptr.pp_double[ic]+jc, _c->stride);
 }
 
@@ -10234,6 +10544,11 @@ ae_bool _ialglib_i_cmatrixgemmf(ae_int_t m,
      ae_int_t ic,
      ae_int_t jc)
 {
+    /* handle degenerate cases like zero matrices by ALGLIB - greatly simplifies passing data to ALGLIB kernel */
+    if( (alpha.x==0.0 && alpha.y==0) || k==0 || n==0 || m==0 )
+        return ae_false;
+    
+    /* handle with optimized ALGLIB kernel */
     return _ialglib_cmatrixgemm(m, n, k, alpha, _a->ptr.pp_complex[ia]+ja, _a->stride, optypea, _b->ptr.pp_complex[ib]+jb, _b->stride, optypeb, beta, _c->ptr.pp_complex[ic]+jc, _c->stride);
 }
 
@@ -10249,6 +10564,11 @@ ae_bool _ialglib_i_cmatrixrighttrsmf(ae_int_t m,
      ae_int_t i2,
      ae_int_t j2)
 {
+    /* handle degenerate cases like zero matrices by ALGLIB - greatly simplifies passing data to ALGLIB kernel */
+    if( m==0 || n==0)
+        return ae_false;
+    
+    /* handle with optimized ALGLIB kernel */
     return _ialglib_cmatrixrighttrsm(m, n, &a->ptr.pp_complex[i1][j1], a->stride, isupper, isunit, optype, &x->ptr.pp_complex[i2][j2], x->stride);
 }
 
@@ -10264,6 +10584,11 @@ ae_bool _ialglib_i_rmatrixrighttrsmf(ae_int_t m,
      ae_int_t i2,
      ae_int_t j2)
 {
+    /* handle degenerate cases like zero matrices by ALGLIB - greatly simplifies passing data to ALGLIB kernel */
+    if( m==0 || n==0)
+        return ae_false;
+    
+    /* handle with optimized ALGLIB kernel */
     return _ialglib_rmatrixrighttrsm(m, n, &a->ptr.pp_double[i1][j1], a->stride, isupper, isunit, optype, &x->ptr.pp_double[i2][j2], x->stride);
 }
 
@@ -10279,6 +10604,11 @@ ae_bool _ialglib_i_cmatrixlefttrsmf(ae_int_t m,
      ae_int_t i2,
      ae_int_t j2)
 {
+    /* handle degenerate cases like zero matrices by ALGLIB - greatly simplifies passing data to ALGLIB kernel */
+    if( m==0 || n==0)
+        return ae_false;
+    
+    /* handle with optimized ALGLIB kernel */
     return _ialglib_cmatrixlefttrsm(m, n, &a->ptr.pp_complex[i1][j1], a->stride, isupper, isunit, optype, &x->ptr.pp_complex[i2][j2], x->stride);
 }
 
@@ -10294,6 +10624,11 @@ ae_bool _ialglib_i_rmatrixlefttrsmf(ae_int_t m,
      ae_int_t i2,
      ae_int_t j2)
 {
+    /* handle degenerate cases like zero matrices by ALGLIB - greatly simplifies passing data to ALGLIB kernel */
+    if( m==0 || n==0)
+        return ae_false;
+    
+    /* handle with optimized ALGLIB kernel */
     return _ialglib_rmatrixlefttrsm(m, n, &a->ptr.pp_double[i1][j1], a->stride, isupper, isunit, optype, &x->ptr.pp_double[i2][j2], x->stride);
 }
 
@@ -10310,6 +10645,11 @@ ae_bool _ialglib_i_cmatrixherkf(ae_int_t n,
      ae_int_t jc,
      ae_bool isupper)
 {
+    /* handle degenerate cases like zero matrices by ALGLIB - greatly simplifies passing data to ALGLIB kernel */
+    if( alpha==0.0 || k==0 || n==0)
+        return ae_false;
+        
+    /* ALGLIB kernel */
     return _ialglib_cmatrixherk(n, k, alpha, &a->ptr.pp_complex[ia][ja], a->stride, optypea, beta, &c->ptr.pp_complex[ic][jc], c->stride, isupper);
 }
 
@@ -10326,6 +10666,11 @@ ae_bool _ialglib_i_rmatrixsyrkf(ae_int_t n,
      ae_int_t jc,
      ae_bool isupper)
 {
+    /* handle degenerate cases like zero matrices by ALGLIB - greatly simplifies passing data to ALGLIB kernel */
+    if( alpha==0.0 || k==0 || n==0)
+        return ae_false;
+        
+    /* ALGLIB kernel */
     return _ialglib_rmatrixsyrk(n, k, alpha, &a->ptr.pp_double[ia][ja], a->stride, optypea, beta, &c->ptr.pp_double[ic][jc], c->stride, isupper);
 }
 

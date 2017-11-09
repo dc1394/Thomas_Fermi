@@ -150,7 +150,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>alglib.lib;checkpoint.lib;gsl.lib;mkl_intel_c.lib;mkl_core.lib;mkl_intel_thread.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\mylib64\boost_1_65_1\stage\x86\icl18\lib;C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2018.0.124\windows\mkl\lib\ia32_win;D:\DATA\PROGRAM\Source\Repos\thomasfermi\src\thomasfermi\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>/LTCG /NODEFAULTLIB:LIBCMTD %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions> /NODEFAULTLIB:LIBCMTD %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

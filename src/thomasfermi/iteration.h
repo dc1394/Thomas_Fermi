@@ -16,7 +16,11 @@
 #include "mixing/simplemixing.h"
 #include "shoot/shootfunc.h"
 #include "utility/property.h"
-#include <optional>					// for std::optional
+#ifndef __INTEL_COMPILER
+	#include <optional>					// for std::optional
+#else
+	#include <boost/optional.hpp>
+#endif
 
 namespace thomasfermi {
     namespace femall {
@@ -43,7 +47,11 @@ namespace thomasfermi {
             */
             ~Iteration()
             {
+#ifndef __INTEL_COMPILER
                 ple_ = std::nullopt;
+#else
+				ple_ = boost::none;
+#endif
             }
 
             // #region コンストラクタ・デストラクタ
@@ -143,11 +151,15 @@ namespace thomasfermi {
             */
             std::unique_ptr<FEM> pfem_;
 
-            //! A private member variable.
-            /*!
-                連立一次方程式のソルバーオブジェクト
-            */
+			//! A private member variable.
+			/*!
+				連立一次方程式のソルバーオブジェクト
+			*/
+#ifndef __INTEL_COMPILER
             std::optional<Linear_equations> ple_;
+#else
+			boost::optional<Linear_equations> ple_;
+#endif
 
             //! A private member variable.
             /*!

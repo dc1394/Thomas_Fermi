@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -37,6 +37,194 @@ using namespace std;
 namespace alglib
 {
 
+
+/*************************************************************************
+Principal components analysis
+
+This function builds orthogonal basis  where  first  axis  corresponds  to
+direction with maximum variance, second axis  maximizes  variance  in  the
+subspace orthogonal to first axis and so on.
+
+This function builds FULL basis, i.e. returns N vectors  corresponding  to
+ALL directions, no matter how informative. If you need  just a  few  (say,
+10 or 50) of the most important directions, you may find it faster to  use
+one of the reduced versions:
+* pcatruncatedsubspace() - for subspace iteration based method
+
+It should be noted that, unlike LDA, PCA does not use class labels.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * multithreading support
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Multithreading typically gives sublinear (wrt to cores count) speedup,
+  ! because only some parts of the algorithm can be parallelized.
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    X           -   dataset, array[0..NPoints-1,0..NVars-1].
+                    matrix contains ONLY INDEPENDENT VARIABLES.
+    NPoints     -   dataset size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if SVD subroutine haven't converged
+                    * -1, if wrong parameters has been passed (NPoints<0,
+                          NVars<1)
+                    *  1, if task is solved
+    S2          -   array[0..NVars-1]. variance values corresponding
+                    to basis vectors.
+    V           -   array[0..NVars-1,0..NVars-1]
+                    matrix, whose columns store basis vectors.
+
+  -- ALGLIB --
+     Copyright 25.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void pcabuildbasis(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, real_1d_array &s2, real_2d_array &v)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::pcabuildbasis(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::ae_vector*>(s2.c_ptr()), const_cast<alglib_impl::ae_matrix*>(v.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+
+void smp_pcabuildbasis(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, real_1d_array &s2, real_2d_array &v)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::_pexec_pcabuildbasis(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::ae_vector*>(s2.c_ptr()), const_cast<alglib_impl::ae_matrix*>(v.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Principal components analysis
+
+This function performs truncated PCA, i.e. returns just a few most important
+directions.
+
+Internally it uses iterative eigensolver which is very efficient when only
+a minor fraction of full basis is required. Thus, if you need full  basis,
+it is better to use pcabuildbasis() function.
+
+It should be noted that, unlike LDA, PCA does not use class labels.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * multithreading support
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! For a situation  when  you  need  just  a  few  eigenvectors  (~1-10),
+  ! multithreading typically gives sublinear (wrt to cores count) speedup.
+  ! For larger  problems  it  may  give  you  nearly  linear  increase  in
+  ! performance.
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    X           -   dataset, array[0..NPoints-1,0..NVars-1].
+                    matrix contains ONLY INDEPENDENT VARIABLES.
+    NPoints     -   dataset size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NNeeded     -   number of requested directions, in [1,NVars] range;
+                    this function is efficient only for NNeeded<<NVars.
+    Eps         -   desired  precision  of  vectors  returned;  underlying
+                    solver will stop iterations as soon as absolute  error
+                    in corresponding singular values  reduces  to  roughly
+                    eps*MAX(lambda[]), with lambda[] being array of  eigen
+                    values.
+                    Zero value means that  algorithm  performs  number  of
+                    iterations  specified  by  maxits  parameter,  without
+                    paying attention to precision.
+    MaxIts      -   number of iterations performed by  subspace  iteration
+                    method. Zero value means that no  limit  on  iteration
+                    count is placed (eps-based stopping condition is used).
+
+
+OUTPUT PARAMETERS:
+    S2          -   array[NNeeded]. Variance values corresponding
+                    to basis vectors.
+    V           -   array[NVars,NNeeded]
+                    matrix, whose columns store basis vectors.
+
+NOTE: passing eps=0 and maxits=0 results in small eps  being  selected  as
+stopping condition. Exact value of automatically selected eps is  version-
+-dependent.
+
+  -- ALGLIB --
+     Copyright 10.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void pcatruncatedsubspace(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nneeded, const double eps, const ae_int_t maxits, real_1d_array &s2, real_2d_array &v)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::pcatruncatedsubspace(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), npoints, nvars, nneeded, eps, maxits, const_cast<alglib_impl::ae_vector*>(s2.c_ptr()), const_cast<alglib_impl::ae_matrix*>(v.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+
+void smp_pcatruncatedsubspace(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nneeded, const double eps, const ae_int_t maxits, real_1d_array &s2, real_2d_array &v)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::_pexec_pcatruncatedsubspace(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), npoints, nvars, nneeded, eps, maxits, const_cast<alglib_impl::ae_vector*>(s2.c_ptr()), const_cast<alglib_impl::ae_matrix*>(v.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
 
 /*************************************************************************
 Optimal binary classification
@@ -112,2531 +300,6 @@ void dsoptimalsplit2fast(real_1d_array &a, integer_1d_array &c, integer_1d_array
     try
     {
         alglib_impl::dsoptimalsplit2fast(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), const_cast<alglib_impl::ae_vector*>(c.c_ptr()), const_cast<alglib_impl::ae_vector*>(tiesbuf.c_ptr()), const_cast<alglib_impl::ae_vector*>(cntbuf.c_ptr()), const_cast<alglib_impl::ae_vector*>(bufr.c_ptr()), const_cast<alglib_impl::ae_vector*>(bufi.c_ptr()), n, nc, alpha, &info, &threshold, &rms, &cvrms, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This structure is a clusterization engine.
-
-You should not try to access its fields directly.
-Use ALGLIB functions in order to work with this object.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-_clusterizerstate_owner::_clusterizerstate_owner()
-{
-    p_struct = (alglib_impl::clusterizerstate*)alglib_impl::ae_malloc(sizeof(alglib_impl::clusterizerstate), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_clusterizerstate_init(p_struct, NULL);
-}
-
-_clusterizerstate_owner::_clusterizerstate_owner(const _clusterizerstate_owner &rhs)
-{
-    p_struct = (alglib_impl::clusterizerstate*)alglib_impl::ae_malloc(sizeof(alglib_impl::clusterizerstate), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_clusterizerstate_init_copy(p_struct, const_cast<alglib_impl::clusterizerstate*>(rhs.p_struct), NULL);
-}
-
-_clusterizerstate_owner& _clusterizerstate_owner::operator=(const _clusterizerstate_owner &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    alglib_impl::_clusterizerstate_clear(p_struct);
-    alglib_impl::_clusterizerstate_init_copy(p_struct, const_cast<alglib_impl::clusterizerstate*>(rhs.p_struct), NULL);
-    return *this;
-}
-
-_clusterizerstate_owner::~_clusterizerstate_owner()
-{
-    alglib_impl::_clusterizerstate_clear(p_struct);
-    ae_free(p_struct);
-}
-
-alglib_impl::clusterizerstate* _clusterizerstate_owner::c_ptr()
-{
-    return p_struct;
-}
-
-alglib_impl::clusterizerstate* _clusterizerstate_owner::c_ptr() const
-{
-    return const_cast<alglib_impl::clusterizerstate*>(p_struct);
-}
-clusterizerstate::clusterizerstate() : _clusterizerstate_owner() 
-{
-}
-
-clusterizerstate::clusterizerstate(const clusterizerstate &rhs):_clusterizerstate_owner(rhs) 
-{
-}
-
-clusterizerstate& clusterizerstate::operator=(const clusterizerstate &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    _clusterizerstate_owner::operator=(rhs);
-    return *this;
-}
-
-clusterizerstate::~clusterizerstate()
-{
-}
-
-
-/*************************************************************************
-This structure  is used to store results of the agglomerative hierarchical
-clustering (AHC).
-
-Following information is returned:
-
-* NPoints contains number of points in the original dataset
-
-* Z contains information about merges performed  (see below).  Z  contains
-  indexes from the original (unsorted) dataset and it can be used when you
-  need to know what points were merged. However, it is not convenient when
-  you want to build a dendrograd (see below).
-
-* if  you  want  to  build  dendrogram, you  can use Z, but it is not good
-  option, because Z contains  indexes from  unsorted  dataset.  Dendrogram
-  built from such dataset is likely to have intersections. So, you have to
-  reorder you points before building dendrogram.
-  Permutation which reorders point is returned in P. Another representation
-  of  merges,  which  is  more  convenient for dendorgram construction, is
-  returned in PM.
-
-* more information on format of Z, P and PM can be found below and in the
-  examples from ALGLIB Reference Manual.
-
-FORMAL DESCRIPTION OF FIELDS:
-    NPoints         number of points
-    Z               array[NPoints-1,2],  contains   indexes   of  clusters
-                    linked in pairs to  form  clustering  tree.  I-th  row
-                    corresponds to I-th merge:
-                    * Z[I,0] - index of the first cluster to merge
-                    * Z[I,1] - index of the second cluster to merge
-                    * Z[I,0]<Z[I,1]
-                    * clusters are  numbered  from 0 to 2*NPoints-2,  with
-                      indexes from 0 to NPoints-1 corresponding to  points
-                      of the original dataset, and indexes from NPoints to
-                      2*NPoints-2  correspond  to  clusters  generated  by
-                      subsequent  merges  (I-th  row  of Z creates cluster
-                      with index NPoints+I).
-
-                    IMPORTANT: indexes in Z[] are indexes in the ORIGINAL,
-                    unsorted dataset. In addition to  Z algorithm  outputs
-                    permutation which rearranges points in such  way  that
-                    subsequent merges are  performed  on  adjacent  points
-                    (such order is needed if you want to build dendrogram).
-                    However,  indexes  in  Z  are  related  to   original,
-                    unrearranged sequence of points.
-
-    P               array[NPoints], permutation which reorders points  for
-                    dendrogram  construction.  P[i] contains  index of the
-                    position  where  we  should  move  I-th  point  of the
-                    original dataset in order to apply merges PZ/PM.
-
-    PZ              same as Z, but for permutation of points given  by  P.
-                    The  only  thing  which  changed  are  indexes  of the
-                    original points; indexes of clusters remained same.
-
-    MergeDist       array[NPoints-1], contains distances between  clusters
-                    being merged (MergeDist[i] correspond to merge  stored
-                    in Z[i,...]).
-
-    PM              array[NPoints-1,6], another representation of  merges,
-                    which is suited for dendrogram construction. It  deals
-                    with rearranged points (permutation P is applied)  and
-                    represents merges in a form which different  from  one
-                    used by Z.
-                    For each I from 0 to NPoints-2, I-th row of PM represents
-                    merge performed on two clusters C0 and C1. Here:
-                    * C0 contains points with indexes PM[I,0]...PM[I,1]
-                    * C1 contains points with indexes PM[I,2]...PM[I,3]
-                    * indexes stored in PM are given for dataset sorted
-                      according to permutation P
-                    * PM[I,1]=PM[I,2]-1 (only adjacent clusters are merged)
-                    * PM[I,0]<=PM[I,1], PM[I,2]<=PM[I,3], i.e. both
-                      clusters contain at least one point
-                    * heights of "subdendrograms" corresponding  to  C0/C1
-                      are stored in PM[I,4]  and  PM[I,5].  Subdendrograms
-                      corresponding   to   single-point   clusters    have
-                      height=0. Dendrogram of the merge result has  height
-                      H=max(H0,H1)+1.
-
-NOTE: there is one-to-one correspondence between merges described by Z and
-      PM. I-th row of Z describes same merge of clusters as I-th row of PM,
-      with "left" cluster from Z corresponding to the "left" one from PM.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-_ahcreport_owner::_ahcreport_owner()
-{
-    p_struct = (alglib_impl::ahcreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::ahcreport), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_ahcreport_init(p_struct, NULL);
-}
-
-_ahcreport_owner::_ahcreport_owner(const _ahcreport_owner &rhs)
-{
-    p_struct = (alglib_impl::ahcreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::ahcreport), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_ahcreport_init_copy(p_struct, const_cast<alglib_impl::ahcreport*>(rhs.p_struct), NULL);
-}
-
-_ahcreport_owner& _ahcreport_owner::operator=(const _ahcreport_owner &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    alglib_impl::_ahcreport_clear(p_struct);
-    alglib_impl::_ahcreport_init_copy(p_struct, const_cast<alglib_impl::ahcreport*>(rhs.p_struct), NULL);
-    return *this;
-}
-
-_ahcreport_owner::~_ahcreport_owner()
-{
-    alglib_impl::_ahcreport_clear(p_struct);
-    ae_free(p_struct);
-}
-
-alglib_impl::ahcreport* _ahcreport_owner::c_ptr()
-{
-    return p_struct;
-}
-
-alglib_impl::ahcreport* _ahcreport_owner::c_ptr() const
-{
-    return const_cast<alglib_impl::ahcreport*>(p_struct);
-}
-ahcreport::ahcreport() : _ahcreport_owner() ,npoints(p_struct->npoints),p(&p_struct->p),z(&p_struct->z),pz(&p_struct->pz),pm(&p_struct->pm),mergedist(&p_struct->mergedist)
-{
-}
-
-ahcreport::ahcreport(const ahcreport &rhs):_ahcreport_owner(rhs) ,npoints(p_struct->npoints),p(&p_struct->p),z(&p_struct->z),pz(&p_struct->pz),pm(&p_struct->pm),mergedist(&p_struct->mergedist)
-{
-}
-
-ahcreport& ahcreport::operator=(const ahcreport &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    _ahcreport_owner::operator=(rhs);
-    return *this;
-}
-
-ahcreport::~ahcreport()
-{
-}
-
-
-/*************************************************************************
-This  structure   is  used  to  store  results of the k-means++ clustering
-algorithm.
-
-Following information is always returned:
-* NPoints contains number of points in the original dataset
-* TerminationType contains completion code, negative on failure, positive
-  on success
-* K contains number of clusters
-
-For positive TerminationType we return:
-* NFeatures contains number of variables in the original dataset
-* C, which contains centers found by algorithm
-* CIdx, which maps points of the original dataset to clusters
-
-FORMAL DESCRIPTION OF FIELDS:
-    NPoints         number of points, >=0
-    NFeatures       number of variables, >=1
-    TerminationType completion code:
-                    * -5 if  distance  type  is  anything  different  from
-                         Euclidean metric
-                    * -3 for degenerate dataset: a) less  than  K  distinct
-                         points, b) K=0 for non-empty dataset.
-                    * +1 for successful completion
-    K               number of clusters
-    C               array[K,NFeatures], rows of the array store centers
-    CIdx            array[NPoints], which contains cluster indexes
-
-  -- ALGLIB --
-     Copyright 27.11.2012 by Bochkanov Sergey
-*************************************************************************/
-_kmeansreport_owner::_kmeansreport_owner()
-{
-    p_struct = (alglib_impl::kmeansreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::kmeansreport), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_kmeansreport_init(p_struct, NULL);
-}
-
-_kmeansreport_owner::_kmeansreport_owner(const _kmeansreport_owner &rhs)
-{
-    p_struct = (alglib_impl::kmeansreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::kmeansreport), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_kmeansreport_init_copy(p_struct, const_cast<alglib_impl::kmeansreport*>(rhs.p_struct), NULL);
-}
-
-_kmeansreport_owner& _kmeansreport_owner::operator=(const _kmeansreport_owner &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    alglib_impl::_kmeansreport_clear(p_struct);
-    alglib_impl::_kmeansreport_init_copy(p_struct, const_cast<alglib_impl::kmeansreport*>(rhs.p_struct), NULL);
-    return *this;
-}
-
-_kmeansreport_owner::~_kmeansreport_owner()
-{
-    alglib_impl::_kmeansreport_clear(p_struct);
-    ae_free(p_struct);
-}
-
-alglib_impl::kmeansreport* _kmeansreport_owner::c_ptr()
-{
-    return p_struct;
-}
-
-alglib_impl::kmeansreport* _kmeansreport_owner::c_ptr() const
-{
-    return const_cast<alglib_impl::kmeansreport*>(p_struct);
-}
-kmeansreport::kmeansreport() : _kmeansreport_owner() ,npoints(p_struct->npoints),nfeatures(p_struct->nfeatures),terminationtype(p_struct->terminationtype),k(p_struct->k),c(&p_struct->c),cidx(&p_struct->cidx)
-{
-}
-
-kmeansreport::kmeansreport(const kmeansreport &rhs):_kmeansreport_owner(rhs) ,npoints(p_struct->npoints),nfeatures(p_struct->nfeatures),terminationtype(p_struct->terminationtype),k(p_struct->k),c(&p_struct->c),cidx(&p_struct->cidx)
-{
-}
-
-kmeansreport& kmeansreport::operator=(const kmeansreport &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    _kmeansreport_owner::operator=(rhs);
-    return *this;
-}
-
-kmeansreport::~kmeansreport()
-{
-}
-
-/*************************************************************************
-This function initializes clusterizer object. Newly initialized object  is
-empty, i.e. it does not contain dataset. You should use it as follows:
-1. creation
-2. dataset is added with ClusterizerSetPoints()
-3. additional parameters are set
-3. clusterization is performed with one of the clustering functions
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizercreate(clusterizerstate &s)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizercreate(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function adds dataset to the clusterizer structure.
-
-This function overrides all previous calls  of  ClusterizerSetPoints()  or
-ClusterizerSetDistances().
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    XY      -   array[NPoints,NFeatures], dataset
-    NPoints -   number of points, >=0
-    NFeatures-  number of features, >=1
-    DistType-   distance function:
-                *  0    Chebyshev distance  (L-inf norm)
-                *  1    city block distance (L1 norm)
-                *  2    Euclidean distance  (L2 norm)
-                * 10    Pearson correlation:
-                        dist(a,b) = 1-corr(a,b)
-                * 11    Absolute Pearson correlation:
-                        dist(a,b) = 1-|corr(a,b)|
-                * 12    Uncentered Pearson correlation (cosine of the angle):
-                        dist(a,b) = a'*b/(|a|*|b|)
-                * 13    Absolute uncentered Pearson correlation
-                        dist(a,b) = |a'*b|/(|a|*|b|)
-                * 20    Spearman rank correlation:
-                        dist(a,b) = 1-rankcorr(a,b)
-                * 21    Absolute Spearman rank correlation
-                        dist(a,b) = 1-|rankcorr(a,b)|
-
-NOTE 1: different distance functions have different performance penalty:
-        * Euclidean or Pearson correlation distances are the fastest ones
-        * Spearman correlation distance function is a bit slower
-        * city block and Chebyshev distances are order of magnitude slower
-
-        The reason behing difference in performance is that correlation-based
-        distance functions are computed using optimized linear algebra kernels,
-        while Chebyshev and city block distance functions are computed using
-        simple nested loops with two branches at each iteration.
-
-NOTE 2: different clustering algorithms have different limitations:
-        * agglomerative hierarchical clustering algorithms may be used with
-          any kind of distance metric
-        * k-means++ clustering algorithm may be used only  with  Euclidean
-          distance function
-        Thus, list of specific clustering algorithms you may  use  depends
-        on distance function you specify when you set your dataset.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetpoints(const clusterizerstate &s, const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizersetpoints(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, disttype, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function adds dataset to the clusterizer structure.
-
-This function overrides all previous calls  of  ClusterizerSetPoints()  or
-ClusterizerSetDistances().
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    XY      -   array[NPoints,NFeatures], dataset
-    NPoints -   number of points, >=0
-    NFeatures-  number of features, >=1
-    DistType-   distance function:
-                *  0    Chebyshev distance  (L-inf norm)
-                *  1    city block distance (L1 norm)
-                *  2    Euclidean distance  (L2 norm)
-                * 10    Pearson correlation:
-                        dist(a,b) = 1-corr(a,b)
-                * 11    Absolute Pearson correlation:
-                        dist(a,b) = 1-|corr(a,b)|
-                * 12    Uncentered Pearson correlation (cosine of the angle):
-                        dist(a,b) = a'*b/(|a|*|b|)
-                * 13    Absolute uncentered Pearson correlation
-                        dist(a,b) = |a'*b|/(|a|*|b|)
-                * 20    Spearman rank correlation:
-                        dist(a,b) = 1-rankcorr(a,b)
-                * 21    Absolute Spearman rank correlation
-                        dist(a,b) = 1-|rankcorr(a,b)|
-
-NOTE 1: different distance functions have different performance penalty:
-        * Euclidean or Pearson correlation distances are the fastest ones
-        * Spearman correlation distance function is a bit slower
-        * city block and Chebyshev distances are order of magnitude slower
-
-        The reason behing difference in performance is that correlation-based
-        distance functions are computed using optimized linear algebra kernels,
-        while Chebyshev and city block distance functions are computed using
-        simple nested loops with two branches at each iteration.
-
-NOTE 2: different clustering algorithms have different limitations:
-        * agglomerative hierarchical clustering algorithms may be used with
-          any kind of distance metric
-        * k-means++ clustering algorithm may be used only  with  Euclidean
-          distance function
-        Thus, list of specific clustering algorithms you may  use  depends
-        on distance function you specify when you set your dataset.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetpoints(const clusterizerstate &s, const real_2d_array &xy, const ae_int_t disttype)
-{
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t npoints;
-    ae_int_t nfeatures;
-
-    npoints = xy.rows();
-    nfeatures = xy.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizersetpoints(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, disttype, &_alglib_env_state);
-
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function adds dataset given by distance  matrix  to  the  clusterizer
-structure. It is important that dataset is not  given  explicitly  -  only
-distance matrix is given.
-
-This function overrides all previous calls  of  ClusterizerSetPoints()  or
-ClusterizerSetDistances().
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    D       -   array[NPoints,NPoints], distance matrix given by its upper
-                or lower triangle (main diagonal is  ignored  because  its
-                entries are expected to be zero).
-    NPoints -   number of points
-    IsUpper -   whether upper or lower triangle of D is given.
-
-NOTE 1: different clustering algorithms have different limitations:
-        * agglomerative hierarchical clustering algorithms may be used with
-          any kind of distance metric, including one  which  is  given  by
-          distance matrix
-        * k-means++ clustering algorithm may be used only  with  Euclidean
-          distance function and explicitly given points - it  can  not  be
-          used with dataset given by distance matrix
-        Thus, if you call this function, you will be unable to use k-means
-        clustering algorithm to process your problem.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetdistances(const clusterizerstate &s, const real_2d_array &d, const ae_int_t npoints, const bool isupper)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizersetdistances(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ae_matrix*>(d.c_ptr()), npoints, isupper, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function adds dataset given by distance  matrix  to  the  clusterizer
-structure. It is important that dataset is not  given  explicitly  -  only
-distance matrix is given.
-
-This function overrides all previous calls  of  ClusterizerSetPoints()  or
-ClusterizerSetDistances().
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    D       -   array[NPoints,NPoints], distance matrix given by its upper
-                or lower triangle (main diagonal is  ignored  because  its
-                entries are expected to be zero).
-    NPoints -   number of points
-    IsUpper -   whether upper or lower triangle of D is given.
-
-NOTE 1: different clustering algorithms have different limitations:
-        * agglomerative hierarchical clustering algorithms may be used with
-          any kind of distance metric, including one  which  is  given  by
-          distance matrix
-        * k-means++ clustering algorithm may be used only  with  Euclidean
-          distance function and explicitly given points - it  can  not  be
-          used with dataset given by distance matrix
-        Thus, if you call this function, you will be unable to use k-means
-        clustering algorithm to process your problem.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetdistances(const clusterizerstate &s, const real_2d_array &d, const bool isupper)
-{
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t npoints;
-    if( (d.rows()!=d.cols()))
-        throw ap_error("Error while calling 'clusterizersetdistances': looks like one of arguments has wrong size");
-    npoints = d.rows();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizersetdistances(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ae_matrix*>(d.c_ptr()), npoints, isupper, &_alglib_env_state);
-
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function sets agglomerative hierarchical clustering algorithm
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    Algo    -   algorithm type:
-                * 0     complete linkage (default algorithm)
-                * 1     single linkage
-                * 2     unweighted average linkage
-                * 3     weighted average linkage
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetahcalgo(const clusterizerstate &s, const ae_int_t algo)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizersetahcalgo(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), algo, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This  function  sets k-means++ properties : number of restarts and maximum
-number of iterations per one run.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    Restarts-   restarts count, >=1.
-                k-means++ algorithm performs several restarts and  chooses
-                best set of centers (one with minimum squared distance).
-    MaxIts  -   maximum number of k-means iterations performed during  one
-                run. >=0, zero value means that algorithm performs unlimited
-                number of iterations.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetkmeanslimits(const clusterizerstate &s, const ae_int_t restarts, const ae_int_t maxits)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizersetkmeanslimits(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), restarts, maxits, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function performs agglomerative hierarchical clustering
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
-  ! distance matrix calculation  and  clustering  itself. Only first phase
-  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
-  ! threading. Thus, acceleration is significant only for  medium or high-
-  ! dimensional problems.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-
-OUTPUT PARAMETERS:
-    Rep     -   clustering results; see description of AHCReport
-                structure for more information.
-
-NOTE 1: hierarchical clustering algorithms require large amounts of memory.
-        In particular, this implementation needs  sizeof(double)*NPoints^2
-        bytes, which are used to store distance matrix. In  case  we  work
-        with user-supplied matrix, this amount is multiplied by 2 (we have
-        to store original matrix and to work with its copy).
-
-        For example, problem with 10000 points  would require 800M of RAM,
-        even when working in a 1-dimensional space.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerrunahc(const clusterizerstate &s, ahcreport &rep)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizerrunahc(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-
-void smp_clusterizerrunahc(const clusterizerstate &s, ahcreport &rep)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::_pexec_clusterizerrunahc(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function performs clustering by k-means++ algorithm.
-
-You may change algorithm properties like number of restarts or  iterations
-limit by calling ClusterizerSetKMeansLimits() functions.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    K       -   number of clusters, K>=0.
-                K  can  be  zero only when algorithm is called  for  empty
-                dataset,  in   this   case   completion  code  is  set  to
-                success (+1).
-                If  K=0  and  dataset  size  is  non-zero,  we   can   not
-                meaningfully assign points to some center  (there  are  no
-                centers because K=0) and  return  -3  as  completion  code
-                (failure).
-
-OUTPUT PARAMETERS:
-    Rep     -   clustering results; see description of KMeansReport
-                structure for more information.
-
-NOTE 1: k-means  clustering  can  be  performed  only  for  datasets  with
-        Euclidean  distance  function.  Algorithm  will  return   negative
-        completion code in Rep.TerminationType in case dataset  was  added
-        to clusterizer with DistType other than Euclidean (or dataset  was
-        specified by distance matrix instead of explicitly given points).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerrunkmeans(const clusterizerstate &s, const ae_int_t k, kmeansreport &rep)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizerrunkmeans(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), k, const_cast<alglib_impl::kmeansreport*>(rep.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function returns distance matrix for dataset
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
-  ! distance matrix calculation  and  clustering  itself. Only first phase
-  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
-  ! threading. Thus, acceleration is significant only for  medium or high-
-  ! dimensional problems.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY      -   array[NPoints,NFeatures], dataset
-    NPoints -   number of points, >=0
-    NFeatures-  number of features, >=1
-    DistType-   distance function:
-                *  0    Chebyshev distance  (L-inf norm)
-                *  1    city block distance (L1 norm)
-                *  2    Euclidean distance  (L2 norm)
-                * 10    Pearson correlation:
-                        dist(a,b) = 1-corr(a,b)
-                * 11    Absolute Pearson correlation:
-                        dist(a,b) = 1-|corr(a,b)|
-                * 12    Uncentered Pearson correlation (cosine of the angle):
-                        dist(a,b) = a'*b/(|a|*|b|)
-                * 13    Absolute uncentered Pearson correlation
-                        dist(a,b) = |a'*b|/(|a|*|b|)
-                * 20    Spearman rank correlation:
-                        dist(a,b) = 1-rankcorr(a,b)
-                * 21    Absolute Spearman rank correlation
-                        dist(a,b) = 1-|rankcorr(a,b)|
-
-OUTPUT PARAMETERS:
-    D       -   array[NPoints,NPoints], distance matrix
-                (full matrix is returned, with lower and upper triangles)
-
-NOTES: different distance functions have different performance penalty:
-       * Euclidean or Pearson correlation distances are the fastest ones
-       * Spearman correlation distance function is a bit slower
-       * city block and Chebyshev distances are order of magnitude slower
-
-       The reason behing difference in performance is that correlation-based
-       distance functions are computed using optimized linear algebra kernels,
-       while Chebyshev and city block distance functions are computed using
-       simple nested loops with two branches at each iteration.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizergetdistances(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype, real_2d_array &d)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizergetdistances(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, disttype, const_cast<alglib_impl::ae_matrix*>(d.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-
-void smp_clusterizergetdistances(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype, real_2d_array &d)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::_pexec_clusterizergetdistances(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, disttype, const_cast<alglib_impl::ae_matrix*>(d.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This function takes as input clusterization report Rep,  desired  clusters
-count K, and builds top K clusters from hierarchical clusterization  tree.
-It returns assignment of points to clusters (array of cluster indexes).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    K       -   desired number of clusters, 1<=K<=NPoints.
-                K can be zero only when NPoints=0.
-
-OUTPUT PARAMETERS:
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizergetkclusters(const ahcreport &rep, const ae_int_t k, integer_1d_array &cidx, integer_1d_array &cz)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizergetkclusters(const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), k, const_cast<alglib_impl::ae_vector*>(cidx.c_ptr()), const_cast<alglib_impl::ae_vector*>(cz.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This  function  accepts  AHC  report  Rep,  desired  minimum  intercluster
-distance and returns top clusters from  hierarchical  clusterization  tree
-which are separated by distance R or HIGHER.
-
-It returns assignment of points to clusters (array of cluster indexes).
-
-There is one more function with similar name - ClusterizerSeparatedByCorr,
-which returns clusters with intercluster correlation equal to R  or  LOWER
-(note: higher for distance, lower for correlation).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    R       -   desired minimum intercluster distance, R>=0
-
-OUTPUT PARAMETERS:
-    K       -   number of clusters, 1<=K<=NPoints
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerseparatedbydist(const ahcreport &rep, const double r, ae_int_t &k, integer_1d_array &cidx, integer_1d_array &cz)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizerseparatedbydist(const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), r, &k, const_cast<alglib_impl::ae_vector*>(cidx.c_ptr()), const_cast<alglib_impl::ae_vector*>(cz.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This  function  accepts  AHC  report  Rep,  desired  maximum  intercluster
-correlation and returns top clusters from hierarchical clusterization tree
-which are separated by correlation R or LOWER.
-
-It returns assignment of points to clusters (array of cluster indexes).
-
-There is one more function with similar name - ClusterizerSeparatedByDist,
-which returns clusters with intercluster distance equal  to  R  or  HIGHER
-(note: higher for distance, lower for correlation).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    R       -   desired maximum intercluster correlation, -1<=R<=+1
-
-OUTPUT PARAMETERS:
-    K       -   number of clusters, 1<=K<=NPoints
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerseparatedbycorr(const ahcreport &rep, const double r, ae_int_t &k, integer_1d_array &cidx, integer_1d_array &cz)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::clusterizerseparatedbycorr(const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), r, &k, const_cast<alglib_impl::ae_vector*>(cidx.c_ptr()), const_cast<alglib_impl::ae_vector*>(cz.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-k-means++ clusterization.
-Backward compatibility function, we recommend to use CLUSTERING subpackage
-as better replacement.
-
-  -- ALGLIB --
-     Copyright 21.03.2009 by Bochkanov Sergey
-*************************************************************************/
-void kmeansgenerate(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t k, const ae_int_t restarts, ae_int_t &info, real_2d_array &c, integer_1d_array &xyc)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::kmeansgenerate(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, k, restarts, &info, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), const_cast<alglib_impl::ae_vector*>(xyc.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-
-*************************************************************************/
-_decisionforest_owner::_decisionforest_owner()
-{
-    p_struct = (alglib_impl::decisionforest*)alglib_impl::ae_malloc(sizeof(alglib_impl::decisionforest), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_decisionforest_init(p_struct, NULL);
-}
-
-_decisionforest_owner::_decisionforest_owner(const _decisionforest_owner &rhs)
-{
-    p_struct = (alglib_impl::decisionforest*)alglib_impl::ae_malloc(sizeof(alglib_impl::decisionforest), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_decisionforest_init_copy(p_struct, const_cast<alglib_impl::decisionforest*>(rhs.p_struct), NULL);
-}
-
-_decisionforest_owner& _decisionforest_owner::operator=(const _decisionforest_owner &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    alglib_impl::_decisionforest_clear(p_struct);
-    alglib_impl::_decisionforest_init_copy(p_struct, const_cast<alglib_impl::decisionforest*>(rhs.p_struct), NULL);
-    return *this;
-}
-
-_decisionforest_owner::~_decisionforest_owner()
-{
-    alglib_impl::_decisionforest_clear(p_struct);
-    ae_free(p_struct);
-}
-
-alglib_impl::decisionforest* _decisionforest_owner::c_ptr()
-{
-    return p_struct;
-}
-
-alglib_impl::decisionforest* _decisionforest_owner::c_ptr() const
-{
-    return const_cast<alglib_impl::decisionforest*>(p_struct);
-}
-decisionforest::decisionforest() : _decisionforest_owner() 
-{
-}
-
-decisionforest::decisionforest(const decisionforest &rhs):_decisionforest_owner(rhs) 
-{
-}
-
-decisionforest& decisionforest::operator=(const decisionforest &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    _decisionforest_owner::operator=(rhs);
-    return *this;
-}
-
-decisionforest::~decisionforest()
-{
-}
-
-
-/*************************************************************************
-
-*************************************************************************/
-_dfreport_owner::_dfreport_owner()
-{
-    p_struct = (alglib_impl::dfreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::dfreport), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_dfreport_init(p_struct, NULL);
-}
-
-_dfreport_owner::_dfreport_owner(const _dfreport_owner &rhs)
-{
-    p_struct = (alglib_impl::dfreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::dfreport), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_dfreport_init_copy(p_struct, const_cast<alglib_impl::dfreport*>(rhs.p_struct), NULL);
-}
-
-_dfreport_owner& _dfreport_owner::operator=(const _dfreport_owner &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    alglib_impl::_dfreport_clear(p_struct);
-    alglib_impl::_dfreport_init_copy(p_struct, const_cast<alglib_impl::dfreport*>(rhs.p_struct), NULL);
-    return *this;
-}
-
-_dfreport_owner::~_dfreport_owner()
-{
-    alglib_impl::_dfreport_clear(p_struct);
-    ae_free(p_struct);
-}
-
-alglib_impl::dfreport* _dfreport_owner::c_ptr()
-{
-    return p_struct;
-}
-
-alglib_impl::dfreport* _dfreport_owner::c_ptr() const
-{
-    return const_cast<alglib_impl::dfreport*>(p_struct);
-}
-dfreport::dfreport() : _dfreport_owner() ,relclserror(p_struct->relclserror),avgce(p_struct->avgce),rmserror(p_struct->rmserror),avgerror(p_struct->avgerror),avgrelerror(p_struct->avgrelerror),oobrelclserror(p_struct->oobrelclserror),oobavgce(p_struct->oobavgce),oobrmserror(p_struct->oobrmserror),oobavgerror(p_struct->oobavgerror),oobavgrelerror(p_struct->oobavgrelerror)
-{
-}
-
-dfreport::dfreport(const dfreport &rhs):_dfreport_owner(rhs) ,relclserror(p_struct->relclserror),avgce(p_struct->avgce),rmserror(p_struct->rmserror),avgerror(p_struct->avgerror),avgrelerror(p_struct->avgrelerror),oobrelclserror(p_struct->oobrelclserror),oobavgce(p_struct->oobavgce),oobrmserror(p_struct->oobrmserror),oobavgerror(p_struct->oobavgerror),oobavgrelerror(p_struct->oobavgrelerror)
-{
-}
-
-dfreport& dfreport::operator=(const dfreport &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    _dfreport_owner::operator=(rhs);
-    return *this;
-}
-
-dfreport::~dfreport()
-{
-}
-
-
-/*************************************************************************
-This function serializes data structure to string.
-
-Important properties of s_out:
-* it contains alphanumeric characters, dots, underscores, minus signs
-* these symbols are grouped into words, which are separated by spaces
-  and Windows-style (CR+LF) newlines
-* although  serializer  uses  spaces and CR+LF as separators, you can 
-  replace any separator character by arbitrary combination of spaces,
-  tabs, Windows or Unix newlines. It allows flexible reformatting  of
-  the  string  in  case you want to include it into text or XML file. 
-  But you should not insert separators into the middle of the "words"
-  nor you should change case of letters.
-* s_out can be freely moved between 32-bit and 64-bit systems, little
-  and big endian machines, and so on. You can serialize structure  on
-  32-bit machine and unserialize it on 64-bit one (or vice versa), or
-  serialize  it  on  SPARC  and  unserialize  on  x86.  You  can also 
-  serialize  it  in  C++ version of ALGLIB and unserialize in C# one, 
-  and vice versa.
-*************************************************************************/
-void dfserialize(decisionforest &obj, std::string &s_out)
-{
-    alglib_impl::ae_state state;
-    alglib_impl::ae_serializer serializer;
-    alglib_impl::ae_int_t ssize;
-
-    alglib_impl::ae_state_init(&state);
-    try
-    {
-        alglib_impl::ae_serializer_init(&serializer);
-        alglib_impl::ae_serializer_alloc_start(&serializer);
-        alglib_impl::dfalloc(&serializer, obj.c_ptr(), &state);
-        ssize = alglib_impl::ae_serializer_get_alloc_size(&serializer);
-        s_out.clear();
-        s_out.reserve((size_t)(ssize+1));
-        alglib_impl::ae_serializer_sstart_str(&serializer, &s_out);
-        alglib_impl::dfserialize(&serializer, obj.c_ptr(), &state);
-        alglib_impl::ae_serializer_stop(&serializer);
-        if( s_out.length()>(size_t)ssize )
-            throw ap_error("ALGLIB: serialization integrity error");
-        alglib_impl::ae_serializer_clear(&serializer);
-        alglib_impl::ae_state_clear(&state);
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(state.error_msg);
-    }
-}
-/*************************************************************************
-This function unserializes data structure from string.
-*************************************************************************/
-void dfunserialize(std::string &s_in, decisionforest &obj)
-{
-    alglib_impl::ae_state state;
-    alglib_impl::ae_serializer serializer;
-
-    alglib_impl::ae_state_init(&state);
-    try
-    {
-        alglib_impl::ae_serializer_init(&serializer);
-        alglib_impl::ae_serializer_ustart_str(&serializer, &s_in);
-        alglib_impl::dfunserialize(&serializer, obj.c_ptr(), &state);
-        alglib_impl::ae_serializer_stop(&serializer);
-        alglib_impl::ae_serializer_clear(&serializer);
-        alglib_impl::ae_state_clear(&state);
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(state.error_msg);
-    }
-}
-
-/*************************************************************************
-This subroutine builds random decision forest.
-
-INPUT PARAMETERS:
-    XY          -   training set
-    NPoints     -   training set size, NPoints>=1
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   task type:
-                    * NClasses=1 - regression task with one
-                                   dependent variable
-                    * NClasses>1 - classification task with
-                                   NClasses classes.
-    NTrees      -   number of trees in a forest, NTrees>=1.
-                    recommended values: 50-100.
-    R           -   percent of a training set used to build
-                    individual trees. 0<R<=1.
-                    recommended values: 0.1 <= R <= 0.66.
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed
-                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
-                          or R>1).
-                    *  1, if task has been solved
-    DF          -   model built
-    Rep         -   training report, contains error on a training set
-                    and out-of-bag estimates of generalization error.
-
-  -- ALGLIB --
-     Copyright 19.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfbuildrandomdecisionforest(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, const ae_int_t ntrees, const double r, ae_int_t &info, decisionforest &df, dfreport &rep)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::dfbuildrandomdecisionforest(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, ntrees, r, &info, const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::dfreport*>(rep.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-This subroutine builds random decision forest.
-This function gives ability to tune number of variables used when choosing
-best split.
-
-INPUT PARAMETERS:
-    XY          -   training set
-    NPoints     -   training set size, NPoints>=1
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   task type:
-                    * NClasses=1 - regression task with one
-                                   dependent variable
-                    * NClasses>1 - classification task with
-                                   NClasses classes.
-    NTrees      -   number of trees in a forest, NTrees>=1.
-                    recommended values: 50-100.
-    NRndVars    -   number of variables used when choosing best split
-    R           -   percent of a training set used to build
-                    individual trees. 0<R<=1.
-                    recommended values: 0.1 <= R <= 0.66.
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed
-                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
-                          or R>1).
-                    *  1, if task has been solved
-    DF          -   model built
-    Rep         -   training report, contains error on a training set
-                    and out-of-bag estimates of generalization error.
-
-  -- ALGLIB --
-     Copyright 19.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfbuildrandomdecisionforestx1(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, const ae_int_t ntrees, const ae_int_t nrndvars, const double r, ae_int_t &info, decisionforest &df, dfreport &rep)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::dfbuildrandomdecisionforestx1(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, ntrees, nrndvars, r, &info, const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::dfreport*>(rep.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Procesing
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    X       -   input vector,  array[0..NVars-1].
-
-OUTPUT PARAMETERS:
-    Y       -   result. Regression estimate when solving regression  task,
-                vector of posterior probabilities for classification task.
-
-See also DFProcessI.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfprocess(const decisionforest &df, const real_1d_array &x, real_1d_array &y)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::dfprocess(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-'interactive' variant of DFProcess for languages like Python which support
-constructs like "Y = DFProcessI(DF,X)" and interactive mode of interpreter
-
-This function allocates new array on each call,  so  it  is  significantly
-slower than its 'non-interactive' counterpart, but it is  more  convenient
-when you call it from command line.
-
-  -- ALGLIB --
-     Copyright 28.02.2010 by Bochkanov Sergey
-*************************************************************************/
-void dfprocessi(const decisionforest &df, const real_1d_array &x, real_1d_array &y)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::dfprocessi(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Relative classification error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    percent of incorrectly classified cases.
-    Zero if model solves regression task.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfrelclserror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::dfrelclserror(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Average cross-entropy (in bits per element) on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    CrossEntropy/(NPoints*LN(2)).
-    Zero if model solves regression task.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgce(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::dfavgce(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    root mean square error.
-    Its meaning for regression task is obvious. As for
-    classification task, RMS error means error when estimating posterior
-    probabilities.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfrmserror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::dfrmserror(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Average error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    Its meaning for regression task is obvious. As for
-    classification task, it means average error when estimating posterior
-    probabilities.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgerror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::dfavgerror(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Average relative error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    Its meaning for regression task is obvious. As for
-    classification task, it means average relative error when estimating
-    posterior probability of belonging to the correct class.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgrelerror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::dfavgrelerror(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-
-*************************************************************************/
-_linearmodel_owner::_linearmodel_owner()
-{
-    p_struct = (alglib_impl::linearmodel*)alglib_impl::ae_malloc(sizeof(alglib_impl::linearmodel), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_linearmodel_init(p_struct, NULL);
-}
-
-_linearmodel_owner::_linearmodel_owner(const _linearmodel_owner &rhs)
-{
-    p_struct = (alglib_impl::linearmodel*)alglib_impl::ae_malloc(sizeof(alglib_impl::linearmodel), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_linearmodel_init_copy(p_struct, const_cast<alglib_impl::linearmodel*>(rhs.p_struct), NULL);
-}
-
-_linearmodel_owner& _linearmodel_owner::operator=(const _linearmodel_owner &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    alglib_impl::_linearmodel_clear(p_struct);
-    alglib_impl::_linearmodel_init_copy(p_struct, const_cast<alglib_impl::linearmodel*>(rhs.p_struct), NULL);
-    return *this;
-}
-
-_linearmodel_owner::~_linearmodel_owner()
-{
-    alglib_impl::_linearmodel_clear(p_struct);
-    ae_free(p_struct);
-}
-
-alglib_impl::linearmodel* _linearmodel_owner::c_ptr()
-{
-    return p_struct;
-}
-
-alglib_impl::linearmodel* _linearmodel_owner::c_ptr() const
-{
-    return const_cast<alglib_impl::linearmodel*>(p_struct);
-}
-linearmodel::linearmodel() : _linearmodel_owner() 
-{
-}
-
-linearmodel::linearmodel(const linearmodel &rhs):_linearmodel_owner(rhs) 
-{
-}
-
-linearmodel& linearmodel::operator=(const linearmodel &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    _linearmodel_owner::operator=(rhs);
-    return *this;
-}
-
-linearmodel::~linearmodel()
-{
-}
-
-
-/*************************************************************************
-LRReport structure contains additional information about linear model:
-* C             -   covariation matrix,  array[0..NVars,0..NVars].
-                    C[i,j] = Cov(A[i],A[j])
-* RMSError      -   root mean square error on a training set
-* AvgError      -   average error on a training set
-* AvgRelError   -   average relative error on a training set (excluding
-                    observations with zero function value).
-* CVRMSError    -   leave-one-out cross-validation estimate of
-                    generalization error. Calculated using fast algorithm
-                    with O(NVars*NPoints) complexity.
-* CVAvgError    -   cross-validation estimate of average error
-* CVAvgRelError -   cross-validation estimate of average relative error
-
-All other fields of the structure are intended for internal use and should
-not be used outside ALGLIB.
-*************************************************************************/
-_lrreport_owner::_lrreport_owner()
-{
-    p_struct = (alglib_impl::lrreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::lrreport), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_lrreport_init(p_struct, NULL);
-}
-
-_lrreport_owner::_lrreport_owner(const _lrreport_owner &rhs)
-{
-    p_struct = (alglib_impl::lrreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::lrreport), NULL);
-    if( p_struct==NULL )
-        throw ap_error("ALGLIB: malloc error");
-    alglib_impl::_lrreport_init_copy(p_struct, const_cast<alglib_impl::lrreport*>(rhs.p_struct), NULL);
-}
-
-_lrreport_owner& _lrreport_owner::operator=(const _lrreport_owner &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    alglib_impl::_lrreport_clear(p_struct);
-    alglib_impl::_lrreport_init_copy(p_struct, const_cast<alglib_impl::lrreport*>(rhs.p_struct), NULL);
-    return *this;
-}
-
-_lrreport_owner::~_lrreport_owner()
-{
-    alglib_impl::_lrreport_clear(p_struct);
-    ae_free(p_struct);
-}
-
-alglib_impl::lrreport* _lrreport_owner::c_ptr()
-{
-    return p_struct;
-}
-
-alglib_impl::lrreport* _lrreport_owner::c_ptr() const
-{
-    return const_cast<alglib_impl::lrreport*>(p_struct);
-}
-lrreport::lrreport() : _lrreport_owner() ,c(&p_struct->c),rmserror(p_struct->rmserror),avgerror(p_struct->avgerror),avgrelerror(p_struct->avgrelerror),cvrmserror(p_struct->cvrmserror),cvavgerror(p_struct->cvavgerror),cvavgrelerror(p_struct->cvavgrelerror),ncvdefects(p_struct->ncvdefects),cvdefects(&p_struct->cvdefects)
-{
-}
-
-lrreport::lrreport(const lrreport &rhs):_lrreport_owner(rhs) ,c(&p_struct->c),rmserror(p_struct->rmserror),avgerror(p_struct->avgerror),avgrelerror(p_struct->avgrelerror),cvrmserror(p_struct->cvrmserror),cvavgerror(p_struct->cvavgerror),cvavgrelerror(p_struct->cvavgrelerror),ncvdefects(p_struct->ncvdefects),cvdefects(&p_struct->cvdefects)
-{
-}
-
-lrreport& lrreport::operator=(const lrreport &rhs)
-{
-    if( this==&rhs )
-        return *this;
-    _lrreport_owner::operator=(rhs);
-    return *this;
-}
-
-lrreport::~lrreport()
-{
-}
-
-/*************************************************************************
-Linear regression
-
-Subroutine builds model:
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1] + A(N)
-
-and model found in ALGLIB format, covariation matrix, training set  errors
-(rms,  average,  average  relative)   and  leave-one-out  cross-validation
-estimate of the generalization error. CV  estimate calculated  using  fast
-algorithm with O(NPoints*NVars) complexity.
-
-When  covariation  matrix  is  calculated  standard deviations of function
-values are assumed to be equal to RMS error on the training set.
-
-INPUT PARAMETERS:
-    XY          -   training set, array [0..NPoints-1,0..NVars]:
-                    * NVars columns - independent variables
-                    * last column - dependent variable
-    NPoints     -   training set size, NPoints>NVars+1
-    NVars       -   number of independent variables
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -255, in case of unknown internal error
-                    * -4, if internal SVD subroutine haven't converged
-                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
-                    *  1, if subroutine successfully finished
-    LM          -   linear model in the ALGLIB format. Use subroutines of
-                    this unit to work with the model.
-    AR          -   additional results
-
-
-  -- ALGLIB --
-     Copyright 02.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuild(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::lrbuild(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::lrreport*>(ar.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Linear regression
-
-Variant of LRBuild which uses vector of standatd deviations (errors in
-function values).
-
-INPUT PARAMETERS:
-    XY          -   training set, array [0..NPoints-1,0..NVars]:
-                    * NVars columns - independent variables
-                    * last column - dependent variable
-    S           -   standard deviations (errors in function values)
-                    array[0..NPoints-1], S[i]>0.
-    NPoints     -   training set size, NPoints>NVars+1
-    NVars       -   number of independent variables
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -255, in case of unknown internal error
-                    * -4, if internal SVD subroutine haven't converged
-                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
-                    * -2, if S[I]<=0
-                    *  1, if subroutine successfully finished
-    LM          -   linear model in the ALGLIB format. Use subroutines of
-                    this unit to work with the model.
-    AR          -   additional results
-
-
-  -- ALGLIB --
-     Copyright 02.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuilds(const real_2d_array &xy, const real_1d_array &s, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::lrbuilds(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), const_cast<alglib_impl::ae_vector*>(s.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::lrreport*>(ar.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Like LRBuildS, but builds model
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
-
-i.e. with zero constant term.
-
-  -- ALGLIB --
-     Copyright 30.10.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuildzs(const real_2d_array &xy, const real_1d_array &s, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::lrbuildzs(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), const_cast<alglib_impl::ae_vector*>(s.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::lrreport*>(ar.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Like LRBuild but builds model
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
-
-i.e. with zero constant term.
-
-  -- ALGLIB --
-     Copyright 30.10.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuildz(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::lrbuildz(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::lrreport*>(ar.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Unpacks coefficients of linear model.
-
-INPUT PARAMETERS:
-    LM          -   linear model in ALGLIB format
-
-OUTPUT PARAMETERS:
-    V           -   coefficients, array[0..NVars]
-                    constant term (intercept) is stored in the V[NVars].
-    NVars       -   number of independent variables (one less than number
-                    of coefficients)
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrunpack(const linearmodel &lm, real_1d_array &v, ae_int_t &nvars)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::lrunpack(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_vector*>(v.c_ptr()), &nvars, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-"Packs" coefficients and creates linear model in ALGLIB format (LRUnpack
-reversed).
-
-INPUT PARAMETERS:
-    V           -   coefficients, array[0..NVars]
-    NVars       -   number of independent variables
-
-OUTPUT PAREMETERS:
-    LM          -   linear model.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrpack(const real_1d_array &v, const ae_int_t nvars, linearmodel &lm)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::lrpack(const_cast<alglib_impl::ae_vector*>(v.c_ptr()), nvars, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Procesing
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    X       -   input vector,  array[0..NVars-1].
-
-Result:
-    value of linear model regression estimate
-
-  -- ALGLIB --
-     Copyright 03.09.2008 by Bochkanov Sergey
-*************************************************************************/
-double lrprocess(const linearmodel &lm, const real_1d_array &x)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::lrprocess(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_vector*>(x.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    root mean square error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lrrmserror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::lrrmserror(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Average error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    average error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lravgerror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::lravgerror(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    average relative error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lravgrelerror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        double result = alglib_impl::lravgrelerror(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return *(reinterpret_cast<double*>(&result));
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Filters: simple moving averages (unsymmetric).
-
-This filter replaces array by results of SMA(K) filter. SMA(K) is defined
-as filter which averages at most K previous points (previous - not points
-AROUND central point) - or less, in case of the first K-1 points.
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
-                    correctly handled). Window width. K=1 corresponds  to
-                    identity transformation (nothing changes).
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed with SMA(K)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm makes only one pass through array and uses running
-        sum  to speed-up calculation of the averages. Additional measures
-        are taken to ensure that running sum on a long sequence  of  zero
-        elements will be correctly reset to zero even in the presence  of
-        round-off error.
-
-NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
-        averages points after the current one. Only X[i], X[i-1], ... are
-        used when calculating new value of X[i]. We should also note that
-        this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filtersma(real_1d_array &x, const ae_int_t n, const ae_int_t k)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::filtersma(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, k, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Filters: simple moving averages (unsymmetric).
-
-This filter replaces array by results of SMA(K) filter. SMA(K) is defined
-as filter which averages at most K previous points (previous - not points
-AROUND central point) - or less, in case of the first K-1 points.
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
-                    correctly handled). Window width. K=1 corresponds  to
-                    identity transformation (nothing changes).
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed with SMA(K)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm makes only one pass through array and uses running
-        sum  to speed-up calculation of the averages. Additional measures
-        are taken to ensure that running sum on a long sequence  of  zero
-        elements will be correctly reset to zero even in the presence  of
-        round-off error.
-
-NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
-        averages points after the current one. Only X[i], X[i-1], ... are
-        used when calculating new value of X[i]. We should also note that
-        this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filtersma(real_1d_array &x, const ae_int_t k)
-{
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-
-    n = x.length();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::filtersma(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, k, &_alglib_env_state);
-
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Filters: exponential moving averages.
-
-This filter replaces array by results of EMA(alpha) filter. EMA(alpha) is
-defined as filter which replaces X[] by S[]:
-    S[0] = X[0]
-    S[t] = alpha*X[t] + (1-alpha)*S[t-1]
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    alpha       -   0<alpha<=1, smoothing parameter.
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed
-                    with EMA(alpha)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-NOTE 3: technical analytis users quite often work  with  EMA  coefficient
-        expressed in DAYS instead of fractions. If you want to  calculate
-        EMA(N), where N is a number of days, you can use alpha=2/(N+1).
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filterema(real_1d_array &x, const ae_int_t n, const double alpha)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::filterema(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, alpha, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Filters: exponential moving averages.
-
-This filter replaces array by results of EMA(alpha) filter. EMA(alpha) is
-defined as filter which replaces X[] by S[]:
-    S[0] = X[0]
-    S[t] = alpha*X[t] + (1-alpha)*S[t-1]
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    alpha       -   0<alpha<=1, smoothing parameter.
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed
-                    with EMA(alpha)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-NOTE 3: technical analytis users quite often work  with  EMA  coefficient
-        expressed in DAYS instead of fractions. If you want to  calculate
-        EMA(N), where N is a number of days, you can use alpha=2/(N+1).
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filterema(real_1d_array &x, const double alpha)
-{
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-
-    n = x.length();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::filterema(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, alpha, &_alglib_env_state);
-
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Filters: linear regression moving averages.
-
-This filter replaces array by results of LRMA(K) filter.
-
-LRMA(K) is defined as filter which, for each data  point,  builds  linear
-regression  model  using  K  prevous  points (point itself is included in
-these K points) and calculates value of this linear model at the point in
-question.
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
-                    correctly handled). Window width. K=1 corresponds  to
-                    identity transformation (nothing changes).
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed with SMA(K)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm makes only one pass through array and uses running
-        sum  to speed-up calculation of the averages. Additional measures
-        are taken to ensure that running sum on a long sequence  of  zero
-        elements will be correctly reset to zero even in the presence  of
-        round-off error.
-
-NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
-        averages points after the current one. Only X[i], X[i-1], ... are
-        used when calculating new value of X[i]. We should also note that
-        this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filterlrma(real_1d_array &x, const ae_int_t n, const ae_int_t k)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::filterlrma(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, k, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Filters: linear regression moving averages.
-
-This filter replaces array by results of LRMA(K) filter.
-
-LRMA(K) is defined as filter which, for each data  point,  builds  linear
-regression  model  using  K  prevous  points (point itself is included in
-these K points) and calculates value of this linear model at the point in
-question.
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
-                    correctly handled). Window width. K=1 corresponds  to
-                    identity transformation (nothing changes).
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed with SMA(K)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm makes only one pass through array and uses running
-        sum  to speed-up calculation of the averages. Additional measures
-        are taken to ensure that running sum on a long sequence  of  zero
-        elements will be correctly reset to zero even in the presence  of
-        round-off error.
-
-NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
-        averages points after the current one. Only X[i], X[i-1], ... are
-        used when calculating new value of X[i]. We should also note that
-        this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filterlrma(real_1d_array &x, const ae_int_t k)
-{
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-
-    n = x.length();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::filterlrma(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, k, &_alglib_env_state);
-
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-Multiclass Fisher LDA
-
-Subroutine finds coefficients of linear combination which optimally separates
-training set on classes.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two important  improvements   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multithreading support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
-  !
-  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
-  ! includes calculation of products of large matrices.  Again,  for  best
-  ! efficiency problem must be high-dimensional.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY          -   training set, array[0..NPoints-1,0..NVars].
-                    First NVars columns store values of independent
-                    variables, next column stores number of class (from 0
-                    to NClasses-1) which dataset element belongs to. Fractional
-                    values are rounded to nearest integer.
-    NPoints     -   training set size, NPoints>=0
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   number of classes, NClasses>=2
-
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -4, if internal EVD subroutine hasn't converged
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed (NPoints<0,
-                          NVars<1, NClasses<2)
-                    *  1, if task has been solved
-                    *  2, if there was a multicollinearity in training set,
-                          but task has been solved.
-    W           -   linear combination coefficients, array[0..NVars-1]
-
-  -- ALGLIB --
-     Copyright 31.05.2008 by Bochkanov Sergey
-*************************************************************************/
-void fisherlda(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_1d_array &w)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::fisherlda(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, &info, const_cast<alglib_impl::ae_vector*>(w.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-N-dimensional multiclass Fisher LDA
-
-Subroutine finds coefficients of linear combinations which optimally separates
-training set on classes. It returns N-dimensional basis whose vector are sorted
-by quality of training set separation (in descending order).
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two important  improvements   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multithreading support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
-  !
-  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
-  ! includes calculation of products of large matrices.  Again,  for  best
-  ! efficiency problem must be high-dimensional.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY          -   training set, array[0..NPoints-1,0..NVars].
-                    First NVars columns store values of independent
-                    variables, next column stores number of class (from 0
-                    to NClasses-1) which dataset element belongs to. Fractional
-                    values are rounded to nearest integer.
-    NPoints     -   training set size, NPoints>=0
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   number of classes, NClasses>=2
-
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -4, if internal EVD subroutine hasn't converged
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed (NPoints<0,
-                          NVars<1, NClasses<2)
-                    *  1, if task has been solved
-                    *  2, if there was a multicollinearity in training set,
-                          but task has been solved.
-    W           -   basis, array[0..NVars-1,0..NVars-1]
-                    columns of matrix stores basis vectors, sorted by
-                    quality of training set separation (in descending order)
-
-  -- ALGLIB --
-     Copyright 31.05.2008 by Bochkanov Sergey
-*************************************************************************/
-void fisherldan(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_2d_array &w)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::fisherldan(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, &info, const_cast<alglib_impl::ae_matrix*>(w.c_ptr()), &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-
-void smp_fisherldan(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_2d_array &w)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::_pexec_fisherldan(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, &info, const_cast<alglib_impl::ae_matrix*>(w.c_ptr()), &_alglib_env_state);
         alglib_impl::ae_state_clear(&_alglib_env_state);
         return;
     }
@@ -2821,7 +484,7 @@ void mlpserialize(multilayerperceptron &obj, std::string &s_out)
         s_out.reserve((size_t)(ssize+1));
         alglib_impl::ae_serializer_sstart_str(&serializer, &s_out);
         alglib_impl::mlpserialize(&serializer, obj.c_ptr(), &state);
-        alglib_impl::ae_serializer_stop(&serializer);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
         if( s_out.length()>(size_t)ssize )
             throw ap_error("ALGLIB: serialization integrity error");
         alglib_impl::ae_serializer_clear(&serializer);
@@ -2835,7 +498,7 @@ void mlpserialize(multilayerperceptron &obj, std::string &s_out)
 /*************************************************************************
 This function unserializes data structure from string.
 *************************************************************************/
-void mlpunserialize(std::string &s_in, multilayerperceptron &obj)
+void mlpunserialize(const std::string &s_in, multilayerperceptron &obj)
 {
     alglib_impl::ae_state state;
     alglib_impl::ae_serializer serializer;
@@ -2846,7 +509,66 @@ void mlpunserialize(std::string &s_in, multilayerperceptron &obj)
         alglib_impl::ae_serializer_init(&serializer);
         alglib_impl::ae_serializer_ustart_str(&serializer, &s_in);
         alglib_impl::mlpunserialize(&serializer, obj.c_ptr(), &state);
-        alglib_impl::ae_serializer_stop(&serializer);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
+        alglib_impl::ae_serializer_clear(&serializer);
+        alglib_impl::ae_state_clear(&state);
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(state.error_msg);
+    }
+}
+
+
+/*************************************************************************
+This function serializes data structure to C++ stream.
+
+Data stream generated by this function is same as  string  representation
+generated  by  string  version  of  serializer - alphanumeric characters,
+dots, underscores, minus signs, which are grouped into words separated by
+spaces and CR+LF.
+
+We recommend you to read comments on string version of serializer to find
+out more about serialization of AlGLIB objects.
+*************************************************************************/
+void mlpserialize(multilayerperceptron &obj, std::ostream &s_out)
+{
+    alglib_impl::ae_state state;
+    alglib_impl::ae_serializer serializer;
+
+    alglib_impl::ae_state_init(&state);
+    try
+    {
+        alglib_impl::ae_serializer_init(&serializer);
+        alglib_impl::ae_serializer_alloc_start(&serializer);
+        alglib_impl::mlpalloc(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_get_alloc_size(&serializer); // not actually needed, but we have to ask
+        alglib_impl::ae_serializer_sstart_stream(&serializer, &s_out);
+        alglib_impl::mlpserialize(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
+        alglib_impl::ae_serializer_clear(&serializer);
+        alglib_impl::ae_state_clear(&state);
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(state.error_msg);
+    }
+}
+/*************************************************************************
+This function unserializes data structure from stream.
+*************************************************************************/
+void mlpunserialize(const std::istream &s_in, multilayerperceptron &obj)
+{
+    alglib_impl::ae_state state;
+    alglib_impl::ae_serializer serializer;
+
+    alglib_impl::ae_state_init(&state);
+    try
+    {
+        alglib_impl::ae_serializer_init(&serializer);
+        alglib_impl::ae_serializer_ustart_stream(&serializer, &s_in);
+        alglib_impl::mlpunserialize(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
         alglib_impl::ae_serializer_clear(&serializer);
         alglib_impl::ae_state_clear(&state);
     }
@@ -6015,6 +3737,961 @@ double smp_mlperrorsparsesubset(const multilayerperceptron &network, const spars
 }
 
 /*************************************************************************
+Multiclass Fisher LDA
+
+Subroutine finds coefficients of linear combination which optimally separates
+training set on classes.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two important  improvements   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multithreading support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
+  ! includes calculation of products of large matrices.  Again,  for  best
+  ! efficiency problem must be high-dimensional.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY          -   training set, array[0..NPoints-1,0..NVars].
+                    First NVars columns store values of independent
+                    variables, next column stores number of class (from 0
+                    to NClasses-1) which dataset element belongs to. Fractional
+                    values are rounded to nearest integer.
+    NPoints     -   training set size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   number of classes, NClasses>=2
+
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if internal EVD subroutine hasn't converged
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed (NPoints<0,
+                          NVars<1, NClasses<2)
+                    *  1, if task has been solved
+                    *  2, if there was a multicollinearity in training set,
+                          but task has been solved.
+    W           -   linear combination coefficients, array[0..NVars-1]
+
+  -- ALGLIB --
+     Copyright 31.05.2008 by Bochkanov Sergey
+*************************************************************************/
+void fisherlda(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_1d_array &w)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::fisherlda(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, &info, const_cast<alglib_impl::ae_vector*>(w.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+N-dimensional multiclass Fisher LDA
+
+Subroutine finds coefficients of linear combinations which optimally separates
+training set on classes. It returns N-dimensional basis whose vector are sorted
+by quality of training set separation (in descending order).
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two important  improvements   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multithreading support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
+  ! includes calculation of products of large matrices.  Again,  for  best
+  ! efficiency problem must be high-dimensional.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY          -   training set, array[0..NPoints-1,0..NVars].
+                    First NVars columns store values of independent
+                    variables, next column stores number of class (from 0
+                    to NClasses-1) which dataset element belongs to. Fractional
+                    values are rounded to nearest integer.
+    NPoints     -   training set size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   number of classes, NClasses>=2
+
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if internal EVD subroutine hasn't converged
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed (NPoints<0,
+                          NVars<1, NClasses<2)
+                    *  1, if task has been solved
+                    *  2, if there was a multicollinearity in training set,
+                          but task has been solved.
+    W           -   basis, array[0..NVars-1,0..NVars-1]
+                    columns of matrix stores basis vectors, sorted by
+                    quality of training set separation (in descending order)
+
+  -- ALGLIB --
+     Copyright 31.05.2008 by Bochkanov Sergey
+*************************************************************************/
+void fisherldan(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_2d_array &w)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::fisherldan(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, &info, const_cast<alglib_impl::ae_matrix*>(w.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+
+void smp_fisherldan(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_2d_array &w)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::_pexec_fisherldan(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, &info, const_cast<alglib_impl::ae_matrix*>(w.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+
+*************************************************************************/
+_linearmodel_owner::_linearmodel_owner()
+{
+    p_struct = (alglib_impl::linearmodel*)alglib_impl::ae_malloc(sizeof(alglib_impl::linearmodel), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_linearmodel_init(p_struct, NULL);
+}
+
+_linearmodel_owner::_linearmodel_owner(const _linearmodel_owner &rhs)
+{
+    p_struct = (alglib_impl::linearmodel*)alglib_impl::ae_malloc(sizeof(alglib_impl::linearmodel), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_linearmodel_init_copy(p_struct, const_cast<alglib_impl::linearmodel*>(rhs.p_struct), NULL);
+}
+
+_linearmodel_owner& _linearmodel_owner::operator=(const _linearmodel_owner &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    alglib_impl::_linearmodel_clear(p_struct);
+    alglib_impl::_linearmodel_init_copy(p_struct, const_cast<alglib_impl::linearmodel*>(rhs.p_struct), NULL);
+    return *this;
+}
+
+_linearmodel_owner::~_linearmodel_owner()
+{
+    alglib_impl::_linearmodel_clear(p_struct);
+    ae_free(p_struct);
+}
+
+alglib_impl::linearmodel* _linearmodel_owner::c_ptr()
+{
+    return p_struct;
+}
+
+alglib_impl::linearmodel* _linearmodel_owner::c_ptr() const
+{
+    return const_cast<alglib_impl::linearmodel*>(p_struct);
+}
+linearmodel::linearmodel() : _linearmodel_owner() 
+{
+}
+
+linearmodel::linearmodel(const linearmodel &rhs):_linearmodel_owner(rhs) 
+{
+}
+
+linearmodel& linearmodel::operator=(const linearmodel &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    _linearmodel_owner::operator=(rhs);
+    return *this;
+}
+
+linearmodel::~linearmodel()
+{
+}
+
+
+/*************************************************************************
+LRReport structure contains additional information about linear model:
+* C             -   covariation matrix,  array[0..NVars,0..NVars].
+                    C[i,j] = Cov(A[i],A[j])
+* RMSError      -   root mean square error on a training set
+* AvgError      -   average error on a training set
+* AvgRelError   -   average relative error on a training set (excluding
+                    observations with zero function value).
+* CVRMSError    -   leave-one-out cross-validation estimate of
+                    generalization error. Calculated using fast algorithm
+                    with O(NVars*NPoints) complexity.
+* CVAvgError    -   cross-validation estimate of average error
+* CVAvgRelError -   cross-validation estimate of average relative error
+
+All other fields of the structure are intended for internal use and should
+not be used outside ALGLIB.
+*************************************************************************/
+_lrreport_owner::_lrreport_owner()
+{
+    p_struct = (alglib_impl::lrreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::lrreport), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_lrreport_init(p_struct, NULL);
+}
+
+_lrreport_owner::_lrreport_owner(const _lrreport_owner &rhs)
+{
+    p_struct = (alglib_impl::lrreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::lrreport), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_lrreport_init_copy(p_struct, const_cast<alglib_impl::lrreport*>(rhs.p_struct), NULL);
+}
+
+_lrreport_owner& _lrreport_owner::operator=(const _lrreport_owner &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    alglib_impl::_lrreport_clear(p_struct);
+    alglib_impl::_lrreport_init_copy(p_struct, const_cast<alglib_impl::lrreport*>(rhs.p_struct), NULL);
+    return *this;
+}
+
+_lrreport_owner::~_lrreport_owner()
+{
+    alglib_impl::_lrreport_clear(p_struct);
+    ae_free(p_struct);
+}
+
+alglib_impl::lrreport* _lrreport_owner::c_ptr()
+{
+    return p_struct;
+}
+
+alglib_impl::lrreport* _lrreport_owner::c_ptr() const
+{
+    return const_cast<alglib_impl::lrreport*>(p_struct);
+}
+lrreport::lrreport() : _lrreport_owner() ,c(&p_struct->c),rmserror(p_struct->rmserror),avgerror(p_struct->avgerror),avgrelerror(p_struct->avgrelerror),cvrmserror(p_struct->cvrmserror),cvavgerror(p_struct->cvavgerror),cvavgrelerror(p_struct->cvavgrelerror),ncvdefects(p_struct->ncvdefects),cvdefects(&p_struct->cvdefects)
+{
+}
+
+lrreport::lrreport(const lrreport &rhs):_lrreport_owner(rhs) ,c(&p_struct->c),rmserror(p_struct->rmserror),avgerror(p_struct->avgerror),avgrelerror(p_struct->avgrelerror),cvrmserror(p_struct->cvrmserror),cvavgerror(p_struct->cvavgerror),cvavgrelerror(p_struct->cvavgrelerror),ncvdefects(p_struct->ncvdefects),cvdefects(&p_struct->cvdefects)
+{
+}
+
+lrreport& lrreport::operator=(const lrreport &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    _lrreport_owner::operator=(rhs);
+    return *this;
+}
+
+lrreport::~lrreport()
+{
+}
+
+/*************************************************************************
+Linear regression
+
+Subroutine builds model:
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1] + A(N)
+
+and model found in ALGLIB format, covariation matrix, training set  errors
+(rms,  average,  average  relative)   and  leave-one-out  cross-validation
+estimate of the generalization error. CV  estimate calculated  using  fast
+algorithm with O(NPoints*NVars) complexity.
+
+When  covariation  matrix  is  calculated  standard deviations of function
+values are assumed to be equal to RMS error on the training set.
+
+INPUT PARAMETERS:
+    XY          -   training set, array [0..NPoints-1,0..NVars]:
+                    * NVars columns - independent variables
+                    * last column - dependent variable
+    NPoints     -   training set size, NPoints>NVars+1
+    NVars       -   number of independent variables
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -255, in case of unknown internal error
+                    * -4, if internal SVD subroutine haven't converged
+                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
+                    *  1, if subroutine successfully finished
+    LM          -   linear model in the ALGLIB format. Use subroutines of
+                    this unit to work with the model.
+    AR          -   additional results
+
+
+  -- ALGLIB --
+     Copyright 02.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuild(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::lrbuild(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::lrreport*>(ar.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Linear regression
+
+Variant of LRBuild which uses vector of standatd deviations (errors in
+function values).
+
+INPUT PARAMETERS:
+    XY          -   training set, array [0..NPoints-1,0..NVars]:
+                    * NVars columns - independent variables
+                    * last column - dependent variable
+    S           -   standard deviations (errors in function values)
+                    array[0..NPoints-1], S[i]>0.
+    NPoints     -   training set size, NPoints>NVars+1
+    NVars       -   number of independent variables
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -255, in case of unknown internal error
+                    * -4, if internal SVD subroutine haven't converged
+                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
+                    * -2, if S[I]<=0
+                    *  1, if subroutine successfully finished
+    LM          -   linear model in the ALGLIB format. Use subroutines of
+                    this unit to work with the model.
+    AR          -   additional results
+
+
+  -- ALGLIB --
+     Copyright 02.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuilds(const real_2d_array &xy, const real_1d_array &s, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::lrbuilds(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), const_cast<alglib_impl::ae_vector*>(s.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::lrreport*>(ar.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Like LRBuildS, but builds model
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
+
+i.e. with zero constant term.
+
+  -- ALGLIB --
+     Copyright 30.10.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuildzs(const real_2d_array &xy, const real_1d_array &s, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::lrbuildzs(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), const_cast<alglib_impl::ae_vector*>(s.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::lrreport*>(ar.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Like LRBuild but builds model
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
+
+i.e. with zero constant term.
+
+  -- ALGLIB --
+     Copyright 30.10.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuildz(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::lrbuildz(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::lrreport*>(ar.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Unpacks coefficients of linear model.
+
+INPUT PARAMETERS:
+    LM          -   linear model in ALGLIB format
+
+OUTPUT PARAMETERS:
+    V           -   coefficients, array[0..NVars]
+                    constant term (intercept) is stored in the V[NVars].
+    NVars       -   number of independent variables (one less than number
+                    of coefficients)
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrunpack(const linearmodel &lm, real_1d_array &v, ae_int_t &nvars)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::lrunpack(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_vector*>(v.c_ptr()), &nvars, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+"Packs" coefficients and creates linear model in ALGLIB format (LRUnpack
+reversed).
+
+INPUT PARAMETERS:
+    V           -   coefficients, array[0..NVars]
+    NVars       -   number of independent variables
+
+OUTPUT PAREMETERS:
+    LM          -   linear model.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrpack(const real_1d_array &v, const ae_int_t nvars, linearmodel &lm)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::lrpack(const_cast<alglib_impl::ae_vector*>(v.c_ptr()), nvars, const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Procesing
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    X       -   input vector,  array[0..NVars-1].
+
+Result:
+    value of linear model regression estimate
+
+  -- ALGLIB --
+     Copyright 03.09.2008 by Bochkanov Sergey
+*************************************************************************/
+double lrprocess(const linearmodel &lm, const real_1d_array &x)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::lrprocess(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_vector*>(x.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    root mean square error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lrrmserror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::lrrmserror(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Average error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    average error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lravgerror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::lravgerror(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    average relative error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lravgrelerror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::lravgrelerror(const_cast<alglib_impl::linearmodel*>(lm.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Filters: simple moving averages (unsymmetric).
+
+This filter replaces array by results of SMA(K) filter. SMA(K) is defined
+as filter which averages at most K previous points (previous - not points
+AROUND central point) - or less, in case of the first K-1 points.
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
+                    correctly handled). Window width. K=1 corresponds  to
+                    identity transformation (nothing changes).
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed with SMA(K)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm makes only one pass through array and uses running
+        sum  to speed-up calculation of the averages. Additional measures
+        are taken to ensure that running sum on a long sequence  of  zero
+        elements will be correctly reset to zero even in the presence  of
+        round-off error.
+
+NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
+        averages points after the current one. Only X[i], X[i-1], ... are
+        used when calculating new value of X[i]. We should also note that
+        this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filtersma(real_1d_array &x, const ae_int_t n, const ae_int_t k)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::filtersma(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, k, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Filters: simple moving averages (unsymmetric).
+
+This filter replaces array by results of SMA(K) filter. SMA(K) is defined
+as filter which averages at most K previous points (previous - not points
+AROUND central point) - or less, in case of the first K-1 points.
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
+                    correctly handled). Window width. K=1 corresponds  to
+                    identity transformation (nothing changes).
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed with SMA(K)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm makes only one pass through array and uses running
+        sum  to speed-up calculation of the averages. Additional measures
+        are taken to ensure that running sum on a long sequence  of  zero
+        elements will be correctly reset to zero even in the presence  of
+        round-off error.
+
+NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
+        averages points after the current one. Only X[i], X[i-1], ... are
+        used when calculating new value of X[i]. We should also note that
+        this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filtersma(real_1d_array &x, const ae_int_t k)
+{
+    alglib_impl::ae_state _alglib_env_state;    
+    ae_int_t n;
+
+    n = x.length();
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::filtersma(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, k, &_alglib_env_state);
+
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Filters: exponential moving averages.
+
+This filter replaces array by results of EMA(alpha) filter. EMA(alpha) is
+defined as filter which replaces X[] by S[]:
+    S[0] = X[0]
+    S[t] = alpha*X[t] + (1-alpha)*S[t-1]
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    alpha       -   0<alpha<=1, smoothing parameter.
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed
+                    with EMA(alpha)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+NOTE 3: technical analytis users quite often work  with  EMA  coefficient
+        expressed in DAYS instead of fractions. If you want to  calculate
+        EMA(N), where N is a number of days, you can use alpha=2/(N+1).
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filterema(real_1d_array &x, const ae_int_t n, const double alpha)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::filterema(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, alpha, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Filters: exponential moving averages.
+
+This filter replaces array by results of EMA(alpha) filter. EMA(alpha) is
+defined as filter which replaces X[] by S[]:
+    S[0] = X[0]
+    S[t] = alpha*X[t] + (1-alpha)*S[t-1]
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    alpha       -   0<alpha<=1, smoothing parameter.
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed
+                    with EMA(alpha)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+NOTE 3: technical analytis users quite often work  with  EMA  coefficient
+        expressed in DAYS instead of fractions. If you want to  calculate
+        EMA(N), where N is a number of days, you can use alpha=2/(N+1).
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filterema(real_1d_array &x, const double alpha)
+{
+    alglib_impl::ae_state _alglib_env_state;    
+    ae_int_t n;
+
+    n = x.length();
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::filterema(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, alpha, &_alglib_env_state);
+
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Filters: linear regression moving averages.
+
+This filter replaces array by results of LRMA(K) filter.
+
+LRMA(K) is defined as filter which, for each data  point,  builds  linear
+regression  model  using  K  prevous  points (point itself is included in
+these K points) and calculates value of this linear model at the point in
+question.
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
+                    correctly handled). Window width. K=1 corresponds  to
+                    identity transformation (nothing changes).
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed with SMA(K)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm makes only one pass through array and uses running
+        sum  to speed-up calculation of the averages. Additional measures
+        are taken to ensure that running sum on a long sequence  of  zero
+        elements will be correctly reset to zero even in the presence  of
+        round-off error.
+
+NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
+        averages points after the current one. Only X[i], X[i-1], ... are
+        used when calculating new value of X[i]. We should also note that
+        this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filterlrma(real_1d_array &x, const ae_int_t n, const ae_int_t k)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::filterlrma(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, k, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Filters: linear regression moving averages.
+
+This filter replaces array by results of LRMA(K) filter.
+
+LRMA(K) is defined as filter which, for each data  point,  builds  linear
+regression  model  using  K  prevous  points (point itself is included in
+these K points) and calculates value of this linear model at the point in
+question.
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
+                    correctly handled). Window width. K=1 corresponds  to
+                    identity transformation (nothing changes).
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed with SMA(K)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm makes only one pass through array and uses running
+        sum  to speed-up calculation of the averages. Additional measures
+        are taken to ensure that running sum on a long sequence  of  zero
+        elements will be correctly reset to zero even in the presence  of
+        round-off error.
+
+NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
+        averages points after the current one. Only X[i], X[i-1], ... are
+        used when calculating new value of X[i]. We should also note that
+        this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filterlrma(real_1d_array &x, const ae_int_t k)
+{
+    alglib_impl::ae_state _alglib_env_state;    
+    ae_int_t n;
+
+    n = x.length();
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::filterlrma(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, k, &_alglib_env_state);
+
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
 
 *************************************************************************/
 _logitmodel_owner::_logitmodel_owner()
@@ -7661,7 +6338,7 @@ void mlpeserialize(mlpensemble &obj, std::string &s_out)
         s_out.reserve((size_t)(ssize+1));
         alglib_impl::ae_serializer_sstart_str(&serializer, &s_out);
         alglib_impl::mlpeserialize(&serializer, obj.c_ptr(), &state);
-        alglib_impl::ae_serializer_stop(&serializer);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
         if( s_out.length()>(size_t)ssize )
             throw ap_error("ALGLIB: serialization integrity error");
         alglib_impl::ae_serializer_clear(&serializer);
@@ -7675,7 +6352,7 @@ void mlpeserialize(mlpensemble &obj, std::string &s_out)
 /*************************************************************************
 This function unserializes data structure from string.
 *************************************************************************/
-void mlpeunserialize(std::string &s_in, mlpensemble &obj)
+void mlpeunserialize(const std::string &s_in, mlpensemble &obj)
 {
     alglib_impl::ae_state state;
     alglib_impl::ae_serializer serializer;
@@ -7686,7 +6363,66 @@ void mlpeunserialize(std::string &s_in, mlpensemble &obj)
         alglib_impl::ae_serializer_init(&serializer);
         alglib_impl::ae_serializer_ustart_str(&serializer, &s_in);
         alglib_impl::mlpeunserialize(&serializer, obj.c_ptr(), &state);
-        alglib_impl::ae_serializer_stop(&serializer);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
+        alglib_impl::ae_serializer_clear(&serializer);
+        alglib_impl::ae_state_clear(&state);
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(state.error_msg);
+    }
+}
+
+
+/*************************************************************************
+This function serializes data structure to C++ stream.
+
+Data stream generated by this function is same as  string  representation
+generated  by  string  version  of  serializer - alphanumeric characters,
+dots, underscores, minus signs, which are grouped into words separated by
+spaces and CR+LF.
+
+We recommend you to read comments on string version of serializer to find
+out more about serialization of AlGLIB objects.
+*************************************************************************/
+void mlpeserialize(mlpensemble &obj, std::ostream &s_out)
+{
+    alglib_impl::ae_state state;
+    alglib_impl::ae_serializer serializer;
+
+    alglib_impl::ae_state_init(&state);
+    try
+    {
+        alglib_impl::ae_serializer_init(&serializer);
+        alglib_impl::ae_serializer_alloc_start(&serializer);
+        alglib_impl::mlpealloc(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_get_alloc_size(&serializer); // not actually needed, but we have to ask
+        alglib_impl::ae_serializer_sstart_stream(&serializer, &s_out);
+        alglib_impl::mlpeserialize(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
+        alglib_impl::ae_serializer_clear(&serializer);
+        alglib_impl::ae_state_clear(&state);
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(state.error_msg);
+    }
+}
+/*************************************************************************
+This function unserializes data structure from stream.
+*************************************************************************/
+void mlpeunserialize(const std::istream &s_in, mlpensemble &obj)
+{
+    alglib_impl::ae_state state;
+    alglib_impl::ae_serializer serializer;
+
+    alglib_impl::ae_state_init(&state);
+    try
+    {
+        alglib_impl::ae_serializer_init(&serializer);
+        alglib_impl::ae_serializer_ustart_stream(&serializer, &s_in);
+        alglib_impl::mlpeunserialize(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
         alglib_impl::ae_serializer_clear(&serializer);
         alglib_impl::ae_state_clear(&state);
     }
@@ -9622,57 +8358,1775 @@ void smp_mlptrainensemblees(const mlptrainer &s, const mlpensemble &ensemble, co
 }
 
 /*************************************************************************
-Principal components analysis
+This structure is a clusterization engine.
 
-Subroutine  builds  orthogonal  basis  where  first  axis  corresponds  to
-direction with maximum variance, second axis maximizes variance in subspace
-orthogonal to first axis and so on.
+You should not try to access its fields directly.
+Use ALGLIB functions in order to work with this object.
 
-It should be noted that, unlike LDA, PCA does not use class labels.
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+_clusterizerstate_owner::_clusterizerstate_owner()
+{
+    p_struct = (alglib_impl::clusterizerstate*)alglib_impl::ae_malloc(sizeof(alglib_impl::clusterizerstate), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_clusterizerstate_init(p_struct, NULL);
+}
+
+_clusterizerstate_owner::_clusterizerstate_owner(const _clusterizerstate_owner &rhs)
+{
+    p_struct = (alglib_impl::clusterizerstate*)alglib_impl::ae_malloc(sizeof(alglib_impl::clusterizerstate), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_clusterizerstate_init_copy(p_struct, const_cast<alglib_impl::clusterizerstate*>(rhs.p_struct), NULL);
+}
+
+_clusterizerstate_owner& _clusterizerstate_owner::operator=(const _clusterizerstate_owner &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    alglib_impl::_clusterizerstate_clear(p_struct);
+    alglib_impl::_clusterizerstate_init_copy(p_struct, const_cast<alglib_impl::clusterizerstate*>(rhs.p_struct), NULL);
+    return *this;
+}
+
+_clusterizerstate_owner::~_clusterizerstate_owner()
+{
+    alglib_impl::_clusterizerstate_clear(p_struct);
+    ae_free(p_struct);
+}
+
+alglib_impl::clusterizerstate* _clusterizerstate_owner::c_ptr()
+{
+    return p_struct;
+}
+
+alglib_impl::clusterizerstate* _clusterizerstate_owner::c_ptr() const
+{
+    return const_cast<alglib_impl::clusterizerstate*>(p_struct);
+}
+clusterizerstate::clusterizerstate() : _clusterizerstate_owner() 
+{
+}
+
+clusterizerstate::clusterizerstate(const clusterizerstate &rhs):_clusterizerstate_owner(rhs) 
+{
+}
+
+clusterizerstate& clusterizerstate::operator=(const clusterizerstate &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    _clusterizerstate_owner::operator=(rhs);
+    return *this;
+}
+
+clusterizerstate::~clusterizerstate()
+{
+}
+
+
+/*************************************************************************
+This structure  is used to store results of the agglomerative hierarchical
+clustering (AHC).
+
+Following information is returned:
+
+* TerminationType - completion code:
+  * 1   for successful completion of algorithm
+  * -5  inappropriate combination of  clustering  algorithm  and  distance
+        function was used. As for now, it  is  possible  only when  Ward's
+        method is called for dataset with non-Euclidean distance function.
+  In case negative completion code is returned,  other  fields  of  report
+  structure are invalid and should not be used.
+
+* NPoints contains number of points in the original dataset
+
+* Z contains information about merges performed  (see below).  Z  contains
+  indexes from the original (unsorted) dataset and it can be used when you
+  need to know what points were merged. However, it is not convenient when
+  you want to build a dendrograd (see below).
+
+* if  you  want  to  build  dendrogram, you  can use Z, but it is not good
+  option, because Z contains  indexes from  unsorted  dataset.  Dendrogram
+  built from such dataset is likely to have intersections. So, you have to
+  reorder you points before building dendrogram.
+  Permutation which reorders point is returned in P. Another representation
+  of  merges,  which  is  more  convenient for dendorgram construction, is
+  returned in PM.
+
+* more information on format of Z, P and PM can be found below and in the
+  examples from ALGLIB Reference Manual.
+
+FORMAL DESCRIPTION OF FIELDS:
+    NPoints         number of points
+    Z               array[NPoints-1,2],  contains   indexes   of  clusters
+                    linked in pairs to  form  clustering  tree.  I-th  row
+                    corresponds to I-th merge:
+                    * Z[I,0] - index of the first cluster to merge
+                    * Z[I,1] - index of the second cluster to merge
+                    * Z[I,0]<Z[I,1]
+                    * clusters are  numbered  from 0 to 2*NPoints-2,  with
+                      indexes from 0 to NPoints-1 corresponding to  points
+                      of the original dataset, and indexes from NPoints to
+                      2*NPoints-2  correspond  to  clusters  generated  by
+                      subsequent  merges  (I-th  row  of Z creates cluster
+                      with index NPoints+I).
+
+                    IMPORTANT: indexes in Z[] are indexes in the ORIGINAL,
+                    unsorted dataset. In addition to  Z algorithm  outputs
+                    permutation which rearranges points in such  way  that
+                    subsequent merges are  performed  on  adjacent  points
+                    (such order is needed if you want to build dendrogram).
+                    However,  indexes  in  Z  are  related  to   original,
+                    unrearranged sequence of points.
+
+    P               array[NPoints], permutation which reorders points  for
+                    dendrogram  construction.  P[i] contains  index of the
+                    position  where  we  should  move  I-th  point  of the
+                    original dataset in order to apply merges PZ/PM.
+
+    PZ              same as Z, but for permutation of points given  by  P.
+                    The  only  thing  which  changed  are  indexes  of the
+                    original points; indexes of clusters remained same.
+
+    MergeDist       array[NPoints-1], contains distances between  clusters
+                    being merged (MergeDist[i] correspond to merge  stored
+                    in Z[i,...]):
+                    * CLINK, SLINK and  average  linkage algorithms report
+                      "raw", unmodified distance metric.
+                    * Ward's   method   reports   weighted   intra-cluster
+                      variance, which is equal to ||Ca-Cb||^2 * Sa*Sb/(Sa+Sb).
+                      Here  A  and  B  are  clusters being merged, Ca is a
+                      center of A, Cb is a center of B, Sa is a size of A,
+                      Sb is a size of B.
+
+    PM              array[NPoints-1,6], another representation of  merges,
+                    which is suited for dendrogram construction. It  deals
+                    with rearranged points (permutation P is applied)  and
+                    represents merges in a form which different  from  one
+                    used by Z.
+                    For each I from 0 to NPoints-2, I-th row of PM represents
+                    merge performed on two clusters C0 and C1. Here:
+                    * C0 contains points with indexes PM[I,0]...PM[I,1]
+                    * C1 contains points with indexes PM[I,2]...PM[I,3]
+                    * indexes stored in PM are given for dataset sorted
+                      according to permutation P
+                    * PM[I,1]=PM[I,2]-1 (only adjacent clusters are merged)
+                    * PM[I,0]<=PM[I,1], PM[I,2]<=PM[I,3], i.e. both
+                      clusters contain at least one point
+                    * heights of "subdendrograms" corresponding  to  C0/C1
+                      are stored in PM[I,4]  and  PM[I,5].  Subdendrograms
+                      corresponding   to   single-point   clusters    have
+                      height=0. Dendrogram of the merge result has  height
+                      H=max(H0,H1)+1.
+
+NOTE: there is one-to-one correspondence between merges described by Z and
+      PM. I-th row of Z describes same merge of clusters as I-th row of PM,
+      with "left" cluster from Z corresponding to the "left" one from PM.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+_ahcreport_owner::_ahcreport_owner()
+{
+    p_struct = (alglib_impl::ahcreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::ahcreport), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_ahcreport_init(p_struct, NULL);
+}
+
+_ahcreport_owner::_ahcreport_owner(const _ahcreport_owner &rhs)
+{
+    p_struct = (alglib_impl::ahcreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::ahcreport), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_ahcreport_init_copy(p_struct, const_cast<alglib_impl::ahcreport*>(rhs.p_struct), NULL);
+}
+
+_ahcreport_owner& _ahcreport_owner::operator=(const _ahcreport_owner &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    alglib_impl::_ahcreport_clear(p_struct);
+    alglib_impl::_ahcreport_init_copy(p_struct, const_cast<alglib_impl::ahcreport*>(rhs.p_struct), NULL);
+    return *this;
+}
+
+_ahcreport_owner::~_ahcreport_owner()
+{
+    alglib_impl::_ahcreport_clear(p_struct);
+    ae_free(p_struct);
+}
+
+alglib_impl::ahcreport* _ahcreport_owner::c_ptr()
+{
+    return p_struct;
+}
+
+alglib_impl::ahcreport* _ahcreport_owner::c_ptr() const
+{
+    return const_cast<alglib_impl::ahcreport*>(p_struct);
+}
+ahcreport::ahcreport() : _ahcreport_owner() ,terminationtype(p_struct->terminationtype),npoints(p_struct->npoints),p(&p_struct->p),z(&p_struct->z),pz(&p_struct->pz),pm(&p_struct->pm),mergedist(&p_struct->mergedist)
+{
+}
+
+ahcreport::ahcreport(const ahcreport &rhs):_ahcreport_owner(rhs) ,terminationtype(p_struct->terminationtype),npoints(p_struct->npoints),p(&p_struct->p),z(&p_struct->z),pz(&p_struct->pz),pm(&p_struct->pm),mergedist(&p_struct->mergedist)
+{
+}
+
+ahcreport& ahcreport::operator=(const ahcreport &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    _ahcreport_owner::operator=(rhs);
+    return *this;
+}
+
+ahcreport::~ahcreport()
+{
+}
+
+
+/*************************************************************************
+This  structure   is  used  to  store  results of the  k-means  clustering
+algorithm.
+
+Following information is always returned:
+* NPoints contains number of points in the original dataset
+* TerminationType contains completion code, negative on failure, positive
+  on success
+* K contains number of clusters
+
+For positive TerminationType we return:
+* NFeatures contains number of variables in the original dataset
+* C, which contains centers found by algorithm
+* CIdx, which maps points of the original dataset to clusters
+
+FORMAL DESCRIPTION OF FIELDS:
+    NPoints         number of points, >=0
+    NFeatures       number of variables, >=1
+    TerminationType completion code:
+                    * -5 if  distance  type  is  anything  different  from
+                         Euclidean metric
+                    * -3 for degenerate dataset: a) less  than  K  distinct
+                         points, b) K=0 for non-empty dataset.
+                    * +1 for successful completion
+    K               number of clusters
+    C               array[K,NFeatures], rows of the array store centers
+    CIdx            array[NPoints], which contains cluster indexes
+    IterationsCount actual number of iterations performed by clusterizer.
+                    If algorithm performed more than one random restart,
+                    total number of iterations is returned.
+    Energy          merit function, "energy", sum  of  squared  deviations
+                    from cluster centers
+
+  -- ALGLIB --
+     Copyright 27.11.2012 by Bochkanov Sergey
+*************************************************************************/
+_kmeansreport_owner::_kmeansreport_owner()
+{
+    p_struct = (alglib_impl::kmeansreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::kmeansreport), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_kmeansreport_init(p_struct, NULL);
+}
+
+_kmeansreport_owner::_kmeansreport_owner(const _kmeansreport_owner &rhs)
+{
+    p_struct = (alglib_impl::kmeansreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::kmeansreport), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_kmeansreport_init_copy(p_struct, const_cast<alglib_impl::kmeansreport*>(rhs.p_struct), NULL);
+}
+
+_kmeansreport_owner& _kmeansreport_owner::operator=(const _kmeansreport_owner &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    alglib_impl::_kmeansreport_clear(p_struct);
+    alglib_impl::_kmeansreport_init_copy(p_struct, const_cast<alglib_impl::kmeansreport*>(rhs.p_struct), NULL);
+    return *this;
+}
+
+_kmeansreport_owner::~_kmeansreport_owner()
+{
+    alglib_impl::_kmeansreport_clear(p_struct);
+    ae_free(p_struct);
+}
+
+alglib_impl::kmeansreport* _kmeansreport_owner::c_ptr()
+{
+    return p_struct;
+}
+
+alglib_impl::kmeansreport* _kmeansreport_owner::c_ptr() const
+{
+    return const_cast<alglib_impl::kmeansreport*>(p_struct);
+}
+kmeansreport::kmeansreport() : _kmeansreport_owner() ,npoints(p_struct->npoints),nfeatures(p_struct->nfeatures),terminationtype(p_struct->terminationtype),iterationscount(p_struct->iterationscount),energy(p_struct->energy),k(p_struct->k),c(&p_struct->c),cidx(&p_struct->cidx)
+{
+}
+
+kmeansreport::kmeansreport(const kmeansreport &rhs):_kmeansreport_owner(rhs) ,npoints(p_struct->npoints),nfeatures(p_struct->nfeatures),terminationtype(p_struct->terminationtype),iterationscount(p_struct->iterationscount),energy(p_struct->energy),k(p_struct->k),c(&p_struct->c),cidx(&p_struct->cidx)
+{
+}
+
+kmeansreport& kmeansreport::operator=(const kmeansreport &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    _kmeansreport_owner::operator=(rhs);
+    return *this;
+}
+
+kmeansreport::~kmeansreport()
+{
+}
+
+/*************************************************************************
+This function initializes clusterizer object. Newly initialized object  is
+empty, i.e. it does not contain dataset. You should use it as follows:
+1. creation
+2. dataset is added with ClusterizerSetPoints()
+3. additional parameters are set
+3. clusterization is performed with one of the clustering functions
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizercreate(clusterizerstate &s)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizercreate(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function adds dataset to the clusterizer structure.
+
+This function overrides all previous calls  of  ClusterizerSetPoints()  or
+ClusterizerSetDistances().
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    XY      -   array[NPoints,NFeatures], dataset
+    NPoints -   number of points, >=0
+    NFeatures-  number of features, >=1
+    DistType-   distance function:
+                *  0    Chebyshev distance  (L-inf norm)
+                *  1    city block distance (L1 norm)
+                *  2    Euclidean distance  (L2 norm), non-squared
+                * 10    Pearson correlation:
+                        dist(a,b) = 1-corr(a,b)
+                * 11    Absolute Pearson correlation:
+                        dist(a,b) = 1-|corr(a,b)|
+                * 12    Uncentered Pearson correlation (cosine of the angle):
+                        dist(a,b) = a'*b/(|a|*|b|)
+                * 13    Absolute uncentered Pearson correlation
+                        dist(a,b) = |a'*b|/(|a|*|b|)
+                * 20    Spearman rank correlation:
+                        dist(a,b) = 1-rankcorr(a,b)
+                * 21    Absolute Spearman rank correlation
+                        dist(a,b) = 1-|rankcorr(a,b)|
+
+NOTE 1: different distance functions have different performance penalty:
+        * Euclidean or Pearson correlation distances are the fastest ones
+        * Spearman correlation distance function is a bit slower
+        * city block and Chebyshev distances are order of magnitude slower
+
+        The reason behing difference in performance is that correlation-based
+        distance functions are computed using optimized linear algebra kernels,
+        while Chebyshev and city block distance functions are computed using
+        simple nested loops with two branches at each iteration.
+
+NOTE 2: different clustering algorithms have different limitations:
+        * agglomerative hierarchical clustering algorithms may be used with
+          any kind of distance metric
+        * k-means++ clustering algorithm may be used only  with  Euclidean
+          distance function
+        Thus, list of specific clustering algorithms you may  use  depends
+        on distance function you specify when you set your dataset.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetpoints(const clusterizerstate &s, const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizersetpoints(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, disttype, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function adds dataset to the clusterizer structure.
+
+This function overrides all previous calls  of  ClusterizerSetPoints()  or
+ClusterizerSetDistances().
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    XY      -   array[NPoints,NFeatures], dataset
+    NPoints -   number of points, >=0
+    NFeatures-  number of features, >=1
+    DistType-   distance function:
+                *  0    Chebyshev distance  (L-inf norm)
+                *  1    city block distance (L1 norm)
+                *  2    Euclidean distance  (L2 norm), non-squared
+                * 10    Pearson correlation:
+                        dist(a,b) = 1-corr(a,b)
+                * 11    Absolute Pearson correlation:
+                        dist(a,b) = 1-|corr(a,b)|
+                * 12    Uncentered Pearson correlation (cosine of the angle):
+                        dist(a,b) = a'*b/(|a|*|b|)
+                * 13    Absolute uncentered Pearson correlation
+                        dist(a,b) = |a'*b|/(|a|*|b|)
+                * 20    Spearman rank correlation:
+                        dist(a,b) = 1-rankcorr(a,b)
+                * 21    Absolute Spearman rank correlation
+                        dist(a,b) = 1-|rankcorr(a,b)|
+
+NOTE 1: different distance functions have different performance penalty:
+        * Euclidean or Pearson correlation distances are the fastest ones
+        * Spearman correlation distance function is a bit slower
+        * city block and Chebyshev distances are order of magnitude slower
+
+        The reason behing difference in performance is that correlation-based
+        distance functions are computed using optimized linear algebra kernels,
+        while Chebyshev and city block distance functions are computed using
+        simple nested loops with two branches at each iteration.
+
+NOTE 2: different clustering algorithms have different limitations:
+        * agglomerative hierarchical clustering algorithms may be used with
+          any kind of distance metric
+        * k-means++ clustering algorithm may be used only  with  Euclidean
+          distance function
+        Thus, list of specific clustering algorithms you may  use  depends
+        on distance function you specify when you set your dataset.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetpoints(const clusterizerstate &s, const real_2d_array &xy, const ae_int_t disttype)
+{
+    alglib_impl::ae_state _alglib_env_state;    
+    ae_int_t npoints;
+    ae_int_t nfeatures;
+
+    npoints = xy.rows();
+    nfeatures = xy.cols();
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizersetpoints(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, disttype, &_alglib_env_state);
+
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function adds dataset given by distance  matrix  to  the  clusterizer
+structure. It is important that dataset is not  given  explicitly  -  only
+distance matrix is given.
+
+This function overrides all previous calls  of  ClusterizerSetPoints()  or
+ClusterizerSetDistances().
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    D       -   array[NPoints,NPoints], distance matrix given by its upper
+                or lower triangle (main diagonal is  ignored  because  its
+                entries are expected to be zero).
+    NPoints -   number of points
+    IsUpper -   whether upper or lower triangle of D is given.
+
+NOTE 1: different clustering algorithms have different limitations:
+        * agglomerative hierarchical clustering algorithms may be used with
+          any kind of distance metric, including one  which  is  given  by
+          distance matrix
+        * k-means++ clustering algorithm may be used only  with  Euclidean
+          distance function and explicitly given points - it  can  not  be
+          used with dataset given by distance matrix
+        Thus, if you call this function, you will be unable to use k-means
+        clustering algorithm to process your problem.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetdistances(const clusterizerstate &s, const real_2d_array &d, const ae_int_t npoints, const bool isupper)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizersetdistances(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ae_matrix*>(d.c_ptr()), npoints, isupper, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function adds dataset given by distance  matrix  to  the  clusterizer
+structure. It is important that dataset is not  given  explicitly  -  only
+distance matrix is given.
+
+This function overrides all previous calls  of  ClusterizerSetPoints()  or
+ClusterizerSetDistances().
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    D       -   array[NPoints,NPoints], distance matrix given by its upper
+                or lower triangle (main diagonal is  ignored  because  its
+                entries are expected to be zero).
+    NPoints -   number of points
+    IsUpper -   whether upper or lower triangle of D is given.
+
+NOTE 1: different clustering algorithms have different limitations:
+        * agglomerative hierarchical clustering algorithms may be used with
+          any kind of distance metric, including one  which  is  given  by
+          distance matrix
+        * k-means++ clustering algorithm may be used only  with  Euclidean
+          distance function and explicitly given points - it  can  not  be
+          used with dataset given by distance matrix
+        Thus, if you call this function, you will be unable to use k-means
+        clustering algorithm to process your problem.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetdistances(const clusterizerstate &s, const real_2d_array &d, const bool isupper)
+{
+    alglib_impl::ae_state _alglib_env_state;    
+    ae_int_t npoints;
+    if( (d.rows()!=d.cols()))
+        throw ap_error("Error while calling 'clusterizersetdistances': looks like one of arguments has wrong size");
+    npoints = d.rows();
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizersetdistances(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ae_matrix*>(d.c_ptr()), npoints, isupper, &_alglib_env_state);
+
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function sets agglomerative hierarchical clustering algorithm
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Algo    -   algorithm type:
+                * 0     complete linkage (default algorithm)
+                * 1     single linkage
+                * 2     unweighted average linkage
+                * 3     weighted average linkage
+                * 4     Ward's method
+
+NOTE: Ward's method works correctly only with Euclidean  distance,  that's
+      why algorithm will return negative termination  code  (failure)  for
+      any other distance type.
+
+      It is possible, however,  to  use  this  method  with  user-supplied
+      distance matrix. It  is  your  responsibility  to pass one which was
+      calculated with Euclidean distance function.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetahcalgo(const clusterizerstate &s, const ae_int_t algo)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizersetahcalgo(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), algo, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This  function  sets k-means properties:  number  of  restarts and maximum
+number of iterations per one run.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Restarts-   restarts count, >=1.
+                k-means++ algorithm performs several restarts and  chooses
+                best set of centers (one with minimum squared distance).
+    MaxIts  -   maximum number of k-means iterations performed during  one
+                run. >=0, zero value means that algorithm performs unlimited
+                number of iterations.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetkmeanslimits(const clusterizerstate &s, const ae_int_t restarts, const ae_int_t maxits)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizersetkmeanslimits(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), restarts, maxits, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function sets k-means  initialization  algorithm.  Several  different
+algorithms can be chosen, including k-means++.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    InitAlgo-   initialization algorithm:
+                * 0  automatic selection ( different  versions  of  ALGLIB
+                     may select different algorithms)
+                * 1  random initialization
+                * 2  k-means++ initialization  (best  quality  of  initial
+                     centers, but long  non-parallelizable  initialization
+                     phase with bad cache locality)
+                * 3  "fast-greedy"  algorithm  with  efficient,  easy   to
+                     parallelize initialization. Quality of initial centers
+                     is  somewhat  worse  than  that  of  k-means++.  This
+                     algorithm is a default one in the current version  of
+                     ALGLIB.
+                *-1  "debug" algorithm which always selects first  K  rows
+                     of dataset; this algorithm is used for debug purposes
+                     only. Do not use it in the industrial code!
+
+  -- ALGLIB --
+     Copyright 21.01.2015 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetkmeansinit(const clusterizerstate &s, const ae_int_t initalgo)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizersetkmeansinit(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), initalgo, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This  function  sets  seed  which  is  used to initialize internal RNG. By
+default, deterministic seed is used - same for each run of clusterizer. If
+you specify non-deterministic  seed  value,  then  some  algorithms  which
+depend on random initialization (in current version: k-means)  may  return
+slightly different results after each run.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Seed    -   seed:
+                * positive values = use deterministic seed for each run of
+                  algorithms which depend on random initialization
+                * zero or negative values = use non-deterministic seed
+
+  -- ALGLIB --
+     Copyright 08.06.2017 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetseed(const clusterizerstate &s, const ae_int_t seed)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizersetseed(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), seed, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function performs agglomerative hierarchical clustering
 
 COMMERCIAL EDITION OF ALGLIB:
 
-  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! Commercial version of ALGLIB includes two  important  improvements  of
   ! this function, which can be used from C++ and C#:
   ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
   !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
+  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
+  ! distance matrix calculation  and  clustering  itself. Only first phase
+  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
+  ! threading. Thus, acceleration is significant only for  medium or high-
+  ! dimensional problems.
   !
   ! We recommend you to read 'Working with commercial version' section  of
   ! ALGLIB Reference Manual in order to find out how to  use  performance-
   ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
-    X           -   dataset, array[0..NPoints-1,0..NVars-1].
-                    matrix contains ONLY INDEPENDENT VARIABLES.
-    NPoints     -   dataset size, NPoints>=0
-    NVars       -   number of independent variables, NVars>=1
+    S       -   clusterizer state, initialized by ClusterizerCreate()
 
 OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -4, if SVD subroutine haven't converged
-                    * -1, if wrong parameters has been passed (NPoints<0,
-                          NVars<1)
-                    *  1, if task is solved
-    S2          -   array[0..NVars-1]. variance values corresponding
-                    to basis vectors.
-    V           -   array[0..NVars-1,0..NVars-1]
-                    matrix, whose columns store basis vectors.
+    Rep     -   clustering results; see description of AHCReport
+                structure for more information.
+
+NOTE 1: hierarchical clustering algorithms require large amounts of memory.
+        In particular, this implementation needs  sizeof(double)*NPoints^2
+        bytes, which are used to store distance matrix. In  case  we  work
+        with user-supplied matrix, this amount is multiplied by 2 (we have
+        to store original matrix and to work with its copy).
+
+        For example, problem with 10000 points  would require 800M of RAM,
+        even when working in a 1-dimensional space.
 
   -- ALGLIB --
-     Copyright 25.08.2008 by Bochkanov Sergey
+     Copyright 10.07.2012 by Bochkanov Sergey
 *************************************************************************/
-void pcabuildbasis(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, real_1d_array &s2, real_2d_array &v)
+void clusterizerrunahc(const clusterizerstate &s, ahcreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
     alglib_impl::ae_state_init(&_alglib_env_state);
     try
     {
-        alglib_impl::pcabuildbasis(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), npoints, nvars, &info, const_cast<alglib_impl::ae_vector*>(s2.c_ptr()), const_cast<alglib_impl::ae_matrix*>(v.c_ptr()), &_alglib_env_state);
+        alglib_impl::clusterizerrunahc(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+
+void smp_clusterizerrunahc(const clusterizerstate &s, ahcreport &rep)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::_pexec_clusterizerrunahc(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function performs clustering by k-means++ algorithm.
+
+You may change algorithm properties by calling:
+* ClusterizerSetKMeansLimits() to change number of restarts or iterations
+* ClusterizerSetKMeansInit() to change initialization algorithm
+
+By  default,  one  restart  and  unlimited number of iterations are  used.
+Initialization algorithm is chosen automatically.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes  two important  improvements  of
+  ! this function:
+  ! * multicore support (can be used from C# and C++)
+  ! * access to high-performance C++ core (actual for C# users)
+  !
+  ! K-means clustering  algorithm has two  phases:  selection  of  initial
+  ! centers  and  clustering  itself.  ALGLIB  parallelizes  both  phases.
+  ! Parallel version is optimized for the following  scenario:  medium  or
+  ! high-dimensional problem (20 or more dimensions) with large number  of
+  ! points and clusters. However, some speed-up can be obtained even  when
+  ! assumptions above are violated.
+  !
+  ! As for native-vs-managed comparison, working with native  core  brings
+  ! 30-40% improvement in speed over pure C# version of ALGLIB.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    K       -   number of clusters, K>=0.
+                K  can  be  zero only when algorithm is called  for  empty
+                dataset,  in   this   case   completion  code  is  set  to
+                success (+1).
+                If  K=0  and  dataset  size  is  non-zero,  we   can   not
+                meaningfully assign points to some center  (there  are  no
+                centers because K=0) and  return  -3  as  completion  code
+                (failure).
+
+OUTPUT PARAMETERS:
+    Rep     -   clustering results; see description of KMeansReport
+                structure for more information.
+
+NOTE 1: k-means  clustering  can  be  performed  only  for  datasets  with
+        Euclidean  distance  function.  Algorithm  will  return   negative
+        completion code in Rep.TerminationType in case dataset  was  added
+        to clusterizer with DistType other than Euclidean (or dataset  was
+        specified by distance matrix instead of explicitly given points).
+
+NOTE 2: by default, k-means uses non-deterministic seed to initialize  RNG
+        which is used to select initial centers. As  result,  each  run of
+        algorithm may return different values. If you  need  deterministic
+        behavior, use ClusterizerSetSeed() function.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerrunkmeans(const clusterizerstate &s, const ae_int_t k, kmeansreport &rep)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizerrunkmeans(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), k, const_cast<alglib_impl::kmeansreport*>(rep.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+
+void smp_clusterizerrunkmeans(const clusterizerstate &s, const ae_int_t k, kmeansreport &rep)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::_pexec_clusterizerrunkmeans(const_cast<alglib_impl::clusterizerstate*>(s.c_ptr()), k, const_cast<alglib_impl::kmeansreport*>(rep.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function returns distance matrix for dataset
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
+  ! distance matrix calculation  and  clustering  itself. Only first phase
+  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
+  ! threading. Thus, acceleration is significant only for  medium or high-
+  ! dimensional problems.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY      -   array[NPoints,NFeatures], dataset
+    NPoints -   number of points, >=0
+    NFeatures-  number of features, >=1
+    DistType-   distance function:
+                *  0    Chebyshev distance  (L-inf norm)
+                *  1    city block distance (L1 norm)
+                *  2    Euclidean distance  (L2 norm, non-squared)
+                * 10    Pearson correlation:
+                        dist(a,b) = 1-corr(a,b)
+                * 11    Absolute Pearson correlation:
+                        dist(a,b) = 1-|corr(a,b)|
+                * 12    Uncentered Pearson correlation (cosine of the angle):
+                        dist(a,b) = a'*b/(|a|*|b|)
+                * 13    Absolute uncentered Pearson correlation
+                        dist(a,b) = |a'*b|/(|a|*|b|)
+                * 20    Spearman rank correlation:
+                        dist(a,b) = 1-rankcorr(a,b)
+                * 21    Absolute Spearman rank correlation
+                        dist(a,b) = 1-|rankcorr(a,b)|
+
+OUTPUT PARAMETERS:
+    D       -   array[NPoints,NPoints], distance matrix
+                (full matrix is returned, with lower and upper triangles)
+
+NOTE:  different distance functions have different performance penalty:
+       * Euclidean or Pearson correlation distances are the fastest ones
+       * Spearman correlation distance function is a bit slower
+       * city block and Chebyshev distances are order of magnitude slower
+
+       The reason behing difference in performance is that correlation-based
+       distance functions are computed using optimized linear algebra kernels,
+       while Chebyshev and city block distance functions are computed using
+       simple nested loops with two branches at each iteration.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizergetdistances(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype, real_2d_array &d)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizergetdistances(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, disttype, const_cast<alglib_impl::ae_matrix*>(d.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+
+void smp_clusterizergetdistances(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype, real_2d_array &d)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::_pexec_clusterizergetdistances(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, disttype, const_cast<alglib_impl::ae_matrix*>(d.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This function takes as input clusterization report Rep,  desired  clusters
+count K, and builds top K clusters from hierarchical clusterization  tree.
+It returns assignment of points to clusters (array of cluster indexes).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    K       -   desired number of clusters, 1<=K<=NPoints.
+                K can be zero only when NPoints=0.
+
+OUTPUT PARAMETERS:
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizergetkclusters(const ahcreport &rep, const ae_int_t k, integer_1d_array &cidx, integer_1d_array &cz)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizergetkclusters(const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), k, const_cast<alglib_impl::ae_vector*>(cidx.c_ptr()), const_cast<alglib_impl::ae_vector*>(cz.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This  function  accepts  AHC  report  Rep,  desired  minimum  intercluster
+distance and returns top clusters from  hierarchical  clusterization  tree
+which are separated by distance R or HIGHER.
+
+It returns assignment of points to clusters (array of cluster indexes).
+
+There is one more function with similar name - ClusterizerSeparatedByCorr,
+which returns clusters with intercluster correlation equal to R  or  LOWER
+(note: higher for distance, lower for correlation).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    R       -   desired minimum intercluster distance, R>=0
+
+OUTPUT PARAMETERS:
+    K       -   number of clusters, 1<=K<=NPoints
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerseparatedbydist(const ahcreport &rep, const double r, ae_int_t &k, integer_1d_array &cidx, integer_1d_array &cz)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizerseparatedbydist(const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), r, &k, const_cast<alglib_impl::ae_vector*>(cidx.c_ptr()), const_cast<alglib_impl::ae_vector*>(cz.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This  function  accepts  AHC  report  Rep,  desired  maximum  intercluster
+correlation and returns top clusters from hierarchical clusterization tree
+which are separated by correlation R or LOWER.
+
+It returns assignment of points to clusters (array of cluster indexes).
+
+There is one more function with similar name - ClusterizerSeparatedByDist,
+which returns clusters with intercluster distance equal  to  R  or  HIGHER
+(note: higher for distance, lower for correlation).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    R       -   desired maximum intercluster correlation, -1<=R<=+1
+
+OUTPUT PARAMETERS:
+    K       -   number of clusters, 1<=K<=NPoints
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerseparatedbycorr(const ahcreport &rep, const double r, ae_int_t &k, integer_1d_array &cidx, integer_1d_array &cz)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::clusterizerseparatedbycorr(const_cast<alglib_impl::ahcreport*>(rep.c_ptr()), r, &k, const_cast<alglib_impl::ae_vector*>(cidx.c_ptr()), const_cast<alglib_impl::ae_vector*>(cz.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+
+*************************************************************************/
+_decisionforest_owner::_decisionforest_owner()
+{
+    p_struct = (alglib_impl::decisionforest*)alglib_impl::ae_malloc(sizeof(alglib_impl::decisionforest), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_decisionforest_init(p_struct, NULL);
+}
+
+_decisionforest_owner::_decisionforest_owner(const _decisionforest_owner &rhs)
+{
+    p_struct = (alglib_impl::decisionforest*)alglib_impl::ae_malloc(sizeof(alglib_impl::decisionforest), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_decisionforest_init_copy(p_struct, const_cast<alglib_impl::decisionforest*>(rhs.p_struct), NULL);
+}
+
+_decisionforest_owner& _decisionforest_owner::operator=(const _decisionforest_owner &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    alglib_impl::_decisionforest_clear(p_struct);
+    alglib_impl::_decisionforest_init_copy(p_struct, const_cast<alglib_impl::decisionforest*>(rhs.p_struct), NULL);
+    return *this;
+}
+
+_decisionforest_owner::~_decisionforest_owner()
+{
+    alglib_impl::_decisionforest_clear(p_struct);
+    ae_free(p_struct);
+}
+
+alglib_impl::decisionforest* _decisionforest_owner::c_ptr()
+{
+    return p_struct;
+}
+
+alglib_impl::decisionforest* _decisionforest_owner::c_ptr() const
+{
+    return const_cast<alglib_impl::decisionforest*>(p_struct);
+}
+decisionforest::decisionforest() : _decisionforest_owner() 
+{
+}
+
+decisionforest::decisionforest(const decisionforest &rhs):_decisionforest_owner(rhs) 
+{
+}
+
+decisionforest& decisionforest::operator=(const decisionforest &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    _decisionforest_owner::operator=(rhs);
+    return *this;
+}
+
+decisionforest::~decisionforest()
+{
+}
+
+
+/*************************************************************************
+
+*************************************************************************/
+_dfreport_owner::_dfreport_owner()
+{
+    p_struct = (alglib_impl::dfreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::dfreport), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_dfreport_init(p_struct, NULL);
+}
+
+_dfreport_owner::_dfreport_owner(const _dfreport_owner &rhs)
+{
+    p_struct = (alglib_impl::dfreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::dfreport), NULL);
+    if( p_struct==NULL )
+        throw ap_error("ALGLIB: malloc error");
+    alglib_impl::_dfreport_init_copy(p_struct, const_cast<alglib_impl::dfreport*>(rhs.p_struct), NULL);
+}
+
+_dfreport_owner& _dfreport_owner::operator=(const _dfreport_owner &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    alglib_impl::_dfreport_clear(p_struct);
+    alglib_impl::_dfreport_init_copy(p_struct, const_cast<alglib_impl::dfreport*>(rhs.p_struct), NULL);
+    return *this;
+}
+
+_dfreport_owner::~_dfreport_owner()
+{
+    alglib_impl::_dfreport_clear(p_struct);
+    ae_free(p_struct);
+}
+
+alglib_impl::dfreport* _dfreport_owner::c_ptr()
+{
+    return p_struct;
+}
+
+alglib_impl::dfreport* _dfreport_owner::c_ptr() const
+{
+    return const_cast<alglib_impl::dfreport*>(p_struct);
+}
+dfreport::dfreport() : _dfreport_owner() ,relclserror(p_struct->relclserror),avgce(p_struct->avgce),rmserror(p_struct->rmserror),avgerror(p_struct->avgerror),avgrelerror(p_struct->avgrelerror),oobrelclserror(p_struct->oobrelclserror),oobavgce(p_struct->oobavgce),oobrmserror(p_struct->oobrmserror),oobavgerror(p_struct->oobavgerror),oobavgrelerror(p_struct->oobavgrelerror)
+{
+}
+
+dfreport::dfreport(const dfreport &rhs):_dfreport_owner(rhs) ,relclserror(p_struct->relclserror),avgce(p_struct->avgce),rmserror(p_struct->rmserror),avgerror(p_struct->avgerror),avgrelerror(p_struct->avgrelerror),oobrelclserror(p_struct->oobrelclserror),oobavgce(p_struct->oobavgce),oobrmserror(p_struct->oobrmserror),oobavgerror(p_struct->oobavgerror),oobavgrelerror(p_struct->oobavgrelerror)
+{
+}
+
+dfreport& dfreport::operator=(const dfreport &rhs)
+{
+    if( this==&rhs )
+        return *this;
+    _dfreport_owner::operator=(rhs);
+    return *this;
+}
+
+dfreport::~dfreport()
+{
+}
+
+
+/*************************************************************************
+This function serializes data structure to string.
+
+Important properties of s_out:
+* it contains alphanumeric characters, dots, underscores, minus signs
+* these symbols are grouped into words, which are separated by spaces
+  and Windows-style (CR+LF) newlines
+* although  serializer  uses  spaces and CR+LF as separators, you can 
+  replace any separator character by arbitrary combination of spaces,
+  tabs, Windows or Unix newlines. It allows flexible reformatting  of
+  the  string  in  case you want to include it into text or XML file. 
+  But you should not insert separators into the middle of the "words"
+  nor you should change case of letters.
+* s_out can be freely moved between 32-bit and 64-bit systems, little
+  and big endian machines, and so on. You can serialize structure  on
+  32-bit machine and unserialize it on 64-bit one (or vice versa), or
+  serialize  it  on  SPARC  and  unserialize  on  x86.  You  can also 
+  serialize  it  in  C++ version of ALGLIB and unserialize in C# one, 
+  and vice versa.
+*************************************************************************/
+void dfserialize(decisionforest &obj, std::string &s_out)
+{
+    alglib_impl::ae_state state;
+    alglib_impl::ae_serializer serializer;
+    alglib_impl::ae_int_t ssize;
+
+    alglib_impl::ae_state_init(&state);
+    try
+    {
+        alglib_impl::ae_serializer_init(&serializer);
+        alglib_impl::ae_serializer_alloc_start(&serializer);
+        alglib_impl::dfalloc(&serializer, obj.c_ptr(), &state);
+        ssize = alglib_impl::ae_serializer_get_alloc_size(&serializer);
+        s_out.clear();
+        s_out.reserve((size_t)(ssize+1));
+        alglib_impl::ae_serializer_sstart_str(&serializer, &s_out);
+        alglib_impl::dfserialize(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
+        if( s_out.length()>(size_t)ssize )
+            throw ap_error("ALGLIB: serialization integrity error");
+        alglib_impl::ae_serializer_clear(&serializer);
+        alglib_impl::ae_state_clear(&state);
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(state.error_msg);
+    }
+}
+/*************************************************************************
+This function unserializes data structure from string.
+*************************************************************************/
+void dfunserialize(const std::string &s_in, decisionforest &obj)
+{
+    alglib_impl::ae_state state;
+    alglib_impl::ae_serializer serializer;
+
+    alglib_impl::ae_state_init(&state);
+    try
+    {
+        alglib_impl::ae_serializer_init(&serializer);
+        alglib_impl::ae_serializer_ustart_str(&serializer, &s_in);
+        alglib_impl::dfunserialize(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
+        alglib_impl::ae_serializer_clear(&serializer);
+        alglib_impl::ae_state_clear(&state);
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(state.error_msg);
+    }
+}
+
+
+/*************************************************************************
+This function serializes data structure to C++ stream.
+
+Data stream generated by this function is same as  string  representation
+generated  by  string  version  of  serializer - alphanumeric characters,
+dots, underscores, minus signs, which are grouped into words separated by
+spaces and CR+LF.
+
+We recommend you to read comments on string version of serializer to find
+out more about serialization of AlGLIB objects.
+*************************************************************************/
+void dfserialize(decisionforest &obj, std::ostream &s_out)
+{
+    alglib_impl::ae_state state;
+    alglib_impl::ae_serializer serializer;
+
+    alglib_impl::ae_state_init(&state);
+    try
+    {
+        alglib_impl::ae_serializer_init(&serializer);
+        alglib_impl::ae_serializer_alloc_start(&serializer);
+        alglib_impl::dfalloc(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_get_alloc_size(&serializer); // not actually needed, but we have to ask
+        alglib_impl::ae_serializer_sstart_stream(&serializer, &s_out);
+        alglib_impl::dfserialize(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
+        alglib_impl::ae_serializer_clear(&serializer);
+        alglib_impl::ae_state_clear(&state);
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(state.error_msg);
+    }
+}
+/*************************************************************************
+This function unserializes data structure from stream.
+*************************************************************************/
+void dfunserialize(const std::istream &s_in, decisionforest &obj)
+{
+    alglib_impl::ae_state state;
+    alglib_impl::ae_serializer serializer;
+
+    alglib_impl::ae_state_init(&state);
+    try
+    {
+        alglib_impl::ae_serializer_init(&serializer);
+        alglib_impl::ae_serializer_ustart_stream(&serializer, &s_in);
+        alglib_impl::dfunserialize(&serializer, obj.c_ptr(), &state);
+        alglib_impl::ae_serializer_stop(&serializer, &state);
+        alglib_impl::ae_serializer_clear(&serializer);
+        alglib_impl::ae_state_clear(&state);
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(state.error_msg);
+    }
+}
+
+/*************************************************************************
+This subroutine builds random decision forest.
+
+INPUT PARAMETERS:
+    XY          -   training set
+    NPoints     -   training set size, NPoints>=1
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   task type:
+                    * NClasses=1 - regression task with one
+                                   dependent variable
+                    * NClasses>1 - classification task with
+                                   NClasses classes.
+    NTrees      -   number of trees in a forest, NTrees>=1.
+                    recommended values: 50-100.
+    R           -   percent of a training set used to build
+                    individual trees. 0<R<=1.
+                    recommended values: 0.1 <= R <= 0.66.
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed
+                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
+                          or R>1).
+                    *  1, if task has been solved
+    DF          -   model built
+    Rep         -   training report, contains error on a training set
+                    and out-of-bag estimates of generalization error.
+
+  -- ALGLIB --
+     Copyright 19.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfbuildrandomdecisionforest(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, const ae_int_t ntrees, const double r, ae_int_t &info, decisionforest &df, dfreport &rep)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::dfbuildrandomdecisionforest(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, ntrees, r, &info, const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::dfreport*>(rep.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+This subroutine builds random decision forest.
+This function gives ability to tune number of variables used when choosing
+best split.
+
+INPUT PARAMETERS:
+    XY          -   training set
+    NPoints     -   training set size, NPoints>=1
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   task type:
+                    * NClasses=1 - regression task with one
+                                   dependent variable
+                    * NClasses>1 - classification task with
+                                   NClasses classes.
+    NTrees      -   number of trees in a forest, NTrees>=1.
+                    recommended values: 50-100.
+    NRndVars    -   number of variables used when choosing best split
+    R           -   percent of a training set used to build
+                    individual trees. 0<R<=1.
+                    recommended values: 0.1 <= R <= 0.66.
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed
+                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
+                          or R>1).
+                    *  1, if task has been solved
+    DF          -   model built
+    Rep         -   training report, contains error on a training set
+                    and out-of-bag estimates of generalization error.
+
+  -- ALGLIB --
+     Copyright 19.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfbuildrandomdecisionforestx1(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, const ae_int_t ntrees, const ae_int_t nrndvars, const double r, ae_int_t &info, decisionforest &df, dfreport &rep)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::dfbuildrandomdecisionforestx1(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, nclasses, ntrees, nrndvars, r, &info, const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::dfreport*>(rep.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Procesing
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    X       -   input vector,  array[0..NVars-1].
+
+OUTPUT PARAMETERS:
+    Y       -   result. Regression estimate when solving regression  task,
+                vector of posterior probabilities for classification task.
+
+See also DFProcessI.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfprocess(const decisionforest &df, const real_1d_array &x, real_1d_array &y)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::dfprocess(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+'interactive' variant of DFProcess for languages like Python which support
+constructs like "Y = DFProcessI(DF,X)" and interactive mode of interpreter
+
+This function allocates new array on each call,  so  it  is  significantly
+slower than its 'non-interactive' counterpart, but it is  more  convenient
+when you call it from command line.
+
+  -- ALGLIB --
+     Copyright 28.02.2010 by Bochkanov Sergey
+*************************************************************************/
+void dfprocessi(const decisionforest &df, const real_1d_array &x, real_1d_array &y)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::dfprocessi(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Relative classification error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    percent of incorrectly classified cases.
+    Zero if model solves regression task.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfrelclserror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::dfrelclserror(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Average cross-entropy (in bits per element) on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    CrossEntropy/(NPoints*LN(2)).
+    Zero if model solves regression task.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgce(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::dfavgce(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    root mean square error.
+    Its meaning for regression task is obvious. As for
+    classification task, RMS error means error when estimating posterior
+    probabilities.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfrmserror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::dfrmserror(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Average error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    Its meaning for regression task is obvious. As for
+    classification task, it means average error when estimating posterior
+    probabilities.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgerror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::dfavgerror(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+Average relative error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    Its meaning for regression task is obvious. As for
+    classification task, it means average relative error when estimating
+    posterior probability of belonging to the correct class.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgrelerror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        double result = alglib_impl::dfavgrelerror(const_cast<alglib_impl::decisionforest*>(df.c_ptr()), const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return *(reinterpret_cast<double*>(&result));
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+k-means++ clusterization.
+Backward compatibility function, we recommend to use CLUSTERING subpackage
+as better replacement.
+
+  -- ALGLIB --
+     Copyright 21.03.2009 by Bochkanov Sergey
+*************************************************************************/
+void kmeansgenerate(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t k, const ae_int_t restarts, ae_int_t &info, real_2d_array &c, integer_1d_array &xyc)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::kmeansgenerate(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nvars, k, restarts, &info, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), const_cast<alglib_impl::ae_vector*>(xyc.c_ptr()), &_alglib_env_state);
         alglib_impl::ae_state_clear(&_alglib_env_state);
         return;
     }
@@ -9690,6 +10144,8 @@ void pcabuildbasis(const real_2d_array &x, const ae_int_t npoints, const ae_int_
 /////////////////////////////////////////////////////////////////////////
 namespace alglib_impl
 {
+
+
 static double bdss_xlny(double x, double y, ae_state *_state);
 static double bdss_getcv(/* Integer */ ae_vector* cnt,
      ae_int_t nc,
@@ -9706,110 +10162,6 @@ static void bdss_tiesubc(/* Integer */ ae_vector* c,
      ae_int_t nc,
      /* Integer */ ae_vector* cnt,
      ae_state *_state);
-
-
-static ae_int_t clustering_parallelcomplexity = 200000;
-static ae_bool clustering_selectcenterpp(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     /* Real    */ ae_matrix* centers,
-     /* Boolean */ ae_vector* busycenters,
-     ae_int_t ccnt,
-     /* Real    */ ae_vector* d2,
-     /* Real    */ ae_vector* p,
-     /* Real    */ ae_vector* tmp,
-     ae_state *_state);
-static void clustering_clusterizerrunahcinternal(clusterizerstate* s,
-     /* Real    */ ae_matrix* d,
-     ahcreport* rep,
-     ae_state *_state);
-static void clustering_evaluatedistancematrixrec(/* Real    */ ae_matrix* xy,
-     ae_int_t nfeatures,
-     ae_int_t disttype,
-     /* Real    */ ae_matrix* d,
-     ae_int_t i0,
-     ae_int_t i1,
-     ae_int_t j0,
-     ae_int_t j1,
-     ae_state *_state);
-
-
-
-
-static ae_int_t dforest_innernodewidth = 3;
-static ae_int_t dforest_leafnodewidth = 2;
-static ae_int_t dforest_dfusestrongsplits = 1;
-static ae_int_t dforest_dfuseevs = 2;
-static ae_int_t dforest_dffirstversion = 0;
-static ae_int_t dforest_dfclserror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-static void dforest_dfprocessinternal(decisionforest* df,
-     ae_int_t offs,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state);
-static void dforest_dfbuildtree(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t nfeatures,
-     ae_int_t nvarsinpool,
-     ae_int_t flags,
-     dfinternalbuffers* bufs,
-     hqrndstate* rs,
-     ae_state *_state);
-static void dforest_dfbuildtreerec(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t nfeatures,
-     ae_int_t nvarsinpool,
-     ae_int_t flags,
-     ae_int_t* numprocessed,
-     ae_int_t idx1,
-     ae_int_t idx2,
-     dfinternalbuffers* bufs,
-     hqrndstate* rs,
-     ae_state *_state);
-static void dforest_dfsplitc(/* Real    */ ae_vector* x,
-     /* Integer */ ae_vector* c,
-     /* Integer */ ae_vector* cntbuf,
-     ae_int_t n,
-     ae_int_t nc,
-     ae_int_t flags,
-     ae_int_t* info,
-     double* threshold,
-     double* e,
-     /* Real    */ ae_vector* sortrbuf,
-     /* Integer */ ae_vector* sortibuf,
-     ae_state *_state);
-static void dforest_dfsplitr(/* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_int_t n,
-     ae_int_t flags,
-     ae_int_t* info,
-     double* threshold,
-     double* e,
-     /* Real    */ ae_vector* sortrbuf,
-     /* Real    */ ae_vector* sortrbuf2,
-     ae_state *_state);
-
-
-static ae_int_t linreg_lrvnum = 5;
-static void linreg_lrinternal(/* Real    */ ae_matrix* xy,
-     /* Real    */ ae_vector* s,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state);
-
-
-
-
 
 
 static ae_int_t mlpbase_mlpvnum = 7;
@@ -9928,6 +10280,21 @@ static void mlpbase_randomizebackwardpass(multilayerperceptron* network,
      ae_int_t neuronidx,
      double v,
      ae_state *_state);
+
+
+
+
+static ae_int_t linreg_lrvnum = 5;
+static void linreg_lrinternal(/* Real    */ ae_matrix* xy,
+     /* Real    */ ae_vector* s,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state);
+
+
 
 
 static double logit_xtol = 100*ae_machineepsilon;
@@ -10086,7 +10453,516 @@ static void mlptrain_initmlpetrnsessions(multilayerperceptron* individualnetwork
      ae_state *_state);
 
 
+static double clustering_parallelcomplexity = 200000;
+static ae_int_t clustering_kmeansblocksize = 32;
+static ae_int_t clustering_kmeansparalleldim = 8;
+static ae_int_t clustering_kmeansparallelk = 8;
+static void clustering_selectinitialcenters(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t initalgo,
+     hqrndstate* rs,
+     ae_int_t k,
+     /* Real    */ ae_matrix* ct,
+     apbuffers* initbuf,
+     ae_shared_pool* updatepool,
+     ae_state *_state);
+static ae_bool clustering_fixcenters(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     /* Real    */ ae_matrix* ct,
+     ae_int_t k,
+     apbuffers* initbuf,
+     ae_shared_pool* updatepool,
+     ae_state *_state);
+static void clustering_clusterizerrunahcinternal(clusterizerstate* s,
+     /* Real    */ ae_matrix* d,
+     ahcreport* rep,
+     ae_state *_state);
+static void clustering_evaluatedistancematrixrec(/* Real    */ ae_matrix* xy,
+     ae_int_t nfeatures,
+     ae_int_t disttype,
+     /* Real    */ ae_matrix* d,
+     ae_int_t i0,
+     ae_int_t i1,
+     ae_int_t j0,
+     ae_int_t j1,
+     ae_state *_state);
 
+
+static ae_int_t dforest_innernodewidth = 3;
+static ae_int_t dforest_leafnodewidth = 2;
+static ae_int_t dforest_dfusestrongsplits = 1;
+static ae_int_t dforest_dfuseevs = 2;
+static ae_int_t dforest_dffirstversion = 0;
+static ae_int_t dforest_dfclserror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+static void dforest_dfprocessinternal(decisionforest* df,
+     ae_int_t offs,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state);
+static void dforest_dfbuildtree(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t nfeatures,
+     ae_int_t nvarsinpool,
+     ae_int_t flags,
+     dfinternalbuffers* bufs,
+     hqrndstate* rs,
+     ae_state *_state);
+static void dforest_dfbuildtreerec(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t nfeatures,
+     ae_int_t nvarsinpool,
+     ae_int_t flags,
+     ae_int_t* numprocessed,
+     ae_int_t idx1,
+     ae_int_t idx2,
+     dfinternalbuffers* bufs,
+     hqrndstate* rs,
+     ae_state *_state);
+static void dforest_dfsplitc(/* Real    */ ae_vector* x,
+     /* Integer */ ae_vector* c,
+     /* Integer */ ae_vector* cntbuf,
+     ae_int_t n,
+     ae_int_t nc,
+     ae_int_t flags,
+     ae_int_t* info,
+     double* threshold,
+     double* e,
+     /* Real    */ ae_vector* sortrbuf,
+     /* Integer */ ae_vector* sortibuf,
+     ae_state *_state);
+static void dforest_dfsplitr(/* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_int_t n,
+     ae_int_t flags,
+     ae_int_t* info,
+     double* threshold,
+     double* e,
+     /* Real    */ ae_vector* sortrbuf,
+     /* Real    */ ae_vector* sortrbuf2,
+     ae_state *_state);
+
+
+
+
+
+
+
+/*************************************************************************
+Principal components analysis
+
+This function builds orthogonal basis  where  first  axis  corresponds  to
+direction with maximum variance, second axis  maximizes  variance  in  the
+subspace orthogonal to first axis and so on.
+
+This function builds FULL basis, i.e. returns N vectors  corresponding  to
+ALL directions, no matter how informative. If you need  just a  few  (say,
+10 or 50) of the most important directions, you may find it faster to  use
+one of the reduced versions:
+* pcatruncatedsubspace() - for subspace iteration based method
+
+It should be noted that, unlike LDA, PCA does not use class labels.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * multithreading support
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Multithreading typically gives sublinear (wrt to cores count) speedup,
+  ! because only some parts of the algorithm can be parallelized.
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    X           -   dataset, array[0..NPoints-1,0..NVars-1].
+                    matrix contains ONLY INDEPENDENT VARIABLES.
+    NPoints     -   dataset size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if SVD subroutine haven't converged
+                    * -1, if wrong parameters has been passed (NPoints<0,
+                          NVars<1)
+                    *  1, if task is solved
+    S2          -   array[0..NVars-1]. variance values corresponding
+                    to basis vectors.
+    V           -   array[0..NVars-1,0..NVars-1]
+                    matrix, whose columns store basis vectors.
+
+  -- ALGLIB --
+     Copyright 25.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void pcabuildbasis(/* Real    */ ae_matrix* x,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     /* Real    */ ae_vector* s2,
+     /* Real    */ ae_matrix* v,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_matrix a;
+    ae_matrix u;
+    ae_matrix vt;
+    ae_vector m;
+    ae_vector t;
+    ae_int_t i;
+    ae_int_t j;
+    double mean;
+    double variance;
+    double skewness;
+    double kurtosis;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    ae_vector_clear(s2);
+    ae_matrix_clear(v);
+    ae_matrix_init(&a, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&u, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&vt, 0, 0, DT_REAL, _state);
+    ae_vector_init(&m, 0, DT_REAL, _state);
+    ae_vector_init(&t, 0, DT_REAL, _state);
+
+    
+    /*
+     * Check input data
+     */
+    if( npoints<0||nvars<1 )
+    {
+        *info = -1;
+        ae_frame_leave(_state);
+        return;
+    }
+    *info = 1;
+    
+    /*
+     * Special case: NPoints=0
+     */
+    if( npoints==0 )
+    {
+        ae_vector_set_length(s2, nvars, _state);
+        ae_matrix_set_length(v, nvars, nvars, _state);
+        for(i=0; i<=nvars-1; i++)
+        {
+            s2->ptr.p_double[i] = (double)(0);
+        }
+        for(i=0; i<=nvars-1; i++)
+        {
+            for(j=0; j<=nvars-1; j++)
+            {
+                if( i==j )
+                {
+                    v->ptr.pp_double[i][j] = (double)(1);
+                }
+                else
+                {
+                    v->ptr.pp_double[i][j] = (double)(0);
+                }
+            }
+        }
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Calculate means
+     */
+    ae_vector_set_length(&m, nvars, _state);
+    ae_vector_set_length(&t, npoints, _state);
+    for(j=0; j<=nvars-1; j++)
+    {
+        ae_v_move(&t.ptr.p_double[0], 1, &x->ptr.pp_double[0][j], x->stride, ae_v_len(0,npoints-1));
+        samplemoments(&t, npoints, &mean, &variance, &skewness, &kurtosis, _state);
+        m.ptr.p_double[j] = mean;
+    }
+    
+    /*
+     * Center, apply SVD, prepare output
+     */
+    ae_matrix_set_length(&a, ae_maxint(npoints, nvars, _state), nvars, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&a.ptr.pp_double[i][0], 1, &x->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+        ae_v_sub(&a.ptr.pp_double[i][0], 1, &m.ptr.p_double[0], 1, ae_v_len(0,nvars-1));
+    }
+    for(i=npoints; i<=nvars-1; i++)
+    {
+        for(j=0; j<=nvars-1; j++)
+        {
+            a.ptr.pp_double[i][j] = (double)(0);
+        }
+    }
+    if( !rmatrixsvd(&a, ae_maxint(npoints, nvars, _state), nvars, 0, 1, 2, s2, &u, &vt, _state) )
+    {
+        *info = -4;
+        ae_frame_leave(_state);
+        return;
+    }
+    if( npoints!=1 )
+    {
+        for(i=0; i<=nvars-1; i++)
+        {
+            s2->ptr.p_double[i] = ae_sqr(s2->ptr.p_double[i], _state)/(npoints-1);
+        }
+    }
+    ae_matrix_set_length(v, nvars, nvars, _state);
+    copyandtranspose(&vt, 0, nvars-1, 0, nvars-1, v, 0, nvars-1, 0, nvars-1, _state);
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
+*************************************************************************/
+void _pexec_pcabuildbasis(/* Real    */ ae_matrix* x,
+    ae_int_t npoints,
+    ae_int_t nvars,
+    ae_int_t* info,
+    /* Real    */ ae_vector* s2,
+    /* Real    */ ae_matrix* v, ae_state *_state)
+{
+    pcabuildbasis(x,npoints,nvars,info,s2,v, _state);
+}
+
+
+/*************************************************************************
+Principal components analysis
+
+This function performs truncated PCA, i.e. returns just a few most important
+directions.
+
+Internally it uses iterative eigensolver which is very efficient when only
+a minor fraction of full basis is required. Thus, if you need full  basis,
+it is better to use pcabuildbasis() function.
+
+It should be noted that, unlike LDA, PCA does not use class labels.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * multithreading support
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! For a situation  when  you  need  just  a  few  eigenvectors  (~1-10),
+  ! multithreading typically gives sublinear (wrt to cores count) speedup.
+  ! For larger  problems  it  may  give  you  nearly  linear  increase  in
+  ! performance.
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    X           -   dataset, array[0..NPoints-1,0..NVars-1].
+                    matrix contains ONLY INDEPENDENT VARIABLES.
+    NPoints     -   dataset size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NNeeded     -   number of requested directions, in [1,NVars] range;
+                    this function is efficient only for NNeeded<<NVars.
+    Eps         -   desired  precision  of  vectors  returned;  underlying
+                    solver will stop iterations as soon as absolute  error
+                    in corresponding singular values  reduces  to  roughly
+                    eps*MAX(lambda[]), with lambda[] being array of  eigen
+                    values.
+                    Zero value means that  algorithm  performs  number  of
+                    iterations  specified  by  maxits  parameter,  without
+                    paying attention to precision.
+    MaxIts      -   number of iterations performed by  subspace  iteration
+                    method. Zero value means that no  limit  on  iteration
+                    count is placed (eps-based stopping condition is used).
+                    
+
+OUTPUT PARAMETERS:
+    S2          -   array[NNeeded]. Variance values corresponding
+                    to basis vectors.
+    V           -   array[NVars,NNeeded]
+                    matrix, whose columns store basis vectors.
+                    
+NOTE: passing eps=0 and maxits=0 results in small eps  being  selected  as
+stopping condition. Exact value of automatically selected eps is  version-
+-dependent.
+
+  -- ALGLIB --
+     Copyright 10.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void pcatruncatedsubspace(/* Real    */ ae_matrix* x,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nneeded,
+     double eps,
+     ae_int_t maxits,
+     /* Real    */ ae_vector* s2,
+     /* Real    */ ae_matrix* v,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_matrix a;
+    ae_matrix z;
+    ae_matrix q;
+    ae_matrix b;
+    ae_matrix r;
+    ae_vector means;
+    ae_vector tau;
+    ae_matrix u;
+    ae_matrix vt;
+    ae_vector m;
+    ae_vector t;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t nwork;
+    double vv;
+    hqrndstate rs;
+    eigsubspacestate solver;
+    eigsubspacereport rep;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_clear(s2);
+    ae_matrix_clear(v);
+    ae_matrix_init(&a, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&z, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&q, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&b, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&r, 0, 0, DT_REAL, _state);
+    ae_vector_init(&means, 0, DT_REAL, _state);
+    ae_vector_init(&tau, 0, DT_REAL, _state);
+    ae_matrix_init(&u, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&vt, 0, 0, DT_REAL, _state);
+    ae_vector_init(&m, 0, DT_REAL, _state);
+    ae_vector_init(&t, 0, DT_REAL, _state);
+    _hqrndstate_init(&rs, _state);
+    _eigsubspacestate_init(&solver, _state);
+    _eigsubspacereport_init(&rep, _state);
+
+    ae_assert(npoints>=0, "PCATruncatedSubspace: npoints<0", _state);
+    ae_assert(nvars>=1, "PCATruncatedSubspace: nvars<1", _state);
+    ae_assert(nneeded>0, "PCATruncatedSubspace: nneeded<1", _state);
+    ae_assert(nneeded<=nvars, "PCATruncatedSubspace: nneeded>nvars", _state);
+    ae_assert(maxits>=0, "PCATruncatedSubspace: maxits<0", _state);
+    ae_assert(ae_isfinite(eps, _state)&&ae_fp_greater_eq(eps,(double)(0)), "PCATruncatedSubspace: eps<0 or is not finite", _state);
+    
+    /*
+     * Initialize parameters
+     */
+    nwork = ae_maxint(2*nneeded, nneeded+8, _state);
+    nwork = ae_minint(nwork, nvars, _state);
+    hqrndseed(3463, 9854, &rs, _state);
+    
+    /*
+     * Special case: NPoints=0
+     */
+    if( npoints==0 )
+    {
+        ae_vector_set_length(s2, nneeded, _state);
+        ae_matrix_set_length(v, nvars, nneeded, _state);
+        for(i=0; i<=nvars-1; i++)
+        {
+            s2->ptr.p_double[i] = (double)(0);
+        }
+        for(i=0; i<=nvars-1; i++)
+        {
+            for(j=0; j<=nneeded-1; j++)
+            {
+                if( i==j )
+                {
+                    v->ptr.pp_double[i][j] = (double)(1);
+                }
+                else
+                {
+                    v->ptr.pp_double[i][j] = (double)(0);
+                }
+            }
+        }
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Center matrix
+     */
+    ae_vector_set_length(&means, nvars, _state);
+    for(i=0; i<=nvars-1; i++)
+    {
+        means.ptr.p_double[i] = (double)(0);
+    }
+    vv = (double)1/(double)npoints;
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_addd(&means.ptr.p_double[0], 1, &x->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1), vv);
+    }
+    ae_matrix_set_length(&a, npoints, nvars, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&a.ptr.pp_double[i][0], 1, &x->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+        ae_v_sub(&a.ptr.pp_double[i][0], 1, &means.ptr.p_double[0], 1, ae_v_len(0,nvars-1));
+    }
+    
+    /*
+     * Find eigenvalues with subspace iteration solver
+     */
+    eigsubspacecreate(nvars, nneeded, &solver, _state);
+    eigsubspacesetcond(&solver, eps, maxits, _state);
+    eigsubspaceoocstart(&solver, 0, _state);
+    while(eigsubspaceooccontinue(&solver, _state))
+    {
+        ae_assert(solver.requesttype==0, "PCATruncatedSubspace: integrity check failed", _state);
+        k = solver.requestsize;
+        rmatrixsetlengthatleast(&b, npoints, k, _state);
+        rmatrixgemm(npoints, k, nvars, 1.0, &a, 0, 0, 0, &solver.x, 0, 0, 0, 0.0, &b, 0, 0, _state);
+        rmatrixgemm(nvars, k, npoints, 1.0, &a, 0, 0, 1, &b, 0, 0, 0, 0.0, &solver.ax, 0, 0, _state);
+    }
+    eigsubspaceoocstop(&solver, s2, v, &rep, _state);
+    if( npoints!=1 )
+    {
+        for(i=0; i<=nneeded-1; i++)
+        {
+            s2->ptr.p_double[i] = s2->ptr.p_double[i]/(npoints-1);
+        }
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
+*************************************************************************/
+void _pexec_pcatruncatedsubspace(/* Real    */ ae_matrix* x,
+    ae_int_t npoints,
+    ae_int_t nvars,
+    ae_int_t nneeded,
+    double eps,
+    ae_int_t maxits,
+    /* Real    */ ae_vector* s2,
+    /* Real    */ ae_matrix* v, ae_state *_state)
+{
+    pcatruncatedsubspace(x,npoints,nvars,nneeded,eps,maxits,s2,v, _state);
+}
 
 
 
@@ -11652,6219 +12528,6 @@ void _cvreport_destroy(void* _p)
 {
     cvreport *p = (cvreport*)_p;
     ae_touch_ptr((void*)p);
-}
-
-
-
-
-/*************************************************************************
-This function initializes clusterizer object. Newly initialized object  is
-empty, i.e. it does not contain dataset. You should use it as follows:
-1. creation
-2. dataset is added with ClusterizerSetPoints()
-3. additional parameters are set
-3. clusterization is performed with one of the clustering functions
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizercreate(clusterizerstate* s, ae_state *_state)
-{
-
-    _clusterizerstate_clear(s);
-
-    s->npoints = 0;
-    s->nfeatures = 0;
-    s->disttype = 2;
-    s->ahcalgo = 0;
-    s->kmeansrestarts = 1;
-    s->kmeansmaxits = 0;
-}
-
-
-/*************************************************************************
-This function adds dataset to the clusterizer structure.
-
-This function overrides all previous calls  of  ClusterizerSetPoints()  or
-ClusterizerSetDistances().
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    XY      -   array[NPoints,NFeatures], dataset
-    NPoints -   number of points, >=0
-    NFeatures-  number of features, >=1
-    DistType-   distance function:
-                *  0    Chebyshev distance  (L-inf norm)
-                *  1    city block distance (L1 norm)
-                *  2    Euclidean distance  (L2 norm)
-                * 10    Pearson correlation:
-                        dist(a,b) = 1-corr(a,b)
-                * 11    Absolute Pearson correlation:
-                        dist(a,b) = 1-|corr(a,b)|
-                * 12    Uncentered Pearson correlation (cosine of the angle):
-                        dist(a,b) = a'*b/(|a|*|b|)
-                * 13    Absolute uncentered Pearson correlation
-                        dist(a,b) = |a'*b|/(|a|*|b|)
-                * 20    Spearman rank correlation:
-                        dist(a,b) = 1-rankcorr(a,b)
-                * 21    Absolute Spearman rank correlation
-                        dist(a,b) = 1-|rankcorr(a,b)|
-
-NOTE 1: different distance functions have different performance penalty:
-        * Euclidean or Pearson correlation distances are the fastest ones
-        * Spearman correlation distance function is a bit slower
-        * city block and Chebyshev distances are order of magnitude slower
-       
-        The reason behing difference in performance is that correlation-based
-        distance functions are computed using optimized linear algebra kernels,
-        while Chebyshev and city block distance functions are computed using
-        simple nested loops with two branches at each iteration.
-        
-NOTE 2: different clustering algorithms have different limitations:
-        * agglomerative hierarchical clustering algorithms may be used with
-          any kind of distance metric
-        * k-means++ clustering algorithm may be used only  with  Euclidean
-          distance function
-        Thus, list of specific clustering algorithms you may  use  depends
-        on distance function you specify when you set your dataset.
-       
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetpoints(clusterizerstate* s,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nfeatures,
-     ae_int_t disttype,
-     ae_state *_state)
-{
-    ae_int_t i;
-
-
-    ae_assert((((((((disttype==0||disttype==1)||disttype==2)||disttype==10)||disttype==11)||disttype==12)||disttype==13)||disttype==20)||disttype==21, "ClusterizerSetPoints: incorrect DistType", _state);
-    ae_assert(npoints>=0, "ClusterizerSetPoints: NPoints<0", _state);
-    ae_assert(nfeatures>=1, "ClusterizerSetPoints: NFeatures<1", _state);
-    ae_assert(xy->rows>=npoints, "ClusterizerSetPoints: Rows(XY)<NPoints", _state);
-    ae_assert(xy->cols>=nfeatures, "ClusterizerSetPoints: Cols(XY)<NFeatures", _state);
-    ae_assert(apservisfinitematrix(xy, npoints, nfeatures, _state), "ClusterizerSetPoints: XY contains NAN/INF", _state);
-    s->npoints = npoints;
-    s->nfeatures = nfeatures;
-    s->disttype = disttype;
-    rmatrixsetlengthatleast(&s->xy, npoints, nfeatures, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_move(&s->xy.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nfeatures-1));
-    }
-}
-
-
-/*************************************************************************
-This function adds dataset given by distance  matrix  to  the  clusterizer
-structure. It is important that dataset is not  given  explicitly  -  only
-distance matrix is given.
-
-This function overrides all previous calls  of  ClusterizerSetPoints()  or
-ClusterizerSetDistances().
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    D       -   array[NPoints,NPoints], distance matrix given by its upper
-                or lower triangle (main diagonal is  ignored  because  its
-                entries are expected to be zero).
-    NPoints -   number of points
-    IsUpper -   whether upper or lower triangle of D is given.
-        
-NOTE 1: different clustering algorithms have different limitations:
-        * agglomerative hierarchical clustering algorithms may be used with
-          any kind of distance metric, including one  which  is  given  by
-          distance matrix
-        * k-means++ clustering algorithm may be used only  with  Euclidean
-          distance function and explicitly given points - it  can  not  be
-          used with dataset given by distance matrix
-        Thus, if you call this function, you will be unable to use k-means
-        clustering algorithm to process your problem.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetdistances(clusterizerstate* s,
-     /* Real    */ ae_matrix* d,
-     ae_int_t npoints,
-     ae_bool isupper,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t j0;
-    ae_int_t j1;
-
-
-    ae_assert(npoints>=0, "ClusterizerSetDistances: NPoints<0", _state);
-    ae_assert(d->rows>=npoints, "ClusterizerSetDistances: Rows(D)<NPoints", _state);
-    ae_assert(d->cols>=npoints, "ClusterizerSetDistances: Cols(D)<NPoints", _state);
-    s->npoints = npoints;
-    s->nfeatures = 0;
-    s->disttype = -1;
-    rmatrixsetlengthatleast(&s->d, npoints, npoints, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        if( isupper )
-        {
-            j0 = i+1;
-            j1 = npoints-1;
-        }
-        else
-        {
-            j0 = 0;
-            j1 = i-1;
-        }
-        for(j=j0; j<=j1; j++)
-        {
-            ae_assert(ae_isfinite(d->ptr.pp_double[i][j], _state)&&ae_fp_greater_eq(d->ptr.pp_double[i][j],(double)(0)), "ClusterizerSetDistances: D contains infinite, NAN or negative elements", _state);
-            s->d.ptr.pp_double[i][j] = d->ptr.pp_double[i][j];
-            s->d.ptr.pp_double[j][i] = d->ptr.pp_double[i][j];
-        }
-        s->d.ptr.pp_double[i][i] = (double)(0);
-    }
-}
-
-
-/*************************************************************************
-This function sets agglomerative hierarchical clustering algorithm
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    Algo    -   algorithm type:
-                * 0     complete linkage (default algorithm)
-                * 1     single linkage
-                * 2     unweighted average linkage
-                * 3     weighted average linkage
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetahcalgo(clusterizerstate* s,
-     ae_int_t algo,
-     ae_state *_state)
-{
-
-
-    ae_assert(((algo==0||algo==1)||algo==2)||algo==3, "ClusterizerSetHCAlgo: incorrect algorithm type", _state);
-    s->ahcalgo = algo;
-}
-
-
-/*************************************************************************
-This  function  sets k-means++ properties : number of restarts and maximum
-number of iterations per one run.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    Restarts-   restarts count, >=1.
-                k-means++ algorithm performs several restarts and  chooses
-                best set of centers (one with minimum squared distance).
-    MaxIts  -   maximum number of k-means iterations performed during  one
-                run. >=0, zero value means that algorithm performs unlimited
-                number of iterations.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetkmeanslimits(clusterizerstate* s,
-     ae_int_t restarts,
-     ae_int_t maxits,
-     ae_state *_state)
-{
-
-
-    ae_assert(restarts>=1, "ClusterizerSetKMeansLimits: Restarts<=0", _state);
-    ae_assert(maxits>=0, "ClusterizerSetKMeansLimits: MaxIts<0", _state);
-    s->kmeansrestarts = restarts;
-    s->kmeansmaxits = maxits;
-}
-
-
-/*************************************************************************
-This function performs agglomerative hierarchical clustering
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
-  ! distance matrix calculation  and  clustering  itself. Only first phase
-  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
-  ! threading. Thus, acceleration is significant only for  medium or high-
-  ! dimensional problems.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-
-OUTPUT PARAMETERS:
-    Rep     -   clustering results; see description of AHCReport
-                structure for more information.
-
-NOTE 1: hierarchical clustering algorithms require large amounts of memory.
-        In particular, this implementation needs  sizeof(double)*NPoints^2
-        bytes, which are used to store distance matrix. In  case  we  work
-        with user-supplied matrix, this amount is multiplied by 2 (we have
-        to store original matrix and to work with its copy).
-        
-        For example, problem with 10000 points  would require 800M of RAM,
-        even when working in a 1-dimensional space.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerrunahc(clusterizerstate* s,
-     ahcreport* rep,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t npoints;
-    ae_int_t nfeatures;
-    ae_matrix d;
-
-    ae_frame_make(_state, &_frame_block);
-    _ahcreport_clear(rep);
-    ae_matrix_init(&d, 0, 0, DT_REAL, _state);
-
-    npoints = s->npoints;
-    nfeatures = s->nfeatures;
-    
-    /*
-     * Fill Rep.NPoints, quick exit when NPoints<=1
-     */
-    rep->npoints = npoints;
-    if( npoints==0 )
-    {
-        ae_vector_set_length(&rep->p, 0, _state);
-        ae_matrix_set_length(&rep->z, 0, 0, _state);
-        ae_matrix_set_length(&rep->pz, 0, 0, _state);
-        ae_matrix_set_length(&rep->pm, 0, 0, _state);
-        ae_vector_set_length(&rep->mergedist, 0, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    if( npoints==1 )
-    {
-        ae_vector_set_length(&rep->p, 1, _state);
-        ae_matrix_set_length(&rep->z, 0, 0, _state);
-        ae_matrix_set_length(&rep->pz, 0, 0, _state);
-        ae_matrix_set_length(&rep->pm, 0, 0, _state);
-        ae_vector_set_length(&rep->mergedist, 0, _state);
-        rep->p.ptr.p_int[0] = 0;
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * More than one point
-     */
-    if( s->disttype==-1 )
-    {
-        
-        /*
-         * Run clusterizer with user-supplied distance matrix
-         */
-        clustering_clusterizerrunahcinternal(s, &s->d, rep, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    else
-    {
-        
-        /*
-         * Build distance matrix D.
-         */
-        clusterizergetdistances(&s->xy, npoints, nfeatures, s->disttype, &d, _state);
-        
-        /*
-         * Run clusterizer
-         */
-        clustering_clusterizerrunahcinternal(s, &d, rep, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_clusterizerrunahc(clusterizerstate* s,
-    ahcreport* rep, ae_state *_state)
-{
-    clusterizerrunahc(s,rep, _state);
-}
-
-
-/*************************************************************************
-This function performs clustering by k-means++ algorithm.
-
-You may change algorithm properties like number of restarts or  iterations
-limit by calling ClusterizerSetKMeansLimits() functions.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    K       -   number of clusters, K>=0.
-                K  can  be  zero only when algorithm is called  for  empty
-                dataset,  in   this   case   completion  code  is  set  to
-                success (+1).
-                If  K=0  and  dataset  size  is  non-zero,  we   can   not
-                meaningfully assign points to some center  (there  are  no
-                centers because K=0) and  return  -3  as  completion  code
-                (failure).
-
-OUTPUT PARAMETERS:
-    Rep     -   clustering results; see description of KMeansReport
-                structure for more information.
-
-NOTE 1: k-means  clustering  can  be  performed  only  for  datasets  with
-        Euclidean  distance  function.  Algorithm  will  return   negative
-        completion code in Rep.TerminationType in case dataset  was  added
-        to clusterizer with DistType other than Euclidean (or dataset  was
-        specified by distance matrix instead of explicitly given points).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerrunkmeans(clusterizerstate* s,
-     ae_int_t k,
-     kmeansreport* rep,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_matrix dummy;
-
-    ae_frame_make(_state, &_frame_block);
-    _kmeansreport_clear(rep);
-    ae_matrix_init(&dummy, 0, 0, DT_REAL, _state);
-
-    ae_assert(k>=0, "ClusterizerRunKMeans: K<0", _state);
-    
-    /*
-     * Incorrect distance type
-     */
-    if( s->disttype!=2 )
-    {
-        rep->npoints = s->npoints;
-        rep->terminationtype = -5;
-        rep->k = k;
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * K>NPoints or (K=0 and NPoints>0)
-     */
-    if( k>s->npoints||(k==0&&s->npoints>0) )
-    {
-        rep->npoints = s->npoints;
-        rep->terminationtype = -3;
-        rep->k = k;
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * No points
-     */
-    if( s->npoints==0 )
-    {
-        rep->npoints = 0;
-        rep->terminationtype = 1;
-        rep->k = k;
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Normal case:
-     * 1<=K<=NPoints, Euclidean distance 
-     */
-    rep->npoints = s->npoints;
-    rep->nfeatures = s->nfeatures;
-    rep->k = k;
-    rep->npoints = s->npoints;
-    rep->nfeatures = s->nfeatures;
-    kmeansgenerateinternal(&s->xy, s->npoints, s->nfeatures, k, s->kmeansmaxits, s->kmeansrestarts, &rep->terminationtype, &dummy, ae_false, &rep->c, ae_true, &rep->cidx, _state);
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-This function returns distance matrix for dataset
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
-  ! distance matrix calculation  and  clustering  itself. Only first phase
-  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
-  ! threading. Thus, acceleration is significant only for  medium or high-
-  ! dimensional problems.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY      -   array[NPoints,NFeatures], dataset
-    NPoints -   number of points, >=0
-    NFeatures-  number of features, >=1
-    DistType-   distance function:
-                *  0    Chebyshev distance  (L-inf norm)
-                *  1    city block distance (L1 norm)
-                *  2    Euclidean distance  (L2 norm)
-                * 10    Pearson correlation:
-                        dist(a,b) = 1-corr(a,b)
-                * 11    Absolute Pearson correlation:
-                        dist(a,b) = 1-|corr(a,b)|
-                * 12    Uncentered Pearson correlation (cosine of the angle):
-                        dist(a,b) = a'*b/(|a|*|b|)
-                * 13    Absolute uncentered Pearson correlation
-                        dist(a,b) = |a'*b|/(|a|*|b|)
-                * 20    Spearman rank correlation:
-                        dist(a,b) = 1-rankcorr(a,b)
-                * 21    Absolute Spearman rank correlation
-                        dist(a,b) = 1-|rankcorr(a,b)|
-
-OUTPUT PARAMETERS:
-    D       -   array[NPoints,NPoints], distance matrix
-                (full matrix is returned, with lower and upper triangles)
-
-NOTES: different distance functions have different performance penalty:
-       * Euclidean or Pearson correlation distances are the fastest ones
-       * Spearman correlation distance function is a bit slower
-       * city block and Chebyshev distances are order of magnitude slower
-       
-       The reason behing difference in performance is that correlation-based
-       distance functions are computed using optimized linear algebra kernels,
-       while Chebyshev and city block distance functions are computed using
-       simple nested loops with two branches at each iteration.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizergetdistances(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nfeatures,
-     ae_int_t disttype,
-     /* Real    */ ae_matrix* d,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_int_t j;
-    double v;
-    double vv;
-    double vr;
-    ae_matrix tmpxy;
-    ae_vector tmpx;
-    ae_vector tmpy;
-    ae_vector diagbuf;
-    apbuffers buf;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_matrix_clear(d);
-    ae_matrix_init(&tmpxy, 0, 0, DT_REAL, _state);
-    ae_vector_init(&tmpx, 0, DT_REAL, _state);
-    ae_vector_init(&tmpy, 0, DT_REAL, _state);
-    ae_vector_init(&diagbuf, 0, DT_REAL, _state);
-    _apbuffers_init(&buf, _state);
-
-    ae_assert(nfeatures>=1, "ClusterizerGetDistances: NFeatures<1", _state);
-    ae_assert(npoints>=0, "ClusterizerGetDistances: NPoints<1", _state);
-    ae_assert((((((((disttype==0||disttype==1)||disttype==2)||disttype==10)||disttype==11)||disttype==12)||disttype==13)||disttype==20)||disttype==21, "ClusterizerGetDistances: incorrect DistType", _state);
-    ae_assert(xy->rows>=npoints, "ClusterizerGetDistances: Rows(XY)<NPoints", _state);
-    ae_assert(xy->cols>=nfeatures, "ClusterizerGetDistances: Cols(XY)<NFeatures", _state);
-    ae_assert(apservisfinitematrix(xy, npoints, nfeatures, _state), "ClusterizerGetDistances: XY contains NAN/INF", _state);
-    
-    /*
-     * Quick exit
-     */
-    if( npoints==0 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    if( npoints==1 )
-    {
-        ae_matrix_set_length(d, 1, 1, _state);
-        d->ptr.pp_double[0][0] = (double)(0);
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Build distance matrix D.
-     */
-    if( disttype==0||disttype==1 )
-    {
-        
-        /*
-         * Chebyshev or city-block distances:
-         * * recursively calculate upper triangle (with main diagonal)
-         * * copy it to the bottom part of the matrix
-         */
-        ae_matrix_set_length(d, npoints, npoints, _state);
-        clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, 0, npoints, 0, npoints, _state);
-        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    if( disttype==2 )
-    {
-        
-        /*
-         * Euclidean distance
-         *
-         * NOTE: parallelization is done within RMatrixSYRK
-         */
-        ae_matrix_set_length(d, npoints, npoints, _state);
-        ae_matrix_set_length(&tmpxy, npoints, nfeatures, _state);
-        ae_vector_set_length(&tmpx, nfeatures, _state);
-        ae_vector_set_length(&diagbuf, npoints, _state);
-        for(j=0; j<=nfeatures-1; j++)
-        {
-            tmpx.ptr.p_double[j] = 0.0;
-        }
-        v = (double)1/(double)npoints;
-        for(i=0; i<=npoints-1; i++)
-        {
-            ae_v_addd(&tmpx.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nfeatures-1), v);
-        }
-        for(i=0; i<=npoints-1; i++)
-        {
-            ae_v_move(&tmpxy.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nfeatures-1));
-            ae_v_sub(&tmpxy.ptr.pp_double[i][0], 1, &tmpx.ptr.p_double[0], 1, ae_v_len(0,nfeatures-1));
-        }
-        rmatrixsyrk(npoints, nfeatures, 1.0, &tmpxy, 0, 0, 0, 0.0, d, 0, 0, ae_true, _state);
-        for(i=0; i<=npoints-1; i++)
-        {
-            diagbuf.ptr.p_double[i] = d->ptr.pp_double[i][i];
-        }
-        for(i=0; i<=npoints-1; i++)
-        {
-            d->ptr.pp_double[i][i] = 0.0;
-            for(j=i+1; j<=npoints-1; j++)
-            {
-                v = ae_sqrt(ae_maxreal(diagbuf.ptr.p_double[i]+diagbuf.ptr.p_double[j]-2*d->ptr.pp_double[i][j], 0.0, _state), _state);
-                d->ptr.pp_double[i][j] = v;
-            }
-        }
-        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    if( disttype==10||disttype==11 )
-    {
-        
-        /*
-         * Absolute/nonabsolute Pearson correlation distance
-         *
-         * NOTE: parallelization is done within PearsonCorrM, which calls RMatrixSYRK internally
-         */
-        ae_matrix_set_length(d, npoints, npoints, _state);
-        ae_vector_set_length(&diagbuf, npoints, _state);
-        ae_matrix_set_length(&tmpxy, npoints, nfeatures, _state);
-        for(i=0; i<=npoints-1; i++)
-        {
-            v = 0.0;
-            for(j=0; j<=nfeatures-1; j++)
-            {
-                v = v+xy->ptr.pp_double[i][j];
-            }
-            v = v/nfeatures;
-            for(j=0; j<=nfeatures-1; j++)
-            {
-                tmpxy.ptr.pp_double[i][j] = xy->ptr.pp_double[i][j]-v;
-            }
-        }
-        rmatrixsyrk(npoints, nfeatures, 1.0, &tmpxy, 0, 0, 0, 0.0, d, 0, 0, ae_true, _state);
-        for(i=0; i<=npoints-1; i++)
-        {
-            diagbuf.ptr.p_double[i] = d->ptr.pp_double[i][i];
-        }
-        for(i=0; i<=npoints-1; i++)
-        {
-            d->ptr.pp_double[i][i] = 0.0;
-            for(j=i+1; j<=npoints-1; j++)
-            {
-                v = d->ptr.pp_double[i][j]/ae_sqrt(diagbuf.ptr.p_double[i]*diagbuf.ptr.p_double[j], _state);
-                if( disttype==10 )
-                {
-                    v = 1-v;
-                }
-                else
-                {
-                    v = 1-ae_fabs(v, _state);
-                }
-                v = ae_maxreal(v, 0.0, _state);
-                d->ptr.pp_double[i][j] = v;
-            }
-        }
-        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    if( disttype==12||disttype==13 )
-    {
-        
-        /*
-         * Absolute/nonabsolute uncentered Pearson correlation distance
-         *
-         * NOTE: parallelization is done within RMatrixSYRK
-         */
-        ae_matrix_set_length(d, npoints, npoints, _state);
-        ae_vector_set_length(&diagbuf, npoints, _state);
-        rmatrixsyrk(npoints, nfeatures, 1.0, xy, 0, 0, 0, 0.0, d, 0, 0, ae_true, _state);
-        for(i=0; i<=npoints-1; i++)
-        {
-            diagbuf.ptr.p_double[i] = d->ptr.pp_double[i][i];
-        }
-        for(i=0; i<=npoints-1; i++)
-        {
-            d->ptr.pp_double[i][i] = 0.0;
-            for(j=i+1; j<=npoints-1; j++)
-            {
-                v = d->ptr.pp_double[i][j]/ae_sqrt(diagbuf.ptr.p_double[i]*diagbuf.ptr.p_double[j], _state);
-                if( disttype==13 )
-                {
-                    v = ae_fabs(v, _state);
-                }
-                v = ae_minreal(v, 1.0, _state);
-                d->ptr.pp_double[i][j] = 1-v;
-            }
-        }
-        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    if( disttype==20||disttype==21 )
-    {
-        
-        /*
-         * Spearman rank correlation
-         *
-         * NOTE: parallelization of correlation matrix is done within
-         *       PearsonCorrM, which calls RMatrixSYRK internally
-         */
-        ae_matrix_set_length(d, npoints, npoints, _state);
-        ae_vector_set_length(&diagbuf, npoints, _state);
-        ae_matrix_set_length(&tmpxy, npoints, nfeatures, _state);
-        rmatrixcopy(npoints, nfeatures, xy, 0, 0, &tmpxy, 0, 0, _state);
-        rankdatacentered(&tmpxy, npoints, nfeatures, _state);
-        rmatrixsyrk(npoints, nfeatures, 1.0, &tmpxy, 0, 0, 0, 0.0, d, 0, 0, ae_true, _state);
-        for(i=0; i<=npoints-1; i++)
-        {
-            if( ae_fp_greater(d->ptr.pp_double[i][i],(double)(0)) )
-            {
-                diagbuf.ptr.p_double[i] = 1/ae_sqrt(d->ptr.pp_double[i][i], _state);
-            }
-            else
-            {
-                diagbuf.ptr.p_double[i] = 0.0;
-            }
-        }
-        for(i=0; i<=npoints-1; i++)
-        {
-            v = diagbuf.ptr.p_double[i];
-            d->ptr.pp_double[i][i] = 0.0;
-            for(j=i+1; j<=npoints-1; j++)
-            {
-                vv = d->ptr.pp_double[i][j]*v*diagbuf.ptr.p_double[j];
-                if( disttype==20 )
-                {
-                    vr = 1-vv;
-                }
-                else
-                {
-                    vr = 1-ae_fabs(vv, _state);
-                }
-                if( ae_fp_less(vr,(double)(0)) )
-                {
-                    vr = 0.0;
-                }
-                d->ptr.pp_double[i][j] = vr;
-            }
-        }
-        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    ae_assert(ae_false, "Assertion failed", _state);
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_clusterizergetdistances(/* Real    */ ae_matrix* xy,
-    ae_int_t npoints,
-    ae_int_t nfeatures,
-    ae_int_t disttype,
-    /* Real    */ ae_matrix* d, ae_state *_state)
-{
-    clusterizergetdistances(xy,npoints,nfeatures,disttype,d, _state);
-}
-
-
-/*************************************************************************
-This function takes as input clusterization report Rep,  desired  clusters
-count K, and builds top K clusters from hierarchical clusterization  tree.
-It returns assignment of points to clusters (array of cluster indexes).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    K       -   desired number of clusters, 1<=K<=NPoints.
-                K can be zero only when NPoints=0.
-
-OUTPUT PARAMETERS:
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-      
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-      
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizergetkclusters(ahcreport* rep,
-     ae_int_t k,
-     /* Integer */ ae_vector* cidx,
-     /* Integer */ ae_vector* cz,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_int_t mergeidx;
-    ae_int_t i0;
-    ae_int_t i1;
-    ae_int_t t;
-    ae_vector presentclusters;
-    ae_vector clusterindexes;
-    ae_vector clustersizes;
-    ae_vector tmpidx;
-    ae_int_t npoints;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_clear(cidx);
-    ae_vector_clear(cz);
-    ae_vector_init(&presentclusters, 0, DT_BOOL, _state);
-    ae_vector_init(&clusterindexes, 0, DT_INT, _state);
-    ae_vector_init(&clustersizes, 0, DT_INT, _state);
-    ae_vector_init(&tmpidx, 0, DT_INT, _state);
-
-    npoints = rep->npoints;
-    ae_assert(npoints>=0, "ClusterizerGetKClusters: internal error in Rep integrity", _state);
-    ae_assert(k>=0, "ClusterizerGetKClusters: K<=0", _state);
-    ae_assert(k<=npoints, "ClusterizerGetKClusters: K>NPoints", _state);
-    ae_assert(k>0||npoints==0, "ClusterizerGetKClusters: K<=0", _state);
-    ae_assert(npoints==rep->npoints, "ClusterizerGetKClusters: NPoints<>Rep.NPoints", _state);
-    
-    /*
-     * Quick exit
-     */
-    if( npoints==0 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    if( npoints==1 )
-    {
-        ae_vector_set_length(cz, 1, _state);
-        ae_vector_set_length(cidx, 1, _state);
-        cz->ptr.p_int[0] = 0;
-        cidx->ptr.p_int[0] = 0;
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Replay merges, from top to bottom,
-     * keep track of clusters being present at the moment
-     */
-    ae_vector_set_length(&presentclusters, 2*npoints-1, _state);
-    ae_vector_set_length(&tmpidx, npoints, _state);
-    for(i=0; i<=2*npoints-3; i++)
-    {
-        presentclusters.ptr.p_bool[i] = ae_false;
-    }
-    presentclusters.ptr.p_bool[2*npoints-2] = ae_true;
-    for(i=0; i<=npoints-1; i++)
-    {
-        tmpidx.ptr.p_int[i] = 2*npoints-2;
-    }
-    for(mergeidx=npoints-2; mergeidx>=npoints-k; mergeidx--)
-    {
-        
-        /*
-         * Update information about clusters being present at the moment
-         */
-        presentclusters.ptr.p_bool[npoints+mergeidx] = ae_false;
-        presentclusters.ptr.p_bool[rep->z.ptr.pp_int[mergeidx][0]] = ae_true;
-        presentclusters.ptr.p_bool[rep->z.ptr.pp_int[mergeidx][1]] = ae_true;
-        
-        /*
-         * Update TmpIdx according to the current state of the dataset
-         *
-         * NOTE: TmpIdx contains cluster indexes from [0..2*NPoints-2];
-         *       we will convert them to [0..K-1] later.
-         */
-        i0 = rep->pm.ptr.pp_int[mergeidx][0];
-        i1 = rep->pm.ptr.pp_int[mergeidx][1];
-        t = rep->z.ptr.pp_int[mergeidx][0];
-        for(i=i0; i<=i1; i++)
-        {
-            tmpidx.ptr.p_int[i] = t;
-        }
-        i0 = rep->pm.ptr.pp_int[mergeidx][2];
-        i1 = rep->pm.ptr.pp_int[mergeidx][3];
-        t = rep->z.ptr.pp_int[mergeidx][1];
-        for(i=i0; i<=i1; i++)
-        {
-            tmpidx.ptr.p_int[i] = t;
-        }
-    }
-    
-    /*
-     * Fill CZ - array which allows us to convert cluster indexes
-     * from one system to another.
-     */
-    ae_vector_set_length(cz, k, _state);
-    ae_vector_set_length(&clusterindexes, 2*npoints-1, _state);
-    t = 0;
-    for(i=0; i<=2*npoints-2; i++)
-    {
-        if( presentclusters.ptr.p_bool[i] )
-        {
-            cz->ptr.p_int[t] = i;
-            clusterindexes.ptr.p_int[i] = t;
-            t = t+1;
-        }
-    }
-    ae_assert(t==k, "ClusterizerGetKClusters: internal error", _state);
-    
-    /*
-     * Convert indexes stored in CIdx
-     */
-    ae_vector_set_length(cidx, npoints, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        cidx->ptr.p_int[i] = clusterindexes.ptr.p_int[tmpidx.ptr.p_int[rep->p.ptr.p_int[i]]];
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-This  function  accepts  AHC  report  Rep,  desired  minimum  intercluster
-distance and returns top clusters from  hierarchical  clusterization  tree
-which are separated by distance R or HIGHER.
-
-It returns assignment of points to clusters (array of cluster indexes).
-
-There is one more function with similar name - ClusterizerSeparatedByCorr,
-which returns clusters with intercluster correlation equal to R  or  LOWER
-(note: higher for distance, lower for correlation).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    R       -   desired minimum intercluster distance, R>=0
-
-OUTPUT PARAMETERS:
-    K       -   number of clusters, 1<=K<=NPoints
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-      
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-      
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerseparatedbydist(ahcreport* rep,
-     double r,
-     ae_int_t* k,
-     /* Integer */ ae_vector* cidx,
-     /* Integer */ ae_vector* cz,
-     ae_state *_state)
-{
-
-    *k = 0;
-    ae_vector_clear(cidx);
-    ae_vector_clear(cz);
-
-    ae_assert(ae_isfinite(r, _state)&&ae_fp_greater_eq(r,(double)(0)), "ClusterizerSeparatedByDist: R is infinite or less than 0", _state);
-    *k = 1;
-    while(*k<rep->npoints&&ae_fp_greater_eq(rep->mergedist.ptr.p_double[rep->npoints-1-(*k)],r))
-    {
-        *k = *k+1;
-    }
-    clusterizergetkclusters(rep, *k, cidx, cz, _state);
-}
-
-
-/*************************************************************************
-This  function  accepts  AHC  report  Rep,  desired  maximum  intercluster
-correlation and returns top clusters from hierarchical clusterization tree
-which are separated by correlation R or LOWER.
-
-It returns assignment of points to clusters (array of cluster indexes).
-
-There is one more function with similar name - ClusterizerSeparatedByDist,
-which returns clusters with intercluster distance equal  to  R  or  HIGHER
-(note: higher for distance, lower for correlation).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    R       -   desired maximum intercluster correlation, -1<=R<=+1
-
-OUTPUT PARAMETERS:
-    K       -   number of clusters, 1<=K<=NPoints
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-      
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-      
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerseparatedbycorr(ahcreport* rep,
-     double r,
-     ae_int_t* k,
-     /* Integer */ ae_vector* cidx,
-     /* Integer */ ae_vector* cz,
-     ae_state *_state)
-{
-
-    *k = 0;
-    ae_vector_clear(cidx);
-    ae_vector_clear(cz);
-
-    ae_assert((ae_isfinite(r, _state)&&ae_fp_greater_eq(r,(double)(-1)))&&ae_fp_less_eq(r,(double)(1)), "ClusterizerSeparatedByCorr: R is infinite or less than 0", _state);
-    *k = 1;
-    while(*k<rep->npoints&&ae_fp_greater_eq(rep->mergedist.ptr.p_double[rep->npoints-1-(*k)],1-r))
-    {
-        *k = *k+1;
-    }
-    clusterizergetkclusters(rep, *k, cidx, cz, _state);
-}
-
-
-/*************************************************************************
-K-means++ clusterization
-
-INPUT PARAMETERS:
-    XY          -   dataset, array [0..NPoints-1,0..NVars-1].
-    NPoints     -   dataset size, NPoints>=K
-    NVars       -   number of variables, NVars>=1
-    K           -   desired number of clusters, K>=1
-    Restarts    -   number of restarts, Restarts>=1
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -3, if task is degenerate (number of distinct points is
-                          less than K)
-                    * -1, if incorrect NPoints/NFeatures/K/Restarts was passed
-                    *  1, if subroutine finished successfully
-    CCol        -   array[0..NVars-1,0..K-1].matrix whose columns store
-                    cluster's centers
-    NeedCCol    -   True in case caller requires to store result in CCol
-    CRow        -   array[0..K-1,0..NVars-1], same as CCol, but centers are
-                    stored in rows
-    NeedCRow    -   True in case caller requires to store result in CCol
-    XYC         -   array[NPoints], which contains cluster indexes
-
-  -- ALGLIB --
-     Copyright 21.03.2009 by Bochkanov Sergey
-*************************************************************************/
-void kmeansgenerateinternal(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t k,
-     ae_int_t maxits,
-     ae_int_t restarts,
-     ae_int_t* info,
-     /* Real    */ ae_matrix* ccol,
-     ae_bool needccol,
-     /* Real    */ ae_matrix* crow,
-     ae_bool needcrow,
-     /* Integer */ ae_vector* xyc,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_int_t j;
-    ae_matrix ct;
-    ae_matrix ctbest;
-    ae_vector xycbest;
-    double e;
-    double eprev;
-    double ebest;
-    ae_vector x;
-    ae_vector tmp;
-    ae_vector d2;
-    ae_vector p;
-    ae_vector csizes;
-    ae_vector cbusy;
-    double v;
-    ae_int_t cclosest;
-    double dclosest;
-    ae_vector work;
-    ae_bool waschanges;
-    ae_bool zerosizeclusters;
-    ae_int_t pass;
-    ae_int_t itcnt;
-    hqrndstate rs;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    ae_matrix_clear(ccol);
-    ae_matrix_clear(crow);
-    ae_vector_clear(xyc);
-    ae_matrix_init(&ct, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&ctbest, 0, 0, DT_REAL, _state);
-    ae_vector_init(&xycbest, 0, DT_INT, _state);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&tmp, 0, DT_REAL, _state);
-    ae_vector_init(&d2, 0, DT_REAL, _state);
-    ae_vector_init(&p, 0, DT_REAL, _state);
-    ae_vector_init(&csizes, 0, DT_INT, _state);
-    ae_vector_init(&cbusy, 0, DT_BOOL, _state);
-    ae_vector_init(&work, 0, DT_REAL, _state);
-    _hqrndstate_init(&rs, _state);
-
-    
-    /*
-     * Test parameters
-     */
-    if( ((npoints<k||nvars<1)||k<1)||restarts<1 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * TODO: special case K=1
-     * TODO: special case K=NPoints
-     */
-    *info = 1;
-    
-    /*
-     * Multiple passes of k-means++ algorithm
-     */
-    ae_matrix_set_length(&ct, k, nvars, _state);
-    ae_matrix_set_length(&ctbest, k, nvars, _state);
-    ae_vector_set_length(xyc, npoints, _state);
-    ae_vector_set_length(&xycbest, npoints, _state);
-    ae_vector_set_length(&d2, npoints, _state);
-    ae_vector_set_length(&p, npoints, _state);
-    ae_vector_set_length(&tmp, nvars, _state);
-    ae_vector_set_length(&csizes, k, _state);
-    ae_vector_set_length(&cbusy, k, _state);
-    ebest = ae_maxrealnumber;
-    hqrndrandomize(&rs, _state);
-    for(pass=1; pass<=restarts; pass++)
-    {
-        
-        /*
-         * Select initial centers  using k-means++ algorithm
-         * 1. Choose first center at random
-         * 2. Choose next centers using their distance from centers already chosen
-         *
-         * Note that for performance reasons centers are stored in ROWS of CT, not
-         * in columns. We'll transpose CT in the end and store it in the C.
-         */
-        i = hqrnduniformi(&rs, npoints, _state);
-        ae_v_move(&ct.ptr.pp_double[0][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-        cbusy.ptr.p_bool[0] = ae_true;
-        for(i=1; i<=k-1; i++)
-        {
-            cbusy.ptr.p_bool[i] = ae_false;
-        }
-        if( !clustering_selectcenterpp(xy, npoints, nvars, &ct, &cbusy, k, &d2, &p, &tmp, _state) )
-        {
-            *info = -3;
-            ae_frame_leave(_state);
-            return;
-        }
-        
-        /*
-         * Update centers:
-         * 2. update center positions
-         */
-        for(i=0; i<=npoints-1; i++)
-        {
-            xyc->ptr.p_int[i] = -1;
-        }
-        eprev = ae_maxrealnumber;
-        itcnt = 0;
-        e = (double)(0);
-        while(maxits==0||itcnt<maxits)
-        {
-            
-            /*
-             * Update iteration counter
-             */
-            itcnt = itcnt+1;
-            
-            /*
-             * fill XYC with center numbers
-             */
-            waschanges = ae_false;
-            for(i=0; i<=npoints-1; i++)
-            {
-                cclosest = -1;
-                dclosest = ae_maxrealnumber;
-                for(j=0; j<=k-1; j++)
-                {
-                    ae_v_move(&tmp.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-                    ae_v_sub(&tmp.ptr.p_double[0], 1, &ct.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
-                    v = ae_v_dotproduct(&tmp.ptr.p_double[0], 1, &tmp.ptr.p_double[0], 1, ae_v_len(0,nvars-1));
-                    if( ae_fp_less(v,dclosest) )
-                    {
-                        cclosest = j;
-                        dclosest = v;
-                    }
-                }
-                if( xyc->ptr.p_int[i]!=cclosest )
-                {
-                    waschanges = ae_true;
-                }
-                xyc->ptr.p_int[i] = cclosest;
-            }
-            
-            /*
-             * Update centers
-             */
-            for(j=0; j<=k-1; j++)
-            {
-                csizes.ptr.p_int[j] = 0;
-            }
-            for(i=0; i<=k-1; i++)
-            {
-                for(j=0; j<=nvars-1; j++)
-                {
-                    ct.ptr.pp_double[i][j] = (double)(0);
-                }
-            }
-            for(i=0; i<=npoints-1; i++)
-            {
-                csizes.ptr.p_int[xyc->ptr.p_int[i]] = csizes.ptr.p_int[xyc->ptr.p_int[i]]+1;
-                ae_v_add(&ct.ptr.pp_double[xyc->ptr.p_int[i]][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-            }
-            zerosizeclusters = ae_false;
-            for(j=0; j<=k-1; j++)
-            {
-                if( csizes.ptr.p_int[j]!=0 )
-                {
-                    v = (double)1/(double)csizes.ptr.p_int[j];
-                    ae_v_muld(&ct.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1), v);
-                }
-                cbusy.ptr.p_bool[j] = csizes.ptr.p_int[j]!=0;
-                zerosizeclusters = zerosizeclusters||csizes.ptr.p_int[j]==0;
-            }
-            if( zerosizeclusters )
-            {
-                
-                /*
-                 * Some clusters have zero size - rare, but possible.
-                 * We'll choose new centers for such clusters using k-means++ rule
-                 * and restart algorithm
-                 */
-                if( !clustering_selectcenterpp(xy, npoints, nvars, &ct, &cbusy, k, &d2, &p, &tmp, _state) )
-                {
-                    *info = -3;
-                    ae_frame_leave(_state);
-                    return;
-                }
-                continue;
-            }
-            
-            /*
-             * Stop if one of two conditions is met:
-             * 1. nothing has changed during iteration
-             * 2. energy function increased 
-             */
-            e = (double)(0);
-            for(i=0; i<=npoints-1; i++)
-            {
-                ae_v_move(&tmp.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-                ae_v_sub(&tmp.ptr.p_double[0], 1, &ct.ptr.pp_double[xyc->ptr.p_int[i]][0], 1, ae_v_len(0,nvars-1));
-                v = ae_v_dotproduct(&tmp.ptr.p_double[0], 1, &tmp.ptr.p_double[0], 1, ae_v_len(0,nvars-1));
-                e = e+v;
-            }
-            if( !waschanges||ae_fp_greater_eq(e,eprev) )
-            {
-                break;
-            }
-            
-            /*
-             * Update EPrev
-             */
-            eprev = e;
-        }
-        
-        /*
-         * 3. Calculate E, compare with best centers found so far
-         */
-        if( ae_fp_less(e,ebest) )
-        {
-            
-            /*
-             * store partition.
-             */
-            ebest = e;
-            copymatrix(&ct, 0, k-1, 0, nvars-1, &ctbest, 0, k-1, 0, nvars-1, _state);
-            for(i=0; i<=npoints-1; i++)
-            {
-                xycbest.ptr.p_int[i] = xyc->ptr.p_int[i];
-            }
-        }
-    }
-    
-    /*
-     * Copy and transpose
-     */
-    if( needccol )
-    {
-        ae_matrix_set_length(ccol, nvars, k, _state);
-        copyandtranspose(&ctbest, 0, k-1, 0, nvars-1, ccol, 0, nvars-1, 0, k-1, _state);
-    }
-    if( needcrow )
-    {
-        ae_matrix_set_length(crow, k, nvars, _state);
-        rmatrixcopy(k, nvars, &ctbest, 0, 0, crow, 0, 0, _state);
-    }
-    for(i=0; i<=npoints-1; i++)
-    {
-        xyc->ptr.p_int[i] = xycbest.ptr.p_int[i];
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Select center for a new cluster using k-means++ rule
-*************************************************************************/
-static ae_bool clustering_selectcenterpp(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     /* Real    */ ae_matrix* centers,
-     /* Boolean */ ae_vector* busycenters,
-     ae_int_t ccnt,
-     /* Real    */ ae_vector* d2,
-     /* Real    */ ae_vector* p,
-     /* Real    */ ae_vector* tmp,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t cc;
-    double v;
-    double s;
-    ae_bool result;
-
-
-    result = ae_true;
-    for(cc=0; cc<=ccnt-1; cc++)
-    {
-        if( !busycenters->ptr.p_bool[cc] )
-        {
-            
-            /*
-             * fill D2
-             */
-            for(i=0; i<=npoints-1; i++)
-            {
-                d2->ptr.p_double[i] = ae_maxrealnumber;
-                for(j=0; j<=ccnt-1; j++)
-                {
-                    if( busycenters->ptr.p_bool[j] )
-                    {
-                        ae_v_move(&tmp->ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-                        ae_v_sub(&tmp->ptr.p_double[0], 1, &centers->ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
-                        v = ae_v_dotproduct(&tmp->ptr.p_double[0], 1, &tmp->ptr.p_double[0], 1, ae_v_len(0,nvars-1));
-                        if( ae_fp_less(v,d2->ptr.p_double[i]) )
-                        {
-                            d2->ptr.p_double[i] = v;
-                        }
-                    }
-                }
-            }
-            
-            /*
-             * calculate P (non-cumulative)
-             */
-            s = (double)(0);
-            for(i=0; i<=npoints-1; i++)
-            {
-                s = s+d2->ptr.p_double[i];
-            }
-            if( ae_fp_eq(s,(double)(0)) )
-            {
-                result = ae_false;
-                return result;
-            }
-            s = 1/s;
-            ae_v_moved(&p->ptr.p_double[0], 1, &d2->ptr.p_double[0], 1, ae_v_len(0,npoints-1), s);
-            
-            /*
-             * choose one of points with probability P
-             * random number within (0,1) is generated and
-             * inverse empirical CDF is used to randomly choose a point.
-             */
-            s = (double)(0);
-            v = ae_randomreal(_state);
-            for(i=0; i<=npoints-1; i++)
-            {
-                s = s+p->ptr.p_double[i];
-                if( ae_fp_less_eq(v,s)||i==npoints-1 )
-                {
-                    ae_v_move(&centers->ptr.pp_double[cc][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-                    busycenters->ptr.p_bool[cc] = ae_true;
-                    break;
-                }
-            }
-        }
-    }
-    return result;
-}
-
-
-/*************************************************************************
-This  function  performs  agglomerative  hierarchical  clustering    using
-precomputed  distance  matrix.  Internal  function,  should  not be called
-directly.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    D       -   distance matrix, array[S.NFeatures,S.NFeatures]
-                Contents of the matrix is destroyed during
-                algorithm operation.
-
-OUTPUT PARAMETERS:
-    Rep     -   clustering results; see description of AHCReport
-                structure for more information.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-static void clustering_clusterizerrunahcinternal(clusterizerstate* s,
-     /* Real    */ ae_matrix* d,
-     ahcreport* rep,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    double v;
-    ae_int_t mergeidx;
-    ae_int_t c0;
-    ae_int_t c1;
-    ae_int_t s0;
-    ae_int_t s1;
-    ae_int_t ar;
-    ae_int_t br;
-    ae_int_t npoints;
-    ae_vector cidx;
-    ae_vector csizes;
-    ae_vector nnidx;
-    ae_matrix cinfo;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_init(&cidx, 0, DT_INT, _state);
-    ae_vector_init(&csizes, 0, DT_INT, _state);
-    ae_vector_init(&nnidx, 0, DT_INT, _state);
-    ae_matrix_init(&cinfo, 0, 0, DT_INT, _state);
-
-    npoints = s->npoints;
-    
-    /*
-     * Fill Rep.NPoints, quick exit when NPoints<=1
-     */
-    rep->npoints = npoints;
-    if( npoints==0 )
-    {
-        ae_vector_set_length(&rep->p, 0, _state);
-        ae_matrix_set_length(&rep->z, 0, 0, _state);
-        ae_matrix_set_length(&rep->pz, 0, 0, _state);
-        ae_matrix_set_length(&rep->pm, 0, 0, _state);
-        ae_vector_set_length(&rep->mergedist, 0, _state);
-        ae_frame_leave(_state);
-        return;
-    }
-    if( npoints==1 )
-    {
-        ae_vector_set_length(&rep->p, 1, _state);
-        ae_matrix_set_length(&rep->z, 0, 0, _state);
-        ae_matrix_set_length(&rep->pz, 0, 0, _state);
-        ae_matrix_set_length(&rep->pm, 0, 0, _state);
-        ae_vector_set_length(&rep->mergedist, 0, _state);
-        rep->p.ptr.p_int[0] = 0;
-        ae_frame_leave(_state);
-        return;
-    }
-    ae_matrix_set_length(&rep->z, npoints-1, 2, _state);
-    ae_vector_set_length(&rep->mergedist, npoints-1, _state);
-    
-    /*
-     * Build list of nearest neighbors
-     */
-    ae_vector_set_length(&nnidx, npoints, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        
-        /*
-         * Calculate index of the nearest neighbor
-         */
-        k = -1;
-        v = ae_maxrealnumber;
-        for(j=0; j<=npoints-1; j++)
-        {
-            if( j!=i&&ae_fp_less(d->ptr.pp_double[i][j],v) )
-            {
-                k = j;
-                v = d->ptr.pp_double[i][j];
-            }
-        }
-        ae_assert(ae_fp_less(v,ae_maxrealnumber), "ClusterizerRunAHC: internal error", _state);
-        nnidx.ptr.p_int[i] = k;
-    }
-    
-    /*
-     * Distance matrix is built, perform merges.
-     *
-     * NOTE 1: CIdx is array[NPoints] which maps rows/columns of the
-     *         distance matrix D to indexes of clusters. Values of CIdx
-     *         from [0,NPoints) denote single-point clusters, and values
-     *         from [NPoints,2*NPoints-1) denote ones obtained by merging
-     *         smaller clusters. Negative calues correspond to absent clusters.
-     *
-     *         Initially it contains [0...NPoints-1], after each merge
-     *         one element of CIdx (one with index C0) is replaced by
-     *         NPoints+MergeIdx, and another one with index C1 is
-     *         rewritten by -1.
-     * 
-     * NOTE 2: CSizes is array[NPoints] which stores sizes of clusters.
-     *         
-     */
-    ae_vector_set_length(&cidx, npoints, _state);
-    ae_vector_set_length(&csizes, npoints, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        cidx.ptr.p_int[i] = i;
-        csizes.ptr.p_int[i] = 1;
-    }
-    for(mergeidx=0; mergeidx<=npoints-2; mergeidx++)
-    {
-        
-        /*
-         * Select pair of clusters (C0,C1) with CIdx[C0]<CIdx[C1] to merge.
-         */
-        c0 = -1;
-        c1 = -1;
-        v = ae_maxrealnumber;
-        for(i=0; i<=npoints-1; i++)
-        {
-            if( cidx.ptr.p_int[i]>=0 )
-            {
-                if( ae_fp_less(d->ptr.pp_double[i][nnidx.ptr.p_int[i]],v) )
-                {
-                    c0 = i;
-                    c1 = nnidx.ptr.p_int[i];
-                    v = d->ptr.pp_double[i][nnidx.ptr.p_int[i]];
-                }
-            }
-        }
-        ae_assert(ae_fp_less(v,ae_maxrealnumber), "ClusterizerRunAHC: internal error", _state);
-        if( cidx.ptr.p_int[c0]>cidx.ptr.p_int[c1] )
-        {
-            i = c1;
-            c1 = c0;
-            c0 = i;
-        }
-        
-        /*
-         * Fill one row of Rep.Z and one element of Rep.MergeDist
-         */
-        rep->z.ptr.pp_int[mergeidx][0] = cidx.ptr.p_int[c0];
-        rep->z.ptr.pp_int[mergeidx][1] = cidx.ptr.p_int[c1];
-        rep->mergedist.ptr.p_double[mergeidx] = v;
-        
-        /*
-         * Update distance matrix:
-         * * row/column C0 are updated by distances to the new cluster
-         * * row/column C1 are considered empty (we can fill them by zeros,
-         *   but do not want to spend time - we just ignore them)
-         *
-         * NOTE: it is important to update distance matrix BEFORE CIdx/CSizes
-         *       are updated.
-         */
-        ae_assert(((s->ahcalgo==0||s->ahcalgo==1)||s->ahcalgo==2)||s->ahcalgo==3, "ClusterizerRunAHC: internal error", _state);
-        for(i=0; i<=npoints-1; i++)
-        {
-            if( i!=c0&&i!=c1 )
-            {
-                if( s->ahcalgo==0 )
-                {
-                    d->ptr.pp_double[i][c0] = ae_maxreal(d->ptr.pp_double[i][c0], d->ptr.pp_double[i][c1], _state);
-                }
-                if( s->ahcalgo==1 )
-                {
-                    d->ptr.pp_double[i][c0] = ae_minreal(d->ptr.pp_double[i][c0], d->ptr.pp_double[i][c1], _state);
-                }
-                if( s->ahcalgo==2 )
-                {
-                    d->ptr.pp_double[i][c0] = (csizes.ptr.p_int[c0]*d->ptr.pp_double[i][c0]+csizes.ptr.p_int[c1]*d->ptr.pp_double[i][c1])/(csizes.ptr.p_int[c0]+csizes.ptr.p_int[c1]);
-                }
-                if( s->ahcalgo==3 )
-                {
-                    d->ptr.pp_double[i][c0] = (d->ptr.pp_double[i][c0]+d->ptr.pp_double[i][c1])/2;
-                }
-                d->ptr.pp_double[c0][i] = d->ptr.pp_double[i][c0];
-            }
-        }
-        
-        /*
-         * Update CIdx and CSizes
-         */
-        cidx.ptr.p_int[c0] = npoints+mergeidx;
-        cidx.ptr.p_int[c1] = -1;
-        csizes.ptr.p_int[c0] = csizes.ptr.p_int[c0]+csizes.ptr.p_int[c1];
-        csizes.ptr.p_int[c1] = 0;
-        
-        /*
-         * Update nearest neighbors array:
-         * * update nearest neighbors of everything except for C0/C1
-         * * update neighbors of C0/C1
-         */
-        for(i=0; i<=npoints-1; i++)
-        {
-            if( (cidx.ptr.p_int[i]>=0&&i!=c0)&&(nnidx.ptr.p_int[i]==c0||nnidx.ptr.p_int[i]==c1) )
-            {
-                
-                /*
-                 * I-th cluster which is distinct from C0/C1 has former C0/C1 cluster as its nearest
-                 * neighbor. We handle this issue depending on specific AHC algorithm being used.
-                 */
-                if( s->ahcalgo==1 )
-                {
-                    
-                    /*
-                     * Single linkage. Merging of two clusters together
-                     * does NOT change distances between new cluster and
-                     * other clusters.
-                     *
-                     * The only thing we have to do is to update nearest neighbor index
-                     */
-                    nnidx.ptr.p_int[i] = c0;
-                }
-                else
-                {
-                    
-                    /*
-                     * Something other than single linkage. We have to re-examine
-                     * all the row to find nearest neighbor.
-                     */
-                    k = -1;
-                    v = ae_maxrealnumber;
-                    for(j=0; j<=npoints-1; j++)
-                    {
-                        if( (cidx.ptr.p_int[j]>=0&&j!=i)&&ae_fp_less(d->ptr.pp_double[i][j],v) )
-                        {
-                            k = j;
-                            v = d->ptr.pp_double[i][j];
-                        }
-                    }
-                    ae_assert(ae_fp_less(v,ae_maxrealnumber)||mergeidx==npoints-2, "ClusterizerRunAHC: internal error", _state);
-                    nnidx.ptr.p_int[i] = k;
-                }
-            }
-        }
-        k = -1;
-        v = ae_maxrealnumber;
-        for(j=0; j<=npoints-1; j++)
-        {
-            if( (cidx.ptr.p_int[j]>=0&&j!=c0)&&ae_fp_less(d->ptr.pp_double[c0][j],v) )
-            {
-                k = j;
-                v = d->ptr.pp_double[c0][j];
-            }
-        }
-        ae_assert(ae_fp_less(v,ae_maxrealnumber)||mergeidx==npoints-2, "ClusterizerRunAHC: internal error", _state);
-        nnidx.ptr.p_int[c0] = k;
-    }
-    
-    /*
-     * Calculate Rep.P and Rep.PM.
-     *
-     * In order to do that, we fill CInfo matrix - (2*NPoints-1)*3 matrix,
-     * with I-th row containing:
-     * * CInfo[I,0]     -   size of I-th cluster
-     * * CInfo[I,1]     -   beginning of I-th cluster
-     * * CInfo[I,2]     -   end of I-th cluster
-     * * CInfo[I,3]     -   height of I-th cluster
-     *
-     * We perform it as follows:
-     * * first NPoints clusters have unit size (CInfo[I,0]=1) and zero
-     *   height (CInfo[I,3]=0)
-     * * we replay NPoints-1 merges from first to last and fill sizes of
-     *   corresponding clusters (new size is a sum of sizes of clusters
-     *   being merged) and height (new height is max(heights)+1).
-     * * now we ready to determine locations of clusters. Last cluster
-     *   spans entire dataset, we know it. We replay merges from last to
-     *   first, during each merge we already know location of the merge
-     *   result, and we can position first cluster to the left part of
-     *   the result, and second cluster to the right part.
-     */
-    ae_vector_set_length(&rep->p, npoints, _state);
-    ae_matrix_set_length(&rep->pm, npoints-1, 6, _state);
-    ae_matrix_set_length(&cinfo, 2*npoints-1, 4, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        cinfo.ptr.pp_int[i][0] = 1;
-        cinfo.ptr.pp_int[i][3] = 0;
-    }
-    for(i=0; i<=npoints-2; i++)
-    {
-        cinfo.ptr.pp_int[npoints+i][0] = cinfo.ptr.pp_int[rep->z.ptr.pp_int[i][0]][0]+cinfo.ptr.pp_int[rep->z.ptr.pp_int[i][1]][0];
-        cinfo.ptr.pp_int[npoints+i][3] = ae_maxint(cinfo.ptr.pp_int[rep->z.ptr.pp_int[i][0]][3], cinfo.ptr.pp_int[rep->z.ptr.pp_int[i][1]][3], _state)+1;
-    }
-    cinfo.ptr.pp_int[2*npoints-2][1] = 0;
-    cinfo.ptr.pp_int[2*npoints-2][2] = npoints-1;
-    for(i=npoints-2; i>=0; i--)
-    {
-        
-        /*
-         * We merge C0 which spans [A0,B0] and C1 (spans [A1,B1]),
-         * with unknown A0, B0, A1, B1. However, we know that result
-         * is CR, which spans [AR,BR] with known AR/BR, and we know
-         * sizes of C0, C1, CR (denotes as S0, S1, SR).
-         */
-        c0 = rep->z.ptr.pp_int[i][0];
-        c1 = rep->z.ptr.pp_int[i][1];
-        s0 = cinfo.ptr.pp_int[c0][0];
-        s1 = cinfo.ptr.pp_int[c1][0];
-        ar = cinfo.ptr.pp_int[npoints+i][1];
-        br = cinfo.ptr.pp_int[npoints+i][2];
-        cinfo.ptr.pp_int[c0][1] = ar;
-        cinfo.ptr.pp_int[c0][2] = ar+s0-1;
-        cinfo.ptr.pp_int[c1][1] = br-(s1-1);
-        cinfo.ptr.pp_int[c1][2] = br;
-        rep->pm.ptr.pp_int[i][0] = cinfo.ptr.pp_int[c0][1];
-        rep->pm.ptr.pp_int[i][1] = cinfo.ptr.pp_int[c0][2];
-        rep->pm.ptr.pp_int[i][2] = cinfo.ptr.pp_int[c1][1];
-        rep->pm.ptr.pp_int[i][3] = cinfo.ptr.pp_int[c1][2];
-        rep->pm.ptr.pp_int[i][4] = cinfo.ptr.pp_int[c0][3];
-        rep->pm.ptr.pp_int[i][5] = cinfo.ptr.pp_int[c1][3];
-    }
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_assert(cinfo.ptr.pp_int[i][1]==cinfo.ptr.pp_int[i][2], "Assertion failed", _state);
-        rep->p.ptr.p_int[i] = cinfo.ptr.pp_int[i][1];
-    }
-    
-    /*
-     * Calculate Rep.PZ
-     */
-    ae_matrix_set_length(&rep->pz, npoints-1, 2, _state);
-    for(i=0; i<=npoints-2; i++)
-    {
-        rep->pz.ptr.pp_int[i][0] = rep->z.ptr.pp_int[i][0];
-        rep->pz.ptr.pp_int[i][1] = rep->z.ptr.pp_int[i][1];
-        if( rep->pz.ptr.pp_int[i][0]<npoints )
-        {
-            rep->pz.ptr.pp_int[i][0] = rep->p.ptr.p_int[rep->pz.ptr.pp_int[i][0]];
-        }
-        if( rep->pz.ptr.pp_int[i][1]<npoints )
-        {
-            rep->pz.ptr.pp_int[i][1] = rep->p.ptr.p_int[rep->pz.ptr.pp_int[i][1]];
-        }
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-This function recursively evaluates distance matrix  for  SOME  (not all!)
-distance types.
-
-INPUT PARAMETERS:
-    XY      -   array[?,NFeatures], dataset
-    NFeatures-  number of features, >=1
-    DistType-   distance function:
-                *  0    Chebyshev distance  (L-inf norm)
-                *  1    city block distance (L1 norm)
-    D       -   preallocated output matrix
-    I0,I1   -   half interval of rows to calculate: [I0,I1) is processed
-    J0,J1   -   half interval of cols to calculate: [J0,J1) is processed
-
-OUTPUT PARAMETERS:
-    D       -   array[NPoints,NPoints], distance matrix
-                upper triangle and main diagonal are initialized with
-                data.
-
-NOTE: intersection of [I0,I1) and [J0,J1)  may  completely  lie  in  upper
-      triangle, only partially intersect with it, or have zero intersection.
-      In any case, only intersection of submatrix given by [I0,I1)*[J0,J1)
-      with upper triangle of the matrix is evaluated.
-      
-      Say, for 4x4 distance matrix A:
-      * [0,2)*[0,2) will result in evaluation of A00, A01, A11
-      * [2,4)*[2,4) will result in evaluation of A22, A23, A32, A33
-      * [2,4)*[0,2) will result in evaluation of empty set of elements
-      
-
-  -- ALGLIB --
-     Copyright 07.04.2013 by Bochkanov Sergey
-*************************************************************************/
-static void clustering_evaluatedistancematrixrec(/* Real    */ ae_matrix* xy,
-     ae_int_t nfeatures,
-     ae_int_t disttype,
-     /* Real    */ ae_matrix* d,
-     ae_int_t i0,
-     ae_int_t i1,
-     ae_int_t j0,
-     ae_int_t j1,
-     ae_state *_state)
-{
-    double rcomplexity;
-    ae_int_t len0;
-    ae_int_t len1;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    double v;
-    double vv;
-
-
-    ae_assert(disttype==0||disttype==1, "EvaluateDistanceMatrixRec: incorrect DistType", _state);
-    
-    /*
-     * Normalize J0/J1:
-     * * J0:=max(J0,I0) - we ignore lower triangle
-     * * J1:=max(J1,J0) - normalize J1
-     */
-    j0 = ae_maxint(j0, i0, _state);
-    j1 = ae_maxint(j1, j0, _state);
-    if( j1<=j0||i1<=i0 )
-    {
-        return;
-    }
-    
-    /*
-     * Try to process in parallel. Two condtions must hold in order to
-     * activate parallel processing:
-     * 1. I1-I0>2 or J1-J0>2
-     * 2. (I1-I0)*(J1-J0)*NFeatures>=ParallelComplexity
-     *
-     * NOTE: all quantities are converted to reals in order to avoid
-     *       integer overflow during multiplication
-     *
-     * NOTE: strict inequality in (1) is necessary to reduce task to 2x2
-     *       basecases. In future versions we will be able to handle such
-     *       basecases more efficiently than 1x1 cases.
-     */
-    rcomplexity = (double)(i1-i0);
-    rcomplexity = rcomplexity*(j1-j0);
-    rcomplexity = rcomplexity*nfeatures;
-    if( ae_fp_greater_eq(rcomplexity,(double)(clustering_parallelcomplexity))&&(i1-i0>2||j1-j0>2) )
-    {
-        
-        /*
-         * Recursive division along largest of dimensions
-         */
-        if( i1-i0>j1-j0 )
-        {
-            splitlengtheven(i1-i0, &len0, &len1, _state);
-            clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, i0, i0+len0, j0, j1, _state);
-            clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, i0+len0, i1, j0, j1, _state);
-        }
-        else
-        {
-            splitlengtheven(j1-j0, &len0, &len1, _state);
-            clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, i0, i1, j0, j0+len0, _state);
-            clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, i0, i1, j0+len0, j1, _state);
-        }
-        return;
-    }
-    
-    /*
-     * Sequential processing
-     */
-    for(i=i0; i<=i1-1; i++)
-    {
-        for(j=j0; j<=j1-1; j++)
-        {
-            if( j>=i )
-            {
-                v = 0.0;
-                if( disttype==0 )
-                {
-                    for(k=0; k<=nfeatures-1; k++)
-                    {
-                        vv = xy->ptr.pp_double[i][k]-xy->ptr.pp_double[j][k];
-                        if( ae_fp_less(vv,(double)(0)) )
-                        {
-                            vv = -vv;
-                        }
-                        if( ae_fp_greater(vv,v) )
-                        {
-                            v = vv;
-                        }
-                    }
-                }
-                if( disttype==1 )
-                {
-                    for(k=0; k<=nfeatures-1; k++)
-                    {
-                        vv = xy->ptr.pp_double[i][k]-xy->ptr.pp_double[j][k];
-                        if( ae_fp_less(vv,(double)(0)) )
-                        {
-                            vv = -vv;
-                        }
-                        v = v+vv;
-                    }
-                }
-                d->ptr.pp_double[i][j] = v;
-            }
-        }
-    }
-}
-
-
-void _clusterizerstate_init(void* _p, ae_state *_state)
-{
-    clusterizerstate *p = (clusterizerstate*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_init(&p->xy, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&p->d, 0, 0, DT_REAL, _state);
-}
-
-
-void _clusterizerstate_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    clusterizerstate *dst = (clusterizerstate*)_dst;
-    clusterizerstate *src = (clusterizerstate*)_src;
-    dst->npoints = src->npoints;
-    dst->nfeatures = src->nfeatures;
-    dst->disttype = src->disttype;
-    ae_matrix_init_copy(&dst->xy, &src->xy, _state);
-    ae_matrix_init_copy(&dst->d, &src->d, _state);
-    dst->ahcalgo = src->ahcalgo;
-    dst->kmeansrestarts = src->kmeansrestarts;
-    dst->kmeansmaxits = src->kmeansmaxits;
-}
-
-
-void _clusterizerstate_clear(void* _p)
-{
-    clusterizerstate *p = (clusterizerstate*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_clear(&p->xy);
-    ae_matrix_clear(&p->d);
-}
-
-
-void _clusterizerstate_destroy(void* _p)
-{
-    clusterizerstate *p = (clusterizerstate*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_destroy(&p->xy);
-    ae_matrix_destroy(&p->d);
-}
-
-
-void _ahcreport_init(void* _p, ae_state *_state)
-{
-    ahcreport *p = (ahcreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_init(&p->p, 0, DT_INT, _state);
-    ae_matrix_init(&p->z, 0, 0, DT_INT, _state);
-    ae_matrix_init(&p->pz, 0, 0, DT_INT, _state);
-    ae_matrix_init(&p->pm, 0, 0, DT_INT, _state);
-    ae_vector_init(&p->mergedist, 0, DT_REAL, _state);
-}
-
-
-void _ahcreport_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    ahcreport *dst = (ahcreport*)_dst;
-    ahcreport *src = (ahcreport*)_src;
-    dst->npoints = src->npoints;
-    ae_vector_init_copy(&dst->p, &src->p, _state);
-    ae_matrix_init_copy(&dst->z, &src->z, _state);
-    ae_matrix_init_copy(&dst->pz, &src->pz, _state);
-    ae_matrix_init_copy(&dst->pm, &src->pm, _state);
-    ae_vector_init_copy(&dst->mergedist, &src->mergedist, _state);
-}
-
-
-void _ahcreport_clear(void* _p)
-{
-    ahcreport *p = (ahcreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_clear(&p->p);
-    ae_matrix_clear(&p->z);
-    ae_matrix_clear(&p->pz);
-    ae_matrix_clear(&p->pm);
-    ae_vector_clear(&p->mergedist);
-}
-
-
-void _ahcreport_destroy(void* _p)
-{
-    ahcreport *p = (ahcreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_destroy(&p->p);
-    ae_matrix_destroy(&p->z);
-    ae_matrix_destroy(&p->pz);
-    ae_matrix_destroy(&p->pm);
-    ae_vector_destroy(&p->mergedist);
-}
-
-
-void _kmeansreport_init(void* _p, ae_state *_state)
-{
-    kmeansreport *p = (kmeansreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_init(&p->c, 0, 0, DT_REAL, _state);
-    ae_vector_init(&p->cidx, 0, DT_INT, _state);
-}
-
-
-void _kmeansreport_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    kmeansreport *dst = (kmeansreport*)_dst;
-    kmeansreport *src = (kmeansreport*)_src;
-    dst->npoints = src->npoints;
-    dst->nfeatures = src->nfeatures;
-    dst->terminationtype = src->terminationtype;
-    dst->k = src->k;
-    ae_matrix_init_copy(&dst->c, &src->c, _state);
-    ae_vector_init_copy(&dst->cidx, &src->cidx, _state);
-}
-
-
-void _kmeansreport_clear(void* _p)
-{
-    kmeansreport *p = (kmeansreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_clear(&p->c);
-    ae_vector_clear(&p->cidx);
-}
-
-
-void _kmeansreport_destroy(void* _p)
-{
-    kmeansreport *p = (kmeansreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_destroy(&p->c);
-    ae_vector_destroy(&p->cidx);
-}
-
-
-
-
-/*************************************************************************
-k-means++ clusterization.
-Backward compatibility function, we recommend to use CLUSTERING subpackage
-as better replacement.
-
-  -- ALGLIB --
-     Copyright 21.03.2009 by Bochkanov Sergey
-*************************************************************************/
-void kmeansgenerate(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t k,
-     ae_int_t restarts,
-     ae_int_t* info,
-     /* Real    */ ae_matrix* c,
-     /* Integer */ ae_vector* xyc,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_matrix dummy;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    ae_matrix_clear(c);
-    ae_vector_clear(xyc);
-    ae_matrix_init(&dummy, 0, 0, DT_REAL, _state);
-
-    kmeansgenerateinternal(xy, npoints, nvars, k, 0, restarts, info, c, ae_true, &dummy, ae_false, xyc, _state);
-    ae_frame_leave(_state);
-}
-
-
-
-
-/*************************************************************************
-This subroutine builds random decision forest.
-
-INPUT PARAMETERS:
-    XY          -   training set
-    NPoints     -   training set size, NPoints>=1
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   task type:
-                    * NClasses=1 - regression task with one
-                                   dependent variable
-                    * NClasses>1 - classification task with
-                                   NClasses classes.
-    NTrees      -   number of trees in a forest, NTrees>=1.
-                    recommended values: 50-100.
-    R           -   percent of a training set used to build
-                    individual trees. 0<R<=1.
-                    recommended values: 0.1 <= R <= 0.66.
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed
-                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
-                          or R>1).
-                    *  1, if task has been solved
-    DF          -   model built
-    Rep         -   training report, contains error on a training set
-                    and out-of-bag estimates of generalization error.
-
-  -- ALGLIB --
-     Copyright 19.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfbuildrandomdecisionforest(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t ntrees,
-     double r,
-     ae_int_t* info,
-     decisionforest* df,
-     dfreport* rep,
-     ae_state *_state)
-{
-    ae_int_t samplesize;
-
-    *info = 0;
-    _decisionforest_clear(df);
-    _dfreport_clear(rep);
-
-    if( ae_fp_less_eq(r,(double)(0))||ae_fp_greater(r,(double)(1)) )
-    {
-        *info = -1;
-        return;
-    }
-    samplesize = ae_maxint(ae_round(r*npoints, _state), 1, _state);
-    dfbuildinternal(xy, npoints, nvars, nclasses, ntrees, samplesize, ae_maxint(nvars/2, 1, _state), dforest_dfusestrongsplits+dforest_dfuseevs, info, df, rep, _state);
-}
-
-
-/*************************************************************************
-This subroutine builds random decision forest.
-This function gives ability to tune number of variables used when choosing
-best split.
-
-INPUT PARAMETERS:
-    XY          -   training set
-    NPoints     -   training set size, NPoints>=1
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   task type:
-                    * NClasses=1 - regression task with one
-                                   dependent variable
-                    * NClasses>1 - classification task with
-                                   NClasses classes.
-    NTrees      -   number of trees in a forest, NTrees>=1.
-                    recommended values: 50-100.
-    NRndVars    -   number of variables used when choosing best split
-    R           -   percent of a training set used to build
-                    individual trees. 0<R<=1.
-                    recommended values: 0.1 <= R <= 0.66.
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed
-                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
-                          or R>1).
-                    *  1, if task has been solved
-    DF          -   model built
-    Rep         -   training report, contains error on a training set
-                    and out-of-bag estimates of generalization error.
-
-  -- ALGLIB --
-     Copyright 19.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfbuildrandomdecisionforestx1(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t ntrees,
-     ae_int_t nrndvars,
-     double r,
-     ae_int_t* info,
-     decisionforest* df,
-     dfreport* rep,
-     ae_state *_state)
-{
-    ae_int_t samplesize;
-
-    *info = 0;
-    _decisionforest_clear(df);
-    _dfreport_clear(rep);
-
-    if( ae_fp_less_eq(r,(double)(0))||ae_fp_greater(r,(double)(1)) )
-    {
-        *info = -1;
-        return;
-    }
-    if( nrndvars<=0||nrndvars>nvars )
-    {
-        *info = -1;
-        return;
-    }
-    samplesize = ae_maxint(ae_round(r*npoints, _state), 1, _state);
-    dfbuildinternal(xy, npoints, nvars, nclasses, ntrees, samplesize, nrndvars, dforest_dfusestrongsplits+dforest_dfuseevs, info, df, rep, _state);
-}
-
-
-void dfbuildinternal(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t ntrees,
-     ae_int_t samplesize,
-     ae_int_t nfeatures,
-     ae_int_t flags,
-     ae_int_t* info,
-     decisionforest* df,
-     dfreport* rep,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t tmpi;
-    ae_int_t lasttreeoffs;
-    ae_int_t offs;
-    ae_int_t ooboffs;
-    ae_int_t treesize;
-    ae_int_t nvarsinpool;
-    ae_bool useevs;
-    dfinternalbuffers bufs;
-    ae_vector permbuf;
-    ae_vector oobbuf;
-    ae_vector oobcntbuf;
-    ae_matrix xys;
-    ae_vector x;
-    ae_vector y;
-    ae_int_t oobcnt;
-    ae_int_t oobrelcnt;
-    double v;
-    double vmin;
-    double vmax;
-    ae_bool bflag;
-    hqrndstate rs;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    _decisionforest_clear(df);
-    _dfreport_clear(rep);
-    _dfinternalbuffers_init(&bufs, _state);
-    ae_vector_init(&permbuf, 0, DT_INT, _state);
-    ae_vector_init(&oobbuf, 0, DT_REAL, _state);
-    ae_vector_init(&oobcntbuf, 0, DT_INT, _state);
-    ae_matrix_init(&xys, 0, 0, DT_REAL, _state);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&y, 0, DT_REAL, _state);
-    _hqrndstate_init(&rs, _state);
-
-    
-    /*
-     * Test for inputs
-     */
-    if( (((((npoints<1||samplesize<1)||samplesize>npoints)||nvars<1)||nclasses<1)||ntrees<1)||nfeatures<1 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    if( nclasses>1 )
-    {
-        for(i=0; i<=npoints-1; i++)
-        {
-            if( ae_round(xy->ptr.pp_double[i][nvars], _state)<0||ae_round(xy->ptr.pp_double[i][nvars], _state)>=nclasses )
-            {
-                *info = -2;
-                ae_frame_leave(_state);
-                return;
-            }
-        }
-    }
-    *info = 1;
-    
-    /*
-     * Flags
-     */
-    useevs = flags/dforest_dfuseevs%2!=0;
-    
-    /*
-     * Allocate data, prepare header
-     */
-    treesize = 1+dforest_innernodewidth*(samplesize-1)+dforest_leafnodewidth*samplesize;
-    ae_vector_set_length(&permbuf, npoints-1+1, _state);
-    ae_vector_set_length(&bufs.treebuf, treesize-1+1, _state);
-    ae_vector_set_length(&bufs.idxbuf, npoints-1+1, _state);
-    ae_vector_set_length(&bufs.tmpbufr, npoints-1+1, _state);
-    ae_vector_set_length(&bufs.tmpbufr2, npoints-1+1, _state);
-    ae_vector_set_length(&bufs.tmpbufi, npoints-1+1, _state);
-    ae_vector_set_length(&bufs.sortrbuf, npoints, _state);
-    ae_vector_set_length(&bufs.sortrbuf2, npoints, _state);
-    ae_vector_set_length(&bufs.sortibuf, npoints, _state);
-    ae_vector_set_length(&bufs.varpool, nvars-1+1, _state);
-    ae_vector_set_length(&bufs.evsbin, nvars-1+1, _state);
-    ae_vector_set_length(&bufs.evssplits, nvars-1+1, _state);
-    ae_vector_set_length(&bufs.classibuf, 2*nclasses-1+1, _state);
-    ae_vector_set_length(&oobbuf, nclasses*npoints-1+1, _state);
-    ae_vector_set_length(&oobcntbuf, npoints-1+1, _state);
-    ae_vector_set_length(&df->trees, ntrees*treesize-1+1, _state);
-    ae_matrix_set_length(&xys, samplesize-1+1, nvars+1, _state);
-    ae_vector_set_length(&x, nvars-1+1, _state);
-    ae_vector_set_length(&y, nclasses-1+1, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        permbuf.ptr.p_int[i] = i;
-    }
-    for(i=0; i<=npoints*nclasses-1; i++)
-    {
-        oobbuf.ptr.p_double[i] = (double)(0);
-    }
-    for(i=0; i<=npoints-1; i++)
-    {
-        oobcntbuf.ptr.p_int[i] = 0;
-    }
-    
-    /*
-     * Prepare variable pool and EVS (extended variable selection/splitting) buffers
-     * (whether EVS is turned on or not):
-     * 1. detect binary variables and pre-calculate splits for them
-     * 2. detect variables with non-distinct values and exclude them from pool
-     */
-    for(i=0; i<=nvars-1; i++)
-    {
-        bufs.varpool.ptr.p_int[i] = i;
-    }
-    nvarsinpool = nvars;
-    if( useevs )
-    {
-        for(j=0; j<=nvars-1; j++)
-        {
-            vmin = xy->ptr.pp_double[0][j];
-            vmax = vmin;
-            for(i=0; i<=npoints-1; i++)
-            {
-                v = xy->ptr.pp_double[i][j];
-                vmin = ae_minreal(vmin, v, _state);
-                vmax = ae_maxreal(vmax, v, _state);
-            }
-            if( ae_fp_eq(vmin,vmax) )
-            {
-                
-                /*
-                 * exclude variable from pool
-                 */
-                bufs.varpool.ptr.p_int[j] = bufs.varpool.ptr.p_int[nvarsinpool-1];
-                bufs.varpool.ptr.p_int[nvarsinpool-1] = -1;
-                nvarsinpool = nvarsinpool-1;
-                continue;
-            }
-            bflag = ae_false;
-            for(i=0; i<=npoints-1; i++)
-            {
-                v = xy->ptr.pp_double[i][j];
-                if( ae_fp_neq(v,vmin)&&ae_fp_neq(v,vmax) )
-                {
-                    bflag = ae_true;
-                    break;
-                }
-            }
-            if( bflag )
-            {
-                
-                /*
-                 * non-binary variable
-                 */
-                bufs.evsbin.ptr.p_bool[j] = ae_false;
-            }
-            else
-            {
-                
-                /*
-                 * Prepare
-                 */
-                bufs.evsbin.ptr.p_bool[j] = ae_true;
-                bufs.evssplits.ptr.p_double[j] = 0.5*(vmin+vmax);
-                if( ae_fp_less_eq(bufs.evssplits.ptr.p_double[j],vmin) )
-                {
-                    bufs.evssplits.ptr.p_double[j] = vmax;
-                }
-            }
-        }
-    }
-    
-    /*
-     * RANDOM FOREST FORMAT
-     * W[0]         -   size of array
-     * W[1]         -   version number
-     * W[2]         -   NVars
-     * W[3]         -   NClasses (1 for regression)
-     * W[4]         -   NTrees
-     * W[5]         -   trees offset
-     *
-     *
-     * TREE FORMAT
-     * W[Offs]      -   size of sub-array
-     *     node info:
-     * W[K+0]       -   variable number        (-1 for leaf mode)
-     * W[K+1]       -   threshold              (class/value for leaf node)
-     * W[K+2]       -   ">=" branch index      (absent for leaf node)
-     *
-     */
-    df->nvars = nvars;
-    df->nclasses = nclasses;
-    df->ntrees = ntrees;
-    
-    /*
-     * Build forest
-     */
-    hqrndrandomize(&rs, _state);
-    offs = 0;
-    for(i=0; i<=ntrees-1; i++)
-    {
-        
-        /*
-         * Prepare sample
-         */
-        for(k=0; k<=samplesize-1; k++)
-        {
-            j = k+hqrnduniformi(&rs, npoints-k, _state);
-            tmpi = permbuf.ptr.p_int[k];
-            permbuf.ptr.p_int[k] = permbuf.ptr.p_int[j];
-            permbuf.ptr.p_int[j] = tmpi;
-            j = permbuf.ptr.p_int[k];
-            ae_v_move(&xys.ptr.pp_double[k][0], 1, &xy->ptr.pp_double[j][0], 1, ae_v_len(0,nvars));
-        }
-        
-        /*
-         * build tree, copy
-         */
-        dforest_dfbuildtree(&xys, samplesize, nvars, nclasses, nfeatures, nvarsinpool, flags, &bufs, &rs, _state);
-        j = ae_round(bufs.treebuf.ptr.p_double[0], _state);
-        ae_v_move(&df->trees.ptr.p_double[offs], 1, &bufs.treebuf.ptr.p_double[0], 1, ae_v_len(offs,offs+j-1));
-        lasttreeoffs = offs;
-        offs = offs+j;
-        
-        /*
-         * OOB estimates
-         */
-        for(k=samplesize; k<=npoints-1; k++)
-        {
-            for(j=0; j<=nclasses-1; j++)
-            {
-                y.ptr.p_double[j] = (double)(0);
-            }
-            j = permbuf.ptr.p_int[k];
-            ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
-            dforest_dfprocessinternal(df, lasttreeoffs, &x, &y, _state);
-            ae_v_add(&oobbuf.ptr.p_double[j*nclasses], 1, &y.ptr.p_double[0], 1, ae_v_len(j*nclasses,(j+1)*nclasses-1));
-            oobcntbuf.ptr.p_int[j] = oobcntbuf.ptr.p_int[j]+1;
-        }
-    }
-    df->bufsize = offs;
-    
-    /*
-     * Normalize OOB results
-     */
-    for(i=0; i<=npoints-1; i++)
-    {
-        if( oobcntbuf.ptr.p_int[i]!=0 )
-        {
-            v = (double)1/(double)oobcntbuf.ptr.p_int[i];
-            ae_v_muld(&oobbuf.ptr.p_double[i*nclasses], 1, ae_v_len(i*nclasses,i*nclasses+nclasses-1), v);
-        }
-    }
-    
-    /*
-     * Calculate training set estimates
-     */
-    rep->relclserror = dfrelclserror(df, xy, npoints, _state);
-    rep->avgce = dfavgce(df, xy, npoints, _state);
-    rep->rmserror = dfrmserror(df, xy, npoints, _state);
-    rep->avgerror = dfavgerror(df, xy, npoints, _state);
-    rep->avgrelerror = dfavgrelerror(df, xy, npoints, _state);
-    
-    /*
-     * Calculate OOB estimates.
-     */
-    rep->oobrelclserror = (double)(0);
-    rep->oobavgce = (double)(0);
-    rep->oobrmserror = (double)(0);
-    rep->oobavgerror = (double)(0);
-    rep->oobavgrelerror = (double)(0);
-    oobcnt = 0;
-    oobrelcnt = 0;
-    for(i=0; i<=npoints-1; i++)
-    {
-        if( oobcntbuf.ptr.p_int[i]!=0 )
-        {
-            ooboffs = i*nclasses;
-            if( nclasses>1 )
-            {
-                
-                /*
-                 * classification-specific code
-                 */
-                k = ae_round(xy->ptr.pp_double[i][nvars], _state);
-                tmpi = 0;
-                for(j=1; j<=nclasses-1; j++)
-                {
-                    if( ae_fp_greater(oobbuf.ptr.p_double[ooboffs+j],oobbuf.ptr.p_double[ooboffs+tmpi]) )
-                    {
-                        tmpi = j;
-                    }
-                }
-                if( tmpi!=k )
-                {
-                    rep->oobrelclserror = rep->oobrelclserror+1;
-                }
-                if( ae_fp_neq(oobbuf.ptr.p_double[ooboffs+k],(double)(0)) )
-                {
-                    rep->oobavgce = rep->oobavgce-ae_log(oobbuf.ptr.p_double[ooboffs+k], _state);
-                }
-                else
-                {
-                    rep->oobavgce = rep->oobavgce-ae_log(ae_minrealnumber, _state);
-                }
-                for(j=0; j<=nclasses-1; j++)
-                {
-                    if( j==k )
-                    {
-                        rep->oobrmserror = rep->oobrmserror+ae_sqr(oobbuf.ptr.p_double[ooboffs+j]-1, _state);
-                        rep->oobavgerror = rep->oobavgerror+ae_fabs(oobbuf.ptr.p_double[ooboffs+j]-1, _state);
-                        rep->oobavgrelerror = rep->oobavgrelerror+ae_fabs(oobbuf.ptr.p_double[ooboffs+j]-1, _state);
-                        oobrelcnt = oobrelcnt+1;
-                    }
-                    else
-                    {
-                        rep->oobrmserror = rep->oobrmserror+ae_sqr(oobbuf.ptr.p_double[ooboffs+j], _state);
-                        rep->oobavgerror = rep->oobavgerror+ae_fabs(oobbuf.ptr.p_double[ooboffs+j], _state);
-                    }
-                }
-            }
-            else
-            {
-                
-                /*
-                 * regression-specific code
-                 */
-                rep->oobrmserror = rep->oobrmserror+ae_sqr(oobbuf.ptr.p_double[ooboffs]-xy->ptr.pp_double[i][nvars], _state);
-                rep->oobavgerror = rep->oobavgerror+ae_fabs(oobbuf.ptr.p_double[ooboffs]-xy->ptr.pp_double[i][nvars], _state);
-                if( ae_fp_neq(xy->ptr.pp_double[i][nvars],(double)(0)) )
-                {
-                    rep->oobavgrelerror = rep->oobavgrelerror+ae_fabs((oobbuf.ptr.p_double[ooboffs]-xy->ptr.pp_double[i][nvars])/xy->ptr.pp_double[i][nvars], _state);
-                    oobrelcnt = oobrelcnt+1;
-                }
-            }
-            
-            /*
-             * update OOB estimates count.
-             */
-            oobcnt = oobcnt+1;
-        }
-    }
-    if( oobcnt>0 )
-    {
-        rep->oobrelclserror = rep->oobrelclserror/oobcnt;
-        rep->oobavgce = rep->oobavgce/oobcnt;
-        rep->oobrmserror = ae_sqrt(rep->oobrmserror/(oobcnt*nclasses), _state);
-        rep->oobavgerror = rep->oobavgerror/(oobcnt*nclasses);
-        if( oobrelcnt>0 )
-        {
-            rep->oobavgrelerror = rep->oobavgrelerror/oobrelcnt;
-        }
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Procesing
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    X       -   input vector,  array[0..NVars-1].
-
-OUTPUT PARAMETERS:
-    Y       -   result. Regression estimate when solving regression  task,
-                vector of posterior probabilities for classification task.
-
-See also DFProcessI.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfprocess(decisionforest* df,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state)
-{
-    ae_int_t offs;
-    ae_int_t i;
-    double v;
-
-
-    
-    /*
-     * Proceed
-     */
-    if( y->cnt<df->nclasses )
-    {
-        ae_vector_set_length(y, df->nclasses, _state);
-    }
-    offs = 0;
-    for(i=0; i<=df->nclasses-1; i++)
-    {
-        y->ptr.p_double[i] = (double)(0);
-    }
-    for(i=0; i<=df->ntrees-1; i++)
-    {
-        
-        /*
-         * Process basic tree
-         */
-        dforest_dfprocessinternal(df, offs, x, y, _state);
-        
-        /*
-         * Next tree
-         */
-        offs = offs+ae_round(df->trees.ptr.p_double[offs], _state);
-    }
-    v = (double)1/(double)df->ntrees;
-    ae_v_muld(&y->ptr.p_double[0], 1, ae_v_len(0,df->nclasses-1), v);
-}
-
-
-/*************************************************************************
-'interactive' variant of DFProcess for languages like Python which support
-constructs like "Y = DFProcessI(DF,X)" and interactive mode of interpreter
-
-This function allocates new array on each call,  so  it  is  significantly
-slower than its 'non-interactive' counterpart, but it is  more  convenient
-when you call it from command line.
-
-  -- ALGLIB --
-     Copyright 28.02.2010 by Bochkanov Sergey
-*************************************************************************/
-void dfprocessi(decisionforest* df,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state)
-{
-
-    ae_vector_clear(y);
-
-    dfprocess(df, x, y, _state);
-}
-
-
-/*************************************************************************
-Relative classification error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    percent of incorrectly classified cases.
-    Zero if model solves regression task.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfrelclserror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    double result;
-
-
-    result = (double)dforest_dfclserror(df, xy, npoints, _state)/(double)npoints;
-    return result;
-}
-
-
-/*************************************************************************
-Average cross-entropy (in bits per element) on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    CrossEntropy/(NPoints*LN(2)).
-    Zero if model solves regression task.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgce(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector x;
-    ae_vector y;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t tmpi;
-    double result;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&y, 0, DT_REAL, _state);
-
-    ae_vector_set_length(&x, df->nvars-1+1, _state);
-    ae_vector_set_length(&y, df->nclasses-1+1, _state);
-    result = (double)(0);
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
-        dfprocess(df, &x, &y, _state);
-        if( df->nclasses>1 )
-        {
-            
-            /*
-             * classification-specific code
-             */
-            k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
-            tmpi = 0;
-            for(j=1; j<=df->nclasses-1; j++)
-            {
-                if( ae_fp_greater(y.ptr.p_double[j],y.ptr.p_double[tmpi]) )
-                {
-                    tmpi = j;
-                }
-            }
-            if( ae_fp_neq(y.ptr.p_double[k],(double)(0)) )
-            {
-                result = result-ae_log(y.ptr.p_double[k], _state);
-            }
-            else
-            {
-                result = result-ae_log(ae_minrealnumber, _state);
-            }
-        }
-    }
-    result = result/npoints;
-    ae_frame_leave(_state);
-    return result;
-}
-
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    root mean square error.
-    Its meaning for regression task is obvious. As for
-    classification task, RMS error means error when estimating posterior
-    probabilities.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfrmserror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector x;
-    ae_vector y;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t tmpi;
-    double result;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&y, 0, DT_REAL, _state);
-
-    ae_vector_set_length(&x, df->nvars-1+1, _state);
-    ae_vector_set_length(&y, df->nclasses-1+1, _state);
-    result = (double)(0);
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
-        dfprocess(df, &x, &y, _state);
-        if( df->nclasses>1 )
-        {
-            
-            /*
-             * classification-specific code
-             */
-            k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
-            tmpi = 0;
-            for(j=1; j<=df->nclasses-1; j++)
-            {
-                if( ae_fp_greater(y.ptr.p_double[j],y.ptr.p_double[tmpi]) )
-                {
-                    tmpi = j;
-                }
-            }
-            for(j=0; j<=df->nclasses-1; j++)
-            {
-                if( j==k )
-                {
-                    result = result+ae_sqr(y.ptr.p_double[j]-1, _state);
-                }
-                else
-                {
-                    result = result+ae_sqr(y.ptr.p_double[j], _state);
-                }
-            }
-        }
-        else
-        {
-            
-            /*
-             * regression-specific code
-             */
-            result = result+ae_sqr(y.ptr.p_double[0]-xy->ptr.pp_double[i][df->nvars], _state);
-        }
-    }
-    result = ae_sqrt(result/(npoints*df->nclasses), _state);
-    ae_frame_leave(_state);
-    return result;
-}
-
-
-/*************************************************************************
-Average error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    Its meaning for regression task is obvious. As for
-    classification task, it means average error when estimating posterior
-    probabilities.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgerror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector x;
-    ae_vector y;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    double result;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&y, 0, DT_REAL, _state);
-
-    ae_vector_set_length(&x, df->nvars-1+1, _state);
-    ae_vector_set_length(&y, df->nclasses-1+1, _state);
-    result = (double)(0);
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
-        dfprocess(df, &x, &y, _state);
-        if( df->nclasses>1 )
-        {
-            
-            /*
-             * classification-specific code
-             */
-            k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
-            for(j=0; j<=df->nclasses-1; j++)
-            {
-                if( j==k )
-                {
-                    result = result+ae_fabs(y.ptr.p_double[j]-1, _state);
-                }
-                else
-                {
-                    result = result+ae_fabs(y.ptr.p_double[j], _state);
-                }
-            }
-        }
-        else
-        {
-            
-            /*
-             * regression-specific code
-             */
-            result = result+ae_fabs(y.ptr.p_double[0]-xy->ptr.pp_double[i][df->nvars], _state);
-        }
-    }
-    result = result/(npoints*df->nclasses);
-    ae_frame_leave(_state);
-    return result;
-}
-
-
-/*************************************************************************
-Average relative error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    Its meaning for regression task is obvious. As for
-    classification task, it means average relative error when estimating
-    posterior probability of belonging to the correct class.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgrelerror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector x;
-    ae_vector y;
-    ae_int_t relcnt;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    double result;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&y, 0, DT_REAL, _state);
-
-    ae_vector_set_length(&x, df->nvars-1+1, _state);
-    ae_vector_set_length(&y, df->nclasses-1+1, _state);
-    result = (double)(0);
-    relcnt = 0;
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
-        dfprocess(df, &x, &y, _state);
-        if( df->nclasses>1 )
-        {
-            
-            /*
-             * classification-specific code
-             */
-            k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
-            for(j=0; j<=df->nclasses-1; j++)
-            {
-                if( j==k )
-                {
-                    result = result+ae_fabs(y.ptr.p_double[j]-1, _state);
-                    relcnt = relcnt+1;
-                }
-            }
-        }
-        else
-        {
-            
-            /*
-             * regression-specific code
-             */
-            if( ae_fp_neq(xy->ptr.pp_double[i][df->nvars],(double)(0)) )
-            {
-                result = result+ae_fabs((y.ptr.p_double[0]-xy->ptr.pp_double[i][df->nvars])/xy->ptr.pp_double[i][df->nvars], _state);
-                relcnt = relcnt+1;
-            }
-        }
-    }
-    if( relcnt>0 )
-    {
-        result = result/relcnt;
-    }
-    ae_frame_leave(_state);
-    return result;
-}
-
-
-/*************************************************************************
-Copying of DecisionForest strucure
-
-INPUT PARAMETERS:
-    DF1 -   original
-
-OUTPUT PARAMETERS:
-    DF2 -   copy
-
-  -- ALGLIB --
-     Copyright 13.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfcopy(decisionforest* df1, decisionforest* df2, ae_state *_state)
-{
-
-    _decisionforest_clear(df2);
-
-    df2->nvars = df1->nvars;
-    df2->nclasses = df1->nclasses;
-    df2->ntrees = df1->ntrees;
-    df2->bufsize = df1->bufsize;
-    ae_vector_set_length(&df2->trees, df1->bufsize-1+1, _state);
-    ae_v_move(&df2->trees.ptr.p_double[0], 1, &df1->trees.ptr.p_double[0], 1, ae_v_len(0,df1->bufsize-1));
-}
-
-
-/*************************************************************************
-Serializer: allocation
-
-  -- ALGLIB --
-     Copyright 14.03.2011 by Bochkanov Sergey
-*************************************************************************/
-void dfalloc(ae_serializer* s, decisionforest* forest, ae_state *_state)
-{
-
-
-    ae_serializer_alloc_entry(s);
-    ae_serializer_alloc_entry(s);
-    ae_serializer_alloc_entry(s);
-    ae_serializer_alloc_entry(s);
-    ae_serializer_alloc_entry(s);
-    ae_serializer_alloc_entry(s);
-    allocrealarray(s, &forest->trees, forest->bufsize, _state);
-}
-
-
-/*************************************************************************
-Serializer: serialization
-
-  -- ALGLIB --
-     Copyright 14.03.2011 by Bochkanov Sergey
-*************************************************************************/
-void dfserialize(ae_serializer* s,
-     decisionforest* forest,
-     ae_state *_state)
-{
-
-
-    ae_serializer_serialize_int(s, getrdfserializationcode(_state), _state);
-    ae_serializer_serialize_int(s, dforest_dffirstversion, _state);
-    ae_serializer_serialize_int(s, forest->nvars, _state);
-    ae_serializer_serialize_int(s, forest->nclasses, _state);
-    ae_serializer_serialize_int(s, forest->ntrees, _state);
-    ae_serializer_serialize_int(s, forest->bufsize, _state);
-    serializerealarray(s, &forest->trees, forest->bufsize, _state);
-}
-
-
-/*************************************************************************
-Serializer: unserialization
-
-  -- ALGLIB --
-     Copyright 14.03.2011 by Bochkanov Sergey
-*************************************************************************/
-void dfunserialize(ae_serializer* s,
-     decisionforest* forest,
-     ae_state *_state)
-{
-    ae_int_t i0;
-    ae_int_t i1;
-
-    _decisionforest_clear(forest);
-
-    
-    /*
-     * check correctness of header
-     */
-    ae_serializer_unserialize_int(s, &i0, _state);
-    ae_assert(i0==getrdfserializationcode(_state), "DFUnserialize: stream header corrupted", _state);
-    ae_serializer_unserialize_int(s, &i1, _state);
-    ae_assert(i1==dforest_dffirstversion, "DFUnserialize: stream header corrupted", _state);
-    
-    /*
-     * Unserialize data
-     */
-    ae_serializer_unserialize_int(s, &forest->nvars, _state);
-    ae_serializer_unserialize_int(s, &forest->nclasses, _state);
-    ae_serializer_unserialize_int(s, &forest->ntrees, _state);
-    ae_serializer_unserialize_int(s, &forest->bufsize, _state);
-    unserializerealarray(s, &forest->trees, _state);
-}
-
-
-/*************************************************************************
-Classification error
-*************************************************************************/
-static ae_int_t dforest_dfclserror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector x;
-    ae_vector y;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t tmpi;
-    ae_int_t result;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&y, 0, DT_REAL, _state);
-
-    if( df->nclasses<=1 )
-    {
-        result = 0;
-        ae_frame_leave(_state);
-        return result;
-    }
-    ae_vector_set_length(&x, df->nvars-1+1, _state);
-    ae_vector_set_length(&y, df->nclasses-1+1, _state);
-    result = 0;
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
-        dfprocess(df, &x, &y, _state);
-        k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
-        tmpi = 0;
-        for(j=1; j<=df->nclasses-1; j++)
-        {
-            if( ae_fp_greater(y.ptr.p_double[j],y.ptr.p_double[tmpi]) )
-            {
-                tmpi = j;
-            }
-        }
-        if( tmpi!=k )
-        {
-            result = result+1;
-        }
-    }
-    ae_frame_leave(_state);
-    return result;
-}
-
-
-/*************************************************************************
-Internal subroutine for processing one decision tree starting at Offs
-*************************************************************************/
-static void dforest_dfprocessinternal(decisionforest* df,
-     ae_int_t offs,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state)
-{
-    ae_int_t k;
-    ae_int_t idx;
-
-
-    
-    /*
-     * Set pointer to the root
-     */
-    k = offs+1;
-    
-    /*
-     * Navigate through the tree
-     */
-    for(;;)
-    {
-        if( ae_fp_eq(df->trees.ptr.p_double[k],(double)(-1)) )
-        {
-            if( df->nclasses==1 )
-            {
-                y->ptr.p_double[0] = y->ptr.p_double[0]+df->trees.ptr.p_double[k+1];
-            }
-            else
-            {
-                idx = ae_round(df->trees.ptr.p_double[k+1], _state);
-                y->ptr.p_double[idx] = y->ptr.p_double[idx]+1;
-            }
-            break;
-        }
-        if( ae_fp_less(x->ptr.p_double[ae_round(df->trees.ptr.p_double[k], _state)],df->trees.ptr.p_double[k+1]) )
-        {
-            k = k+dforest_innernodewidth;
-        }
-        else
-        {
-            k = offs+ae_round(df->trees.ptr.p_double[k+2], _state);
-        }
-    }
-}
-
-
-/*************************************************************************
-Builds one decision tree. Just a wrapper for the DFBuildTreeRec.
-*************************************************************************/
-static void dforest_dfbuildtree(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t nfeatures,
-     ae_int_t nvarsinpool,
-     ae_int_t flags,
-     dfinternalbuffers* bufs,
-     hqrndstate* rs,
-     ae_state *_state)
-{
-    ae_int_t numprocessed;
-    ae_int_t i;
-
-
-    ae_assert(npoints>0, "Assertion failed", _state);
-    
-    /*
-     * Prepare IdxBuf. It stores indices of the training set elements.
-     * When training set is being split, contents of IdxBuf is
-     * correspondingly reordered so we can know which elements belong
-     * to which branch of decision tree.
-     */
-    for(i=0; i<=npoints-1; i++)
-    {
-        bufs->idxbuf.ptr.p_int[i] = i;
-    }
-    
-    /*
-     * Recursive procedure
-     */
-    numprocessed = 1;
-    dforest_dfbuildtreerec(xy, npoints, nvars, nclasses, nfeatures, nvarsinpool, flags, &numprocessed, 0, npoints-1, bufs, rs, _state);
-    bufs->treebuf.ptr.p_double[0] = (double)(numprocessed);
-}
-
-
-/*************************************************************************
-Builds one decision tree (internal recursive subroutine)
-
-Parameters:
-    TreeBuf     -   large enough array, at least TreeSize
-    IdxBuf      -   at least NPoints elements
-    TmpBufR     -   at least NPoints
-    TmpBufR2    -   at least NPoints
-    TmpBufI     -   at least NPoints
-    TmpBufI2    -   at least NPoints+1
-*************************************************************************/
-static void dforest_dfbuildtreerec(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t nfeatures,
-     ae_int_t nvarsinpool,
-     ae_int_t flags,
-     ae_int_t* numprocessed,
-     ae_int_t idx1,
-     ae_int_t idx2,
-     dfinternalbuffers* bufs,
-     hqrndstate* rs,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    ae_bool bflag;
-    ae_int_t i1;
-    ae_int_t i2;
-    ae_int_t info;
-    double sl;
-    double sr;
-    double w;
-    ae_int_t idxbest;
-    double ebest;
-    double tbest;
-    ae_int_t varcur;
-    double s;
-    double v;
-    double v1;
-    double v2;
-    double threshold;
-    ae_int_t oldnp;
-    double currms;
-    ae_bool useevs;
-
-
-    
-    /*
-     * these initializers are not really necessary,
-     * but without them compiler complains about uninitialized locals
-     */
-    tbest = (double)(0);
-    
-    /*
-     * Prepare
-     */
-    ae_assert(npoints>0, "Assertion failed", _state);
-    ae_assert(idx2>=idx1, "Assertion failed", _state);
-    useevs = flags/dforest_dfuseevs%2!=0;
-    
-    /*
-     * Leaf node
-     */
-    if( idx2==idx1 )
-    {
-        bufs->treebuf.ptr.p_double[*numprocessed] = (double)(-1);
-        bufs->treebuf.ptr.p_double[*numprocessed+1] = xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[idx1]][nvars];
-        *numprocessed = *numprocessed+dforest_leafnodewidth;
-        return;
-    }
-    
-    /*
-     * Non-leaf node.
-     * Select random variable, prepare split:
-     * 1. prepare default solution - no splitting, class at random
-     * 2. investigate possible splits, compare with default/best
-     */
-    idxbest = -1;
-    if( nclasses>1 )
-    {
-        
-        /*
-         * default solution for classification
-         */
-        for(i=0; i<=nclasses-1; i++)
-        {
-            bufs->classibuf.ptr.p_int[i] = 0;
-        }
-        s = (double)(idx2-idx1+1);
-        for(i=idx1; i<=idx2; i++)
-        {
-            j = ae_round(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i]][nvars], _state);
-            bufs->classibuf.ptr.p_int[j] = bufs->classibuf.ptr.p_int[j]+1;
-        }
-        ebest = (double)(0);
-        for(i=0; i<=nclasses-1; i++)
-        {
-            ebest = ebest+bufs->classibuf.ptr.p_int[i]*ae_sqr(1-bufs->classibuf.ptr.p_int[i]/s, _state)+(s-bufs->classibuf.ptr.p_int[i])*ae_sqr(bufs->classibuf.ptr.p_int[i]/s, _state);
-        }
-        ebest = ae_sqrt(ebest/(nclasses*(idx2-idx1+1)), _state);
-    }
-    else
-    {
-        
-        /*
-         * default solution for regression
-         */
-        v = (double)(0);
-        for(i=idx1; i<=idx2; i++)
-        {
-            v = v+xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i]][nvars];
-        }
-        v = v/(idx2-idx1+1);
-        ebest = (double)(0);
-        for(i=idx1; i<=idx2; i++)
-        {
-            ebest = ebest+ae_sqr(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i]][nvars]-v, _state);
-        }
-        ebest = ae_sqrt(ebest/(idx2-idx1+1), _state);
-    }
-    i = 0;
-    while(i<=ae_minint(nfeatures, nvarsinpool, _state)-1)
-    {
-        
-        /*
-         * select variables from pool
-         */
-        j = i+hqrnduniformi(rs, nvarsinpool-i, _state);
-        k = bufs->varpool.ptr.p_int[i];
-        bufs->varpool.ptr.p_int[i] = bufs->varpool.ptr.p_int[j];
-        bufs->varpool.ptr.p_int[j] = k;
-        varcur = bufs->varpool.ptr.p_int[i];
-        
-        /*
-         * load variable values to working array
-         *
-         * apply EVS preprocessing: if all variable values are same,
-         * variable is excluded from pool.
-         *
-         * This is necessary for binary pre-splits (see later) to work.
-         */
-        for(j=idx1; j<=idx2; j++)
-        {
-            bufs->tmpbufr.ptr.p_double[j-idx1] = xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[j]][varcur];
-        }
-        if( useevs )
-        {
-            bflag = ae_false;
-            v = bufs->tmpbufr.ptr.p_double[0];
-            for(j=0; j<=idx2-idx1; j++)
-            {
-                if( ae_fp_neq(bufs->tmpbufr.ptr.p_double[j],v) )
-                {
-                    bflag = ae_true;
-                    break;
-                }
-            }
-            if( !bflag )
-            {
-                
-                /*
-                 * exclude variable from pool,
-                 * go to the next iteration.
-                 * I is not increased.
-                 */
-                k = bufs->varpool.ptr.p_int[i];
-                bufs->varpool.ptr.p_int[i] = bufs->varpool.ptr.p_int[nvarsinpool-1];
-                bufs->varpool.ptr.p_int[nvarsinpool-1] = k;
-                nvarsinpool = nvarsinpool-1;
-                continue;
-            }
-        }
-        
-        /*
-         * load labels to working array
-         */
-        if( nclasses>1 )
-        {
-            for(j=idx1; j<=idx2; j++)
-            {
-                bufs->tmpbufi.ptr.p_int[j-idx1] = ae_round(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[j]][nvars], _state);
-            }
-        }
-        else
-        {
-            for(j=idx1; j<=idx2; j++)
-            {
-                bufs->tmpbufr2.ptr.p_double[j-idx1] = xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[j]][nvars];
-            }
-        }
-        
-        /*
-         * calculate split
-         */
-        if( useevs&&bufs->evsbin.ptr.p_bool[varcur] )
-        {
-            
-            /*
-             * Pre-calculated splits for binary variables.
-             * Threshold is already known, just calculate RMS error
-             */
-            threshold = bufs->evssplits.ptr.p_double[varcur];
-            if( nclasses>1 )
-            {
-                
-                /*
-                 * classification-specific code
-                 */
-                for(j=0; j<=2*nclasses-1; j++)
-                {
-                    bufs->classibuf.ptr.p_int[j] = 0;
-                }
-                sl = (double)(0);
-                sr = (double)(0);
-                for(j=0; j<=idx2-idx1; j++)
-                {
-                    k = bufs->tmpbufi.ptr.p_int[j];
-                    if( ae_fp_less(bufs->tmpbufr.ptr.p_double[j],threshold) )
-                    {
-                        bufs->classibuf.ptr.p_int[k] = bufs->classibuf.ptr.p_int[k]+1;
-                        sl = sl+1;
-                    }
-                    else
-                    {
-                        bufs->classibuf.ptr.p_int[k+nclasses] = bufs->classibuf.ptr.p_int[k+nclasses]+1;
-                        sr = sr+1;
-                    }
-                }
-                ae_assert(ae_fp_neq(sl,(double)(0))&&ae_fp_neq(sr,(double)(0)), "DFBuildTreeRec: something strange!", _state);
-                currms = (double)(0);
-                for(j=0; j<=nclasses-1; j++)
-                {
-                    w = (double)(bufs->classibuf.ptr.p_int[j]);
-                    currms = currms+w*ae_sqr(w/sl-1, _state);
-                    currms = currms+(sl-w)*ae_sqr(w/sl, _state);
-                    w = (double)(bufs->classibuf.ptr.p_int[nclasses+j]);
-                    currms = currms+w*ae_sqr(w/sr-1, _state);
-                    currms = currms+(sr-w)*ae_sqr(w/sr, _state);
-                }
-                currms = ae_sqrt(currms/(nclasses*(idx2-idx1+1)), _state);
-            }
-            else
-            {
-                
-                /*
-                 * regression-specific code
-                 */
-                sl = (double)(0);
-                sr = (double)(0);
-                v1 = (double)(0);
-                v2 = (double)(0);
-                for(j=0; j<=idx2-idx1; j++)
-                {
-                    if( ae_fp_less(bufs->tmpbufr.ptr.p_double[j],threshold) )
-                    {
-                        v1 = v1+bufs->tmpbufr2.ptr.p_double[j];
-                        sl = sl+1;
-                    }
-                    else
-                    {
-                        v2 = v2+bufs->tmpbufr2.ptr.p_double[j];
-                        sr = sr+1;
-                    }
-                }
-                ae_assert(ae_fp_neq(sl,(double)(0))&&ae_fp_neq(sr,(double)(0)), "DFBuildTreeRec: something strange!", _state);
-                v1 = v1/sl;
-                v2 = v2/sr;
-                currms = (double)(0);
-                for(j=0; j<=idx2-idx1; j++)
-                {
-                    if( ae_fp_less(bufs->tmpbufr.ptr.p_double[j],threshold) )
-                    {
-                        currms = currms+ae_sqr(v1-bufs->tmpbufr2.ptr.p_double[j], _state);
-                    }
-                    else
-                    {
-                        currms = currms+ae_sqr(v2-bufs->tmpbufr2.ptr.p_double[j], _state);
-                    }
-                }
-                currms = ae_sqrt(currms/(idx2-idx1+1), _state);
-            }
-            info = 1;
-        }
-        else
-        {
-            
-            /*
-             * Generic splits
-             */
-            if( nclasses>1 )
-            {
-                dforest_dfsplitc(&bufs->tmpbufr, &bufs->tmpbufi, &bufs->classibuf, idx2-idx1+1, nclasses, dforest_dfusestrongsplits, &info, &threshold, &currms, &bufs->sortrbuf, &bufs->sortibuf, _state);
-            }
-            else
-            {
-                dforest_dfsplitr(&bufs->tmpbufr, &bufs->tmpbufr2, idx2-idx1+1, dforest_dfusestrongsplits, &info, &threshold, &currms, &bufs->sortrbuf, &bufs->sortrbuf2, _state);
-            }
-        }
-        if( info>0 )
-        {
-            if( ae_fp_less_eq(currms,ebest) )
-            {
-                ebest = currms;
-                idxbest = varcur;
-                tbest = threshold;
-            }
-        }
-        
-        /*
-         * Next iteration
-         */
-        i = i+1;
-    }
-    
-    /*
-     * to split or not to split
-     */
-    if( idxbest<0 )
-    {
-        
-        /*
-         * All values are same, cannot split.
-         */
-        bufs->treebuf.ptr.p_double[*numprocessed] = (double)(-1);
-        if( nclasses>1 )
-        {
-            
-            /*
-             * Select random class label (randomness allows us to
-             * approximate distribution of the classes)
-             */
-            bufs->treebuf.ptr.p_double[*numprocessed+1] = (double)(ae_round(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[idx1+hqrnduniformi(rs, idx2-idx1+1, _state)]][nvars], _state));
-        }
-        else
-        {
-            
-            /*
-             * Select average (for regression task).
-             */
-            v = (double)(0);
-            for(i=idx1; i<=idx2; i++)
-            {
-                v = v+xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i]][nvars]/(idx2-idx1+1);
-            }
-            bufs->treebuf.ptr.p_double[*numprocessed+1] = v;
-        }
-        *numprocessed = *numprocessed+dforest_leafnodewidth;
-    }
-    else
-    {
-        
-        /*
-         * we can split
-         */
-        bufs->treebuf.ptr.p_double[*numprocessed] = (double)(idxbest);
-        bufs->treebuf.ptr.p_double[*numprocessed+1] = tbest;
-        i1 = idx1;
-        i2 = idx2;
-        while(i1<=i2)
-        {
-            
-            /*
-             * Reorder indices so that left partition is in [Idx1..I1-1],
-             * and right partition is in [I2+1..Idx2]
-             */
-            if( ae_fp_less(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i1]][idxbest],tbest) )
-            {
-                i1 = i1+1;
-                continue;
-            }
-            if( ae_fp_greater_eq(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i2]][idxbest],tbest) )
-            {
-                i2 = i2-1;
-                continue;
-            }
-            j = bufs->idxbuf.ptr.p_int[i1];
-            bufs->idxbuf.ptr.p_int[i1] = bufs->idxbuf.ptr.p_int[i2];
-            bufs->idxbuf.ptr.p_int[i2] = j;
-            i1 = i1+1;
-            i2 = i2-1;
-        }
-        oldnp = *numprocessed;
-        *numprocessed = *numprocessed+dforest_innernodewidth;
-        dforest_dfbuildtreerec(xy, npoints, nvars, nclasses, nfeatures, nvarsinpool, flags, numprocessed, idx1, i1-1, bufs, rs, _state);
-        bufs->treebuf.ptr.p_double[oldnp+2] = (double)(*numprocessed);
-        dforest_dfbuildtreerec(xy, npoints, nvars, nclasses, nfeatures, nvarsinpool, flags, numprocessed, i2+1, idx2, bufs, rs, _state);
-    }
-}
-
-
-/*************************************************************************
-Makes split on attribute
-*************************************************************************/
-static void dforest_dfsplitc(/* Real    */ ae_vector* x,
-     /* Integer */ ae_vector* c,
-     /* Integer */ ae_vector* cntbuf,
-     ae_int_t n,
-     ae_int_t nc,
-     ae_int_t flags,
-     ae_int_t* info,
-     double* threshold,
-     double* e,
-     /* Real    */ ae_vector* sortrbuf,
-     /* Integer */ ae_vector* sortibuf,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t neq;
-    ae_int_t nless;
-    ae_int_t ngreater;
-    ae_int_t q;
-    ae_int_t qmin;
-    ae_int_t qmax;
-    ae_int_t qcnt;
-    double cursplit;
-    ae_int_t nleft;
-    double v;
-    double cure;
-    double w;
-    double sl;
-    double sr;
-
-    *info = 0;
-    *threshold = 0;
-    *e = 0;
-
-    tagsortfasti(x, c, sortrbuf, sortibuf, n, _state);
-    *e = ae_maxrealnumber;
-    *threshold = 0.5*(x->ptr.p_double[0]+x->ptr.p_double[n-1]);
-    *info = -3;
-    if( flags/dforest_dfusestrongsplits%2==0 )
-    {
-        
-        /*
-         * weak splits, split at half
-         */
-        qcnt = 2;
-        qmin = 1;
-        qmax = 1;
-    }
-    else
-    {
-        
-        /*
-         * strong splits: choose best quartile
-         */
-        qcnt = 4;
-        qmin = 1;
-        qmax = 3;
-    }
-    for(q=qmin; q<=qmax; q++)
-    {
-        cursplit = x->ptr.p_double[n*q/qcnt];
-        neq = 0;
-        nless = 0;
-        ngreater = 0;
-        for(i=0; i<=n-1; i++)
-        {
-            if( ae_fp_less(x->ptr.p_double[i],cursplit) )
-            {
-                nless = nless+1;
-            }
-            if( ae_fp_eq(x->ptr.p_double[i],cursplit) )
-            {
-                neq = neq+1;
-            }
-            if( ae_fp_greater(x->ptr.p_double[i],cursplit) )
-            {
-                ngreater = ngreater+1;
-            }
-        }
-        ae_assert(neq!=0, "DFSplitR: NEq=0, something strange!!!", _state);
-        if( nless!=0||ngreater!=0 )
-        {
-            
-            /*
-             * set threshold between two partitions, with
-             * some tweaking to avoid problems with floating point
-             * arithmetics.
-             *
-             * The problem is that when you calculates C = 0.5*(A+B) there
-             * can be no C which lies strictly between A and B (for example,
-             * there is no floating point number which is
-             * greater than 1 and less than 1+eps). In such situations
-             * we choose right side as theshold (remember that
-             * points which lie on threshold falls to the right side).
-             */
-            if( nless<ngreater )
-            {
-                cursplit = 0.5*(x->ptr.p_double[nless+neq-1]+x->ptr.p_double[nless+neq]);
-                nleft = nless+neq;
-                if( ae_fp_less_eq(cursplit,x->ptr.p_double[nless+neq-1]) )
-                {
-                    cursplit = x->ptr.p_double[nless+neq];
-                }
-            }
-            else
-            {
-                cursplit = 0.5*(x->ptr.p_double[nless-1]+x->ptr.p_double[nless]);
-                nleft = nless;
-                if( ae_fp_less_eq(cursplit,x->ptr.p_double[nless-1]) )
-                {
-                    cursplit = x->ptr.p_double[nless];
-                }
-            }
-            *info = 1;
-            cure = (double)(0);
-            for(i=0; i<=2*nc-1; i++)
-            {
-                cntbuf->ptr.p_int[i] = 0;
-            }
-            for(i=0; i<=nleft-1; i++)
-            {
-                cntbuf->ptr.p_int[c->ptr.p_int[i]] = cntbuf->ptr.p_int[c->ptr.p_int[i]]+1;
-            }
-            for(i=nleft; i<=n-1; i++)
-            {
-                cntbuf->ptr.p_int[nc+c->ptr.p_int[i]] = cntbuf->ptr.p_int[nc+c->ptr.p_int[i]]+1;
-            }
-            sl = (double)(nleft);
-            sr = (double)(n-nleft);
-            v = (double)(0);
-            for(i=0; i<=nc-1; i++)
-            {
-                w = (double)(cntbuf->ptr.p_int[i]);
-                v = v+w*ae_sqr(w/sl-1, _state);
-                v = v+(sl-w)*ae_sqr(w/sl, _state);
-                w = (double)(cntbuf->ptr.p_int[nc+i]);
-                v = v+w*ae_sqr(w/sr-1, _state);
-                v = v+(sr-w)*ae_sqr(w/sr, _state);
-            }
-            cure = ae_sqrt(v/(nc*n), _state);
-            if( ae_fp_less(cure,*e) )
-            {
-                *threshold = cursplit;
-                *e = cure;
-            }
-        }
-    }
-}
-
-
-/*************************************************************************
-Makes split on attribute
-*************************************************************************/
-static void dforest_dfsplitr(/* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_int_t n,
-     ae_int_t flags,
-     ae_int_t* info,
-     double* threshold,
-     double* e,
-     /* Real    */ ae_vector* sortrbuf,
-     /* Real    */ ae_vector* sortrbuf2,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t neq;
-    ae_int_t nless;
-    ae_int_t ngreater;
-    ae_int_t q;
-    ae_int_t qmin;
-    ae_int_t qmax;
-    ae_int_t qcnt;
-    double cursplit;
-    ae_int_t nleft;
-    double v;
-    double cure;
-
-    *info = 0;
-    *threshold = 0;
-    *e = 0;
-
-    tagsortfastr(x, y, sortrbuf, sortrbuf2, n, _state);
-    *e = ae_maxrealnumber;
-    *threshold = 0.5*(x->ptr.p_double[0]+x->ptr.p_double[n-1]);
-    *info = -3;
-    if( flags/dforest_dfusestrongsplits%2==0 )
-    {
-        
-        /*
-         * weak splits, split at half
-         */
-        qcnt = 2;
-        qmin = 1;
-        qmax = 1;
-    }
-    else
-    {
-        
-        /*
-         * strong splits: choose best quartile
-         */
-        qcnt = 4;
-        qmin = 1;
-        qmax = 3;
-    }
-    for(q=qmin; q<=qmax; q++)
-    {
-        cursplit = x->ptr.p_double[n*q/qcnt];
-        neq = 0;
-        nless = 0;
-        ngreater = 0;
-        for(i=0; i<=n-1; i++)
-        {
-            if( ae_fp_less(x->ptr.p_double[i],cursplit) )
-            {
-                nless = nless+1;
-            }
-            if( ae_fp_eq(x->ptr.p_double[i],cursplit) )
-            {
-                neq = neq+1;
-            }
-            if( ae_fp_greater(x->ptr.p_double[i],cursplit) )
-            {
-                ngreater = ngreater+1;
-            }
-        }
-        ae_assert(neq!=0, "DFSplitR: NEq=0, something strange!!!", _state);
-        if( nless!=0||ngreater!=0 )
-        {
-            
-            /*
-             * set threshold between two partitions, with
-             * some tweaking to avoid problems with floating point
-             * arithmetics.
-             *
-             * The problem is that when you calculates C = 0.5*(A+B) there
-             * can be no C which lies strictly between A and B (for example,
-             * there is no floating point number which is
-             * greater than 1 and less than 1+eps). In such situations
-             * we choose right side as theshold (remember that
-             * points which lie on threshold falls to the right side).
-             */
-            if( nless<ngreater )
-            {
-                cursplit = 0.5*(x->ptr.p_double[nless+neq-1]+x->ptr.p_double[nless+neq]);
-                nleft = nless+neq;
-                if( ae_fp_less_eq(cursplit,x->ptr.p_double[nless+neq-1]) )
-                {
-                    cursplit = x->ptr.p_double[nless+neq];
-                }
-            }
-            else
-            {
-                cursplit = 0.5*(x->ptr.p_double[nless-1]+x->ptr.p_double[nless]);
-                nleft = nless;
-                if( ae_fp_less_eq(cursplit,x->ptr.p_double[nless-1]) )
-                {
-                    cursplit = x->ptr.p_double[nless];
-                }
-            }
-            *info = 1;
-            cure = (double)(0);
-            v = (double)(0);
-            for(i=0; i<=nleft-1; i++)
-            {
-                v = v+y->ptr.p_double[i];
-            }
-            v = v/nleft;
-            for(i=0; i<=nleft-1; i++)
-            {
-                cure = cure+ae_sqr(y->ptr.p_double[i]-v, _state);
-            }
-            v = (double)(0);
-            for(i=nleft; i<=n-1; i++)
-            {
-                v = v+y->ptr.p_double[i];
-            }
-            v = v/(n-nleft);
-            for(i=nleft; i<=n-1; i++)
-            {
-                cure = cure+ae_sqr(y->ptr.p_double[i]-v, _state);
-            }
-            cure = ae_sqrt(cure/n, _state);
-            if( ae_fp_less(cure,*e) )
-            {
-                *threshold = cursplit;
-                *e = cure;
-            }
-        }
-    }
-}
-
-
-void _decisionforest_init(void* _p, ae_state *_state)
-{
-    decisionforest *p = (decisionforest*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_init(&p->trees, 0, DT_REAL, _state);
-}
-
-
-void _decisionforest_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    decisionforest *dst = (decisionforest*)_dst;
-    decisionforest *src = (decisionforest*)_src;
-    dst->nvars = src->nvars;
-    dst->nclasses = src->nclasses;
-    dst->ntrees = src->ntrees;
-    dst->bufsize = src->bufsize;
-    ae_vector_init_copy(&dst->trees, &src->trees, _state);
-}
-
-
-void _decisionforest_clear(void* _p)
-{
-    decisionforest *p = (decisionforest*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_clear(&p->trees);
-}
-
-
-void _decisionforest_destroy(void* _p)
-{
-    decisionforest *p = (decisionforest*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_destroy(&p->trees);
-}
-
-
-void _dfreport_init(void* _p, ae_state *_state)
-{
-    dfreport *p = (dfreport*)_p;
-    ae_touch_ptr((void*)p);
-}
-
-
-void _dfreport_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    dfreport *dst = (dfreport*)_dst;
-    dfreport *src = (dfreport*)_src;
-    dst->relclserror = src->relclserror;
-    dst->avgce = src->avgce;
-    dst->rmserror = src->rmserror;
-    dst->avgerror = src->avgerror;
-    dst->avgrelerror = src->avgrelerror;
-    dst->oobrelclserror = src->oobrelclserror;
-    dst->oobavgce = src->oobavgce;
-    dst->oobrmserror = src->oobrmserror;
-    dst->oobavgerror = src->oobavgerror;
-    dst->oobavgrelerror = src->oobavgrelerror;
-}
-
-
-void _dfreport_clear(void* _p)
-{
-    dfreport *p = (dfreport*)_p;
-    ae_touch_ptr((void*)p);
-}
-
-
-void _dfreport_destroy(void* _p)
-{
-    dfreport *p = (dfreport*)_p;
-    ae_touch_ptr((void*)p);
-}
-
-
-void _dfinternalbuffers_init(void* _p, ae_state *_state)
-{
-    dfinternalbuffers *p = (dfinternalbuffers*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_init(&p->treebuf, 0, DT_REAL, _state);
-    ae_vector_init(&p->idxbuf, 0, DT_INT, _state);
-    ae_vector_init(&p->tmpbufr, 0, DT_REAL, _state);
-    ae_vector_init(&p->tmpbufr2, 0, DT_REAL, _state);
-    ae_vector_init(&p->tmpbufi, 0, DT_INT, _state);
-    ae_vector_init(&p->classibuf, 0, DT_INT, _state);
-    ae_vector_init(&p->sortrbuf, 0, DT_REAL, _state);
-    ae_vector_init(&p->sortrbuf2, 0, DT_REAL, _state);
-    ae_vector_init(&p->sortibuf, 0, DT_INT, _state);
-    ae_vector_init(&p->varpool, 0, DT_INT, _state);
-    ae_vector_init(&p->evsbin, 0, DT_BOOL, _state);
-    ae_vector_init(&p->evssplits, 0, DT_REAL, _state);
-}
-
-
-void _dfinternalbuffers_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    dfinternalbuffers *dst = (dfinternalbuffers*)_dst;
-    dfinternalbuffers *src = (dfinternalbuffers*)_src;
-    ae_vector_init_copy(&dst->treebuf, &src->treebuf, _state);
-    ae_vector_init_copy(&dst->idxbuf, &src->idxbuf, _state);
-    ae_vector_init_copy(&dst->tmpbufr, &src->tmpbufr, _state);
-    ae_vector_init_copy(&dst->tmpbufr2, &src->tmpbufr2, _state);
-    ae_vector_init_copy(&dst->tmpbufi, &src->tmpbufi, _state);
-    ae_vector_init_copy(&dst->classibuf, &src->classibuf, _state);
-    ae_vector_init_copy(&dst->sortrbuf, &src->sortrbuf, _state);
-    ae_vector_init_copy(&dst->sortrbuf2, &src->sortrbuf2, _state);
-    ae_vector_init_copy(&dst->sortibuf, &src->sortibuf, _state);
-    ae_vector_init_copy(&dst->varpool, &src->varpool, _state);
-    ae_vector_init_copy(&dst->evsbin, &src->evsbin, _state);
-    ae_vector_init_copy(&dst->evssplits, &src->evssplits, _state);
-}
-
-
-void _dfinternalbuffers_clear(void* _p)
-{
-    dfinternalbuffers *p = (dfinternalbuffers*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_clear(&p->treebuf);
-    ae_vector_clear(&p->idxbuf);
-    ae_vector_clear(&p->tmpbufr);
-    ae_vector_clear(&p->tmpbufr2);
-    ae_vector_clear(&p->tmpbufi);
-    ae_vector_clear(&p->classibuf);
-    ae_vector_clear(&p->sortrbuf);
-    ae_vector_clear(&p->sortrbuf2);
-    ae_vector_clear(&p->sortibuf);
-    ae_vector_clear(&p->varpool);
-    ae_vector_clear(&p->evsbin);
-    ae_vector_clear(&p->evssplits);
-}
-
-
-void _dfinternalbuffers_destroy(void* _p)
-{
-    dfinternalbuffers *p = (dfinternalbuffers*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_destroy(&p->treebuf);
-    ae_vector_destroy(&p->idxbuf);
-    ae_vector_destroy(&p->tmpbufr);
-    ae_vector_destroy(&p->tmpbufr2);
-    ae_vector_destroy(&p->tmpbufi);
-    ae_vector_destroy(&p->classibuf);
-    ae_vector_destroy(&p->sortrbuf);
-    ae_vector_destroy(&p->sortrbuf2);
-    ae_vector_destroy(&p->sortibuf);
-    ae_vector_destroy(&p->varpool);
-    ae_vector_destroy(&p->evsbin);
-    ae_vector_destroy(&p->evssplits);
-}
-
-
-
-
-/*************************************************************************
-Linear regression
-
-Subroutine builds model:
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1] + A(N)
-
-and model found in ALGLIB format, covariation matrix, training set  errors
-(rms,  average,  average  relative)   and  leave-one-out  cross-validation
-estimate of the generalization error. CV  estimate calculated  using  fast
-algorithm with O(NPoints*NVars) complexity.
-
-When  covariation  matrix  is  calculated  standard deviations of function
-values are assumed to be equal to RMS error on the training set.
-
-INPUT PARAMETERS:
-    XY          -   training set, array [0..NPoints-1,0..NVars]:
-                    * NVars columns - independent variables
-                    * last column - dependent variable
-    NPoints     -   training set size, NPoints>NVars+1
-    NVars       -   number of independent variables
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -255, in case of unknown internal error
-                    * -4, if internal SVD subroutine haven't converged
-                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
-                    *  1, if subroutine successfully finished
-    LM          -   linear model in the ALGLIB format. Use subroutines of
-                    this unit to work with the model.
-    AR          -   additional results
-
-
-  -- ALGLIB --
-     Copyright 02.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuild(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector s;
-    ae_int_t i;
-    double sigma2;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    _linearmodel_clear(lm);
-    _lrreport_clear(ar);
-    ae_vector_init(&s, 0, DT_REAL, _state);
-
-    if( npoints<=nvars+1||nvars<1 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    ae_vector_set_length(&s, npoints-1+1, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        s.ptr.p_double[i] = (double)(1);
-    }
-    lrbuilds(xy, &s, npoints, nvars, info, lm, ar, _state);
-    if( *info<0 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    sigma2 = ae_sqr(ar->rmserror, _state)*npoints/(npoints-nvars-1);
-    for(i=0; i<=nvars; i++)
-    {
-        ae_v_muld(&ar->c.ptr.pp_double[i][0], 1, ae_v_len(0,nvars), sigma2);
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Linear regression
-
-Variant of LRBuild which uses vector of standatd deviations (errors in
-function values).
-
-INPUT PARAMETERS:
-    XY          -   training set, array [0..NPoints-1,0..NVars]:
-                    * NVars columns - independent variables
-                    * last column - dependent variable
-    S           -   standard deviations (errors in function values)
-                    array[0..NPoints-1], S[i]>0.
-    NPoints     -   training set size, NPoints>NVars+1
-    NVars       -   number of independent variables
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -255, in case of unknown internal error
-                    * -4, if internal SVD subroutine haven't converged
-                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
-                    * -2, if S[I]<=0
-                    *  1, if subroutine successfully finished
-    LM          -   linear model in the ALGLIB format. Use subroutines of
-                    this unit to work with the model.
-    AR          -   additional results
-
-
-  -- ALGLIB --
-     Copyright 02.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuilds(/* Real    */ ae_matrix* xy,
-     /* Real    */ ae_vector* s,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_matrix xyi;
-    ae_vector x;
-    ae_vector means;
-    ae_vector sigmas;
-    ae_int_t i;
-    ae_int_t j;
-    double v;
-    ae_int_t offs;
-    double mean;
-    double variance;
-    double skewness;
-    double kurtosis;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    _linearmodel_clear(lm);
-    _lrreport_clear(ar);
-    ae_matrix_init(&xyi, 0, 0, DT_REAL, _state);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&means, 0, DT_REAL, _state);
-    ae_vector_init(&sigmas, 0, DT_REAL, _state);
-
-    
-    /*
-     * Test parameters
-     */
-    if( npoints<=nvars+1||nvars<1 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Copy data, add one more column (constant term)
-     */
-    ae_matrix_set_length(&xyi, npoints-1+1, nvars+1+1, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_move(&xyi.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-        xyi.ptr.pp_double[i][nvars] = (double)(1);
-        xyi.ptr.pp_double[i][nvars+1] = xy->ptr.pp_double[i][nvars];
-    }
-    
-    /*
-     * Standartization
-     */
-    ae_vector_set_length(&x, npoints-1+1, _state);
-    ae_vector_set_length(&means, nvars-1+1, _state);
-    ae_vector_set_length(&sigmas, nvars-1+1, _state);
-    for(j=0; j<=nvars-1; j++)
-    {
-        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[0][j], xy->stride, ae_v_len(0,npoints-1));
-        samplemoments(&x, npoints, &mean, &variance, &skewness, &kurtosis, _state);
-        means.ptr.p_double[j] = mean;
-        sigmas.ptr.p_double[j] = ae_sqrt(variance, _state);
-        if( ae_fp_eq(sigmas.ptr.p_double[j],(double)(0)) )
-        {
-            sigmas.ptr.p_double[j] = (double)(1);
-        }
-        for(i=0; i<=npoints-1; i++)
-        {
-            xyi.ptr.pp_double[i][j] = (xyi.ptr.pp_double[i][j]-means.ptr.p_double[j])/sigmas.ptr.p_double[j];
-        }
-    }
-    
-    /*
-     * Internal processing
-     */
-    linreg_lrinternal(&xyi, s, npoints, nvars+1, info, lm, ar, _state);
-    if( *info<0 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Un-standartization
-     */
-    offs = ae_round(lm->w.ptr.p_double[3], _state);
-    for(j=0; j<=nvars-1; j++)
-    {
-        
-        /*
-         * Constant term is updated (and its covariance too,
-         * since it gets some variance from J-th component)
-         */
-        lm->w.ptr.p_double[offs+nvars] = lm->w.ptr.p_double[offs+nvars]-lm->w.ptr.p_double[offs+j]*means.ptr.p_double[j]/sigmas.ptr.p_double[j];
-        v = means.ptr.p_double[j]/sigmas.ptr.p_double[j];
-        ae_v_subd(&ar->c.ptr.pp_double[nvars][0], 1, &ar->c.ptr.pp_double[j][0], 1, ae_v_len(0,nvars), v);
-        ae_v_subd(&ar->c.ptr.pp_double[0][nvars], ar->c.stride, &ar->c.ptr.pp_double[0][j], ar->c.stride, ae_v_len(0,nvars), v);
-        
-        /*
-         * J-th term is updated
-         */
-        lm->w.ptr.p_double[offs+j] = lm->w.ptr.p_double[offs+j]/sigmas.ptr.p_double[j];
-        v = 1/sigmas.ptr.p_double[j];
-        ae_v_muld(&ar->c.ptr.pp_double[j][0], 1, ae_v_len(0,nvars), v);
-        ae_v_muld(&ar->c.ptr.pp_double[0][j], ar->c.stride, ae_v_len(0,nvars), v);
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Like LRBuildS, but builds model
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
-
-i.e. with zero constant term.
-
-  -- ALGLIB --
-     Copyright 30.10.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuildzs(/* Real    */ ae_matrix* xy,
-     /* Real    */ ae_vector* s,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_matrix xyi;
-    ae_vector x;
-    ae_vector c;
-    ae_int_t i;
-    ae_int_t j;
-    double v;
-    ae_int_t offs;
-    double mean;
-    double variance;
-    double skewness;
-    double kurtosis;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    _linearmodel_clear(lm);
-    _lrreport_clear(ar);
-    ae_matrix_init(&xyi, 0, 0, DT_REAL, _state);
-    ae_vector_init(&x, 0, DT_REAL, _state);
-    ae_vector_init(&c, 0, DT_REAL, _state);
-
-    
-    /*
-     * Test parameters
-     */
-    if( npoints<=nvars+1||nvars<1 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Copy data, add one more column (constant term)
-     */
-    ae_matrix_set_length(&xyi, npoints-1+1, nvars+1+1, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_move(&xyi.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-        xyi.ptr.pp_double[i][nvars] = (double)(0);
-        xyi.ptr.pp_double[i][nvars+1] = xy->ptr.pp_double[i][nvars];
-    }
-    
-    /*
-     * Standartization: unusual scaling
-     */
-    ae_vector_set_length(&x, npoints-1+1, _state);
-    ae_vector_set_length(&c, nvars-1+1, _state);
-    for(j=0; j<=nvars-1; j++)
-    {
-        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[0][j], xy->stride, ae_v_len(0,npoints-1));
-        samplemoments(&x, npoints, &mean, &variance, &skewness, &kurtosis, _state);
-        if( ae_fp_greater(ae_fabs(mean, _state),ae_sqrt(variance, _state)) )
-        {
-            
-            /*
-             * variation is relatively small, it is better to
-             * bring mean value to 1
-             */
-            c.ptr.p_double[j] = mean;
-        }
-        else
-        {
-            
-            /*
-             * variation is large, it is better to bring variance to 1
-             */
-            if( ae_fp_eq(variance,(double)(0)) )
-            {
-                variance = (double)(1);
-            }
-            c.ptr.p_double[j] = ae_sqrt(variance, _state);
-        }
-        for(i=0; i<=npoints-1; i++)
-        {
-            xyi.ptr.pp_double[i][j] = xyi.ptr.pp_double[i][j]/c.ptr.p_double[j];
-        }
-    }
-    
-    /*
-     * Internal processing
-     */
-    linreg_lrinternal(&xyi, s, npoints, nvars+1, info, lm, ar, _state);
-    if( *info<0 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Un-standartization
-     */
-    offs = ae_round(lm->w.ptr.p_double[3], _state);
-    for(j=0; j<=nvars-1; j++)
-    {
-        
-        /*
-         * J-th term is updated
-         */
-        lm->w.ptr.p_double[offs+j] = lm->w.ptr.p_double[offs+j]/c.ptr.p_double[j];
-        v = 1/c.ptr.p_double[j];
-        ae_v_muld(&ar->c.ptr.pp_double[j][0], 1, ae_v_len(0,nvars), v);
-        ae_v_muld(&ar->c.ptr.pp_double[0][j], ar->c.stride, ae_v_len(0,nvars), v);
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Like LRBuild but builds model
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
-
-i.e. with zero constant term.
-
-  -- ALGLIB --
-     Copyright 30.10.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuildz(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector s;
-    ae_int_t i;
-    double sigma2;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    _linearmodel_clear(lm);
-    _lrreport_clear(ar);
-    ae_vector_init(&s, 0, DT_REAL, _state);
-
-    if( npoints<=nvars+1||nvars<1 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    ae_vector_set_length(&s, npoints-1+1, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        s.ptr.p_double[i] = (double)(1);
-    }
-    lrbuildzs(xy, &s, npoints, nvars, info, lm, ar, _state);
-    if( *info<0 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    sigma2 = ae_sqr(ar->rmserror, _state)*npoints/(npoints-nvars-1);
-    for(i=0; i<=nvars; i++)
-    {
-        ae_v_muld(&ar->c.ptr.pp_double[i][0], 1, ae_v_len(0,nvars), sigma2);
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Unpacks coefficients of linear model.
-
-INPUT PARAMETERS:
-    LM          -   linear model in ALGLIB format
-
-OUTPUT PARAMETERS:
-    V           -   coefficients, array[0..NVars]
-                    constant term (intercept) is stored in the V[NVars].
-    NVars       -   number of independent variables (one less than number
-                    of coefficients)
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrunpack(linearmodel* lm,
-     /* Real    */ ae_vector* v,
-     ae_int_t* nvars,
-     ae_state *_state)
-{
-    ae_int_t offs;
-
-    ae_vector_clear(v);
-    *nvars = 0;
-
-    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
-    *nvars = ae_round(lm->w.ptr.p_double[2], _state);
-    offs = ae_round(lm->w.ptr.p_double[3], _state);
-    ae_vector_set_length(v, *nvars+1, _state);
-    ae_v_move(&v->ptr.p_double[0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,*nvars));
-}
-
-
-/*************************************************************************
-"Packs" coefficients and creates linear model in ALGLIB format (LRUnpack
-reversed).
-
-INPUT PARAMETERS:
-    V           -   coefficients, array[0..NVars]
-    NVars       -   number of independent variables
-
-OUTPUT PAREMETERS:
-    LM          -   linear model.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrpack(/* Real    */ ae_vector* v,
-     ae_int_t nvars,
-     linearmodel* lm,
-     ae_state *_state)
-{
-    ae_int_t offs;
-
-    _linearmodel_clear(lm);
-
-    ae_vector_set_length(&lm->w, 4+nvars+1, _state);
-    offs = 4;
-    lm->w.ptr.p_double[0] = (double)(4+nvars+1);
-    lm->w.ptr.p_double[1] = (double)(linreg_lrvnum);
-    lm->w.ptr.p_double[2] = (double)(nvars);
-    lm->w.ptr.p_double[3] = (double)(offs);
-    ae_v_move(&lm->w.ptr.p_double[offs], 1, &v->ptr.p_double[0], 1, ae_v_len(offs,offs+nvars));
-}
-
-
-/*************************************************************************
-Procesing
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    X       -   input vector,  array[0..NVars-1].
-
-Result:
-    value of linear model regression estimate
-
-  -- ALGLIB --
-     Copyright 03.09.2008 by Bochkanov Sergey
-*************************************************************************/
-double lrprocess(linearmodel* lm,
-     /* Real    */ ae_vector* x,
-     ae_state *_state)
-{
-    double v;
-    ae_int_t offs;
-    ae_int_t nvars;
-    double result;
-
-
-    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
-    nvars = ae_round(lm->w.ptr.p_double[2], _state);
-    offs = ae_round(lm->w.ptr.p_double[3], _state);
-    v = ae_v_dotproduct(&x->ptr.p_double[0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
-    result = v+lm->w.ptr.p_double[offs+nvars];
-    return result;
-}
-
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    root mean square error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lrrmserror(linearmodel* lm,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double v;
-    ae_int_t offs;
-    ae_int_t nvars;
-    double result;
-
-
-    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
-    nvars = ae_round(lm->w.ptr.p_double[2], _state);
-    offs = ae_round(lm->w.ptr.p_double[3], _state);
-    result = (double)(0);
-    for(i=0; i<=npoints-1; i++)
-    {
-        v = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
-        v = v+lm->w.ptr.p_double[offs+nvars];
-        result = result+ae_sqr(v-xy->ptr.pp_double[i][nvars], _state);
-    }
-    result = ae_sqrt(result/npoints, _state);
-    return result;
-}
-
-
-/*************************************************************************
-Average error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    average error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lravgerror(linearmodel* lm,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double v;
-    ae_int_t offs;
-    ae_int_t nvars;
-    double result;
-
-
-    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
-    nvars = ae_round(lm->w.ptr.p_double[2], _state);
-    offs = ae_round(lm->w.ptr.p_double[3], _state);
-    result = (double)(0);
-    for(i=0; i<=npoints-1; i++)
-    {
-        v = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
-        v = v+lm->w.ptr.p_double[offs+nvars];
-        result = result+ae_fabs(v-xy->ptr.pp_double[i][nvars], _state);
-    }
-    result = result/npoints;
-    return result;
-}
-
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    average relative error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lravgrelerror(linearmodel* lm,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t k;
-    double v;
-    ae_int_t offs;
-    ae_int_t nvars;
-    double result;
-
-
-    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
-    nvars = ae_round(lm->w.ptr.p_double[2], _state);
-    offs = ae_round(lm->w.ptr.p_double[3], _state);
-    result = (double)(0);
-    k = 0;
-    for(i=0; i<=npoints-1; i++)
-    {
-        if( ae_fp_neq(xy->ptr.pp_double[i][nvars],(double)(0)) )
-        {
-            v = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
-            v = v+lm->w.ptr.p_double[offs+nvars];
-            result = result+ae_fabs((v-xy->ptr.pp_double[i][nvars])/xy->ptr.pp_double[i][nvars], _state);
-            k = k+1;
-        }
-    }
-    if( k!=0 )
-    {
-        result = result/k;
-    }
-    return result;
-}
-
-
-/*************************************************************************
-Copying of LinearModel strucure
-
-INPUT PARAMETERS:
-    LM1 -   original
-
-OUTPUT PARAMETERS:
-    LM2 -   copy
-
-  -- ALGLIB --
-     Copyright 15.03.2009 by Bochkanov Sergey
-*************************************************************************/
-void lrcopy(linearmodel* lm1, linearmodel* lm2, ae_state *_state)
-{
-    ae_int_t k;
-
-    _linearmodel_clear(lm2);
-
-    k = ae_round(lm1->w.ptr.p_double[0], _state);
-    ae_vector_set_length(&lm2->w, k-1+1, _state);
-    ae_v_move(&lm2->w.ptr.p_double[0], 1, &lm1->w.ptr.p_double[0], 1, ae_v_len(0,k-1));
-}
-
-
-void lrlines(/* Real    */ ae_matrix* xy,
-     /* Real    */ ae_vector* s,
-     ae_int_t n,
-     ae_int_t* info,
-     double* a,
-     double* b,
-     double* vara,
-     double* varb,
-     double* covab,
-     double* corrab,
-     double* p,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double ss;
-    double sx;
-    double sxx;
-    double sy;
-    double stt;
-    double e1;
-    double e2;
-    double t;
-    double chi2;
-
-    *info = 0;
-    *a = 0;
-    *b = 0;
-    *vara = 0;
-    *varb = 0;
-    *covab = 0;
-    *corrab = 0;
-    *p = 0;
-
-    if( n<2 )
-    {
-        *info = -1;
-        return;
-    }
-    for(i=0; i<=n-1; i++)
-    {
-        if( ae_fp_less_eq(s->ptr.p_double[i],(double)(0)) )
-        {
-            *info = -2;
-            return;
-        }
-    }
-    *info = 1;
-    
-    /*
-     * Calculate S, SX, SY, SXX
-     */
-    ss = (double)(0);
-    sx = (double)(0);
-    sy = (double)(0);
-    sxx = (double)(0);
-    for(i=0; i<=n-1; i++)
-    {
-        t = ae_sqr(s->ptr.p_double[i], _state);
-        ss = ss+1/t;
-        sx = sx+xy->ptr.pp_double[i][0]/t;
-        sy = sy+xy->ptr.pp_double[i][1]/t;
-        sxx = sxx+ae_sqr(xy->ptr.pp_double[i][0], _state)/t;
-    }
-    
-    /*
-     * Test for condition number
-     */
-    t = ae_sqrt(4*ae_sqr(sx, _state)+ae_sqr(ss-sxx, _state), _state);
-    e1 = 0.5*(ss+sxx+t);
-    e2 = 0.5*(ss+sxx-t);
-    if( ae_fp_less_eq(ae_minreal(e1, e2, _state),1000*ae_machineepsilon*ae_maxreal(e1, e2, _state)) )
-    {
-        *info = -3;
-        return;
-    }
-    
-    /*
-     * Calculate A, B
-     */
-    *a = (double)(0);
-    *b = (double)(0);
-    stt = (double)(0);
-    for(i=0; i<=n-1; i++)
-    {
-        t = (xy->ptr.pp_double[i][0]-sx/ss)/s->ptr.p_double[i];
-        *b = *b+t*xy->ptr.pp_double[i][1]/s->ptr.p_double[i];
-        stt = stt+ae_sqr(t, _state);
-    }
-    *b = *b/stt;
-    *a = (sy-sx*(*b))/ss;
-    
-    /*
-     * Calculate goodness-of-fit
-     */
-    if( n>2 )
-    {
-        chi2 = (double)(0);
-        for(i=0; i<=n-1; i++)
-        {
-            chi2 = chi2+ae_sqr((xy->ptr.pp_double[i][1]-(*a)-*b*xy->ptr.pp_double[i][0])/s->ptr.p_double[i], _state);
-        }
-        *p = incompletegammac((double)(n-2)/(double)2, chi2/2, _state);
-    }
-    else
-    {
-        *p = (double)(1);
-    }
-    
-    /*
-     * Calculate other parameters
-     */
-    *vara = (1+ae_sqr(sx, _state)/(ss*stt))/ss;
-    *varb = 1/stt;
-    *covab = -sx/(ss*stt);
-    *corrab = *covab/ae_sqrt(*vara*(*varb), _state);
-}
-
-
-void lrline(/* Real    */ ae_matrix* xy,
-     ae_int_t n,
-     ae_int_t* info,
-     double* a,
-     double* b,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector s;
-    ae_int_t i;
-    double vara;
-    double varb;
-    double covab;
-    double corrab;
-    double p;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    *a = 0;
-    *b = 0;
-    ae_vector_init(&s, 0, DT_REAL, _state);
-
-    if( n<2 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    ae_vector_set_length(&s, n-1+1, _state);
-    for(i=0; i<=n-1; i++)
-    {
-        s.ptr.p_double[i] = (double)(1);
-    }
-    lrlines(xy, &s, n, info, a, b, &vara, &varb, &covab, &corrab, &p, _state);
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Internal linear regression subroutine
-*************************************************************************/
-static void linreg_lrinternal(/* Real    */ ae_matrix* xy,
-     /* Real    */ ae_vector* s,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_matrix a;
-    ae_matrix u;
-    ae_matrix vt;
-    ae_matrix vm;
-    ae_matrix xym;
-    ae_vector b;
-    ae_vector sv;
-    ae_vector t;
-    ae_vector svi;
-    ae_vector work;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t ncv;
-    ae_int_t na;
-    ae_int_t nacv;
-    double r;
-    double p;
-    double epstol;
-    lrreport ar2;
-    ae_int_t offs;
-    linearmodel tlm;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    _linearmodel_clear(lm);
-    _lrreport_clear(ar);
-    ae_matrix_init(&a, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&u, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&vt, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&vm, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&xym, 0, 0, DT_REAL, _state);
-    ae_vector_init(&b, 0, DT_REAL, _state);
-    ae_vector_init(&sv, 0, DT_REAL, _state);
-    ae_vector_init(&t, 0, DT_REAL, _state);
-    ae_vector_init(&svi, 0, DT_REAL, _state);
-    ae_vector_init(&work, 0, DT_REAL, _state);
-    _lrreport_init(&ar2, _state);
-    _linearmodel_init(&tlm, _state);
-
-    epstol = (double)(1000);
-    
-    /*
-     * Check for errors in data
-     */
-    if( npoints<nvars||nvars<1 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    for(i=0; i<=npoints-1; i++)
-    {
-        if( ae_fp_less_eq(s->ptr.p_double[i],(double)(0)) )
-        {
-            *info = -2;
-            ae_frame_leave(_state);
-            return;
-        }
-    }
-    *info = 1;
-    
-    /*
-     * Create design matrix
-     */
-    ae_matrix_set_length(&a, npoints-1+1, nvars-1+1, _state);
-    ae_vector_set_length(&b, npoints-1+1, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        r = 1/s->ptr.p_double[i];
-        ae_v_moved(&a.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1), r);
-        b.ptr.p_double[i] = xy->ptr.pp_double[i][nvars]/s->ptr.p_double[i];
-    }
-    
-    /*
-     * Allocate W:
-     * W[0]     array size
-     * W[1]     version number, 0
-     * W[2]     NVars (minus 1, to be compatible with external representation)
-     * W[3]     coefficients offset
-     */
-    ae_vector_set_length(&lm->w, 4+nvars-1+1, _state);
-    offs = 4;
-    lm->w.ptr.p_double[0] = (double)(4+nvars);
-    lm->w.ptr.p_double[1] = (double)(linreg_lrvnum);
-    lm->w.ptr.p_double[2] = (double)(nvars-1);
-    lm->w.ptr.p_double[3] = (double)(offs);
-    
-    /*
-     * Solve problem using SVD:
-     *
-     * 0. check for degeneracy (different types)
-     * 1. A = U*diag(sv)*V'
-     * 2. T = b'*U
-     * 3. w = SUM((T[i]/sv[i])*V[..,i])
-     * 4. cov(wi,wj) = SUM(Vji*Vjk/sv[i]^2,K=1..M)
-     *
-     * see $15.4 of "Numerical Recipes in C" for more information
-     */
-    ae_vector_set_length(&t, nvars-1+1, _state);
-    ae_vector_set_length(&svi, nvars-1+1, _state);
-    ae_matrix_set_length(&ar->c, nvars-1+1, nvars-1+1, _state);
-    ae_matrix_set_length(&vm, nvars-1+1, nvars-1+1, _state);
-    if( !rmatrixsvd(&a, npoints, nvars, 1, 1, 2, &sv, &u, &vt, _state) )
-    {
-        *info = -4;
-        ae_frame_leave(_state);
-        return;
-    }
-    if( ae_fp_less_eq(sv.ptr.p_double[0],(double)(0)) )
-    {
-        
-        /*
-         * Degenerate case: zero design matrix.
-         */
-        for(i=offs; i<=offs+nvars-1; i++)
-        {
-            lm->w.ptr.p_double[i] = (double)(0);
-        }
-        ar->rmserror = lrrmserror(lm, xy, npoints, _state);
-        ar->avgerror = lravgerror(lm, xy, npoints, _state);
-        ar->avgrelerror = lravgrelerror(lm, xy, npoints, _state);
-        ar->cvrmserror = ar->rmserror;
-        ar->cvavgerror = ar->avgerror;
-        ar->cvavgrelerror = ar->avgrelerror;
-        ar->ncvdefects = 0;
-        ae_vector_set_length(&ar->cvdefects, nvars-1+1, _state);
-        ae_matrix_set_length(&ar->c, nvars-1+1, nvars-1+1, _state);
-        for(i=0; i<=nvars-1; i++)
-        {
-            for(j=0; j<=nvars-1; j++)
-            {
-                ar->c.ptr.pp_double[i][j] = (double)(0);
-            }
-        }
-        ae_frame_leave(_state);
-        return;
-    }
-    if( ae_fp_less_eq(sv.ptr.p_double[nvars-1],epstol*ae_machineepsilon*sv.ptr.p_double[0]) )
-    {
-        
-        /*
-         * Degenerate case, non-zero design matrix.
-         *
-         * We can leave it and solve task in SVD least squares fashion.
-         * Solution and covariance matrix will be obtained correctly,
-         * but CV error estimates - will not. It is better to reduce
-         * it to non-degenerate task and to obtain correct CV estimates.
-         */
-        for(k=nvars; k>=1; k--)
-        {
-            if( ae_fp_greater(sv.ptr.p_double[k-1],epstol*ae_machineepsilon*sv.ptr.p_double[0]) )
-            {
-                
-                /*
-                 * Reduce
-                 */
-                ae_matrix_set_length(&xym, npoints-1+1, k+1, _state);
-                for(i=0; i<=npoints-1; i++)
-                {
-                    for(j=0; j<=k-1; j++)
-                    {
-                        r = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &vt.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
-                        xym.ptr.pp_double[i][j] = r;
-                    }
-                    xym.ptr.pp_double[i][k] = xy->ptr.pp_double[i][nvars];
-                }
-                
-                /*
-                 * Solve
-                 */
-                linreg_lrinternal(&xym, s, npoints, k, info, &tlm, &ar2, _state);
-                if( *info!=1 )
-                {
-                    ae_frame_leave(_state);
-                    return;
-                }
-                
-                /*
-                 * Convert back to un-reduced format
-                 */
-                for(j=0; j<=nvars-1; j++)
-                {
-                    lm->w.ptr.p_double[offs+j] = (double)(0);
-                }
-                for(j=0; j<=k-1; j++)
-                {
-                    r = tlm.w.ptr.p_double[offs+j];
-                    ae_v_addd(&lm->w.ptr.p_double[offs], 1, &vt.ptr.pp_double[j][0], 1, ae_v_len(offs,offs+nvars-1), r);
-                }
-                ar->rmserror = ar2.rmserror;
-                ar->avgerror = ar2.avgerror;
-                ar->avgrelerror = ar2.avgrelerror;
-                ar->cvrmserror = ar2.cvrmserror;
-                ar->cvavgerror = ar2.cvavgerror;
-                ar->cvavgrelerror = ar2.cvavgrelerror;
-                ar->ncvdefects = ar2.ncvdefects;
-                ae_vector_set_length(&ar->cvdefects, nvars-1+1, _state);
-                for(j=0; j<=ar->ncvdefects-1; j++)
-                {
-                    ar->cvdefects.ptr.p_int[j] = ar2.cvdefects.ptr.p_int[j];
-                }
-                ae_matrix_set_length(&ar->c, nvars-1+1, nvars-1+1, _state);
-                ae_vector_set_length(&work, nvars+1, _state);
-                matrixmatrixmultiply(&ar2.c, 0, k-1, 0, k-1, ae_false, &vt, 0, k-1, 0, nvars-1, ae_false, 1.0, &vm, 0, k-1, 0, nvars-1, 0.0, &work, _state);
-                matrixmatrixmultiply(&vt, 0, k-1, 0, nvars-1, ae_true, &vm, 0, k-1, 0, nvars-1, ae_false, 1.0, &ar->c, 0, nvars-1, 0, nvars-1, 0.0, &work, _state);
-                ae_frame_leave(_state);
-                return;
-            }
-        }
-        *info = -255;
-        ae_frame_leave(_state);
-        return;
-    }
-    for(i=0; i<=nvars-1; i++)
-    {
-        if( ae_fp_greater(sv.ptr.p_double[i],epstol*ae_machineepsilon*sv.ptr.p_double[0]) )
-        {
-            svi.ptr.p_double[i] = 1/sv.ptr.p_double[i];
-        }
-        else
-        {
-            svi.ptr.p_double[i] = (double)(0);
-        }
-    }
-    for(i=0; i<=nvars-1; i++)
-    {
-        t.ptr.p_double[i] = (double)(0);
-    }
-    for(i=0; i<=npoints-1; i++)
-    {
-        r = b.ptr.p_double[i];
-        ae_v_addd(&t.ptr.p_double[0], 1, &u.ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1), r);
-    }
-    for(i=0; i<=nvars-1; i++)
-    {
-        lm->w.ptr.p_double[offs+i] = (double)(0);
-    }
-    for(i=0; i<=nvars-1; i++)
-    {
-        r = t.ptr.p_double[i]*svi.ptr.p_double[i];
-        ae_v_addd(&lm->w.ptr.p_double[offs], 1, &vt.ptr.pp_double[i][0], 1, ae_v_len(offs,offs+nvars-1), r);
-    }
-    for(j=0; j<=nvars-1; j++)
-    {
-        r = svi.ptr.p_double[j];
-        ae_v_moved(&vm.ptr.pp_double[0][j], vm.stride, &vt.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1), r);
-    }
-    for(i=0; i<=nvars-1; i++)
-    {
-        for(j=i; j<=nvars-1; j++)
-        {
-            r = ae_v_dotproduct(&vm.ptr.pp_double[i][0], 1, &vm.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
-            ar->c.ptr.pp_double[i][j] = r;
-            ar->c.ptr.pp_double[j][i] = r;
-        }
-    }
-    
-    /*
-     * Leave-1-out cross-validation error.
-     *
-     * NOTATIONS:
-     * A            design matrix
-     * A*x = b      original linear least squares task
-     * U*S*V'       SVD of A
-     * ai           i-th row of the A
-     * bi           i-th element of the b
-     * xf           solution of the original LLS task
-     *
-     * Cross-validation error of i-th element from a sample is
-     * calculated using following formula:
-     *
-     *     ERRi = ai*xf - (ai*xf-bi*(ui*ui'))/(1-ui*ui')     (1)
-     *
-     * This formula can be derived from normal equations of the
-     * original task
-     *
-     *     (A'*A)x = A'*b                                    (2)
-     *
-     * by applying modification (zeroing out i-th row of A) to (2):
-     *
-     *     (A-ai)'*(A-ai) = (A-ai)'*b
-     *
-     * and using Sherman-Morrison formula for updating matrix inverse
-     *
-     * NOTE 1: b is not zeroed out since it is much simpler and
-     * does not influence final result.
-     *
-     * NOTE 2: some design matrices A have such ui that 1-ui*ui'=0.
-     * Formula (1) can't be applied for such cases and they are skipped
-     * from CV calculation (which distorts resulting CV estimate).
-     * But from the properties of U we can conclude that there can
-     * be no more than NVars such vectors. Usually
-     * NVars << NPoints, so in a normal case it only slightly
-     * influences result.
-     */
-    ncv = 0;
-    na = 0;
-    nacv = 0;
-    ar->rmserror = (double)(0);
-    ar->avgerror = (double)(0);
-    ar->avgrelerror = (double)(0);
-    ar->cvrmserror = (double)(0);
-    ar->cvavgerror = (double)(0);
-    ar->cvavgrelerror = (double)(0);
-    ar->ncvdefects = 0;
-    ae_vector_set_length(&ar->cvdefects, nvars-1+1, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        
-        /*
-         * Error on a training set
-         */
-        r = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
-        ar->rmserror = ar->rmserror+ae_sqr(r-xy->ptr.pp_double[i][nvars], _state);
-        ar->avgerror = ar->avgerror+ae_fabs(r-xy->ptr.pp_double[i][nvars], _state);
-        if( ae_fp_neq(xy->ptr.pp_double[i][nvars],(double)(0)) )
-        {
-            ar->avgrelerror = ar->avgrelerror+ae_fabs((r-xy->ptr.pp_double[i][nvars])/xy->ptr.pp_double[i][nvars], _state);
-            na = na+1;
-        }
-        
-        /*
-         * Error using fast leave-one-out cross-validation
-         */
-        p = ae_v_dotproduct(&u.ptr.pp_double[i][0], 1, &u.ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-        if( ae_fp_greater(p,1-epstol*ae_machineepsilon) )
-        {
-            ar->cvdefects.ptr.p_int[ar->ncvdefects] = i;
-            ar->ncvdefects = ar->ncvdefects+1;
-            continue;
-        }
-        r = s->ptr.p_double[i]*(r/s->ptr.p_double[i]-b.ptr.p_double[i]*p)/(1-p);
-        ar->cvrmserror = ar->cvrmserror+ae_sqr(r-xy->ptr.pp_double[i][nvars], _state);
-        ar->cvavgerror = ar->cvavgerror+ae_fabs(r-xy->ptr.pp_double[i][nvars], _state);
-        if( ae_fp_neq(xy->ptr.pp_double[i][nvars],(double)(0)) )
-        {
-            ar->cvavgrelerror = ar->cvavgrelerror+ae_fabs((r-xy->ptr.pp_double[i][nvars])/xy->ptr.pp_double[i][nvars], _state);
-            nacv = nacv+1;
-        }
-        ncv = ncv+1;
-    }
-    if( ncv==0 )
-    {
-        
-        /*
-         * Something strange: ALL ui are degenerate.
-         * Unexpected...
-         */
-        *info = -255;
-        ae_frame_leave(_state);
-        return;
-    }
-    ar->rmserror = ae_sqrt(ar->rmserror/npoints, _state);
-    ar->avgerror = ar->avgerror/npoints;
-    if( na!=0 )
-    {
-        ar->avgrelerror = ar->avgrelerror/na;
-    }
-    ar->cvrmserror = ae_sqrt(ar->cvrmserror/ncv, _state);
-    ar->cvavgerror = ar->cvavgerror/ncv;
-    if( nacv!=0 )
-    {
-        ar->cvavgrelerror = ar->cvavgrelerror/nacv;
-    }
-    ae_frame_leave(_state);
-}
-
-
-void _linearmodel_init(void* _p, ae_state *_state)
-{
-    linearmodel *p = (linearmodel*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_init(&p->w, 0, DT_REAL, _state);
-}
-
-
-void _linearmodel_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    linearmodel *dst = (linearmodel*)_dst;
-    linearmodel *src = (linearmodel*)_src;
-    ae_vector_init_copy(&dst->w, &src->w, _state);
-}
-
-
-void _linearmodel_clear(void* _p)
-{
-    linearmodel *p = (linearmodel*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_clear(&p->w);
-}
-
-
-void _linearmodel_destroy(void* _p)
-{
-    linearmodel *p = (linearmodel*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_destroy(&p->w);
-}
-
-
-void _lrreport_init(void* _p, ae_state *_state)
-{
-    lrreport *p = (lrreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_init(&p->c, 0, 0, DT_REAL, _state);
-    ae_vector_init(&p->cvdefects, 0, DT_INT, _state);
-}
-
-
-void _lrreport_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    lrreport *dst = (lrreport*)_dst;
-    lrreport *src = (lrreport*)_src;
-    ae_matrix_init_copy(&dst->c, &src->c, _state);
-    dst->rmserror = src->rmserror;
-    dst->avgerror = src->avgerror;
-    dst->avgrelerror = src->avgrelerror;
-    dst->cvrmserror = src->cvrmserror;
-    dst->cvavgerror = src->cvavgerror;
-    dst->cvavgrelerror = src->cvavgrelerror;
-    dst->ncvdefects = src->ncvdefects;
-    ae_vector_init_copy(&dst->cvdefects, &src->cvdefects, _state);
-}
-
-
-void _lrreport_clear(void* _p)
-{
-    lrreport *p = (lrreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_clear(&p->c);
-    ae_vector_clear(&p->cvdefects);
-}
-
-
-void _lrreport_destroy(void* _p)
-{
-    lrreport *p = (lrreport*)_p;
-    ae_touch_ptr((void*)p);
-    ae_matrix_destroy(&p->c);
-    ae_vector_destroy(&p->cvdefects);
-}
-
-
-
-
-/*************************************************************************
-Filters: simple moving averages (unsymmetric).
-
-This filter replaces array by results of SMA(K) filter. SMA(K) is defined
-as filter which averages at most K previous points (previous - not points
-AROUND central point) - or less, in case of the first K-1 points.
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
-                    correctly handled). Window width. K=1 corresponds  to
-                    identity transformation (nothing changes).
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed with SMA(K)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm makes only one pass through array and uses running
-        sum  to speed-up calculation of the averages. Additional measures
-        are taken to ensure that running sum on a long sequence  of  zero
-        elements will be correctly reset to zero even in the presence  of
-        round-off error.
-
-NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
-        averages points after the current one. Only X[i], X[i-1], ... are
-        used when calculating new value of X[i]. We should also note that
-        this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filtersma(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     ae_int_t k,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double runningsum;
-    double termsinsum;
-    ae_int_t zeroprefix;
-    double v;
-
-
-    ae_assert(n>=0, "FilterSMA: N<0", _state);
-    ae_assert(x->cnt>=n, "FilterSMA: Length(X)<N", _state);
-    ae_assert(isfinitevector(x, n, _state), "FilterSMA: X contains INF or NAN", _state);
-    ae_assert(k>=1, "FilterSMA: K<1", _state);
-    
-    /*
-     * Quick exit, if necessary
-     */
-    if( n<=1||k==1 )
-    {
-        return;
-    }
-    
-    /*
-     * Prepare variables (see below for explanation)
-     */
-    runningsum = 0.0;
-    termsinsum = (double)(0);
-    for(i=ae_maxint(n-k, 0, _state); i<=n-1; i++)
-    {
-        runningsum = runningsum+x->ptr.p_double[i];
-        termsinsum = termsinsum+1;
-    }
-    i = ae_maxint(n-k, 0, _state);
-    zeroprefix = 0;
-    while(i<=n-1&&ae_fp_eq(x->ptr.p_double[i],(double)(0)))
-    {
-        zeroprefix = zeroprefix+1;
-        i = i+1;
-    }
-    
-    /*
-     * General case: we assume that N>1 and K>1
-     *
-     * Make one pass through all elements. At the beginning of
-     * the iteration we have:
-     * * I              element being processed
-     * * RunningSum     current value of the running sum
-     *                  (including I-th element)
-     * * TermsInSum     number of terms in sum, 0<=TermsInSum<=K
-     * * ZeroPrefix     length of the sequence of zero elements
-     *                  which starts at X[I-K+1] and continues towards X[I].
-     *                  Equal to zero in case X[I-K+1] is non-zero.
-     *                  This value is used to make RunningSum exactly zero
-     *                  when it follows from the problem properties.
-     */
-    for(i=n-1; i>=0; i--)
-    {
-        
-        /*
-         * Store new value of X[i], save old value in V
-         */
-        v = x->ptr.p_double[i];
-        x->ptr.p_double[i] = runningsum/termsinsum;
-        
-        /*
-         * Update RunningSum and TermsInSum
-         */
-        if( i-k>=0 )
-        {
-            runningsum = runningsum-v+x->ptr.p_double[i-k];
-        }
-        else
-        {
-            runningsum = runningsum-v;
-            termsinsum = termsinsum-1;
-        }
-        
-        /*
-         * Update ZeroPrefix.
-         * In case we have ZeroPrefix=TermsInSum,
-         * RunningSum is reset to zero.
-         */
-        if( i-k>=0 )
-        {
-            if( ae_fp_neq(x->ptr.p_double[i-k],(double)(0)) )
-            {
-                zeroprefix = 0;
-            }
-            else
-            {
-                zeroprefix = ae_minint(zeroprefix+1, k, _state);
-            }
-        }
-        else
-        {
-            zeroprefix = ae_minint(zeroprefix, i+1, _state);
-        }
-        if( ae_fp_eq((double)(zeroprefix),termsinsum) )
-        {
-            runningsum = (double)(0);
-        }
-    }
-}
-
-
-/*************************************************************************
-Filters: exponential moving averages.
-
-This filter replaces array by results of EMA(alpha) filter. EMA(alpha) is
-defined as filter which replaces X[] by S[]:
-    S[0] = X[0]
-    S[t] = alpha*X[t] + (1-alpha)*S[t-1]
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    alpha       -   0<alpha<=1, smoothing parameter.
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed
-                    with EMA(alpha)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-NOTE 3: technical analytis users quite often work  with  EMA  coefficient
-        expressed in DAYS instead of fractions. If you want to  calculate
-        EMA(N), where N is a number of days, you can use alpha=2/(N+1).
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filterema(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double alpha,
-     ae_state *_state)
-{
-    ae_int_t i;
-
-
-    ae_assert(n>=0, "FilterEMA: N<0", _state);
-    ae_assert(x->cnt>=n, "FilterEMA: Length(X)<N", _state);
-    ae_assert(isfinitevector(x, n, _state), "FilterEMA: X contains INF or NAN", _state);
-    ae_assert(ae_fp_greater(alpha,(double)(0)), "FilterEMA: Alpha<=0", _state);
-    ae_assert(ae_fp_less_eq(alpha,(double)(1)), "FilterEMA: Alpha>1", _state);
-    
-    /*
-     * Quick exit, if necessary
-     */
-    if( n<=1||ae_fp_eq(alpha,(double)(1)) )
-    {
-        return;
-    }
-    
-    /*
-     * Process
-     */
-    for(i=1; i<=n-1; i++)
-    {
-        x->ptr.p_double[i] = alpha*x->ptr.p_double[i]+(1-alpha)*x->ptr.p_double[i-1];
-    }
-}
-
-
-/*************************************************************************
-Filters: linear regression moving averages.
-
-This filter replaces array by results of LRMA(K) filter.
-
-LRMA(K) is defined as filter which, for each data  point,  builds  linear
-regression  model  using  K  prevous  points (point itself is included in
-these K points) and calculates value of this linear model at the point in
-question.
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
-                    correctly handled). Window width. K=1 corresponds  to
-                    identity transformation (nothing changes).
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed with SMA(K)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm makes only one pass through array and uses running
-        sum  to speed-up calculation of the averages. Additional measures
-        are taken to ensure that running sum on a long sequence  of  zero
-        elements will be correctly reset to zero even in the presence  of
-        round-off error.
-
-NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
-        averages points after the current one. Only X[i], X[i-1], ... are
-        used when calculating new value of X[i]. We should also note that
-        this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filterlrma(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     ae_int_t k,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_int_t m;
-    ae_matrix xy;
-    ae_vector s;
-    ae_int_t info;
-    double a;
-    double b;
-    double vara;
-    double varb;
-    double covab;
-    double corrab;
-    double p;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_matrix_init(&xy, 0, 0, DT_REAL, _state);
-    ae_vector_init(&s, 0, DT_REAL, _state);
-
-    ae_assert(n>=0, "FilterLRMA: N<0", _state);
-    ae_assert(x->cnt>=n, "FilterLRMA: Length(X)<N", _state);
-    ae_assert(isfinitevector(x, n, _state), "FilterLRMA: X contains INF or NAN", _state);
-    ae_assert(k>=1, "FilterLRMA: K<1", _state);
-    
-    /*
-     * Quick exit, if necessary:
-     * * either N is equal to 1 (nothing to average)
-     * * or K is 1 (only point itself is used) or 2 (model is too simple,
-     *   we will always get identity transformation)
-     */
-    if( n<=1||k<=2 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * General case: K>2, N>1.
-     * We do not process points with I<2 because first two points (I=0 and I=1) will be
-     * left unmodified by LRMA filter in any case.
-     */
-    ae_matrix_set_length(&xy, k, 2, _state);
-    ae_vector_set_length(&s, k, _state);
-    for(i=0; i<=k-1; i++)
-    {
-        xy.ptr.pp_double[i][0] = (double)(i);
-        s.ptr.p_double[i] = 1.0;
-    }
-    for(i=n-1; i>=2; i--)
-    {
-        m = ae_minint(i+1, k, _state);
-        ae_v_move(&xy.ptr.pp_double[0][1], xy.stride, &x->ptr.p_double[i-m+1], 1, ae_v_len(0,m-1));
-        lrlines(&xy, &s, m, &info, &a, &b, &vara, &varb, &covab, &corrab, &p, _state);
-        ae_assert(info==1, "FilterLRMA: internal error", _state);
-        x->ptr.p_double[i] = a+b*(m-1);
-    }
-    ae_frame_leave(_state);
-}
-
-
-
-
-/*************************************************************************
-Multiclass Fisher LDA
-
-Subroutine finds coefficients of linear combination which optimally separates
-training set on classes.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two important  improvements   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multithreading support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
-  !
-  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
-  ! includes calculation of products of large matrices.  Again,  for  best
-  ! efficiency problem must be high-dimensional.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY          -   training set, array[0..NPoints-1,0..NVars].
-                    First NVars columns store values of independent
-                    variables, next column stores number of class (from 0
-                    to NClasses-1) which dataset element belongs to. Fractional
-                    values are rounded to nearest integer.
-    NPoints     -   training set size, NPoints>=0
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   number of classes, NClasses>=2
-
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -4, if internal EVD subroutine hasn't converged
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed (NPoints<0,
-                          NVars<1, NClasses<2)
-                    *  1, if task has been solved
-                    *  2, if there was a multicollinearity in training set,
-                          but task has been solved.
-    W           -   linear combination coefficients, array[0..NVars-1]
-
-  -- ALGLIB --
-     Copyright 31.05.2008 by Bochkanov Sergey
-*************************************************************************/
-void fisherlda(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t* info,
-     /* Real    */ ae_vector* w,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_matrix w2;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    ae_vector_clear(w);
-    ae_matrix_init(&w2, 0, 0, DT_REAL, _state);
-
-    fisherldan(xy, npoints, nvars, nclasses, info, &w2, _state);
-    if( *info>0 )
-    {
-        ae_vector_set_length(w, nvars, _state);
-        ae_v_move(&w->ptr.p_double[0], 1, &w2.ptr.pp_double[0][0], w2.stride, ae_v_len(0,nvars-1));
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-N-dimensional multiclass Fisher LDA
-
-Subroutine finds coefficients of linear combinations which optimally separates
-training set on classes. It returns N-dimensional basis whose vector are sorted
-by quality of training set separation (in descending order).
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two important  improvements   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multithreading support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
-  !
-  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
-  ! includes calculation of products of large matrices.  Again,  for  best
-  ! efficiency problem must be high-dimensional.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY          -   training set, array[0..NPoints-1,0..NVars].
-                    First NVars columns store values of independent
-                    variables, next column stores number of class (from 0
-                    to NClasses-1) which dataset element belongs to. Fractional
-                    values are rounded to nearest integer.
-    NPoints     -   training set size, NPoints>=0
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   number of classes, NClasses>=2
-
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -4, if internal EVD subroutine hasn't converged
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed (NPoints<0,
-                          NVars<1, NClasses<2)
-                    *  1, if task has been solved
-                    *  2, if there was a multicollinearity in training set,
-                          but task has been solved.
-    W           -   basis, array[0..NVars-1,0..NVars-1]
-                    columns of matrix stores basis vectors, sorted by
-                    quality of training set separation (in descending order)
-
-  -- ALGLIB --
-     Copyright 31.05.2008 by Bochkanov Sergey
-*************************************************************************/
-void fisherldan(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t* info,
-     /* Real    */ ae_matrix* w,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t m;
-    double v;
-    ae_vector c;
-    ae_vector mu;
-    ae_matrix muc;
-    ae_vector nc;
-    ae_matrix sw;
-    ae_matrix st;
-    ae_matrix z;
-    ae_matrix z2;
-    ae_matrix tm;
-    ae_matrix sbroot;
-    ae_matrix a;
-    ae_matrix xyc;
-    ae_matrix xyproj;
-    ae_matrix wproj;
-    ae_vector tf;
-    ae_vector d;
-    ae_vector d2;
-    ae_vector work;
-
-    ae_frame_make(_state, &_frame_block);
-    *info = 0;
-    ae_matrix_clear(w);
-    ae_vector_init(&c, 0, DT_INT, _state);
-    ae_vector_init(&mu, 0, DT_REAL, _state);
-    ae_matrix_init(&muc, 0, 0, DT_REAL, _state);
-    ae_vector_init(&nc, 0, DT_INT, _state);
-    ae_matrix_init(&sw, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&st, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&z, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&z2, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&tm, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&sbroot, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&a, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&xyc, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&xyproj, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&wproj, 0, 0, DT_REAL, _state);
-    ae_vector_init(&tf, 0, DT_REAL, _state);
-    ae_vector_init(&d, 0, DT_REAL, _state);
-    ae_vector_init(&d2, 0, DT_REAL, _state);
-    ae_vector_init(&work, 0, DT_REAL, _state);
-
-    
-    /*
-     * Test data
-     */
-    if( (npoints<0||nvars<1)||nclasses<2 )
-    {
-        *info = -1;
-        ae_frame_leave(_state);
-        return;
-    }
-    for(i=0; i<=npoints-1; i++)
-    {
-        if( ae_round(xy->ptr.pp_double[i][nvars], _state)<0||ae_round(xy->ptr.pp_double[i][nvars], _state)>=nclasses )
-        {
-            *info = -2;
-            ae_frame_leave(_state);
-            return;
-        }
-    }
-    *info = 1;
-    
-    /*
-     * Special case: NPoints<=1
-     * Degenerate task.
-     */
-    if( npoints<=1 )
-    {
-        *info = 2;
-        ae_matrix_set_length(w, nvars, nvars, _state);
-        for(i=0; i<=nvars-1; i++)
-        {
-            for(j=0; j<=nvars-1; j++)
-            {
-                if( i==j )
-                {
-                    w->ptr.pp_double[i][j] = (double)(1);
-                }
-                else
-                {
-                    w->ptr.pp_double[i][j] = (double)(0);
-                }
-            }
-        }
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Prepare temporaries
-     */
-    ae_vector_set_length(&tf, nvars, _state);
-    ae_vector_set_length(&work, ae_maxint(nvars, npoints, _state)+1, _state);
-    ae_matrix_set_length(&xyc, npoints, nvars, _state);
-    
-    /*
-     * Convert class labels from reals to integers (just for convenience)
-     */
-    ae_vector_set_length(&c, npoints, _state);
-    for(i=0; i<=npoints-1; i++)
-    {
-        c.ptr.p_int[i] = ae_round(xy->ptr.pp_double[i][nvars], _state);
-    }
-    
-    /*
-     * Calculate class sizes, class means
-     */
-    ae_vector_set_length(&mu, nvars, _state);
-    ae_matrix_set_length(&muc, nclasses, nvars, _state);
-    ae_vector_set_length(&nc, nclasses, _state);
-    for(j=0; j<=nvars-1; j++)
-    {
-        mu.ptr.p_double[j] = (double)(0);
-    }
-    for(i=0; i<=nclasses-1; i++)
-    {
-        nc.ptr.p_int[i] = 0;
-        for(j=0; j<=nvars-1; j++)
-        {
-            muc.ptr.pp_double[i][j] = (double)(0);
-        }
-    }
-    for(i=0; i<=npoints-1; i++)
-    {
-        ae_v_add(&mu.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-        ae_v_add(&muc.ptr.pp_double[c.ptr.p_int[i]][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-        nc.ptr.p_int[c.ptr.p_int[i]] = nc.ptr.p_int[c.ptr.p_int[i]]+1;
-    }
-    for(i=0; i<=nclasses-1; i++)
-    {
-        v = (double)1/(double)nc.ptr.p_int[i];
-        ae_v_muld(&muc.ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1), v);
-    }
-    v = (double)1/(double)npoints;
-    ae_v_muld(&mu.ptr.p_double[0], 1, ae_v_len(0,nvars-1), v);
-    
-    /*
-     * Create ST matrix
-     */
-    ae_matrix_set_length(&st, nvars, nvars, _state);
-    for(i=0; i<=nvars-1; i++)
-    {
-        for(j=0; j<=nvars-1; j++)
-        {
-            st.ptr.pp_double[i][j] = (double)(0);
-        }
-    }
-    for(k=0; k<=npoints-1; k++)
-    {
-        ae_v_move(&xyc.ptr.pp_double[k][0], 1, &xy->ptr.pp_double[k][0], 1, ae_v_len(0,nvars-1));
-        ae_v_sub(&xyc.ptr.pp_double[k][0], 1, &mu.ptr.p_double[0], 1, ae_v_len(0,nvars-1));
-    }
-    rmatrixgemm(nvars, nvars, npoints, 1.0, &xyc, 0, 0, 1, &xyc, 0, 0, 0, 0.0, &st, 0, 0, _state);
-    
-    /*
-     * Create SW matrix
-     */
-    ae_matrix_set_length(&sw, nvars, nvars, _state);
-    for(i=0; i<=nvars-1; i++)
-    {
-        for(j=0; j<=nvars-1; j++)
-        {
-            sw.ptr.pp_double[i][j] = (double)(0);
-        }
-    }
-    for(k=0; k<=npoints-1; k++)
-    {
-        ae_v_move(&xyc.ptr.pp_double[k][0], 1, &xy->ptr.pp_double[k][0], 1, ae_v_len(0,nvars-1));
-        ae_v_sub(&xyc.ptr.pp_double[k][0], 1, &muc.ptr.pp_double[c.ptr.p_int[k]][0], 1, ae_v_len(0,nvars-1));
-    }
-    rmatrixgemm(nvars, nvars, npoints, 1.0, &xyc, 0, 0, 1, &xyc, 0, 0, 0, 0.0, &sw, 0, 0, _state);
-    
-    /*
-     * Maximize ratio J=(w'*ST*w)/(w'*SW*w).
-     *
-     * First, make transition from w to v such that w'*ST*w becomes v'*v:
-     *    v  = root(ST)*w = R*w
-     *    R  = root(D)*Z'
-     *    w  = (root(ST)^-1)*v = RI*v
-     *    RI = Z*inv(root(D))
-     *    J  = (v'*v)/(v'*(RI'*SW*RI)*v)
-     *    ST = Z*D*Z'
-     *
-     *    so we have
-     *
-     *    J = (v'*v) / (v'*(inv(root(D))*Z'*SW*Z*inv(root(D)))*v)  =
-     *      = (v'*v) / (v'*A*v)
-     */
-    if( !smatrixevd(&st, nvars, 1, ae_true, &d, &z, _state) )
-    {
-        *info = -4;
-        ae_frame_leave(_state);
-        return;
-    }
-    ae_matrix_set_length(w, nvars, nvars, _state);
-    if( ae_fp_less_eq(d.ptr.p_double[nvars-1],(double)(0))||ae_fp_less_eq(d.ptr.p_double[0],1000*ae_machineepsilon*d.ptr.p_double[nvars-1]) )
-    {
-        
-        /*
-         * Special case: D[NVars-1]<=0
-         * Degenerate task (all variables takes the same value).
-         */
-        if( ae_fp_less_eq(d.ptr.p_double[nvars-1],(double)(0)) )
-        {
-            *info = 2;
-            for(i=0; i<=nvars-1; i++)
-            {
-                for(j=0; j<=nvars-1; j++)
-                {
-                    if( i==j )
-                    {
-                        w->ptr.pp_double[i][j] = (double)(1);
-                    }
-                    else
-                    {
-                        w->ptr.pp_double[i][j] = (double)(0);
-                    }
-                }
-            }
-            ae_frame_leave(_state);
-            return;
-        }
-        
-        /*
-         * Special case: degenerate ST matrix, multicollinearity found.
-         * Since we know ST eigenvalues/vectors we can translate task to
-         * non-degenerate form.
-         *
-         * Let WG is orthogonal basis of the non zero variance subspace
-         * of the ST and let WZ is orthogonal basis of the zero variance
-         * subspace.
-         *
-         * Projection on WG allows us to use LDA on reduced M-dimensional
-         * subspace, N-M vectors of WZ allows us to update reduced LDA
-         * factors to full N-dimensional subspace.
-         */
-        m = 0;
-        for(k=0; k<=nvars-1; k++)
-        {
-            if( ae_fp_less_eq(d.ptr.p_double[k],1000*ae_machineepsilon*d.ptr.p_double[nvars-1]) )
-            {
-                m = k+1;
-            }
-        }
-        ae_assert(m!=0, "FisherLDAN: internal error #1", _state);
-        ae_matrix_set_length(&xyproj, npoints, nvars-m+1, _state);
-        rmatrixgemm(npoints, nvars-m, nvars, 1.0, xy, 0, 0, 0, &z, 0, m, 0, 0.0, &xyproj, 0, 0, _state);
-        for(i=0; i<=npoints-1; i++)
-        {
-            xyproj.ptr.pp_double[i][nvars-m] = xy->ptr.pp_double[i][nvars];
-        }
-        fisherldan(&xyproj, npoints, nvars-m, nclasses, info, &wproj, _state);
-        if( *info<0 )
-        {
-            ae_frame_leave(_state);
-            return;
-        }
-        rmatrixgemm(nvars, nvars-m, nvars-m, 1.0, &z, 0, m, 0, &wproj, 0, 0, 0, 0.0, w, 0, 0, _state);
-        for(k=nvars-m; k<=nvars-1; k++)
-        {
-            ae_v_move(&w->ptr.pp_double[0][k], w->stride, &z.ptr.pp_double[0][k-(nvars-m)], z.stride, ae_v_len(0,nvars-1));
-        }
-        *info = 2;
-    }
-    else
-    {
-        
-        /*
-         * General case: no multicollinearity
-         */
-        ae_matrix_set_length(&tm, nvars, nvars, _state);
-        ae_matrix_set_length(&a, nvars, nvars, _state);
-        rmatrixgemm(nvars, nvars, nvars, 1.0, &sw, 0, 0, 0, &z, 0, 0, 0, 0.0, &tm, 0, 0, _state);
-        rmatrixgemm(nvars, nvars, nvars, 1.0, &z, 0, 0, 1, &tm, 0, 0, 0, 0.0, &a, 0, 0, _state);
-        for(i=0; i<=nvars-1; i++)
-        {
-            for(j=0; j<=nvars-1; j++)
-            {
-                a.ptr.pp_double[i][j] = a.ptr.pp_double[i][j]/ae_sqrt(d.ptr.p_double[i]*d.ptr.p_double[j], _state);
-            }
-        }
-        if( !smatrixevd(&a, nvars, 1, ae_true, &d2, &z2, _state) )
-        {
-            *info = -4;
-            ae_frame_leave(_state);
-            return;
-        }
-        for(i=0; i<=nvars-1; i++)
-        {
-            for(k=0; k<=nvars-1; k++)
-            {
-                z2.ptr.pp_double[i][k] = z2.ptr.pp_double[i][k]/ae_sqrt(d.ptr.p_double[i], _state);
-            }
-        }
-        rmatrixgemm(nvars, nvars, nvars, 1.0, &z, 0, 0, 0, &z2, 0, 0, 0, 0.0, w, 0, 0, _state);
-    }
-    
-    /*
-     * Post-processing:
-     * * normalization
-     * * converting to non-negative form, if possible
-     */
-    for(k=0; k<=nvars-1; k++)
-    {
-        v = ae_v_dotproduct(&w->ptr.pp_double[0][k], w->stride, &w->ptr.pp_double[0][k], w->stride, ae_v_len(0,nvars-1));
-        v = 1/ae_sqrt(v, _state);
-        ae_v_muld(&w->ptr.pp_double[0][k], w->stride, ae_v_len(0,nvars-1), v);
-        v = (double)(0);
-        for(i=0; i<=nvars-1; i++)
-        {
-            v = v+w->ptr.pp_double[i][k];
-        }
-        if( ae_fp_less(v,(double)(0)) )
-        {
-            ae_v_muld(&w->ptr.pp_double[0][k], w->stride, ae_v_len(0,nvars-1), -1);
-        }
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_fisherldan(/* Real    */ ae_matrix* xy,
-    ae_int_t npoints,
-    ae_int_t nvars,
-    ae_int_t nclasses,
-    ae_int_t* info,
-    /* Real    */ ae_matrix* w, ae_state *_state)
-{
-    fisherldan(xy,npoints,nvars,nclasses,info,w, _state);
 }
 
 
@@ -26708,6 +21371,2098 @@ void _multilayerperceptron_destroy(void* _p)
 
 
 /*************************************************************************
+Multiclass Fisher LDA
+
+Subroutine finds coefficients of linear combination which optimally separates
+training set on classes.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two important  improvements   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multithreading support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
+  ! includes calculation of products of large matrices.  Again,  for  best
+  ! efficiency problem must be high-dimensional.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY          -   training set, array[0..NPoints-1,0..NVars].
+                    First NVars columns store values of independent
+                    variables, next column stores number of class (from 0
+                    to NClasses-1) which dataset element belongs to. Fractional
+                    values are rounded to nearest integer.
+    NPoints     -   training set size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   number of classes, NClasses>=2
+
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if internal EVD subroutine hasn't converged
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed (NPoints<0,
+                          NVars<1, NClasses<2)
+                    *  1, if task has been solved
+                    *  2, if there was a multicollinearity in training set,
+                          but task has been solved.
+    W           -   linear combination coefficients, array[0..NVars-1]
+
+  -- ALGLIB --
+     Copyright 31.05.2008 by Bochkanov Sergey
+*************************************************************************/
+void fisherlda(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t* info,
+     /* Real    */ ae_vector* w,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_matrix w2;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    ae_vector_clear(w);
+    ae_matrix_init(&w2, 0, 0, DT_REAL, _state);
+
+    fisherldan(xy, npoints, nvars, nclasses, info, &w2, _state);
+    if( *info>0 )
+    {
+        ae_vector_set_length(w, nvars, _state);
+        ae_v_move(&w->ptr.p_double[0], 1, &w2.ptr.pp_double[0][0], w2.stride, ae_v_len(0,nvars-1));
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+N-dimensional multiclass Fisher LDA
+
+Subroutine finds coefficients of linear combinations which optimally separates
+training set on classes. It returns N-dimensional basis whose vector are sorted
+by quality of training set separation (in descending order).
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two important  improvements   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multithreading support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
+  ! includes calculation of products of large matrices.  Again,  for  best
+  ! efficiency problem must be high-dimensional.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY          -   training set, array[0..NPoints-1,0..NVars].
+                    First NVars columns store values of independent
+                    variables, next column stores number of class (from 0
+                    to NClasses-1) which dataset element belongs to. Fractional
+                    values are rounded to nearest integer.
+    NPoints     -   training set size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   number of classes, NClasses>=2
+
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if internal EVD subroutine hasn't converged
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed (NPoints<0,
+                          NVars<1, NClasses<2)
+                    *  1, if task has been solved
+                    *  2, if there was a multicollinearity in training set,
+                          but task has been solved.
+    W           -   basis, array[0..NVars-1,0..NVars-1]
+                    columns of matrix stores basis vectors, sorted by
+                    quality of training set separation (in descending order)
+
+  -- ALGLIB --
+     Copyright 31.05.2008 by Bochkanov Sergey
+*************************************************************************/
+void fisherldan(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t* info,
+     /* Real    */ ae_matrix* w,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t m;
+    double v;
+    ae_vector c;
+    ae_vector mu;
+    ae_matrix muc;
+    ae_vector nc;
+    ae_matrix sw;
+    ae_matrix st;
+    ae_matrix z;
+    ae_matrix z2;
+    ae_matrix tm;
+    ae_matrix sbroot;
+    ae_matrix a;
+    ae_matrix xyc;
+    ae_matrix xyproj;
+    ae_matrix wproj;
+    ae_vector tf;
+    ae_vector d;
+    ae_vector d2;
+    ae_vector work;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    ae_matrix_clear(w);
+    ae_vector_init(&c, 0, DT_INT, _state);
+    ae_vector_init(&mu, 0, DT_REAL, _state);
+    ae_matrix_init(&muc, 0, 0, DT_REAL, _state);
+    ae_vector_init(&nc, 0, DT_INT, _state);
+    ae_matrix_init(&sw, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&st, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&z, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&z2, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&tm, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&sbroot, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&a, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&xyc, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&xyproj, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&wproj, 0, 0, DT_REAL, _state);
+    ae_vector_init(&tf, 0, DT_REAL, _state);
+    ae_vector_init(&d, 0, DT_REAL, _state);
+    ae_vector_init(&d2, 0, DT_REAL, _state);
+    ae_vector_init(&work, 0, DT_REAL, _state);
+
+    
+    /*
+     * Test data
+     */
+    if( (npoints<0||nvars<1)||nclasses<2 )
+    {
+        *info = -1;
+        ae_frame_leave(_state);
+        return;
+    }
+    for(i=0; i<=npoints-1; i++)
+    {
+        if( ae_round(xy->ptr.pp_double[i][nvars], _state)<0||ae_round(xy->ptr.pp_double[i][nvars], _state)>=nclasses )
+        {
+            *info = -2;
+            ae_frame_leave(_state);
+            return;
+        }
+    }
+    *info = 1;
+    
+    /*
+     * Special case: NPoints<=1
+     * Degenerate task.
+     */
+    if( npoints<=1 )
+    {
+        *info = 2;
+        ae_matrix_set_length(w, nvars, nvars, _state);
+        for(i=0; i<=nvars-1; i++)
+        {
+            for(j=0; j<=nvars-1; j++)
+            {
+                if( i==j )
+                {
+                    w->ptr.pp_double[i][j] = (double)(1);
+                }
+                else
+                {
+                    w->ptr.pp_double[i][j] = (double)(0);
+                }
+            }
+        }
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Prepare temporaries
+     */
+    ae_vector_set_length(&tf, nvars, _state);
+    ae_vector_set_length(&work, ae_maxint(nvars, npoints, _state)+1, _state);
+    ae_matrix_set_length(&xyc, npoints, nvars, _state);
+    
+    /*
+     * Convert class labels from reals to integers (just for convenience)
+     */
+    ae_vector_set_length(&c, npoints, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        c.ptr.p_int[i] = ae_round(xy->ptr.pp_double[i][nvars], _state);
+    }
+    
+    /*
+     * Calculate class sizes, class means
+     */
+    ae_vector_set_length(&mu, nvars, _state);
+    ae_matrix_set_length(&muc, nclasses, nvars, _state);
+    ae_vector_set_length(&nc, nclasses, _state);
+    for(j=0; j<=nvars-1; j++)
+    {
+        mu.ptr.p_double[j] = (double)(0);
+    }
+    for(i=0; i<=nclasses-1; i++)
+    {
+        nc.ptr.p_int[i] = 0;
+        for(j=0; j<=nvars-1; j++)
+        {
+            muc.ptr.pp_double[i][j] = (double)(0);
+        }
+    }
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_add(&mu.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+        ae_v_add(&muc.ptr.pp_double[c.ptr.p_int[i]][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+        nc.ptr.p_int[c.ptr.p_int[i]] = nc.ptr.p_int[c.ptr.p_int[i]]+1;
+    }
+    for(i=0; i<=nclasses-1; i++)
+    {
+        v = (double)1/(double)nc.ptr.p_int[i];
+        ae_v_muld(&muc.ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1), v);
+    }
+    v = (double)1/(double)npoints;
+    ae_v_muld(&mu.ptr.p_double[0], 1, ae_v_len(0,nvars-1), v);
+    
+    /*
+     * Create ST matrix
+     */
+    ae_matrix_set_length(&st, nvars, nvars, _state);
+    for(i=0; i<=nvars-1; i++)
+    {
+        for(j=0; j<=nvars-1; j++)
+        {
+            st.ptr.pp_double[i][j] = (double)(0);
+        }
+    }
+    for(k=0; k<=npoints-1; k++)
+    {
+        ae_v_move(&xyc.ptr.pp_double[k][0], 1, &xy->ptr.pp_double[k][0], 1, ae_v_len(0,nvars-1));
+        ae_v_sub(&xyc.ptr.pp_double[k][0], 1, &mu.ptr.p_double[0], 1, ae_v_len(0,nvars-1));
+    }
+    rmatrixgemm(nvars, nvars, npoints, 1.0, &xyc, 0, 0, 1, &xyc, 0, 0, 0, 0.0, &st, 0, 0, _state);
+    
+    /*
+     * Create SW matrix
+     */
+    ae_matrix_set_length(&sw, nvars, nvars, _state);
+    for(i=0; i<=nvars-1; i++)
+    {
+        for(j=0; j<=nvars-1; j++)
+        {
+            sw.ptr.pp_double[i][j] = (double)(0);
+        }
+    }
+    for(k=0; k<=npoints-1; k++)
+    {
+        ae_v_move(&xyc.ptr.pp_double[k][0], 1, &xy->ptr.pp_double[k][0], 1, ae_v_len(0,nvars-1));
+        ae_v_sub(&xyc.ptr.pp_double[k][0], 1, &muc.ptr.pp_double[c.ptr.p_int[k]][0], 1, ae_v_len(0,nvars-1));
+    }
+    rmatrixgemm(nvars, nvars, npoints, 1.0, &xyc, 0, 0, 1, &xyc, 0, 0, 0, 0.0, &sw, 0, 0, _state);
+    
+    /*
+     * Maximize ratio J=(w'*ST*w)/(w'*SW*w).
+     *
+     * First, make transition from w to v such that w'*ST*w becomes v'*v:
+     *    v  = root(ST)*w = R*w
+     *    R  = root(D)*Z'
+     *    w  = (root(ST)^-1)*v = RI*v
+     *    RI = Z*inv(root(D))
+     *    J  = (v'*v)/(v'*(RI'*SW*RI)*v)
+     *    ST = Z*D*Z'
+     *
+     *    so we have
+     *
+     *    J = (v'*v) / (v'*(inv(root(D))*Z'*SW*Z*inv(root(D)))*v)  =
+     *      = (v'*v) / (v'*A*v)
+     */
+    if( !smatrixevd(&st, nvars, 1, ae_true, &d, &z, _state) )
+    {
+        *info = -4;
+        ae_frame_leave(_state);
+        return;
+    }
+    ae_matrix_set_length(w, nvars, nvars, _state);
+    if( ae_fp_less_eq(d.ptr.p_double[nvars-1],(double)(0))||ae_fp_less_eq(d.ptr.p_double[0],1000*ae_machineepsilon*d.ptr.p_double[nvars-1]) )
+    {
+        
+        /*
+         * Special case: D[NVars-1]<=0
+         * Degenerate task (all variables takes the same value).
+         */
+        if( ae_fp_less_eq(d.ptr.p_double[nvars-1],(double)(0)) )
+        {
+            *info = 2;
+            for(i=0; i<=nvars-1; i++)
+            {
+                for(j=0; j<=nvars-1; j++)
+                {
+                    if( i==j )
+                    {
+                        w->ptr.pp_double[i][j] = (double)(1);
+                    }
+                    else
+                    {
+                        w->ptr.pp_double[i][j] = (double)(0);
+                    }
+                }
+            }
+            ae_frame_leave(_state);
+            return;
+        }
+        
+        /*
+         * Special case: degenerate ST matrix, multicollinearity found.
+         * Since we know ST eigenvalues/vectors we can translate task to
+         * non-degenerate form.
+         *
+         * Let WG is orthogonal basis of the non zero variance subspace
+         * of the ST and let WZ is orthogonal basis of the zero variance
+         * subspace.
+         *
+         * Projection on WG allows us to use LDA on reduced M-dimensional
+         * subspace, N-M vectors of WZ allows us to update reduced LDA
+         * factors to full N-dimensional subspace.
+         */
+        m = 0;
+        for(k=0; k<=nvars-1; k++)
+        {
+            if( ae_fp_less_eq(d.ptr.p_double[k],1000*ae_machineepsilon*d.ptr.p_double[nvars-1]) )
+            {
+                m = k+1;
+            }
+        }
+        ae_assert(m!=0, "FisherLDAN: internal error #1", _state);
+        ae_matrix_set_length(&xyproj, npoints, nvars-m+1, _state);
+        rmatrixgemm(npoints, nvars-m, nvars, 1.0, xy, 0, 0, 0, &z, 0, m, 0, 0.0, &xyproj, 0, 0, _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            xyproj.ptr.pp_double[i][nvars-m] = xy->ptr.pp_double[i][nvars];
+        }
+        fisherldan(&xyproj, npoints, nvars-m, nclasses, info, &wproj, _state);
+        if( *info<0 )
+        {
+            ae_frame_leave(_state);
+            return;
+        }
+        rmatrixgemm(nvars, nvars-m, nvars-m, 1.0, &z, 0, m, 0, &wproj, 0, 0, 0, 0.0, w, 0, 0, _state);
+        for(k=nvars-m; k<=nvars-1; k++)
+        {
+            ae_v_move(&w->ptr.pp_double[0][k], w->stride, &z.ptr.pp_double[0][k-(nvars-m)], z.stride, ae_v_len(0,nvars-1));
+        }
+        *info = 2;
+    }
+    else
+    {
+        
+        /*
+         * General case: no multicollinearity
+         */
+        ae_matrix_set_length(&tm, nvars, nvars, _state);
+        ae_matrix_set_length(&a, nvars, nvars, _state);
+        rmatrixgemm(nvars, nvars, nvars, 1.0, &sw, 0, 0, 0, &z, 0, 0, 0, 0.0, &tm, 0, 0, _state);
+        rmatrixgemm(nvars, nvars, nvars, 1.0, &z, 0, 0, 1, &tm, 0, 0, 0, 0.0, &a, 0, 0, _state);
+        for(i=0; i<=nvars-1; i++)
+        {
+            for(j=0; j<=nvars-1; j++)
+            {
+                a.ptr.pp_double[i][j] = a.ptr.pp_double[i][j]/ae_sqrt(d.ptr.p_double[i]*d.ptr.p_double[j], _state);
+            }
+        }
+        if( !smatrixevd(&a, nvars, 1, ae_true, &d2, &z2, _state) )
+        {
+            *info = -4;
+            ae_frame_leave(_state);
+            return;
+        }
+        for(i=0; i<=nvars-1; i++)
+        {
+            for(k=0; k<=nvars-1; k++)
+            {
+                z2.ptr.pp_double[i][k] = z2.ptr.pp_double[i][k]/ae_sqrt(d.ptr.p_double[i], _state);
+            }
+        }
+        rmatrixgemm(nvars, nvars, nvars, 1.0, &z, 0, 0, 0, &z2, 0, 0, 0, 0.0, w, 0, 0, _state);
+    }
+    
+    /*
+     * Post-processing:
+     * * normalization
+     * * converting to non-negative form, if possible
+     */
+    for(k=0; k<=nvars-1; k++)
+    {
+        v = ae_v_dotproduct(&w->ptr.pp_double[0][k], w->stride, &w->ptr.pp_double[0][k], w->stride, ae_v_len(0,nvars-1));
+        v = 1/ae_sqrt(v, _state);
+        ae_v_muld(&w->ptr.pp_double[0][k], w->stride, ae_v_len(0,nvars-1), v);
+        v = (double)(0);
+        for(i=0; i<=nvars-1; i++)
+        {
+            v = v+w->ptr.pp_double[i][k];
+        }
+        if( ae_fp_less(v,(double)(0)) )
+        {
+            ae_v_muld(&w->ptr.pp_double[0][k], w->stride, ae_v_len(0,nvars-1), -1);
+        }
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
+*************************************************************************/
+void _pexec_fisherldan(/* Real    */ ae_matrix* xy,
+    ae_int_t npoints,
+    ae_int_t nvars,
+    ae_int_t nclasses,
+    ae_int_t* info,
+    /* Real    */ ae_matrix* w, ae_state *_state)
+{
+    fisherldan(xy,npoints,nvars,nclasses,info,w, _state);
+}
+
+
+
+
+/*************************************************************************
+Linear regression
+
+Subroutine builds model:
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1] + A(N)
+
+and model found in ALGLIB format, covariation matrix, training set  errors
+(rms,  average,  average  relative)   and  leave-one-out  cross-validation
+estimate of the generalization error. CV  estimate calculated  using  fast
+algorithm with O(NPoints*NVars) complexity.
+
+When  covariation  matrix  is  calculated  standard deviations of function
+values are assumed to be equal to RMS error on the training set.
+
+INPUT PARAMETERS:
+    XY          -   training set, array [0..NPoints-1,0..NVars]:
+                    * NVars columns - independent variables
+                    * last column - dependent variable
+    NPoints     -   training set size, NPoints>NVars+1
+    NVars       -   number of independent variables
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -255, in case of unknown internal error
+                    * -4, if internal SVD subroutine haven't converged
+                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
+                    *  1, if subroutine successfully finished
+    LM          -   linear model in the ALGLIB format. Use subroutines of
+                    this unit to work with the model.
+    AR          -   additional results
+
+
+  -- ALGLIB --
+     Copyright 02.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuild(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector s;
+    ae_int_t i;
+    double sigma2;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    _linearmodel_clear(lm);
+    _lrreport_clear(ar);
+    ae_vector_init(&s, 0, DT_REAL, _state);
+
+    if( npoints<=nvars+1||nvars<1 )
+    {
+        *info = -1;
+        ae_frame_leave(_state);
+        return;
+    }
+    ae_vector_set_length(&s, npoints-1+1, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        s.ptr.p_double[i] = (double)(1);
+    }
+    lrbuilds(xy, &s, npoints, nvars, info, lm, ar, _state);
+    if( *info<0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    sigma2 = ae_sqr(ar->rmserror, _state)*npoints/(npoints-nvars-1);
+    for(i=0; i<=nvars; i++)
+    {
+        ae_v_muld(&ar->c.ptr.pp_double[i][0], 1, ae_v_len(0,nvars), sigma2);
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Linear regression
+
+Variant of LRBuild which uses vector of standatd deviations (errors in
+function values).
+
+INPUT PARAMETERS:
+    XY          -   training set, array [0..NPoints-1,0..NVars]:
+                    * NVars columns - independent variables
+                    * last column - dependent variable
+    S           -   standard deviations (errors in function values)
+                    array[0..NPoints-1], S[i]>0.
+    NPoints     -   training set size, NPoints>NVars+1
+    NVars       -   number of independent variables
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -255, in case of unknown internal error
+                    * -4, if internal SVD subroutine haven't converged
+                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
+                    * -2, if S[I]<=0
+                    *  1, if subroutine successfully finished
+    LM          -   linear model in the ALGLIB format. Use subroutines of
+                    this unit to work with the model.
+    AR          -   additional results
+
+
+  -- ALGLIB --
+     Copyright 02.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuilds(/* Real    */ ae_matrix* xy,
+     /* Real    */ ae_vector* s,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_matrix xyi;
+    ae_vector x;
+    ae_vector means;
+    ae_vector sigmas;
+    ae_int_t i;
+    ae_int_t j;
+    double v;
+    ae_int_t offs;
+    double mean;
+    double variance;
+    double skewness;
+    double kurtosis;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    _linearmodel_clear(lm);
+    _lrreport_clear(ar);
+    ae_matrix_init(&xyi, 0, 0, DT_REAL, _state);
+    ae_vector_init(&x, 0, DT_REAL, _state);
+    ae_vector_init(&means, 0, DT_REAL, _state);
+    ae_vector_init(&sigmas, 0, DT_REAL, _state);
+
+    
+    /*
+     * Test parameters
+     */
+    if( npoints<=nvars+1||nvars<1 )
+    {
+        *info = -1;
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Copy data, add one more column (constant term)
+     */
+    ae_matrix_set_length(&xyi, npoints-1+1, nvars+1+1, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&xyi.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+        xyi.ptr.pp_double[i][nvars] = (double)(1);
+        xyi.ptr.pp_double[i][nvars+1] = xy->ptr.pp_double[i][nvars];
+    }
+    
+    /*
+     * Standartization
+     */
+    ae_vector_set_length(&x, npoints-1+1, _state);
+    ae_vector_set_length(&means, nvars-1+1, _state);
+    ae_vector_set_length(&sigmas, nvars-1+1, _state);
+    for(j=0; j<=nvars-1; j++)
+    {
+        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[0][j], xy->stride, ae_v_len(0,npoints-1));
+        samplemoments(&x, npoints, &mean, &variance, &skewness, &kurtosis, _state);
+        means.ptr.p_double[j] = mean;
+        sigmas.ptr.p_double[j] = ae_sqrt(variance, _state);
+        if( ae_fp_eq(sigmas.ptr.p_double[j],(double)(0)) )
+        {
+            sigmas.ptr.p_double[j] = (double)(1);
+        }
+        for(i=0; i<=npoints-1; i++)
+        {
+            xyi.ptr.pp_double[i][j] = (xyi.ptr.pp_double[i][j]-means.ptr.p_double[j])/sigmas.ptr.p_double[j];
+        }
+    }
+    
+    /*
+     * Internal processing
+     */
+    linreg_lrinternal(&xyi, s, npoints, nvars+1, info, lm, ar, _state);
+    if( *info<0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Un-standartization
+     */
+    offs = ae_round(lm->w.ptr.p_double[3], _state);
+    for(j=0; j<=nvars-1; j++)
+    {
+        
+        /*
+         * Constant term is updated (and its covariance too,
+         * since it gets some variance from J-th component)
+         */
+        lm->w.ptr.p_double[offs+nvars] = lm->w.ptr.p_double[offs+nvars]-lm->w.ptr.p_double[offs+j]*means.ptr.p_double[j]/sigmas.ptr.p_double[j];
+        v = means.ptr.p_double[j]/sigmas.ptr.p_double[j];
+        ae_v_subd(&ar->c.ptr.pp_double[nvars][0], 1, &ar->c.ptr.pp_double[j][0], 1, ae_v_len(0,nvars), v);
+        ae_v_subd(&ar->c.ptr.pp_double[0][nvars], ar->c.stride, &ar->c.ptr.pp_double[0][j], ar->c.stride, ae_v_len(0,nvars), v);
+        
+        /*
+         * J-th term is updated
+         */
+        lm->w.ptr.p_double[offs+j] = lm->w.ptr.p_double[offs+j]/sigmas.ptr.p_double[j];
+        v = 1/sigmas.ptr.p_double[j];
+        ae_v_muld(&ar->c.ptr.pp_double[j][0], 1, ae_v_len(0,nvars), v);
+        ae_v_muld(&ar->c.ptr.pp_double[0][j], ar->c.stride, ae_v_len(0,nvars), v);
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Like LRBuildS, but builds model
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
+
+i.e. with zero constant term.
+
+  -- ALGLIB --
+     Copyright 30.10.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuildzs(/* Real    */ ae_matrix* xy,
+     /* Real    */ ae_vector* s,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_matrix xyi;
+    ae_vector x;
+    ae_vector c;
+    ae_int_t i;
+    ae_int_t j;
+    double v;
+    ae_int_t offs;
+    double mean;
+    double variance;
+    double skewness;
+    double kurtosis;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    _linearmodel_clear(lm);
+    _lrreport_clear(ar);
+    ae_matrix_init(&xyi, 0, 0, DT_REAL, _state);
+    ae_vector_init(&x, 0, DT_REAL, _state);
+    ae_vector_init(&c, 0, DT_REAL, _state);
+
+    
+    /*
+     * Test parameters
+     */
+    if( npoints<=nvars+1||nvars<1 )
+    {
+        *info = -1;
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Copy data, add one more column (constant term)
+     */
+    ae_matrix_set_length(&xyi, npoints-1+1, nvars+1+1, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&xyi.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+        xyi.ptr.pp_double[i][nvars] = (double)(0);
+        xyi.ptr.pp_double[i][nvars+1] = xy->ptr.pp_double[i][nvars];
+    }
+    
+    /*
+     * Standartization: unusual scaling
+     */
+    ae_vector_set_length(&x, npoints-1+1, _state);
+    ae_vector_set_length(&c, nvars-1+1, _state);
+    for(j=0; j<=nvars-1; j++)
+    {
+        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[0][j], xy->stride, ae_v_len(0,npoints-1));
+        samplemoments(&x, npoints, &mean, &variance, &skewness, &kurtosis, _state);
+        if( ae_fp_greater(ae_fabs(mean, _state),ae_sqrt(variance, _state)) )
+        {
+            
+            /*
+             * variation is relatively small, it is better to
+             * bring mean value to 1
+             */
+            c.ptr.p_double[j] = mean;
+        }
+        else
+        {
+            
+            /*
+             * variation is large, it is better to bring variance to 1
+             */
+            if( ae_fp_eq(variance,(double)(0)) )
+            {
+                variance = (double)(1);
+            }
+            c.ptr.p_double[j] = ae_sqrt(variance, _state);
+        }
+        for(i=0; i<=npoints-1; i++)
+        {
+            xyi.ptr.pp_double[i][j] = xyi.ptr.pp_double[i][j]/c.ptr.p_double[j];
+        }
+    }
+    
+    /*
+     * Internal processing
+     */
+    linreg_lrinternal(&xyi, s, npoints, nvars+1, info, lm, ar, _state);
+    if( *info<0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Un-standartization
+     */
+    offs = ae_round(lm->w.ptr.p_double[3], _state);
+    for(j=0; j<=nvars-1; j++)
+    {
+        
+        /*
+         * J-th term is updated
+         */
+        lm->w.ptr.p_double[offs+j] = lm->w.ptr.p_double[offs+j]/c.ptr.p_double[j];
+        v = 1/c.ptr.p_double[j];
+        ae_v_muld(&ar->c.ptr.pp_double[j][0], 1, ae_v_len(0,nvars), v);
+        ae_v_muld(&ar->c.ptr.pp_double[0][j], ar->c.stride, ae_v_len(0,nvars), v);
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Like LRBuild but builds model
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
+
+i.e. with zero constant term.
+
+  -- ALGLIB --
+     Copyright 30.10.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuildz(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector s;
+    ae_int_t i;
+    double sigma2;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    _linearmodel_clear(lm);
+    _lrreport_clear(ar);
+    ae_vector_init(&s, 0, DT_REAL, _state);
+
+    if( npoints<=nvars+1||nvars<1 )
+    {
+        *info = -1;
+        ae_frame_leave(_state);
+        return;
+    }
+    ae_vector_set_length(&s, npoints-1+1, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        s.ptr.p_double[i] = (double)(1);
+    }
+    lrbuildzs(xy, &s, npoints, nvars, info, lm, ar, _state);
+    if( *info<0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    sigma2 = ae_sqr(ar->rmserror, _state)*npoints/(npoints-nvars-1);
+    for(i=0; i<=nvars; i++)
+    {
+        ae_v_muld(&ar->c.ptr.pp_double[i][0], 1, ae_v_len(0,nvars), sigma2);
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Unpacks coefficients of linear model.
+
+INPUT PARAMETERS:
+    LM          -   linear model in ALGLIB format
+
+OUTPUT PARAMETERS:
+    V           -   coefficients, array[0..NVars]
+                    constant term (intercept) is stored in the V[NVars].
+    NVars       -   number of independent variables (one less than number
+                    of coefficients)
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrunpack(linearmodel* lm,
+     /* Real    */ ae_vector* v,
+     ae_int_t* nvars,
+     ae_state *_state)
+{
+    ae_int_t offs;
+
+    ae_vector_clear(v);
+    *nvars = 0;
+
+    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
+    *nvars = ae_round(lm->w.ptr.p_double[2], _state);
+    offs = ae_round(lm->w.ptr.p_double[3], _state);
+    ae_vector_set_length(v, *nvars+1, _state);
+    ae_v_move(&v->ptr.p_double[0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,*nvars));
+}
+
+
+/*************************************************************************
+"Packs" coefficients and creates linear model in ALGLIB format (LRUnpack
+reversed).
+
+INPUT PARAMETERS:
+    V           -   coefficients, array[0..NVars]
+    NVars       -   number of independent variables
+
+OUTPUT PAREMETERS:
+    LM          -   linear model.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrpack(/* Real    */ ae_vector* v,
+     ae_int_t nvars,
+     linearmodel* lm,
+     ae_state *_state)
+{
+    ae_int_t offs;
+
+    _linearmodel_clear(lm);
+
+    ae_vector_set_length(&lm->w, 4+nvars+1, _state);
+    offs = 4;
+    lm->w.ptr.p_double[0] = (double)(4+nvars+1);
+    lm->w.ptr.p_double[1] = (double)(linreg_lrvnum);
+    lm->w.ptr.p_double[2] = (double)(nvars);
+    lm->w.ptr.p_double[3] = (double)(offs);
+    ae_v_move(&lm->w.ptr.p_double[offs], 1, &v->ptr.p_double[0], 1, ae_v_len(offs,offs+nvars));
+}
+
+
+/*************************************************************************
+Procesing
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    X       -   input vector,  array[0..NVars-1].
+
+Result:
+    value of linear model regression estimate
+
+  -- ALGLIB --
+     Copyright 03.09.2008 by Bochkanov Sergey
+*************************************************************************/
+double lrprocess(linearmodel* lm,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    double v;
+    ae_int_t offs;
+    ae_int_t nvars;
+    double result;
+
+
+    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
+    nvars = ae_round(lm->w.ptr.p_double[2], _state);
+    offs = ae_round(lm->w.ptr.p_double[3], _state);
+    v = ae_v_dotproduct(&x->ptr.p_double[0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
+    result = v+lm->w.ptr.p_double[offs+nvars];
+    return result;
+}
+
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    root mean square error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lrrmserror(linearmodel* lm,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+    ae_int_t offs;
+    ae_int_t nvars;
+    double result;
+
+
+    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
+    nvars = ae_round(lm->w.ptr.p_double[2], _state);
+    offs = ae_round(lm->w.ptr.p_double[3], _state);
+    result = (double)(0);
+    for(i=0; i<=npoints-1; i++)
+    {
+        v = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
+        v = v+lm->w.ptr.p_double[offs+nvars];
+        result = result+ae_sqr(v-xy->ptr.pp_double[i][nvars], _state);
+    }
+    result = ae_sqrt(result/npoints, _state);
+    return result;
+}
+
+
+/*************************************************************************
+Average error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    average error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lravgerror(linearmodel* lm,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+    ae_int_t offs;
+    ae_int_t nvars;
+    double result;
+
+
+    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
+    nvars = ae_round(lm->w.ptr.p_double[2], _state);
+    offs = ae_round(lm->w.ptr.p_double[3], _state);
+    result = (double)(0);
+    for(i=0; i<=npoints-1; i++)
+    {
+        v = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
+        v = v+lm->w.ptr.p_double[offs+nvars];
+        result = result+ae_fabs(v-xy->ptr.pp_double[i][nvars], _state);
+    }
+    result = result/npoints;
+    return result;
+}
+
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    average relative error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lravgrelerror(linearmodel* lm,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t k;
+    double v;
+    ae_int_t offs;
+    ae_int_t nvars;
+    double result;
+
+
+    ae_assert(ae_round(lm->w.ptr.p_double[1], _state)==linreg_lrvnum, "LINREG: Incorrect LINREG version!", _state);
+    nvars = ae_round(lm->w.ptr.p_double[2], _state);
+    offs = ae_round(lm->w.ptr.p_double[3], _state);
+    result = (double)(0);
+    k = 0;
+    for(i=0; i<=npoints-1; i++)
+    {
+        if( ae_fp_neq(xy->ptr.pp_double[i][nvars],(double)(0)) )
+        {
+            v = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
+            v = v+lm->w.ptr.p_double[offs+nvars];
+            result = result+ae_fabs((v-xy->ptr.pp_double[i][nvars])/xy->ptr.pp_double[i][nvars], _state);
+            k = k+1;
+        }
+    }
+    if( k!=0 )
+    {
+        result = result/k;
+    }
+    return result;
+}
+
+
+/*************************************************************************
+Copying of LinearModel strucure
+
+INPUT PARAMETERS:
+    LM1 -   original
+
+OUTPUT PARAMETERS:
+    LM2 -   copy
+
+  -- ALGLIB --
+     Copyright 15.03.2009 by Bochkanov Sergey
+*************************************************************************/
+void lrcopy(linearmodel* lm1, linearmodel* lm2, ae_state *_state)
+{
+    ae_int_t k;
+
+    _linearmodel_clear(lm2);
+
+    k = ae_round(lm1->w.ptr.p_double[0], _state);
+    ae_vector_set_length(&lm2->w, k-1+1, _state);
+    ae_v_move(&lm2->w.ptr.p_double[0], 1, &lm1->w.ptr.p_double[0], 1, ae_v_len(0,k-1));
+}
+
+
+void lrlines(/* Real    */ ae_matrix* xy,
+     /* Real    */ ae_vector* s,
+     ae_int_t n,
+     ae_int_t* info,
+     double* a,
+     double* b,
+     double* vara,
+     double* varb,
+     double* covab,
+     double* corrab,
+     double* p,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double ss;
+    double sx;
+    double sxx;
+    double sy;
+    double stt;
+    double e1;
+    double e2;
+    double t;
+    double chi2;
+
+    *info = 0;
+    *a = 0;
+    *b = 0;
+    *vara = 0;
+    *varb = 0;
+    *covab = 0;
+    *corrab = 0;
+    *p = 0;
+
+    if( n<2 )
+    {
+        *info = -1;
+        return;
+    }
+    for(i=0; i<=n-1; i++)
+    {
+        if( ae_fp_less_eq(s->ptr.p_double[i],(double)(0)) )
+        {
+            *info = -2;
+            return;
+        }
+    }
+    *info = 1;
+    
+    /*
+     * Calculate S, SX, SY, SXX
+     */
+    ss = (double)(0);
+    sx = (double)(0);
+    sy = (double)(0);
+    sxx = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        t = ae_sqr(s->ptr.p_double[i], _state);
+        ss = ss+1/t;
+        sx = sx+xy->ptr.pp_double[i][0]/t;
+        sy = sy+xy->ptr.pp_double[i][1]/t;
+        sxx = sxx+ae_sqr(xy->ptr.pp_double[i][0], _state)/t;
+    }
+    
+    /*
+     * Test for condition number
+     */
+    t = ae_sqrt(4*ae_sqr(sx, _state)+ae_sqr(ss-sxx, _state), _state);
+    e1 = 0.5*(ss+sxx+t);
+    e2 = 0.5*(ss+sxx-t);
+    if( ae_fp_less_eq(ae_minreal(e1, e2, _state),1000*ae_machineepsilon*ae_maxreal(e1, e2, _state)) )
+    {
+        *info = -3;
+        return;
+    }
+    
+    /*
+     * Calculate A, B
+     */
+    *a = (double)(0);
+    *b = (double)(0);
+    stt = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        t = (xy->ptr.pp_double[i][0]-sx/ss)/s->ptr.p_double[i];
+        *b = *b+t*xy->ptr.pp_double[i][1]/s->ptr.p_double[i];
+        stt = stt+ae_sqr(t, _state);
+    }
+    *b = *b/stt;
+    *a = (sy-sx*(*b))/ss;
+    
+    /*
+     * Calculate goodness-of-fit
+     */
+    if( n>2 )
+    {
+        chi2 = (double)(0);
+        for(i=0; i<=n-1; i++)
+        {
+            chi2 = chi2+ae_sqr((xy->ptr.pp_double[i][1]-(*a)-*b*xy->ptr.pp_double[i][0])/s->ptr.p_double[i], _state);
+        }
+        *p = incompletegammac((double)(n-2)/(double)2, chi2/2, _state);
+    }
+    else
+    {
+        *p = (double)(1);
+    }
+    
+    /*
+     * Calculate other parameters
+     */
+    *vara = (1+ae_sqr(sx, _state)/(ss*stt))/ss;
+    *varb = 1/stt;
+    *covab = -sx/(ss*stt);
+    *corrab = *covab/ae_sqrt(*vara*(*varb), _state);
+}
+
+
+void lrline(/* Real    */ ae_matrix* xy,
+     ae_int_t n,
+     ae_int_t* info,
+     double* a,
+     double* b,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector s;
+    ae_int_t i;
+    double vara;
+    double varb;
+    double covab;
+    double corrab;
+    double p;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    *a = 0;
+    *b = 0;
+    ae_vector_init(&s, 0, DT_REAL, _state);
+
+    if( n<2 )
+    {
+        *info = -1;
+        ae_frame_leave(_state);
+        return;
+    }
+    ae_vector_set_length(&s, n-1+1, _state);
+    for(i=0; i<=n-1; i++)
+    {
+        s.ptr.p_double[i] = (double)(1);
+    }
+    lrlines(xy, &s, n, info, a, b, &vara, &varb, &covab, &corrab, &p, _state);
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Internal linear regression subroutine
+*************************************************************************/
+static void linreg_lrinternal(/* Real    */ ae_matrix* xy,
+     /* Real    */ ae_vector* s,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_matrix a;
+    ae_matrix u;
+    ae_matrix vt;
+    ae_matrix vm;
+    ae_matrix xym;
+    ae_vector b;
+    ae_vector sv;
+    ae_vector t;
+    ae_vector svi;
+    ae_vector work;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t ncv;
+    ae_int_t na;
+    ae_int_t nacv;
+    double r;
+    double p;
+    double epstol;
+    lrreport ar2;
+    ae_int_t offs;
+    linearmodel tlm;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    _linearmodel_clear(lm);
+    _lrreport_clear(ar);
+    ae_matrix_init(&a, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&u, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&vt, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&vm, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&xym, 0, 0, DT_REAL, _state);
+    ae_vector_init(&b, 0, DT_REAL, _state);
+    ae_vector_init(&sv, 0, DT_REAL, _state);
+    ae_vector_init(&t, 0, DT_REAL, _state);
+    ae_vector_init(&svi, 0, DT_REAL, _state);
+    ae_vector_init(&work, 0, DT_REAL, _state);
+    _lrreport_init(&ar2, _state);
+    _linearmodel_init(&tlm, _state);
+
+    epstol = (double)(1000);
+    
+    /*
+     * Check for errors in data
+     */
+    if( npoints<nvars||nvars<1 )
+    {
+        *info = -1;
+        ae_frame_leave(_state);
+        return;
+    }
+    for(i=0; i<=npoints-1; i++)
+    {
+        if( ae_fp_less_eq(s->ptr.p_double[i],(double)(0)) )
+        {
+            *info = -2;
+            ae_frame_leave(_state);
+            return;
+        }
+    }
+    *info = 1;
+    
+    /*
+     * Create design matrix
+     */
+    ae_matrix_set_length(&a, npoints-1+1, nvars-1+1, _state);
+    ae_vector_set_length(&b, npoints-1+1, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        r = 1/s->ptr.p_double[i];
+        ae_v_moved(&a.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1), r);
+        b.ptr.p_double[i] = xy->ptr.pp_double[i][nvars]/s->ptr.p_double[i];
+    }
+    
+    /*
+     * Allocate W:
+     * W[0]     array size
+     * W[1]     version number, 0
+     * W[2]     NVars (minus 1, to be compatible with external representation)
+     * W[3]     coefficients offset
+     */
+    ae_vector_set_length(&lm->w, 4+nvars-1+1, _state);
+    offs = 4;
+    lm->w.ptr.p_double[0] = (double)(4+nvars);
+    lm->w.ptr.p_double[1] = (double)(linreg_lrvnum);
+    lm->w.ptr.p_double[2] = (double)(nvars-1);
+    lm->w.ptr.p_double[3] = (double)(offs);
+    
+    /*
+     * Solve problem using SVD:
+     *
+     * 0. check for degeneracy (different types)
+     * 1. A = U*diag(sv)*V'
+     * 2. T = b'*U
+     * 3. w = SUM((T[i]/sv[i])*V[..,i])
+     * 4. cov(wi,wj) = SUM(Vji*Vjk/sv[i]^2,K=1..M)
+     *
+     * see $15.4 of "Numerical Recipes in C" for more information
+     */
+    ae_vector_set_length(&t, nvars-1+1, _state);
+    ae_vector_set_length(&svi, nvars-1+1, _state);
+    ae_matrix_set_length(&ar->c, nvars-1+1, nvars-1+1, _state);
+    ae_matrix_set_length(&vm, nvars-1+1, nvars-1+1, _state);
+    if( !rmatrixsvd(&a, npoints, nvars, 1, 1, 2, &sv, &u, &vt, _state) )
+    {
+        *info = -4;
+        ae_frame_leave(_state);
+        return;
+    }
+    if( ae_fp_less_eq(sv.ptr.p_double[0],(double)(0)) )
+    {
+        
+        /*
+         * Degenerate case: zero design matrix.
+         */
+        for(i=offs; i<=offs+nvars-1; i++)
+        {
+            lm->w.ptr.p_double[i] = (double)(0);
+        }
+        ar->rmserror = lrrmserror(lm, xy, npoints, _state);
+        ar->avgerror = lravgerror(lm, xy, npoints, _state);
+        ar->avgrelerror = lravgrelerror(lm, xy, npoints, _state);
+        ar->cvrmserror = ar->rmserror;
+        ar->cvavgerror = ar->avgerror;
+        ar->cvavgrelerror = ar->avgrelerror;
+        ar->ncvdefects = 0;
+        ae_vector_set_length(&ar->cvdefects, nvars-1+1, _state);
+        for(i=0; i<=nvars-1; i++)
+        {
+            ar->cvdefects.ptr.p_int[i] = -1;
+        }
+        ae_matrix_set_length(&ar->c, nvars-1+1, nvars-1+1, _state);
+        for(i=0; i<=nvars-1; i++)
+        {
+            for(j=0; j<=nvars-1; j++)
+            {
+                ar->c.ptr.pp_double[i][j] = (double)(0);
+            }
+        }
+        ae_frame_leave(_state);
+        return;
+    }
+    if( ae_fp_less_eq(sv.ptr.p_double[nvars-1],epstol*ae_machineepsilon*sv.ptr.p_double[0]) )
+    {
+        
+        /*
+         * Degenerate case, non-zero design matrix.
+         *
+         * We can leave it and solve task in SVD least squares fashion.
+         * Solution and covariance matrix will be obtained correctly,
+         * but CV error estimates - will not. It is better to reduce
+         * it to non-degenerate task and to obtain correct CV estimates.
+         */
+        for(k=nvars; k>=1; k--)
+        {
+            if( ae_fp_greater(sv.ptr.p_double[k-1],epstol*ae_machineepsilon*sv.ptr.p_double[0]) )
+            {
+                
+                /*
+                 * Reduce
+                 */
+                ae_matrix_set_length(&xym, npoints-1+1, k+1, _state);
+                for(i=0; i<=npoints-1; i++)
+                {
+                    for(j=0; j<=k-1; j++)
+                    {
+                        r = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &vt.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
+                        xym.ptr.pp_double[i][j] = r;
+                    }
+                    xym.ptr.pp_double[i][k] = xy->ptr.pp_double[i][nvars];
+                }
+                
+                /*
+                 * Solve
+                 */
+                linreg_lrinternal(&xym, s, npoints, k, info, &tlm, &ar2, _state);
+                if( *info!=1 )
+                {
+                    ae_frame_leave(_state);
+                    return;
+                }
+                
+                /*
+                 * Convert back to un-reduced format
+                 */
+                for(j=0; j<=nvars-1; j++)
+                {
+                    lm->w.ptr.p_double[offs+j] = (double)(0);
+                }
+                for(j=0; j<=k-1; j++)
+                {
+                    r = tlm.w.ptr.p_double[offs+j];
+                    ae_v_addd(&lm->w.ptr.p_double[offs], 1, &vt.ptr.pp_double[j][0], 1, ae_v_len(offs,offs+nvars-1), r);
+                }
+                ar->rmserror = ar2.rmserror;
+                ar->avgerror = ar2.avgerror;
+                ar->avgrelerror = ar2.avgrelerror;
+                ar->cvrmserror = ar2.cvrmserror;
+                ar->cvavgerror = ar2.cvavgerror;
+                ar->cvavgrelerror = ar2.cvavgrelerror;
+                ar->ncvdefects = ar2.ncvdefects;
+                ae_vector_set_length(&ar->cvdefects, nvars-1+1, _state);
+                for(j=0; j<=ar->ncvdefects-1; j++)
+                {
+                    ar->cvdefects.ptr.p_int[j] = ar2.cvdefects.ptr.p_int[j];
+                }
+                for(j=ar->ncvdefects; j<=nvars-1; j++)
+                {
+                    ar->cvdefects.ptr.p_int[j] = -1;
+                }
+                ae_matrix_set_length(&ar->c, nvars-1+1, nvars-1+1, _state);
+                ae_vector_set_length(&work, nvars+1, _state);
+                matrixmatrixmultiply(&ar2.c, 0, k-1, 0, k-1, ae_false, &vt, 0, k-1, 0, nvars-1, ae_false, 1.0, &vm, 0, k-1, 0, nvars-1, 0.0, &work, _state);
+                matrixmatrixmultiply(&vt, 0, k-1, 0, nvars-1, ae_true, &vm, 0, k-1, 0, nvars-1, ae_false, 1.0, &ar->c, 0, nvars-1, 0, nvars-1, 0.0, &work, _state);
+                ae_frame_leave(_state);
+                return;
+            }
+        }
+        *info = -255;
+        ae_frame_leave(_state);
+        return;
+    }
+    for(i=0; i<=nvars-1; i++)
+    {
+        if( ae_fp_greater(sv.ptr.p_double[i],epstol*ae_machineepsilon*sv.ptr.p_double[0]) )
+        {
+            svi.ptr.p_double[i] = 1/sv.ptr.p_double[i];
+        }
+        else
+        {
+            svi.ptr.p_double[i] = (double)(0);
+        }
+    }
+    for(i=0; i<=nvars-1; i++)
+    {
+        t.ptr.p_double[i] = (double)(0);
+    }
+    for(i=0; i<=npoints-1; i++)
+    {
+        r = b.ptr.p_double[i];
+        ae_v_addd(&t.ptr.p_double[0], 1, &u.ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1), r);
+    }
+    for(i=0; i<=nvars-1; i++)
+    {
+        lm->w.ptr.p_double[offs+i] = (double)(0);
+    }
+    for(i=0; i<=nvars-1; i++)
+    {
+        r = t.ptr.p_double[i]*svi.ptr.p_double[i];
+        ae_v_addd(&lm->w.ptr.p_double[offs], 1, &vt.ptr.pp_double[i][0], 1, ae_v_len(offs,offs+nvars-1), r);
+    }
+    for(j=0; j<=nvars-1; j++)
+    {
+        r = svi.ptr.p_double[j];
+        ae_v_moved(&vm.ptr.pp_double[0][j], vm.stride, &vt.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1), r);
+    }
+    for(i=0; i<=nvars-1; i++)
+    {
+        for(j=i; j<=nvars-1; j++)
+        {
+            r = ae_v_dotproduct(&vm.ptr.pp_double[i][0], 1, &vm.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
+            ar->c.ptr.pp_double[i][j] = r;
+            ar->c.ptr.pp_double[j][i] = r;
+        }
+    }
+    
+    /*
+     * Leave-1-out cross-validation error.
+     *
+     * NOTATIONS:
+     * A            design matrix
+     * A*x = b      original linear least squares task
+     * U*S*V'       SVD of A
+     * ai           i-th row of the A
+     * bi           i-th element of the b
+     * xf           solution of the original LLS task
+     *
+     * Cross-validation error of i-th element from a sample is
+     * calculated using following formula:
+     *
+     *     ERRi = ai*xf - (ai*xf-bi*(ui*ui'))/(1-ui*ui')     (1)
+     *
+     * This formula can be derived from normal equations of the
+     * original task
+     *
+     *     (A'*A)x = A'*b                                    (2)
+     *
+     * by applying modification (zeroing out i-th row of A) to (2):
+     *
+     *     (A-ai)'*(A-ai) = (A-ai)'*b
+     *
+     * and using Sherman-Morrison formula for updating matrix inverse
+     *
+     * NOTE 1: b is not zeroed out since it is much simpler and
+     * does not influence final result.
+     *
+     * NOTE 2: some design matrices A have such ui that 1-ui*ui'=0.
+     * Formula (1) can't be applied for such cases and they are skipped
+     * from CV calculation (which distorts resulting CV estimate).
+     * But from the properties of U we can conclude that there can
+     * be no more than NVars such vectors. Usually
+     * NVars << NPoints, so in a normal case it only slightly
+     * influences result.
+     */
+    ncv = 0;
+    na = 0;
+    nacv = 0;
+    ar->rmserror = (double)(0);
+    ar->avgerror = (double)(0);
+    ar->avgrelerror = (double)(0);
+    ar->cvrmserror = (double)(0);
+    ar->cvavgerror = (double)(0);
+    ar->cvavgrelerror = (double)(0);
+    ar->ncvdefects = 0;
+    ae_vector_set_length(&ar->cvdefects, nvars-1+1, _state);
+    for(i=0; i<=nvars-1; i++)
+    {
+        ar->cvdefects.ptr.p_int[i] = -1;
+    }
+    for(i=0; i<=npoints-1; i++)
+    {
+        
+        /*
+         * Error on a training set
+         */
+        r = ae_v_dotproduct(&xy->ptr.pp_double[i][0], 1, &lm->w.ptr.p_double[offs], 1, ae_v_len(0,nvars-1));
+        ar->rmserror = ar->rmserror+ae_sqr(r-xy->ptr.pp_double[i][nvars], _state);
+        ar->avgerror = ar->avgerror+ae_fabs(r-xy->ptr.pp_double[i][nvars], _state);
+        if( ae_fp_neq(xy->ptr.pp_double[i][nvars],(double)(0)) )
+        {
+            ar->avgrelerror = ar->avgrelerror+ae_fabs((r-xy->ptr.pp_double[i][nvars])/xy->ptr.pp_double[i][nvars], _state);
+            na = na+1;
+        }
+        
+        /*
+         * Error using fast leave-one-out cross-validation
+         */
+        p = ae_v_dotproduct(&u.ptr.pp_double[i][0], 1, &u.ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+        if( ae_fp_greater(p,1-epstol*ae_machineepsilon) )
+        {
+            ar->cvdefects.ptr.p_int[ar->ncvdefects] = i;
+            ar->ncvdefects = ar->ncvdefects+1;
+            continue;
+        }
+        r = s->ptr.p_double[i]*(r/s->ptr.p_double[i]-b.ptr.p_double[i]*p)/(1-p);
+        ar->cvrmserror = ar->cvrmserror+ae_sqr(r-xy->ptr.pp_double[i][nvars], _state);
+        ar->cvavgerror = ar->cvavgerror+ae_fabs(r-xy->ptr.pp_double[i][nvars], _state);
+        if( ae_fp_neq(xy->ptr.pp_double[i][nvars],(double)(0)) )
+        {
+            ar->cvavgrelerror = ar->cvavgrelerror+ae_fabs((r-xy->ptr.pp_double[i][nvars])/xy->ptr.pp_double[i][nvars], _state);
+            nacv = nacv+1;
+        }
+        ncv = ncv+1;
+    }
+    if( ncv==0 )
+    {
+        
+        /*
+         * Something strange: ALL ui are degenerate.
+         * Unexpected...
+         */
+        *info = -255;
+        ae_frame_leave(_state);
+        return;
+    }
+    ar->rmserror = ae_sqrt(ar->rmserror/npoints, _state);
+    ar->avgerror = ar->avgerror/npoints;
+    if( na!=0 )
+    {
+        ar->avgrelerror = ar->avgrelerror/na;
+    }
+    ar->cvrmserror = ae_sqrt(ar->cvrmserror/ncv, _state);
+    ar->cvavgerror = ar->cvavgerror/ncv;
+    if( nacv!=0 )
+    {
+        ar->cvavgrelerror = ar->cvavgrelerror/nacv;
+    }
+    ae_frame_leave(_state);
+}
+
+
+void _linearmodel_init(void* _p, ae_state *_state)
+{
+    linearmodel *p = (linearmodel*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_init(&p->w, 0, DT_REAL, _state);
+}
+
+
+void _linearmodel_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    linearmodel *dst = (linearmodel*)_dst;
+    linearmodel *src = (linearmodel*)_src;
+    ae_vector_init_copy(&dst->w, &src->w, _state);
+}
+
+
+void _linearmodel_clear(void* _p)
+{
+    linearmodel *p = (linearmodel*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_clear(&p->w);
+}
+
+
+void _linearmodel_destroy(void* _p)
+{
+    linearmodel *p = (linearmodel*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_destroy(&p->w);
+}
+
+
+void _lrreport_init(void* _p, ae_state *_state)
+{
+    lrreport *p = (lrreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_init(&p->c, 0, 0, DT_REAL, _state);
+    ae_vector_init(&p->cvdefects, 0, DT_INT, _state);
+}
+
+
+void _lrreport_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    lrreport *dst = (lrreport*)_dst;
+    lrreport *src = (lrreport*)_src;
+    ae_matrix_init_copy(&dst->c, &src->c, _state);
+    dst->rmserror = src->rmserror;
+    dst->avgerror = src->avgerror;
+    dst->avgrelerror = src->avgrelerror;
+    dst->cvrmserror = src->cvrmserror;
+    dst->cvavgerror = src->cvavgerror;
+    dst->cvavgrelerror = src->cvavgrelerror;
+    dst->ncvdefects = src->ncvdefects;
+    ae_vector_init_copy(&dst->cvdefects, &src->cvdefects, _state);
+}
+
+
+void _lrreport_clear(void* _p)
+{
+    lrreport *p = (lrreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_clear(&p->c);
+    ae_vector_clear(&p->cvdefects);
+}
+
+
+void _lrreport_destroy(void* _p)
+{
+    lrreport *p = (lrreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_destroy(&p->c);
+    ae_vector_destroy(&p->cvdefects);
+}
+
+
+
+
+/*************************************************************************
+Filters: simple moving averages (unsymmetric).
+
+This filter replaces array by results of SMA(K) filter. SMA(K) is defined
+as filter which averages at most K previous points (previous - not points
+AROUND central point) - or less, in case of the first K-1 points.
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
+                    correctly handled). Window width. K=1 corresponds  to
+                    identity transformation (nothing changes).
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed with SMA(K)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm makes only one pass through array and uses running
+        sum  to speed-up calculation of the averages. Additional measures
+        are taken to ensure that running sum on a long sequence  of  zero
+        elements will be correctly reset to zero even in the presence  of
+        round-off error.
+
+NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
+        averages points after the current one. Only X[i], X[i-1], ... are
+        used when calculating new value of X[i]. We should also note that
+        this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filtersma(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     ae_int_t k,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double runningsum;
+    double termsinsum;
+    ae_int_t zeroprefix;
+    double v;
+
+
+    ae_assert(n>=0, "FilterSMA: N<0", _state);
+    ae_assert(x->cnt>=n, "FilterSMA: Length(X)<N", _state);
+    ae_assert(isfinitevector(x, n, _state), "FilterSMA: X contains INF or NAN", _state);
+    ae_assert(k>=1, "FilterSMA: K<1", _state);
+    
+    /*
+     * Quick exit, if necessary
+     */
+    if( n<=1||k==1 )
+    {
+        return;
+    }
+    
+    /*
+     * Prepare variables (see below for explanation)
+     */
+    runningsum = 0.0;
+    termsinsum = (double)(0);
+    for(i=ae_maxint(n-k, 0, _state); i<=n-1; i++)
+    {
+        runningsum = runningsum+x->ptr.p_double[i];
+        termsinsum = termsinsum+1;
+    }
+    i = ae_maxint(n-k, 0, _state);
+    zeroprefix = 0;
+    while(i<=n-1&&ae_fp_eq(x->ptr.p_double[i],(double)(0)))
+    {
+        zeroprefix = zeroprefix+1;
+        i = i+1;
+    }
+    
+    /*
+     * General case: we assume that N>1 and K>1
+     *
+     * Make one pass through all elements. At the beginning of
+     * the iteration we have:
+     * * I              element being processed
+     * * RunningSum     current value of the running sum
+     *                  (including I-th element)
+     * * TermsInSum     number of terms in sum, 0<=TermsInSum<=K
+     * * ZeroPrefix     length of the sequence of zero elements
+     *                  which starts at X[I-K+1] and continues towards X[I].
+     *                  Equal to zero in case X[I-K+1] is non-zero.
+     *                  This value is used to make RunningSum exactly zero
+     *                  when it follows from the problem properties.
+     */
+    for(i=n-1; i>=0; i--)
+    {
+        
+        /*
+         * Store new value of X[i], save old value in V
+         */
+        v = x->ptr.p_double[i];
+        x->ptr.p_double[i] = runningsum/termsinsum;
+        
+        /*
+         * Update RunningSum and TermsInSum
+         */
+        if( i-k>=0 )
+        {
+            runningsum = runningsum-v+x->ptr.p_double[i-k];
+        }
+        else
+        {
+            runningsum = runningsum-v;
+            termsinsum = termsinsum-1;
+        }
+        
+        /*
+         * Update ZeroPrefix.
+         * In case we have ZeroPrefix=TermsInSum,
+         * RunningSum is reset to zero.
+         */
+        if( i-k>=0 )
+        {
+            if( ae_fp_neq(x->ptr.p_double[i-k],(double)(0)) )
+            {
+                zeroprefix = 0;
+            }
+            else
+            {
+                zeroprefix = ae_minint(zeroprefix+1, k, _state);
+            }
+        }
+        else
+        {
+            zeroprefix = ae_minint(zeroprefix, i+1, _state);
+        }
+        if( ae_fp_eq((double)(zeroprefix),termsinsum) )
+        {
+            runningsum = (double)(0);
+        }
+    }
+}
+
+
+/*************************************************************************
+Filters: exponential moving averages.
+
+This filter replaces array by results of EMA(alpha) filter. EMA(alpha) is
+defined as filter which replaces X[] by S[]:
+    S[0] = X[0]
+    S[t] = alpha*X[t] + (1-alpha)*S[t-1]
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    alpha       -   0<alpha<=1, smoothing parameter.
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed
+                    with EMA(alpha)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+NOTE 3: technical analytis users quite often work  with  EMA  coefficient
+        expressed in DAYS instead of fractions. If you want to  calculate
+        EMA(N), where N is a number of days, you can use alpha=2/(N+1).
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filterema(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     double alpha,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+
+    ae_assert(n>=0, "FilterEMA: N<0", _state);
+    ae_assert(x->cnt>=n, "FilterEMA: Length(X)<N", _state);
+    ae_assert(isfinitevector(x, n, _state), "FilterEMA: X contains INF or NAN", _state);
+    ae_assert(ae_fp_greater(alpha,(double)(0)), "FilterEMA: Alpha<=0", _state);
+    ae_assert(ae_fp_less_eq(alpha,(double)(1)), "FilterEMA: Alpha>1", _state);
+    
+    /*
+     * Quick exit, if necessary
+     */
+    if( n<=1||ae_fp_eq(alpha,(double)(1)) )
+    {
+        return;
+    }
+    
+    /*
+     * Process
+     */
+    for(i=1; i<=n-1; i++)
+    {
+        x->ptr.p_double[i] = alpha*x->ptr.p_double[i]+(1-alpha)*x->ptr.p_double[i-1];
+    }
+}
+
+
+/*************************************************************************
+Filters: linear regression moving averages.
+
+This filter replaces array by results of LRMA(K) filter.
+
+LRMA(K) is defined as filter which, for each data  point,  builds  linear
+regression  model  using  K  prevous  points (point itself is included in
+these K points) and calculates value of this linear model at the point in
+question.
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
+                    correctly handled). Window width. K=1 corresponds  to
+                    identity transformation (nothing changes).
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed with SMA(K)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm makes only one pass through array and uses running
+        sum  to speed-up calculation of the averages. Additional measures
+        are taken to ensure that running sum on a long sequence  of  zero
+        elements will be correctly reset to zero even in the presence  of
+        round-off error.
+
+NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
+        averages points after the current one. Only X[i], X[i-1], ... are
+        used when calculating new value of X[i]. We should also note that
+        this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filterlrma(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     ae_int_t k,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_int_t m;
+    ae_matrix xy;
+    ae_vector s;
+    ae_int_t info;
+    double a;
+    double b;
+    double vara;
+    double varb;
+    double covab;
+    double corrab;
+    double p;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_matrix_init(&xy, 0, 0, DT_REAL, _state);
+    ae_vector_init(&s, 0, DT_REAL, _state);
+
+    ae_assert(n>=0, "FilterLRMA: N<0", _state);
+    ae_assert(x->cnt>=n, "FilterLRMA: Length(X)<N", _state);
+    ae_assert(isfinitevector(x, n, _state), "FilterLRMA: X contains INF or NAN", _state);
+    ae_assert(k>=1, "FilterLRMA: K<1", _state);
+    
+    /*
+     * Quick exit, if necessary:
+     * * either N is equal to 1 (nothing to average)
+     * * or K is 1 (only point itself is used) or 2 (model is too simple,
+     *   we will always get identity transformation)
+     */
+    if( n<=1||k<=2 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * General case: K>2, N>1.
+     * We do not process points with I<2 because first two points (I=0 and I=1) will be
+     * left unmodified by LRMA filter in any case.
+     */
+    ae_matrix_set_length(&xy, k, 2, _state);
+    ae_vector_set_length(&s, k, _state);
+    for(i=0; i<=k-1; i++)
+    {
+        xy.ptr.pp_double[i][0] = (double)(i);
+        s.ptr.p_double[i] = 1.0;
+    }
+    for(i=n-1; i>=2; i--)
+    {
+        m = ae_minint(i+1, k, _state);
+        ae_v_move(&xy.ptr.pp_double[0][1], xy.stride, &x->ptr.p_double[i-m+1], 1, ae_v_len(0,m-1));
+        lrlines(&xy, &s, m, &info, &a, &b, &vara, &varb, &covab, &corrab, &p, _state);
+        ae_assert(info==1, "FilterLRMA: internal error", _state);
+        x->ptr.p_double[i] = a+b*(m-1);
+    }
+    ae_frame_leave(_state);
+}
+
+
+
+
+/*************************************************************************
 This subroutine trains logit model.
 
 INPUT PARAMETERS:
@@ -34099,24 +30854,24 @@ static ae_bool mlptrain_mlpcontinuetrainingx(mlptrainer* s,
     }
     else
     {
-        nin = -983;
-        nout = -989;
-        wcount = -834;
-        twcount = 900;
-        ntype = -287;
-        ttype = 364;
-        i = 214;
-        j = -338;
-        k = -686;
-        trnsetsize = 912;
-        epoch = 585;
-        minibatchcount = 497;
-        minibatchidx = -271;
-        cursize = -581;
-        idx0 = 745;
-        idx1 = -533;
-        decay = -77;
-        v = 678;
+        nin = 359;
+        nout = -58;
+        wcount = -919;
+        twcount = -909;
+        ntype = 81;
+        ttype = 255;
+        i = 74;
+        j = -788;
+        k = 809;
+        trnsetsize = 205;
+        epoch = -838;
+        minibatchcount = 939;
+        minibatchidx = -526;
+        cursize = 763;
+        idx0 = -541;
+        idx1 = -698;
+        decay = -900;
+        v = -318;
     }
     if( session->rstate.stage==0 )
     {
@@ -34959,165 +31714,5147 @@ void _mlpparallelizationcv_destroy(void* _p)
 
 
 /*************************************************************************
-Principal components analysis
+This function initializes clusterizer object. Newly initialized object  is
+empty, i.e. it does not contain dataset. You should use it as follows:
+1. creation
+2. dataset is added with ClusterizerSetPoints()
+3. additional parameters are set
+3. clusterization is performed with one of the clustering functions
 
-Subroutine  builds  orthogonal  basis  where  first  axis  corresponds  to
-direction with maximum variance, second axis maximizes variance in subspace
-orthogonal to first axis and so on.
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizercreate(clusterizerstate* s, ae_state *_state)
+{
 
-It should be noted that, unlike LDA, PCA does not use class labels.
+    _clusterizerstate_clear(s);
+
+    s->npoints = 0;
+    s->nfeatures = 0;
+    s->disttype = 2;
+    s->ahcalgo = 0;
+    s->kmeansrestarts = 1;
+    s->kmeansmaxits = 0;
+    s->kmeansinitalgo = 0;
+    s->kmeansdbgnoits = ae_false;
+    s->seed = 1;
+    kmeansinitbuf(&s->kmeanstmp, _state);
+}
+
+
+/*************************************************************************
+This function adds dataset to the clusterizer structure.
+
+This function overrides all previous calls  of  ClusterizerSetPoints()  or
+ClusterizerSetDistances().
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    XY      -   array[NPoints,NFeatures], dataset
+    NPoints -   number of points, >=0
+    NFeatures-  number of features, >=1
+    DistType-   distance function:
+                *  0    Chebyshev distance  (L-inf norm)
+                *  1    city block distance (L1 norm)
+                *  2    Euclidean distance  (L2 norm), non-squared
+                * 10    Pearson correlation:
+                        dist(a,b) = 1-corr(a,b)
+                * 11    Absolute Pearson correlation:
+                        dist(a,b) = 1-|corr(a,b)|
+                * 12    Uncentered Pearson correlation (cosine of the angle):
+                        dist(a,b) = a'*b/(|a|*|b|)
+                * 13    Absolute uncentered Pearson correlation
+                        dist(a,b) = |a'*b|/(|a|*|b|)
+                * 20    Spearman rank correlation:
+                        dist(a,b) = 1-rankcorr(a,b)
+                * 21    Absolute Spearman rank correlation
+                        dist(a,b) = 1-|rankcorr(a,b)|
+
+NOTE 1: different distance functions have different performance penalty:
+        * Euclidean or Pearson correlation distances are the fastest ones
+        * Spearman correlation distance function is a bit slower
+        * city block and Chebyshev distances are order of magnitude slower
+       
+        The reason behing difference in performance is that correlation-based
+        distance functions are computed using optimized linear algebra kernels,
+        while Chebyshev and city block distance functions are computed using
+        simple nested loops with two branches at each iteration.
+        
+NOTE 2: different clustering algorithms have different limitations:
+        * agglomerative hierarchical clustering algorithms may be used with
+          any kind of distance metric
+        * k-means++ clustering algorithm may be used only  with  Euclidean
+          distance function
+        Thus, list of specific clustering algorithms you may  use  depends
+        on distance function you specify when you set your dataset.
+       
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetpoints(clusterizerstate* s,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nfeatures,
+     ae_int_t disttype,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+
+    ae_assert((((((((disttype==0||disttype==1)||disttype==2)||disttype==10)||disttype==11)||disttype==12)||disttype==13)||disttype==20)||disttype==21, "ClusterizerSetPoints: incorrect DistType", _state);
+    ae_assert(npoints>=0, "ClusterizerSetPoints: NPoints<0", _state);
+    ae_assert(nfeatures>=1, "ClusterizerSetPoints: NFeatures<1", _state);
+    ae_assert(xy->rows>=npoints, "ClusterizerSetPoints: Rows(XY)<NPoints", _state);
+    ae_assert(xy->cols>=nfeatures, "ClusterizerSetPoints: Cols(XY)<NFeatures", _state);
+    ae_assert(apservisfinitematrix(xy, npoints, nfeatures, _state), "ClusterizerSetPoints: XY contains NAN/INF", _state);
+    s->npoints = npoints;
+    s->nfeatures = nfeatures;
+    s->disttype = disttype;
+    rmatrixsetlengthatleast(&s->xy, npoints, nfeatures, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&s->xy.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nfeatures-1));
+    }
+}
+
+
+/*************************************************************************
+This function adds dataset given by distance  matrix  to  the  clusterizer
+structure. It is important that dataset is not  given  explicitly  -  only
+distance matrix is given.
+
+This function overrides all previous calls  of  ClusterizerSetPoints()  or
+ClusterizerSetDistances().
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    D       -   array[NPoints,NPoints], distance matrix given by its upper
+                or lower triangle (main diagonal is  ignored  because  its
+                entries are expected to be zero).
+    NPoints -   number of points
+    IsUpper -   whether upper or lower triangle of D is given.
+        
+NOTE 1: different clustering algorithms have different limitations:
+        * agglomerative hierarchical clustering algorithms may be used with
+          any kind of distance metric, including one  which  is  given  by
+          distance matrix
+        * k-means++ clustering algorithm may be used only  with  Euclidean
+          distance function and explicitly given points - it  can  not  be
+          used with dataset given by distance matrix
+        Thus, if you call this function, you will be unable to use k-means
+        clustering algorithm to process your problem.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetdistances(clusterizerstate* s,
+     /* Real    */ ae_matrix* d,
+     ae_int_t npoints,
+     ae_bool isupper,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t j0;
+    ae_int_t j1;
+
+
+    ae_assert(npoints>=0, "ClusterizerSetDistances: NPoints<0", _state);
+    ae_assert(d->rows>=npoints, "ClusterizerSetDistances: Rows(D)<NPoints", _state);
+    ae_assert(d->cols>=npoints, "ClusterizerSetDistances: Cols(D)<NPoints", _state);
+    s->npoints = npoints;
+    s->nfeatures = 0;
+    s->disttype = -1;
+    rmatrixsetlengthatleast(&s->d, npoints, npoints, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        if( isupper )
+        {
+            j0 = i+1;
+            j1 = npoints-1;
+        }
+        else
+        {
+            j0 = 0;
+            j1 = i-1;
+        }
+        for(j=j0; j<=j1; j++)
+        {
+            ae_assert(ae_isfinite(d->ptr.pp_double[i][j], _state)&&ae_fp_greater_eq(d->ptr.pp_double[i][j],(double)(0)), "ClusterizerSetDistances: D contains infinite, NAN or negative elements", _state);
+            s->d.ptr.pp_double[i][j] = d->ptr.pp_double[i][j];
+            s->d.ptr.pp_double[j][i] = d->ptr.pp_double[i][j];
+        }
+        s->d.ptr.pp_double[i][i] = (double)(0);
+    }
+}
+
+
+/*************************************************************************
+This function sets agglomerative hierarchical clustering algorithm
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Algo    -   algorithm type:
+                * 0     complete linkage (default algorithm)
+                * 1     single linkage
+                * 2     unweighted average linkage
+                * 3     weighted average linkage
+                * 4     Ward's method
+
+NOTE: Ward's method works correctly only with Euclidean  distance,  that's
+      why algorithm will return negative termination  code  (failure)  for
+      any other distance type.
+      
+      It is possible, however,  to  use  this  method  with  user-supplied
+      distance matrix. It  is  your  responsibility  to pass one which was
+      calculated with Euclidean distance function.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetahcalgo(clusterizerstate* s,
+     ae_int_t algo,
+     ae_state *_state)
+{
+
+
+    ae_assert((((algo==0||algo==1)||algo==2)||algo==3)||algo==4, "ClusterizerSetHCAlgo: incorrect algorithm type", _state);
+    s->ahcalgo = algo;
+}
+
+
+/*************************************************************************
+This  function  sets k-means properties:  number  of  restarts and maximum
+number of iterations per one run.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Restarts-   restarts count, >=1.
+                k-means++ algorithm performs several restarts and  chooses
+                best set of centers (one with minimum squared distance).
+    MaxIts  -   maximum number of k-means iterations performed during  one
+                run. >=0, zero value means that algorithm performs unlimited
+                number of iterations.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetkmeanslimits(clusterizerstate* s,
+     ae_int_t restarts,
+     ae_int_t maxits,
+     ae_state *_state)
+{
+
+
+    ae_assert(restarts>=1, "ClusterizerSetKMeansLimits: Restarts<=0", _state);
+    ae_assert(maxits>=0, "ClusterizerSetKMeansLimits: MaxIts<0", _state);
+    s->kmeansrestarts = restarts;
+    s->kmeansmaxits = maxits;
+}
+
+
+/*************************************************************************
+This function sets k-means  initialization  algorithm.  Several  different
+algorithms can be chosen, including k-means++.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    InitAlgo-   initialization algorithm:
+                * 0  automatic selection ( different  versions  of  ALGLIB
+                     may select different algorithms)
+                * 1  random initialization
+                * 2  k-means++ initialization  (best  quality  of  initial
+                     centers, but long  non-parallelizable  initialization
+                     phase with bad cache locality)
+                * 3  "fast-greedy"  algorithm  with  efficient,  easy   to
+                     parallelize initialization. Quality of initial centers
+                     is  somewhat  worse  than  that  of  k-means++.  This
+                     algorithm is a default one in the current version  of
+                     ALGLIB.
+                *-1  "debug" algorithm which always selects first  K  rows
+                     of dataset; this algorithm is used for debug purposes
+                     only. Do not use it in the industrial code!
+
+  -- ALGLIB --
+     Copyright 21.01.2015 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetkmeansinit(clusterizerstate* s,
+     ae_int_t initalgo,
+     ae_state *_state)
+{
+
+
+    ae_assert(initalgo>=-1&&initalgo<=3, "ClusterizerSetKMeansInit: InitAlgo is incorrect", _state);
+    s->kmeansinitalgo = initalgo;
+}
+
+
+/*************************************************************************
+This  function  sets  seed  which  is  used to initialize internal RNG. By
+default, deterministic seed is used - same for each run of clusterizer. If
+you specify non-deterministic  seed  value,  then  some  algorithms  which
+depend on random initialization (in current version: k-means)  may  return
+slightly different results after each run.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Seed    -   seed:
+                * positive values = use deterministic seed for each run of
+                  algorithms which depend on random initialization
+                * zero or negative values = use non-deterministic seed
+
+  -- ALGLIB --
+     Copyright 08.06.2017 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetseed(clusterizerstate* s,
+     ae_int_t seed,
+     ae_state *_state)
+{
+
+
+    s->seed = seed;
+}
+
+
+/*************************************************************************
+This function performs agglomerative hierarchical clustering
 
 COMMERCIAL EDITION OF ALGLIB:
 
-  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! Commercial version of ALGLIB includes two  important  improvements  of
   ! this function, which can be used from C++ and C#:
   ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
   !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
+  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
+  ! distance matrix calculation  and  clustering  itself. Only first phase
+  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
+  ! threading. Thus, acceleration is significant only for  medium or high-
+  ! dimensional problems.
   !
   ! We recommend you to read 'Working with commercial version' section  of
   ! ALGLIB Reference Manual in order to find out how to  use  performance-
   ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
-    X           -   dataset, array[0..NPoints-1,0..NVars-1].
-                    matrix contains ONLY INDEPENDENT VARIABLES.
-    NPoints     -   dataset size, NPoints>=0
-    NVars       -   number of independent variables, NVars>=1
+    S       -   clusterizer state, initialized by ClusterizerCreate()
 
 OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -4, if SVD subroutine haven't converged
-                    * -1, if wrong parameters has been passed (NPoints<0,
-                          NVars<1)
-                    *  1, if task is solved
-    S2          -   array[0..NVars-1]. variance values corresponding
-                    to basis vectors.
-    V           -   array[0..NVars-1,0..NVars-1]
-                    matrix, whose columns store basis vectors.
+    Rep     -   clustering results; see description of AHCReport
+                structure for more information.
+
+NOTE 1: hierarchical clustering algorithms require large amounts of memory.
+        In particular, this implementation needs  sizeof(double)*NPoints^2
+        bytes, which are used to store distance matrix. In  case  we  work
+        with user-supplied matrix, this amount is multiplied by 2 (we have
+        to store original matrix and to work with its copy).
+        
+        For example, problem with 10000 points  would require 800M of RAM,
+        even when working in a 1-dimensional space.
 
   -- ALGLIB --
-     Copyright 25.08.2008 by Bochkanov Sergey
+     Copyright 10.07.2012 by Bochkanov Sergey
 *************************************************************************/
-void pcabuildbasis(/* Real    */ ae_matrix* x,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     /* Real    */ ae_vector* s2,
-     /* Real    */ ae_matrix* v,
+void clusterizerrunahc(clusterizerstate* s,
+     ahcreport* rep,
+     ae_state *_state)
+{
+    ae_int_t npoints;
+    ae_int_t nfeatures;
+
+    _ahcreport_clear(rep);
+
+    npoints = s->npoints;
+    nfeatures = s->nfeatures;
+    
+    /*
+     * Fill Rep.NPoints, quick exit when NPoints<=1
+     */
+    rep->npoints = npoints;
+    if( npoints==0 )
+    {
+        ae_vector_set_length(&rep->p, 0, _state);
+        ae_matrix_set_length(&rep->z, 0, 0, _state);
+        ae_matrix_set_length(&rep->pz, 0, 0, _state);
+        ae_matrix_set_length(&rep->pm, 0, 0, _state);
+        ae_vector_set_length(&rep->mergedist, 0, _state);
+        rep->terminationtype = 1;
+        return;
+    }
+    if( npoints==1 )
+    {
+        ae_vector_set_length(&rep->p, 1, _state);
+        ae_matrix_set_length(&rep->z, 0, 0, _state);
+        ae_matrix_set_length(&rep->pz, 0, 0, _state);
+        ae_matrix_set_length(&rep->pm, 0, 0, _state);
+        ae_vector_set_length(&rep->mergedist, 0, _state);
+        rep->p.ptr.p_int[0] = 0;
+        rep->terminationtype = 1;
+        return;
+    }
+    
+    /*
+     * More than one point
+     */
+    if( s->disttype==-1 )
+    {
+        
+        /*
+         * Run clusterizer with user-supplied distance matrix
+         */
+        clustering_clusterizerrunahcinternal(s, &s->d, rep, _state);
+        return;
+    }
+    else
+    {
+        
+        /*
+         * Check combination of AHC algo and distance type
+         */
+        if( s->ahcalgo==4&&s->disttype!=2 )
+        {
+            rep->terminationtype = -5;
+            return;
+        }
+        
+        /*
+         * Build distance matrix D.
+         */
+        clusterizergetdistancesbuf(&s->distbuf, &s->xy, npoints, nfeatures, s->disttype, &s->tmpd, _state);
+        
+        /*
+         * Run clusterizer
+         */
+        clustering_clusterizerrunahcinternal(s, &s->tmpd, rep, _state);
+        return;
+    }
+}
+
+
+/*************************************************************************
+Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
+*************************************************************************/
+void _pexec_clusterizerrunahc(clusterizerstate* s,
+    ahcreport* rep, ae_state *_state)
+{
+    clusterizerrunahc(s,rep, _state);
+}
+
+
+/*************************************************************************
+This function performs clustering by k-means++ algorithm.
+
+You may change algorithm properties by calling:
+* ClusterizerSetKMeansLimits() to change number of restarts or iterations
+* ClusterizerSetKMeansInit() to change initialization algorithm
+
+By  default,  one  restart  and  unlimited number of iterations are  used.
+Initialization algorithm is chosen automatically.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes  two important  improvements  of
+  ! this function:
+  ! * multicore support (can be used from C# and C++)
+  ! * access to high-performance C++ core (actual for C# users)
+  !
+  ! K-means clustering  algorithm has two  phases:  selection  of  initial
+  ! centers  and  clustering  itself.  ALGLIB  parallelizes  both  phases.
+  ! Parallel version is optimized for the following  scenario:  medium  or
+  ! high-dimensional problem (20 or more dimensions) with large number  of
+  ! points and clusters. However, some speed-up can be obtained even  when
+  ! assumptions above are violated.
+  !
+  ! As for native-vs-managed comparison, working with native  core  brings
+  ! 30-40% improvement in speed over pure C# version of ALGLIB.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    K       -   number of clusters, K>=0.
+                K  can  be  zero only when algorithm is called  for  empty
+                dataset,  in   this   case   completion  code  is  set  to
+                success (+1).
+                If  K=0  and  dataset  size  is  non-zero,  we   can   not
+                meaningfully assign points to some center  (there  are  no
+                centers because K=0) and  return  -3  as  completion  code
+                (failure).
+
+OUTPUT PARAMETERS:
+    Rep     -   clustering results; see description of KMeansReport
+                structure for more information.
+
+NOTE 1: k-means  clustering  can  be  performed  only  for  datasets  with
+        Euclidean  distance  function.  Algorithm  will  return   negative
+        completion code in Rep.TerminationType in case dataset  was  added
+        to clusterizer with DistType other than Euclidean (or dataset  was
+        specified by distance matrix instead of explicitly given points).
+        
+NOTE 2: by default, k-means uses non-deterministic seed to initialize  RNG
+        which is used to select initial centers. As  result,  each  run of
+        algorithm may return different values. If you  need  deterministic
+        behavior, use ClusterizerSetSeed() function.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerrunkmeans(clusterizerstate* s,
+     ae_int_t k,
+     kmeansreport* rep,
      ae_state *_state)
 {
     ae_frame _frame_block;
-    ae_matrix a;
-    ae_matrix u;
-    ae_matrix vt;
-    ae_vector m;
-    ae_vector t;
+    ae_matrix dummy;
+
+    ae_frame_make(_state, &_frame_block);
+    _kmeansreport_clear(rep);
+    ae_matrix_init(&dummy, 0, 0, DT_REAL, _state);
+
+    ae_assert(k>=0, "ClusterizerRunKMeans: K<0", _state);
+    
+    /*
+     * Incorrect distance type
+     */
+    if( s->disttype!=2 )
+    {
+        rep->npoints = s->npoints;
+        rep->terminationtype = -5;
+        rep->k = k;
+        rep->iterationscount = 0;
+        rep->energy = 0.0;
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * K>NPoints or (K=0 and NPoints>0)
+     */
+    if( k>s->npoints||(k==0&&s->npoints>0) )
+    {
+        rep->npoints = s->npoints;
+        rep->terminationtype = -3;
+        rep->k = k;
+        rep->iterationscount = 0;
+        rep->energy = 0.0;
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * No points
+     */
+    if( s->npoints==0 )
+    {
+        rep->npoints = 0;
+        rep->terminationtype = 1;
+        rep->k = k;
+        rep->iterationscount = 0;
+        rep->energy = 0.0;
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Normal case:
+     * 1<=K<=NPoints, Euclidean distance 
+     */
+    rep->npoints = s->npoints;
+    rep->nfeatures = s->nfeatures;
+    rep->k = k;
+    rep->npoints = s->npoints;
+    rep->nfeatures = s->nfeatures;
+    kmeansgenerateinternal(&s->xy, s->npoints, s->nfeatures, k, s->kmeansinitalgo, s->seed, s->kmeansmaxits, s->kmeansrestarts, s->kmeansdbgnoits, &rep->terminationtype, &rep->iterationscount, &dummy, ae_false, &rep->c, ae_true, &rep->cidx, &rep->energy, &s->kmeanstmp, _state);
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
+*************************************************************************/
+void _pexec_clusterizerrunkmeans(clusterizerstate* s,
+    ae_int_t k,
+    kmeansreport* rep, ae_state *_state)
+{
+    clusterizerrunkmeans(s,k,rep, _state);
+}
+
+
+/*************************************************************************
+This function returns distance matrix for dataset
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
+  ! distance matrix calculation  and  clustering  itself. Only first phase
+  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
+  ! threading. Thus, acceleration is significant only for  medium or high-
+  ! dimensional problems.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY      -   array[NPoints,NFeatures], dataset
+    NPoints -   number of points, >=0
+    NFeatures-  number of features, >=1
+    DistType-   distance function:
+                *  0    Chebyshev distance  (L-inf norm)
+                *  1    city block distance (L1 norm)
+                *  2    Euclidean distance  (L2 norm, non-squared)
+                * 10    Pearson correlation:
+                        dist(a,b) = 1-corr(a,b)
+                * 11    Absolute Pearson correlation:
+                        dist(a,b) = 1-|corr(a,b)|
+                * 12    Uncentered Pearson correlation (cosine of the angle):
+                        dist(a,b) = a'*b/(|a|*|b|)
+                * 13    Absolute uncentered Pearson correlation
+                        dist(a,b) = |a'*b|/(|a|*|b|)
+                * 20    Spearman rank correlation:
+                        dist(a,b) = 1-rankcorr(a,b)
+                * 21    Absolute Spearman rank correlation
+                        dist(a,b) = 1-|rankcorr(a,b)|
+
+OUTPUT PARAMETERS:
+    D       -   array[NPoints,NPoints], distance matrix
+                (full matrix is returned, with lower and upper triangles)
+
+NOTE:  different distance functions have different performance penalty:
+       * Euclidean or Pearson correlation distances are the fastest ones
+       * Spearman correlation distance function is a bit slower
+       * city block and Chebyshev distances are order of magnitude slower
+       
+       The reason behing difference in performance is that correlation-based
+       distance functions are computed using optimized linear algebra kernels,
+       while Chebyshev and city block distance functions are computed using
+       simple nested loops with two branches at each iteration.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizergetdistances(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nfeatures,
+     ae_int_t disttype,
+     /* Real    */ ae_matrix* d,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    apbuffers buf;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_matrix_clear(d);
+    _apbuffers_init(&buf, _state);
+
+    ae_assert(nfeatures>=1, "ClusterizerGetDistances: NFeatures<1", _state);
+    ae_assert(npoints>=0, "ClusterizerGetDistances: NPoints<1", _state);
+    ae_assert((((((((disttype==0||disttype==1)||disttype==2)||disttype==10)||disttype==11)||disttype==12)||disttype==13)||disttype==20)||disttype==21, "ClusterizerGetDistances: incorrect DistType", _state);
+    ae_assert(xy->rows>=npoints, "ClusterizerGetDistances: Rows(XY)<NPoints", _state);
+    ae_assert(xy->cols>=nfeatures, "ClusterizerGetDistances: Cols(XY)<NFeatures", _state);
+    ae_assert(apservisfinitematrix(xy, npoints, nfeatures, _state), "ClusterizerGetDistances: XY contains NAN/INF", _state);
+    clusterizergetdistancesbuf(&buf, xy, npoints, nfeatures, disttype, d, _state);
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
+*************************************************************************/
+void _pexec_clusterizergetdistances(/* Real    */ ae_matrix* xy,
+    ae_int_t npoints,
+    ae_int_t nfeatures,
+    ae_int_t disttype,
+    /* Real    */ ae_matrix* d, ae_state *_state)
+{
+    clusterizergetdistances(xy,npoints,nfeatures,disttype,d, _state);
+}
+
+
+/*************************************************************************
+Buffered version  of  ClusterizerGetDistances()  which  reuses  previously
+allocated space.
+
+  -- ALGLIB --
+     Copyright 29.05.2015 by Bochkanov Sergey
+*************************************************************************/
+void clusterizergetdistancesbuf(apbuffers* buf,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nfeatures,
+     ae_int_t disttype,
+     /* Real    */ ae_matrix* d,
+     ae_state *_state)
+{
     ae_int_t i;
     ae_int_t j;
-    double mean;
-    double variance;
-    double skewness;
-    double kurtosis;
+    double v;
+    double vv;
+    double vr;
+
+
+    ae_assert(nfeatures>=1, "ClusterizerGetDistancesBuf: NFeatures<1", _state);
+    ae_assert(npoints>=0, "ClusterizerGetDistancesBuf: NPoints<1", _state);
+    ae_assert((((((((disttype==0||disttype==1)||disttype==2)||disttype==10)||disttype==11)||disttype==12)||disttype==13)||disttype==20)||disttype==21, "ClusterizerGetDistancesBuf: incorrect DistType", _state);
+    ae_assert(xy->rows>=npoints, "ClusterizerGetDistancesBuf: Rows(XY)<NPoints", _state);
+    ae_assert(xy->cols>=nfeatures, "ClusterizerGetDistancesBuf: Cols(XY)<NFeatures", _state);
+    ae_assert(apservisfinitematrix(xy, npoints, nfeatures, _state), "ClusterizerGetDistancesBuf: XY contains NAN/INF", _state);
+    
+    /*
+     * Quick exit
+     */
+    if( npoints==0 )
+    {
+        return;
+    }
+    if( npoints==1 )
+    {
+        rmatrixsetlengthatleast(d, 1, 1, _state);
+        d->ptr.pp_double[0][0] = (double)(0);
+        return;
+    }
+    
+    /*
+     * Build distance matrix D.
+     */
+    if( disttype==0||disttype==1 )
+    {
+        
+        /*
+         * Chebyshev or city-block distances:
+         * * recursively calculate upper triangle (with main diagonal)
+         * * copy it to the bottom part of the matrix
+         */
+        rmatrixsetlengthatleast(d, npoints, npoints, _state);
+        clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, 0, npoints, 0, npoints, _state);
+        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
+        return;
+    }
+    if( disttype==2 )
+    {
+        
+        /*
+         * Euclidean distance
+         *
+         * NOTE: parallelization is done within RMatrixSYRK
+         */
+        rmatrixsetlengthatleast(d, npoints, npoints, _state);
+        rmatrixsetlengthatleast(&buf->rm0, npoints, nfeatures, _state);
+        rvectorsetlengthatleast(&buf->ra1, nfeatures, _state);
+        rvectorsetlengthatleast(&buf->ra0, npoints, _state);
+        for(j=0; j<=nfeatures-1; j++)
+        {
+            buf->ra1.ptr.p_double[j] = 0.0;
+        }
+        v = (double)1/(double)npoints;
+        for(i=0; i<=npoints-1; i++)
+        {
+            ae_v_addd(&buf->ra1.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nfeatures-1), v);
+        }
+        for(i=0; i<=npoints-1; i++)
+        {
+            ae_v_move(&buf->rm0.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nfeatures-1));
+            ae_v_sub(&buf->rm0.ptr.pp_double[i][0], 1, &buf->ra1.ptr.p_double[0], 1, ae_v_len(0,nfeatures-1));
+        }
+        rmatrixsyrk(npoints, nfeatures, 1.0, &buf->rm0, 0, 0, 0, 0.0, d, 0, 0, ae_true, _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            buf->ra0.ptr.p_double[i] = d->ptr.pp_double[i][i];
+        }
+        for(i=0; i<=npoints-1; i++)
+        {
+            d->ptr.pp_double[i][i] = 0.0;
+            for(j=i+1; j<=npoints-1; j++)
+            {
+                v = ae_sqrt(ae_maxreal(buf->ra0.ptr.p_double[i]+buf->ra0.ptr.p_double[j]-2*d->ptr.pp_double[i][j], 0.0, _state), _state);
+                d->ptr.pp_double[i][j] = v;
+            }
+        }
+        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
+        return;
+    }
+    if( disttype==10||disttype==11 )
+    {
+        
+        /*
+         * Absolute/nonabsolute Pearson correlation distance
+         *
+         * NOTE: parallelization is done within PearsonCorrM, which calls RMatrixSYRK internally
+         */
+        rmatrixsetlengthatleast(d, npoints, npoints, _state);
+        rvectorsetlengthatleast(&buf->ra0, npoints, _state);
+        rmatrixsetlengthatleast(&buf->rm0, npoints, nfeatures, _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            v = 0.0;
+            for(j=0; j<=nfeatures-1; j++)
+            {
+                v = v+xy->ptr.pp_double[i][j];
+            }
+            v = v/nfeatures;
+            for(j=0; j<=nfeatures-1; j++)
+            {
+                buf->rm0.ptr.pp_double[i][j] = xy->ptr.pp_double[i][j]-v;
+            }
+        }
+        rmatrixsyrk(npoints, nfeatures, 1.0, &buf->rm0, 0, 0, 0, 0.0, d, 0, 0, ae_true, _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            buf->ra0.ptr.p_double[i] = d->ptr.pp_double[i][i];
+        }
+        for(i=0; i<=npoints-1; i++)
+        {
+            d->ptr.pp_double[i][i] = 0.0;
+            for(j=i+1; j<=npoints-1; j++)
+            {
+                v = d->ptr.pp_double[i][j]/ae_sqrt(buf->ra0.ptr.p_double[i]*buf->ra0.ptr.p_double[j], _state);
+                if( disttype==10 )
+                {
+                    v = 1-v;
+                }
+                else
+                {
+                    v = 1-ae_fabs(v, _state);
+                }
+                v = ae_maxreal(v, 0.0, _state);
+                d->ptr.pp_double[i][j] = v;
+            }
+        }
+        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
+        return;
+    }
+    if( disttype==12||disttype==13 )
+    {
+        
+        /*
+         * Absolute/nonabsolute uncentered Pearson correlation distance
+         *
+         * NOTE: parallelization is done within RMatrixSYRK
+         */
+        rmatrixsetlengthatleast(d, npoints, npoints, _state);
+        rvectorsetlengthatleast(&buf->ra0, npoints, _state);
+        rmatrixsyrk(npoints, nfeatures, 1.0, xy, 0, 0, 0, 0.0, d, 0, 0, ae_true, _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            buf->ra0.ptr.p_double[i] = d->ptr.pp_double[i][i];
+        }
+        for(i=0; i<=npoints-1; i++)
+        {
+            d->ptr.pp_double[i][i] = 0.0;
+            for(j=i+1; j<=npoints-1; j++)
+            {
+                v = d->ptr.pp_double[i][j]/ae_sqrt(buf->ra0.ptr.p_double[i]*buf->ra0.ptr.p_double[j], _state);
+                if( disttype==13 )
+                {
+                    v = ae_fabs(v, _state);
+                }
+                v = ae_minreal(v, 1.0, _state);
+                d->ptr.pp_double[i][j] = 1-v;
+            }
+        }
+        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
+        return;
+    }
+    if( disttype==20||disttype==21 )
+    {
+        
+        /*
+         * Spearman rank correlation
+         *
+         * NOTE: parallelization of correlation matrix is done within
+         *       PearsonCorrM, which calls RMatrixSYRK internally
+         */
+        rmatrixsetlengthatleast(d, npoints, npoints, _state);
+        rvectorsetlengthatleast(&buf->ra0, npoints, _state);
+        rmatrixsetlengthatleast(&buf->rm0, npoints, nfeatures, _state);
+        rmatrixcopy(npoints, nfeatures, xy, 0, 0, &buf->rm0, 0, 0, _state);
+        rankdatacentered(&buf->rm0, npoints, nfeatures, _state);
+        rmatrixsyrk(npoints, nfeatures, 1.0, &buf->rm0, 0, 0, 0, 0.0, d, 0, 0, ae_true, _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            if( ae_fp_greater(d->ptr.pp_double[i][i],(double)(0)) )
+            {
+                buf->ra0.ptr.p_double[i] = 1/ae_sqrt(d->ptr.pp_double[i][i], _state);
+            }
+            else
+            {
+                buf->ra0.ptr.p_double[i] = 0.0;
+            }
+        }
+        for(i=0; i<=npoints-1; i++)
+        {
+            v = buf->ra0.ptr.p_double[i];
+            d->ptr.pp_double[i][i] = 0.0;
+            for(j=i+1; j<=npoints-1; j++)
+            {
+                vv = d->ptr.pp_double[i][j]*v*buf->ra0.ptr.p_double[j];
+                if( disttype==20 )
+                {
+                    vr = 1-vv;
+                }
+                else
+                {
+                    vr = 1-ae_fabs(vv, _state);
+                }
+                if( ae_fp_less(vr,(double)(0)) )
+                {
+                    vr = 0.0;
+                }
+                d->ptr.pp_double[i][j] = vr;
+            }
+        }
+        rmatrixenforcesymmetricity(d, npoints, ae_true, _state);
+        return;
+    }
+    ae_assert(ae_false, "Assertion failed", _state);
+}
+
+
+/*************************************************************************
+This function takes as input clusterization report Rep,  desired  clusters
+count K, and builds top K clusters from hierarchical clusterization  tree.
+It returns assignment of points to clusters (array of cluster indexes).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    K       -   desired number of clusters, 1<=K<=NPoints.
+                K can be zero only when NPoints=0.
+
+OUTPUT PARAMETERS:
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+      
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+      
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizergetkclusters(ahcreport* rep,
+     ae_int_t k,
+     /* Integer */ ae_vector* cidx,
+     /* Integer */ ae_vector* cz,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_int_t mergeidx;
+    ae_int_t i0;
+    ae_int_t i1;
+    ae_int_t t;
+    ae_vector presentclusters;
+    ae_vector clusterindexes;
+    ae_vector clustersizes;
+    ae_vector tmpidx;
+    ae_int_t npoints;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_clear(cidx);
+    ae_vector_clear(cz);
+    ae_vector_init(&presentclusters, 0, DT_BOOL, _state);
+    ae_vector_init(&clusterindexes, 0, DT_INT, _state);
+    ae_vector_init(&clustersizes, 0, DT_INT, _state);
+    ae_vector_init(&tmpidx, 0, DT_INT, _state);
+
+    npoints = rep->npoints;
+    ae_assert(npoints>=0, "ClusterizerGetKClusters: internal error in Rep integrity", _state);
+    ae_assert(k>=0, "ClusterizerGetKClusters: K<=0", _state);
+    ae_assert(k<=npoints, "ClusterizerGetKClusters: K>NPoints", _state);
+    ae_assert(k>0||npoints==0, "ClusterizerGetKClusters: K<=0", _state);
+    ae_assert(npoints==rep->npoints, "ClusterizerGetKClusters: NPoints<>Rep.NPoints", _state);
+    
+    /*
+     * Quick exit
+     */
+    if( npoints==0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    if( npoints==1 )
+    {
+        ae_vector_set_length(cz, 1, _state);
+        ae_vector_set_length(cidx, 1, _state);
+        cz->ptr.p_int[0] = 0;
+        cidx->ptr.p_int[0] = 0;
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Replay merges, from top to bottom,
+     * keep track of clusters being present at the moment
+     */
+    ae_vector_set_length(&presentclusters, 2*npoints-1, _state);
+    ae_vector_set_length(&tmpidx, npoints, _state);
+    for(i=0; i<=2*npoints-3; i++)
+    {
+        presentclusters.ptr.p_bool[i] = ae_false;
+    }
+    presentclusters.ptr.p_bool[2*npoints-2] = ae_true;
+    for(i=0; i<=npoints-1; i++)
+    {
+        tmpidx.ptr.p_int[i] = 2*npoints-2;
+    }
+    for(mergeidx=npoints-2; mergeidx>=npoints-k; mergeidx--)
+    {
+        
+        /*
+         * Update information about clusters being present at the moment
+         */
+        presentclusters.ptr.p_bool[npoints+mergeidx] = ae_false;
+        presentclusters.ptr.p_bool[rep->z.ptr.pp_int[mergeidx][0]] = ae_true;
+        presentclusters.ptr.p_bool[rep->z.ptr.pp_int[mergeidx][1]] = ae_true;
+        
+        /*
+         * Update TmpIdx according to the current state of the dataset
+         *
+         * NOTE: TmpIdx contains cluster indexes from [0..2*NPoints-2];
+         *       we will convert them to [0..K-1] later.
+         */
+        i0 = rep->pm.ptr.pp_int[mergeidx][0];
+        i1 = rep->pm.ptr.pp_int[mergeidx][1];
+        t = rep->z.ptr.pp_int[mergeidx][0];
+        for(i=i0; i<=i1; i++)
+        {
+            tmpidx.ptr.p_int[i] = t;
+        }
+        i0 = rep->pm.ptr.pp_int[mergeidx][2];
+        i1 = rep->pm.ptr.pp_int[mergeidx][3];
+        t = rep->z.ptr.pp_int[mergeidx][1];
+        for(i=i0; i<=i1; i++)
+        {
+            tmpidx.ptr.p_int[i] = t;
+        }
+    }
+    
+    /*
+     * Fill CZ - array which allows us to convert cluster indexes
+     * from one system to another.
+     */
+    ae_vector_set_length(cz, k, _state);
+    ae_vector_set_length(&clusterindexes, 2*npoints-1, _state);
+    t = 0;
+    for(i=0; i<=2*npoints-2; i++)
+    {
+        if( presentclusters.ptr.p_bool[i] )
+        {
+            cz->ptr.p_int[t] = i;
+            clusterindexes.ptr.p_int[i] = t;
+            t = t+1;
+        }
+    }
+    ae_assert(t==k, "ClusterizerGetKClusters: internal error", _state);
+    
+    /*
+     * Convert indexes stored in CIdx
+     */
+    ae_vector_set_length(cidx, npoints, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        cidx->ptr.p_int[i] = clusterindexes.ptr.p_int[tmpidx.ptr.p_int[rep->p.ptr.p_int[i]]];
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+This  function  accepts  AHC  report  Rep,  desired  minimum  intercluster
+distance and returns top clusters from  hierarchical  clusterization  tree
+which are separated by distance R or HIGHER.
+
+It returns assignment of points to clusters (array of cluster indexes).
+
+There is one more function with similar name - ClusterizerSeparatedByCorr,
+which returns clusters with intercluster correlation equal to R  or  LOWER
+(note: higher for distance, lower for correlation).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    R       -   desired minimum intercluster distance, R>=0
+
+OUTPUT PARAMETERS:
+    K       -   number of clusters, 1<=K<=NPoints
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+      
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+      
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerseparatedbydist(ahcreport* rep,
+     double r,
+     ae_int_t* k,
+     /* Integer */ ae_vector* cidx,
+     /* Integer */ ae_vector* cz,
+     ae_state *_state)
+{
+
+    *k = 0;
+    ae_vector_clear(cidx);
+    ae_vector_clear(cz);
+
+    ae_assert(ae_isfinite(r, _state)&&ae_fp_greater_eq(r,(double)(0)), "ClusterizerSeparatedByDist: R is infinite or less than 0", _state);
+    *k = 1;
+    while(*k<rep->npoints&&ae_fp_greater_eq(rep->mergedist.ptr.p_double[rep->npoints-1-(*k)],r))
+    {
+        *k = *k+1;
+    }
+    clusterizergetkclusters(rep, *k, cidx, cz, _state);
+}
+
+
+/*************************************************************************
+This  function  accepts  AHC  report  Rep,  desired  maximum  intercluster
+correlation and returns top clusters from hierarchical clusterization tree
+which are separated by correlation R or LOWER.
+
+It returns assignment of points to clusters (array of cluster indexes).
+
+There is one more function with similar name - ClusterizerSeparatedByDist,
+which returns clusters with intercluster distance equal  to  R  or  HIGHER
+(note: higher for distance, lower for correlation).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    R       -   desired maximum intercluster correlation, -1<=R<=+1
+
+OUTPUT PARAMETERS:
+    K       -   number of clusters, 1<=K<=NPoints
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+      
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+      
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerseparatedbycorr(ahcreport* rep,
+     double r,
+     ae_int_t* k,
+     /* Integer */ ae_vector* cidx,
+     /* Integer */ ae_vector* cz,
+     ae_state *_state)
+{
+
+    *k = 0;
+    ae_vector_clear(cidx);
+    ae_vector_clear(cz);
+
+    ae_assert((ae_isfinite(r, _state)&&ae_fp_greater_eq(r,(double)(-1)))&&ae_fp_less_eq(r,(double)(1)), "ClusterizerSeparatedByCorr: R is infinite or less than 0", _state);
+    *k = 1;
+    while(*k<rep->npoints&&ae_fp_greater_eq(rep->mergedist.ptr.p_double[rep->npoints-1-(*k)],1-r))
+    {
+        *k = *k+1;
+    }
+    clusterizergetkclusters(rep, *k, cidx, cz, _state);
+}
+
+
+/*************************************************************************
+K-means++ initialization
+
+INPUT PARAMETERS:
+    Buf         -   special reusable structure which stores previously allocated
+                    memory, intended to avoid memory fragmentation when solving
+                    multiple subsequent problems. Must be initialized prior to
+                    usage.
+
+OUTPUT PARAMETERS:
+    Buf         -   initialized structure
+
+  -- ALGLIB --
+     Copyright 24.07.2015 by Bochkanov Sergey
+*************************************************************************/
+void kmeansinitbuf(kmeansbuffers* buf, ae_state *_state)
+{
+    ae_frame _frame_block;
+    apbuffers updateseed;
+
+    ae_frame_make(_state, &_frame_block);
+    _apbuffers_init(&updateseed, _state);
+
+    ae_shared_pool_set_seed(&buf->updatepool, &updateseed, sizeof(updateseed), _apbuffers_init, _apbuffers_init_copy, _apbuffers_destroy, _state);
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+K-means++ clusterization
+
+INPUT PARAMETERS:
+    XY          -   dataset, array [0..NPoints-1,0..NVars-1].
+    NPoints     -   dataset size, NPoints>=K
+    NVars       -   number of variables, NVars>=1
+    K           -   desired number of clusters, K>=1
+    InitAlgo    -   initialization algorithm:
+                    * 0 - automatic selection of best algorithm
+                    * 1 - random selection of centers
+                    * 2 - k-means++
+                    * 3 - fast-greedy init
+                    *-1 - first K rows of dataset are used
+                          (special debug algorithm)
+    Seed        -   seed value for internal RNG:
+                    * positive value is used to initialize RNG in order to
+                      induce deterministic behavior of algorithm
+                    * zero or negative value means  that random  seed   is
+                      generated
+    MaxIts      -   iterations limit or zero for no limit
+    Restarts    -   number of restarts, Restarts>=1
+    KMeansDbgNoIts- debug flag; if set, Lloyd's iteration is not performed,
+                    only initialization phase.
+    Buf         -   special reusable structure which stores previously allocated
+                    memory, intended to avoid memory fragmentation when solving
+                    multiple subsequent problems:
+                    * MUST BE INITIALIZED WITH KMeansInitBuffers() CALL BEFORE
+                      FIRST PASS TO THIS FUNCTION!
+                    * subsequent passes must be made without re-initialization
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -3, if task is degenerate (number of distinct points is
+                          less than K)
+                    * -1, if incorrect NPoints/NFeatures/K/Restarts was passed
+                    *  1, if subroutine finished successfully
+    IterationsCount- actual number of iterations performed by clusterizer
+    CCol        -   array[0..NVars-1,0..K-1].matrix whose columns store
+                    cluster's centers
+    NeedCCol    -   True in case caller requires to store result in CCol
+    CRow        -   array[0..K-1,0..NVars-1], same as CCol, but centers are
+                    stored in rows
+    NeedCRow    -   True in case caller requires to store result in CCol
+    XYC         -   array[NPoints], which contains cluster indexes
+    Energy      -   merit function of clusterization
+
+  -- ALGLIB --
+     Copyright 21.03.2009 by Bochkanov Sergey
+*************************************************************************/
+void kmeansgenerateinternal(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t k,
+     ae_int_t initalgo,
+     ae_int_t seed,
+     ae_int_t maxits,
+     ae_int_t restarts,
+     ae_bool kmeansdbgnoits,
+     ae_int_t* info,
+     ae_int_t* iterationscount,
+     /* Real    */ ae_matrix* ccol,
+     ae_bool needccol,
+     /* Real    */ ae_matrix* crow,
+     ae_bool needcrow,
+     /* Integer */ ae_vector* xyc,
+     double* energy,
+     kmeansbuffers* buf,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t i1;
+    double e;
+    double eprev;
+    double v;
+    double vv;
+    ae_bool waschanges;
+    ae_bool zerosizeclusters;
+    ae_int_t pass;
+    ae_int_t itcnt;
+    hqrndstate rs;
 
     ae_frame_make(_state, &_frame_block);
     *info = 0;
-    ae_vector_clear(s2);
-    ae_matrix_clear(v);
-    ae_matrix_init(&a, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&u, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&vt, 0, 0, DT_REAL, _state);
-    ae_vector_init(&m, 0, DT_REAL, _state);
-    ae_vector_init(&t, 0, DT_REAL, _state);
+    *iterationscount = 0;
+    ae_matrix_clear(ccol);
+    ae_matrix_clear(crow);
+    ae_vector_clear(xyc);
+    *energy = 0;
+    _hqrndstate_init(&rs, _state);
 
     
     /*
-     * Check input data
+     * Test parameters
      */
-    if( npoints<0||nvars<1 )
+    if( ((npoints<k||nvars<1)||k<1)||restarts<1 )
+    {
+        *info = -1;
+        *iterationscount = 0;
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * TODO: special case K=1
+     * TODO: special case K=NPoints
+     */
+    *info = 1;
+    *iterationscount = 0;
+    
+    /*
+     * Multiple passes of k-means++ algorithm
+     */
+    if( seed<=0 )
+    {
+        hqrndrandomize(&rs, _state);
+    }
+    else
+    {
+        hqrndseed(325355, seed, &rs, _state);
+    }
+    ae_vector_set_length(xyc, npoints, _state);
+    rmatrixsetlengthatleast(&buf->ct, k, nvars, _state);
+    rmatrixsetlengthatleast(&buf->ctbest, k, nvars, _state);
+    ivectorsetlengthatleast(&buf->xycprev, npoints, _state);
+    ivectorsetlengthatleast(&buf->xycbest, npoints, _state);
+    rvectorsetlengthatleast(&buf->d2, npoints, _state);
+    ivectorsetlengthatleast(&buf->csizes, k, _state);
+    *energy = ae_maxrealnumber;
+    for(pass=1; pass<=restarts; pass++)
+    {
+        
+        /*
+         * Select initial centers.
+         *
+         * Note that for performance reasons centers are stored in ROWS of CT, not
+         * in columns. We'll transpose CT in the end and store it in the C.
+         *
+         * Also note that SelectInitialCenters() may return degenerate set of centers
+         * (some of them have no corresponding points in dataset, some are non-distinct).
+         * Algorithm below is robust enough to deal with such set.
+         */
+        clustering_selectinitialcenters(xy, npoints, nvars, initalgo, &rs, k, &buf->ct, &buf->initbuf, &buf->updatepool, _state);
+        
+        /*
+         * Lloyd's iteration
+         */
+        if( !kmeansdbgnoits )
+        {
+            
+            /*
+             * Perform iteration as usual, in normal mode
+             */
+            for(i=0; i<=npoints-1; i++)
+            {
+                xyc->ptr.p_int[i] = -1;
+            }
+            eprev = ae_maxrealnumber;
+            e = ae_maxrealnumber;
+            itcnt = 0;
+            while(maxits==0||itcnt<maxits)
+            {
+                
+                /*
+                 * Update iteration counter
+                 */
+                itcnt = itcnt+1;
+                inc(iterationscount, _state);
+                
+                /*
+                 * Call KMeansUpdateDistances(), fill XYC with center numbers,
+                 * D2 with center distances.
+                 */
+                for(i=0; i<=npoints-1; i++)
+                {
+                    buf->xycprev.ptr.p_int[i] = xyc->ptr.p_int[i];
+                }
+                kmeansupdatedistances(xy, 0, npoints, nvars, &buf->ct, 0, k, xyc, &buf->d2, &buf->updatepool, _state);
+                waschanges = ae_false;
+                for(i=0; i<=npoints-1; i++)
+                {
+                    waschanges = waschanges||xyc->ptr.p_int[i]!=buf->xycprev.ptr.p_int[i];
+                }
+                
+                /*
+                 * Update centers
+                 */
+                for(j=0; j<=k-1; j++)
+                {
+                    buf->csizes.ptr.p_int[j] = 0;
+                }
+                for(i=0; i<=k-1; i++)
+                {
+                    for(j=0; j<=nvars-1; j++)
+                    {
+                        buf->ct.ptr.pp_double[i][j] = (double)(0);
+                    }
+                }
+                for(i=0; i<=npoints-1; i++)
+                {
+                    buf->csizes.ptr.p_int[xyc->ptr.p_int[i]] = buf->csizes.ptr.p_int[xyc->ptr.p_int[i]]+1;
+                    ae_v_add(&buf->ct.ptr.pp_double[xyc->ptr.p_int[i]][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+                }
+                zerosizeclusters = ae_false;
+                for(j=0; j<=k-1; j++)
+                {
+                    if( buf->csizes.ptr.p_int[j]!=0 )
+                    {
+                        v = (double)1/(double)buf->csizes.ptr.p_int[j];
+                        ae_v_muld(&buf->ct.ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1), v);
+                    }
+                    zerosizeclusters = zerosizeclusters||buf->csizes.ptr.p_int[j]==0;
+                }
+                if( zerosizeclusters )
+                {
+                    
+                    /*
+                     * Some clusters have zero size - rare, but possible.
+                     * We'll choose new centers for such clusters using k-means++ rule
+                     * and restart algorithm
+                     */
+                    if( !clustering_fixcenters(xy, npoints, nvars, &buf->ct, k, &buf->initbuf, &buf->updatepool, _state) )
+                    {
+                        *info = -3;
+                        ae_frame_leave(_state);
+                        return;
+                    }
+                    continue;
+                }
+                
+                /*
+                 * Stop if one of two conditions is met:
+                 * 1. nothing has changed during iteration
+                 * 2. energy function increased after recalculation on new centers
+                 */
+                e = (double)(0);
+                for(i=0; i<=npoints-1; i++)
+                {
+                    v = 0.0;
+                    i1 = xyc->ptr.p_int[i];
+                    for(j=0; j<=nvars-1; j++)
+                    {
+                        vv = xy->ptr.pp_double[i][j]-buf->ct.ptr.pp_double[i1][j];
+                        v = v+vv*vv;
+                    }
+                    e = e+v;
+                }
+                if( !waschanges||ae_fp_greater_eq(e,eprev) )
+                {
+                    break;
+                }
+                
+                /*
+                 * Update EPrev
+                 */
+                eprev = e;
+            }
+        }
+        else
+        {
+            
+            /*
+             * Debug mode: no Lloyd's iteration.
+             * We just calculate potential E.
+             */
+            kmeansupdatedistances(xy, 0, npoints, nvars, &buf->ct, 0, k, xyc, &buf->d2, &buf->updatepool, _state);
+            e = (double)(0);
+            for(i=0; i<=npoints-1; i++)
+            {
+                e = e+buf->d2.ptr.p_double[i];
+            }
+        }
+        
+        /*
+         * Compare E with best centers found so far
+         */
+        if( ae_fp_less(e,*energy) )
+        {
+            
+            /*
+             * store partition.
+             */
+            *energy = e;
+            copymatrix(&buf->ct, 0, k-1, 0, nvars-1, &buf->ctbest, 0, k-1, 0, nvars-1, _state);
+            for(i=0; i<=npoints-1; i++)
+            {
+                buf->xycbest.ptr.p_int[i] = xyc->ptr.p_int[i];
+            }
+        }
+    }
+    
+    /*
+     * Copy and transpose
+     */
+    if( needccol )
+    {
+        ae_matrix_set_length(ccol, nvars, k, _state);
+        copyandtranspose(&buf->ctbest, 0, k-1, 0, nvars-1, ccol, 0, nvars-1, 0, k-1, _state);
+    }
+    if( needcrow )
+    {
+        ae_matrix_set_length(crow, k, nvars, _state);
+        rmatrixcopy(k, nvars, &buf->ctbest, 0, 0, crow, 0, 0, _state);
+    }
+    for(i=0; i<=npoints-1; i++)
+    {
+        xyc->ptr.p_int[i] = buf->xycbest.ptr.p_int[i];
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+This procedure recalculates distances from points to centers  and  assigns
+each point to closest center.
+
+INPUT PARAMETERS:
+    XY          -   dataset, array [0..NPoints-1,0..NVars-1].
+    Idx0,Idx1   -   define range of dataset [Idx0,Idx1) to process;
+                    right boundary is not included.
+    NVars       -   number of variables, NVars>=1
+    CT          -   matrix of centers, centers are stored in rows
+    CIdx0,CIdx1 -   define range of centers [CIdx0,CIdx1) to process;
+                    right boundary is not included.
+    XYC         -   preallocated output buffer, 
+    XYDist2     -   preallocated output buffer
+    Tmp         -   temporary buffer, automatically reallocated if needed
+    BufferPool  -   shared pool seeded with instance of APBuffers structure
+                    (seed instance can be unitialized). It is recommended
+                    to use this pool only with KMeansUpdateDistances()
+                    function.
+
+OUTPUT PARAMETERS:
+    XYC         -   new assignment of points to centers are stored
+                    in [Idx0,Idx1)
+    XYDist2     -   squared distances from points to their centers are
+                    stored in [Idx0,Idx1)
+
+  -- ALGLIB --
+     Copyright 21.01.2015 by Bochkanov Sergey
+*************************************************************************/
+void kmeansupdatedistances(/* Real    */ ae_matrix* xy,
+     ae_int_t idx0,
+     ae_int_t idx1,
+     ae_int_t nvars,
+     /* Real    */ ae_matrix* ct,
+     ae_int_t cidx0,
+     ae_int_t cidx1,
+     /* Integer */ ae_vector* xyc,
+     /* Real    */ ae_vector* xydist2,
+     ae_shared_pool* bufferpool,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_int_t i0;
+    ae_int_t i1;
+    ae_int_t j;
+    ae_int_t cclosest;
+    double dclosest;
+    double vv;
+    apbuffers *buf;
+    ae_smart_ptr _buf;
+    double rcomplexity;
+    ae_int_t task0;
+    ae_int_t task1;
+    ae_int_t pblkcnt;
+    ae_int_t cblkcnt;
+    ae_int_t vblkcnt;
+    ae_int_t pblk;
+    ae_int_t cblk;
+    ae_int_t vblk;
+    ae_int_t p0;
+    ae_int_t p1;
+    ae_int_t c0;
+    ae_int_t c1;
+    ae_int_t v0;
+    ae_int_t v1;
+    double v00;
+    double v01;
+    double v10;
+    double v11;
+    double vp0;
+    double vp1;
+    double vc0;
+    double vc1;
+    ae_int_t pcnt;
+    ae_int_t pcntpadded;
+    ae_int_t ccnt;
+    ae_int_t ccntpadded;
+    ae_int_t offs0;
+    ae_int_t offs00;
+    ae_int_t offs01;
+    ae_int_t offs10;
+    ae_int_t offs11;
+    ae_int_t vcnt;
+    ae_int_t stride;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_smart_ptr_init(&_buf, (void**)&buf, _state);
+
+    
+    /*
+     * Quick exit for special cases
+     */
+    if( idx1<=idx0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    if( cidx1<=cidx0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    if( nvars<=0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Try to recursively divide/process dataset
+     *
+     * NOTE: real arithmetics is used to avoid integer overflow on large problem sizes
+     */
+    rcomplexity = (double)(idx1-idx0);
+    rcomplexity = rcomplexity*(cidx1-cidx0);
+    rcomplexity = rcomplexity*nvars;
+    if( ((ae_fp_greater_eq(rcomplexity,clustering_parallelcomplexity)&&idx1-idx0>=2*clustering_kmeansblocksize)&&nvars>=clustering_kmeansparalleldim)&&cidx1-cidx0>=clustering_kmeansparallelk )
+    {
+        splitlength(idx1-idx0, clustering_kmeansblocksize, &task0, &task1, _state);
+        kmeansupdatedistances(xy, idx0, idx0+task0, nvars, ct, cidx0, cidx1, xyc, xydist2, bufferpool, _state);
+        kmeansupdatedistances(xy, idx0+task0, idx1, nvars, ct, cidx0, cidx1, xyc, xydist2, bufferpool, _state);
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Dataset chunk is selected.
+     * 
+     * Process it with blocked algorithm:
+     * * iterate over points, process them in KMeansBlockSize-ed chunks
+     * * for each chunk of dataset, iterate over centers, process them in KMeansBlockSize-ed chunks
+     * * for each chunk of dataset/centerset, iterate over variables, process them in KMeansBlockSize-ed chunks
+     */
+    ae_assert(clustering_kmeansblocksize%2==0, "KMeansUpdateDistances: internal error", _state);
+    ae_shared_pool_retrieve(bufferpool, &_buf, _state);
+    rvectorsetlengthatleast(&buf->ra0, clustering_kmeansblocksize*clustering_kmeansblocksize, _state);
+    rvectorsetlengthatleast(&buf->ra1, clustering_kmeansblocksize*clustering_kmeansblocksize, _state);
+    rvectorsetlengthatleast(&buf->ra2, clustering_kmeansblocksize*clustering_kmeansblocksize, _state);
+    rvectorsetlengthatleast(&buf->ra3, clustering_kmeansblocksize, _state);
+    ivectorsetlengthatleast(&buf->ia3, clustering_kmeansblocksize, _state);
+    pblkcnt = chunkscount(idx1-idx0, clustering_kmeansblocksize, _state);
+    cblkcnt = chunkscount(cidx1-cidx0, clustering_kmeansblocksize, _state);
+    vblkcnt = chunkscount(nvars, clustering_kmeansblocksize, _state);
+    for(pblk=0; pblk<=pblkcnt-1; pblk++)
+    {
+        
+        /*
+         * Process PBlk-th chunk of dataset.
+         */
+        p0 = idx0+pblk*clustering_kmeansblocksize;
+        p1 = ae_minint(p0+clustering_kmeansblocksize, idx1, _state);
+        
+        /*
+         * Prepare RA3[]/IA3[] for storage of best distances and best cluster numbers.
+         */
+        for(i=0; i<=clustering_kmeansblocksize-1; i++)
+        {
+            buf->ra3.ptr.p_double[i] = ae_maxrealnumber;
+            buf->ia3.ptr.p_int[i] = -1;
+        }
+        
+        /*
+         * Iterare over chunks of centerset.
+         */
+        for(cblk=0; cblk<=cblkcnt-1; cblk++)
+        {
+            
+            /*
+             * Process CBlk-th chunk of centerset
+             */
+            c0 = cidx0+cblk*clustering_kmeansblocksize;
+            c1 = ae_minint(c0+clustering_kmeansblocksize, cidx1, _state);
+            
+            /*
+             * At this point we have to calculate a set of pairwise distances
+             * between points [P0,P1) and centers [C0,C1) and select best center
+             * for each point. It can also be done with blocked algorithm
+             * (blocking for variables).
+             *
+             * Following arrays are used:
+             * * RA0[] - matrix of distances, padded by zeros for even size,
+             *           rows are stored with stride KMeansBlockSize.
+             * * RA1[] - matrix of points (variables corresponding to current
+             *           block are extracted), padded by zeros for even size,
+             *           rows are stored with stride KMeansBlockSize.
+             * * RA2[] - matrix of centers (variables corresponding to current
+             *           block are extracted), padded by zeros for even size,
+             *           rows are stored with stride KMeansBlockSize.
+             *
+             */
+            pcnt = p1-p0;
+            pcntpadded = pcnt+pcnt%2;
+            ccnt = c1-c0;
+            ccntpadded = ccnt+ccnt%2;
+            stride = clustering_kmeansblocksize;
+            ae_assert(pcntpadded<=clustering_kmeansblocksize, "KMeansUpdateDistances: integrity error", _state);
+            ae_assert(ccntpadded<=clustering_kmeansblocksize, "KMeansUpdateDistances: integrity error", _state);
+            for(i=0; i<=pcntpadded-1; i++)
+            {
+                for(j=0; j<=ccntpadded-1; j++)
+                {
+                    buf->ra0.ptr.p_double[i*stride+j] = 0.0;
+                }
+            }
+            for(vblk=0; vblk<=vblkcnt-1; vblk++)
+            {
+                
+                /*
+                 * Fetch VBlk-th block of variables to arrays RA1 (points) and RA2 (centers).
+                 * Pad points and centers with zeros.
+                 */
+                v0 = vblk*clustering_kmeansblocksize;
+                v1 = ae_minint(v0+clustering_kmeansblocksize, nvars, _state);
+                vcnt = v1-v0;
+                for(i=0; i<=pcnt-1; i++)
+                {
+                    for(j=0; j<=vcnt-1; j++)
+                    {
+                        buf->ra1.ptr.p_double[i*stride+j] = xy->ptr.pp_double[p0+i][v0+j];
+                    }
+                }
+                for(i=pcnt; i<=pcntpadded-1; i++)
+                {
+                    for(j=0; j<=vcnt-1; j++)
+                    {
+                        buf->ra1.ptr.p_double[i*stride+j] = 0.0;
+                    }
+                }
+                for(i=0; i<=ccnt-1; i++)
+                {
+                    for(j=0; j<=vcnt-1; j++)
+                    {
+                        buf->ra2.ptr.p_double[i*stride+j] = ct->ptr.pp_double[c0+i][v0+j];
+                    }
+                }
+                for(i=ccnt; i<=ccntpadded-1; i++)
+                {
+                    for(j=0; j<=vcnt-1; j++)
+                    {
+                        buf->ra2.ptr.p_double[i*stride+j] = 0.0;
+                    }
+                }
+                
+                /*
+                 * Update distance matrix with sums-of-squared-differences of RA1 and RA2
+                 */
+                i0 = 0;
+                while(i0<pcntpadded)
+                {
+                    i1 = 0;
+                    while(i1<ccntpadded)
+                    {
+                        offs0 = i0*stride+i1;
+                        v00 = buf->ra0.ptr.p_double[offs0];
+                        v01 = buf->ra0.ptr.p_double[offs0+1];
+                        v10 = buf->ra0.ptr.p_double[offs0+stride];
+                        v11 = buf->ra0.ptr.p_double[offs0+stride+1];
+                        offs00 = i0*stride;
+                        offs01 = offs00+stride;
+                        offs10 = i1*stride;
+                        offs11 = offs10+stride;
+                        for(j=0; j<=vcnt-1; j++)
+                        {
+                            vp0 = buf->ra1.ptr.p_double[offs00+j];
+                            vp1 = buf->ra1.ptr.p_double[offs01+j];
+                            vc0 = buf->ra2.ptr.p_double[offs10+j];
+                            vc1 = buf->ra2.ptr.p_double[offs11+j];
+                            vv = vp0-vc0;
+                            v00 = v00+vv*vv;
+                            vv = vp0-vc1;
+                            v01 = v01+vv*vv;
+                            vv = vp1-vc0;
+                            v10 = v10+vv*vv;
+                            vv = vp1-vc1;
+                            v11 = v11+vv*vv;
+                        }
+                        offs0 = i0*stride+i1;
+                        buf->ra0.ptr.p_double[offs0] = v00;
+                        buf->ra0.ptr.p_double[offs0+1] = v01;
+                        buf->ra0.ptr.p_double[offs0+stride] = v10;
+                        buf->ra0.ptr.p_double[offs0+stride+1] = v11;
+                        i1 = i1+2;
+                    }
+                    i0 = i0+2;
+                }
+            }
+            for(i=0; i<=pcnt-1; i++)
+            {
+                cclosest = buf->ia3.ptr.p_int[i];
+                dclosest = buf->ra3.ptr.p_double[i];
+                for(j=0; j<=ccnt-1; j++)
+                {
+                    if( ae_fp_less(buf->ra0.ptr.p_double[i*stride+j],dclosest) )
+                    {
+                        dclosest = buf->ra0.ptr.p_double[i*stride+j];
+                        cclosest = c0+j;
+                    }
+                }
+                buf->ia3.ptr.p_int[i] = cclosest;
+                buf->ra3.ptr.p_double[i] = dclosest;
+            }
+        }
+        
+        /*
+         * Store best centers to XYC[]
+         */
+        for(i=p0; i<=p1-1; i++)
+        {
+            xyc->ptr.p_int[i] = buf->ia3.ptr.p_int[i-p0];
+            xydist2->ptr.p_double[i] = buf->ra3.ptr.p_double[i-p0];
+        }
+    }
+    ae_shared_pool_recycle(bufferpool, &_buf, _state);
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+This function selects initial centers according to specified initialization
+algorithm.
+
+IMPORTANT: this function provides no  guarantees  regarding  selection  of
+           DIFFERENT  centers.  Centers  returned  by  this  function  may
+           include duplicates (say, when random sampling is  used). It  is
+           also possible that some centers are empty.
+           Algorithm which uses this function must be able to deal with it.
+           Say, you may want to use FixCenters() in order to fix empty centers.
+
+INPUT PARAMETERS:
+    XY          -   dataset, array [0..NPoints-1,0..NVars-1].
+    NPoints     -   points count
+    NVars       -   number of variables, NVars>=1
+    InitAlgo    -   initialization algorithm:
+                    * 0 - automatic selection of best algorithm
+                    * 1 - random selection
+                    * 2 - k-means++
+                    * 3 - fast-greedy init
+                    *-1 - first K rows of dataset are used (debug algorithm)
+    RS          -   RNG used to select centers
+    K           -   number of centers, K>=1
+    CT          -   possibly preallocated output buffer, resized if needed
+    InitBuf     -   internal buffer, possibly unitialized instance of
+                    APBuffers. It is recommended to use this instance only
+                    with SelectInitialCenters() and FixCenters() functions,
+                    because these functions may allocate really large storage.
+    UpdatePool  -   shared pool seeded with instance of APBuffers structure
+                    (seed instance can be unitialized). Used internally with
+                    KMeansUpdateDistances() function. It is recommended
+                    to use this pool ONLY with KMeansUpdateDistances()
+                    function.
+
+OUTPUT PARAMETERS:
+    CT          -   set of K clusters, one per row
+    
+RESULT:
+    True on success, False on failure (impossible to create K independent clusters)
+
+  -- ALGLIB --
+     Copyright 21.01.2015 by Bochkanov Sergey
+*************************************************************************/
+static void clustering_selectinitialcenters(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t initalgo,
+     hqrndstate* rs,
+     ae_int_t k,
+     /* Real    */ ae_matrix* ct,
+     apbuffers* initbuf,
+     ae_shared_pool* updatepool,
+     ae_state *_state)
+{
+    ae_int_t cidx;
+    ae_int_t i;
+    ae_int_t j;
+    double v;
+    double vv;
+    double s;
+    ae_int_t lastnz;
+    ae_int_t ptidx;
+    ae_int_t samplesize;
+    ae_int_t samplescntnew;
+    ae_int_t samplescntall;
+    double samplescale;
+
+
+    
+    /*
+     * Check parameters
+     */
+    ae_assert(npoints>0, "SelectInitialCenters: internal error", _state);
+    ae_assert(nvars>0, "SelectInitialCenters: internal error", _state);
+    ae_assert(k>0, "SelectInitialCenters: internal error", _state);
+    if( initalgo==0 )
+    {
+        initalgo = 3;
+    }
+    rmatrixsetlengthatleast(ct, k, nvars, _state);
+    
+    /*
+     * Random initialization
+     */
+    if( initalgo==-1 )
+    {
+        for(i=0; i<=k-1; i++)
+        {
+            ae_v_move(&ct->ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i%npoints][0], 1, ae_v_len(0,nvars-1));
+        }
+        return;
+    }
+    
+    /*
+     * Random initialization
+     */
+    if( initalgo==1 )
+    {
+        for(i=0; i<=k-1; i++)
+        {
+            j = hqrnduniformi(rs, npoints, _state);
+            ae_v_move(&ct->ptr.pp_double[i][0], 1, &xy->ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
+        }
+        return;
+    }
+    
+    /*
+     * k-means++ initialization
+     */
+    if( initalgo==2 )
+    {
+        
+        /*
+         * Prepare distances array.
+         * Select initial center at random.
+         */
+        rvectorsetlengthatleast(&initbuf->ra0, npoints, _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            initbuf->ra0.ptr.p_double[i] = ae_maxrealnumber;
+        }
+        ptidx = hqrnduniformi(rs, npoints, _state);
+        ae_v_move(&ct->ptr.pp_double[0][0], 1, &xy->ptr.pp_double[ptidx][0], 1, ae_v_len(0,nvars-1));
+        
+        /*
+         * For each newly added center repeat:
+         * * reevaluate distances from points to best centers
+         * * sample points with probability dependent on distance
+         * * add new center
+         */
+        for(cidx=0; cidx<=k-2; cidx++)
+        {
+            
+            /*
+             * Reevaluate distances
+             */
+            s = 0.0;
+            for(i=0; i<=npoints-1; i++)
+            {
+                v = 0.0;
+                for(j=0; j<=nvars-1; j++)
+                {
+                    vv = xy->ptr.pp_double[i][j]-ct->ptr.pp_double[cidx][j];
+                    v = v+vv*vv;
+                }
+                if( ae_fp_less(v,initbuf->ra0.ptr.p_double[i]) )
+                {
+                    initbuf->ra0.ptr.p_double[i] = v;
+                }
+                s = s+initbuf->ra0.ptr.p_double[i];
+            }
+            
+            /*
+             * If all distances are zero, it means that we can not find enough
+             * distinct points. In this case we just select non-distinct center
+             * at random and continue iterations. This issue will be handled
+             * later in the FixCenters() function.
+             */
+            if( ae_fp_eq(s,0.0) )
+            {
+                ptidx = hqrnduniformi(rs, npoints, _state);
+                ae_v_move(&ct->ptr.pp_double[cidx+1][0], 1, &xy->ptr.pp_double[ptidx][0], 1, ae_v_len(0,nvars-1));
+                continue;
+            }
+            
+            /*
+             * Select point as center using its distance.
+             * We also handle situation when because of rounding errors
+             * no point was selected - in this case, last non-zero one
+             * will be used.
+             */
+            v = hqrnduniformr(rs, _state);
+            vv = 0.0;
+            lastnz = -1;
+            ptidx = -1;
+            for(i=0; i<=npoints-1; i++)
+            {
+                if( ae_fp_eq(initbuf->ra0.ptr.p_double[i],0.0) )
+                {
+                    continue;
+                }
+                lastnz = i;
+                vv = vv+initbuf->ra0.ptr.p_double[i];
+                if( ae_fp_less_eq(v,vv/s) )
+                {
+                    ptidx = i;
+                    break;
+                }
+            }
+            ae_assert(lastnz>=0, "SelectInitialCenters: integrity error", _state);
+            if( ptidx<0 )
+            {
+                ptidx = lastnz;
+            }
+            ae_v_move(&ct->ptr.pp_double[cidx+1][0], 1, &xy->ptr.pp_double[ptidx][0], 1, ae_v_len(0,nvars-1));
+        }
+        return;
+    }
+    
+    /*
+     * "Fast-greedy" algorithm based on "Scalable k-means++".
+     *
+     * We perform several rounds, within each round we sample about 0.5*K points
+     * (not exactly 0.5*K) until we have 2*K points sampled. Before each round
+     * we calculate distances from dataset points to closest points sampled so far.
+     * We sample dataset points independently using distance xtimes 0.5*K divided by total
+     * as probability (similar to k-means++, but each point is sampled independently;
+     * after each round we have roughtly 0.5*K points added to sample).
+     *
+     * After sampling is done, we run "greedy" version of k-means++ on this subsample
+     * which selects most distant point on every round.
+     */
+    if( initalgo==3 )
+    {
+        
+        /*
+         * Prepare arrays.
+         * Select initial center at random, add it to "new" part of sample,
+         * which is stored at the beginning of the array
+         */
+        samplesize = 2*k;
+        samplescale = 0.5*k;
+        rmatrixsetlengthatleast(&initbuf->rm0, samplesize, nvars, _state);
+        ptidx = hqrnduniformi(rs, npoints, _state);
+        ae_v_move(&initbuf->rm0.ptr.pp_double[0][0], 1, &xy->ptr.pp_double[ptidx][0], 1, ae_v_len(0,nvars-1));
+        samplescntnew = 1;
+        samplescntall = 1;
+        rvectorsetlengthatleast(&initbuf->ra0, npoints, _state);
+        rvectorsetlengthatleast(&initbuf->ra1, npoints, _state);
+        ivectorsetlengthatleast(&initbuf->ia1, npoints, _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            initbuf->ra0.ptr.p_double[i] = ae_maxrealnumber;
+        }
+        
+        /*
+         * Repeat until samples count is 2*K
+         */
+        while(samplescntall<samplesize)
+        {
+            
+            /*
+             * Evaluate distances from points to NEW centers, store to RA1.
+             * Reset counter of "new" centers.
+             */
+            kmeansupdatedistances(xy, 0, npoints, nvars, &initbuf->rm0, samplescntall-samplescntnew, samplescntall, &initbuf->ia1, &initbuf->ra1, updatepool, _state);
+            samplescntnew = 0;
+            
+            /*
+             * Merge new distances with old ones.
+             * Calculate sum of distances, if sum is exactly zero - fill sample
+             * by randomly selected points and terminate.
+             */
+            s = 0.0;
+            for(i=0; i<=npoints-1; i++)
+            {
+                initbuf->ra0.ptr.p_double[i] = ae_minreal(initbuf->ra0.ptr.p_double[i], initbuf->ra1.ptr.p_double[i], _state);
+                s = s+initbuf->ra0.ptr.p_double[i];
+            }
+            if( ae_fp_eq(s,0.0) )
+            {
+                while(samplescntall<samplesize)
+                {
+                    ptidx = hqrnduniformi(rs, npoints, _state);
+                    ae_v_move(&initbuf->rm0.ptr.pp_double[samplescntall][0], 1, &xy->ptr.pp_double[ptidx][0], 1, ae_v_len(0,nvars-1));
+                    inc(&samplescntall, _state);
+                    inc(&samplescntnew, _state);
+                }
+                break;
+            }
+            
+            /*
+             * Sample points independently.
+             */
+            for(i=0; i<=npoints-1; i++)
+            {
+                if( samplescntall==samplesize )
+                {
+                    break;
+                }
+                if( ae_fp_eq(initbuf->ra0.ptr.p_double[i],0.0) )
+                {
+                    continue;
+                }
+                if( ae_fp_less_eq(hqrnduniformr(rs, _state),samplescale*initbuf->ra0.ptr.p_double[i]/s) )
+                {
+                    ae_v_move(&initbuf->rm0.ptr.pp_double[samplescntall][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
+                    inc(&samplescntall, _state);
+                    inc(&samplescntnew, _state);
+                }
+            }
+        }
+        
+        /*
+         * Run greedy version of k-means on sampled points
+         */
+        rvectorsetlengthatleast(&initbuf->ra0, samplescntall, _state);
+        for(i=0; i<=samplescntall-1; i++)
+        {
+            initbuf->ra0.ptr.p_double[i] = ae_maxrealnumber;
+        }
+        ptidx = hqrnduniformi(rs, samplescntall, _state);
+        ae_v_move(&ct->ptr.pp_double[0][0], 1, &initbuf->rm0.ptr.pp_double[ptidx][0], 1, ae_v_len(0,nvars-1));
+        for(cidx=0; cidx<=k-2; cidx++)
+        {
+            
+            /*
+             * Reevaluate distances
+             */
+            for(i=0; i<=samplescntall-1; i++)
+            {
+                v = 0.0;
+                for(j=0; j<=nvars-1; j++)
+                {
+                    vv = initbuf->rm0.ptr.pp_double[i][j]-ct->ptr.pp_double[cidx][j];
+                    v = v+vv*vv;
+                }
+                if( ae_fp_less(v,initbuf->ra0.ptr.p_double[i]) )
+                {
+                    initbuf->ra0.ptr.p_double[i] = v;
+                }
+            }
+            
+            /*
+             * Select point as center in greedy manner - most distant
+             * point is selected.
+             */
+            ptidx = 0;
+            for(i=0; i<=samplescntall-1; i++)
+            {
+                if( ae_fp_greater(initbuf->ra0.ptr.p_double[i],initbuf->ra0.ptr.p_double[ptidx]) )
+                {
+                    ptidx = i;
+                }
+            }
+            ae_v_move(&ct->ptr.pp_double[cidx+1][0], 1, &initbuf->rm0.ptr.pp_double[ptidx][0], 1, ae_v_len(0,nvars-1));
+        }
+        return;
+    }
+    
+    /*
+     * Internal error
+     */
+    ae_assert(ae_false, "SelectInitialCenters: internal error", _state);
+}
+
+
+/*************************************************************************
+This function "fixes" centers, i.e. replaces ones which have  no  neighbor
+points by new centers which have at least one neighbor. If it is impossible
+to fix centers (not enough distinct points in the dataset), this function
+returns False.
+
+INPUT PARAMETERS:
+    XY          -   dataset, array [0..NPoints-1,0..NVars-1].
+    NPoints     -   points count, >=1
+    NVars       -   number of variables, NVars>=1
+    CT          -   centers
+    K           -   number of centers, K>=1
+    InitBuf     -   internal buffer, possibly unitialized instance of
+                    APBuffers. It is recommended to use this instance only
+                    with SelectInitialCenters() and FixCenters() functions,
+                    because these functions may allocate really large storage.
+    UpdatePool  -   shared pool seeded with instance of APBuffers structure
+                    (seed instance can be unitialized). Used internally with
+                    KMeansUpdateDistances() function. It is recommended
+                    to use this pool ONLY with KMeansUpdateDistances()
+                    function.
+
+OUTPUT PARAMETERS:
+    CT          -   set of K centers, one per row
+    
+RESULT:
+    True on success, False on failure (impossible to create K independent clusters)
+
+  -- ALGLIB --
+     Copyright 21.01.2015 by Bochkanov Sergey
+*************************************************************************/
+static ae_bool clustering_fixcenters(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     /* Real    */ ae_matrix* ct,
+     ae_int_t k,
+     apbuffers* initbuf,
+     ae_shared_pool* updatepool,
+     ae_state *_state)
+{
+    ae_int_t fixiteration;
+    ae_int_t centertofix;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t pdistant;
+    double ddistant;
+    double v;
+    ae_bool result;
+
+
+    ae_assert(npoints>=1, "FixCenters: internal error", _state);
+    ae_assert(nvars>=1, "FixCenters: internal error", _state);
+    ae_assert(k>=1, "FixCenters: internal error", _state);
+    
+    /*
+     * Calculate distances from points to best centers (RA0)
+     * and best center indexes (IA0)
+     */
+    ivectorsetlengthatleast(&initbuf->ia0, npoints, _state);
+    rvectorsetlengthatleast(&initbuf->ra0, npoints, _state);
+    kmeansupdatedistances(xy, 0, npoints, nvars, ct, 0, k, &initbuf->ia0, &initbuf->ra0, updatepool, _state);
+    
+    /*
+     * Repeat loop:
+     * * find first center which has no corresponding point
+     * * set it to the most distant (from the rest of the centerset) point
+     * * recalculate distances, update IA0/RA0
+     * * repeat
+     *
+     * Loop is repeated for at most 2*K iterations. It is stopped once we have
+     * no "empty" clusters.
+     */
+    bvectorsetlengthatleast(&initbuf->ba0, k, _state);
+    for(fixiteration=0; fixiteration<=2*k; fixiteration++)
+    {
+        
+        /*
+         * Select center to fix (one which is not mentioned in IA0),
+         * terminate if there is no such center.
+         * BA0[] stores True for centers which have at least one point.
+         */
+        for(i=0; i<=k-1; i++)
+        {
+            initbuf->ba0.ptr.p_bool[i] = ae_false;
+        }
+        for(i=0; i<=npoints-1; i++)
+        {
+            initbuf->ba0.ptr.p_bool[initbuf->ia0.ptr.p_int[i]] = ae_true;
+        }
+        centertofix = -1;
+        for(i=0; i<=k-1; i++)
+        {
+            if( !initbuf->ba0.ptr.p_bool[i] )
+            {
+                centertofix = i;
+                break;
+            }
+        }
+        if( centertofix<0 )
+        {
+            result = ae_true;
+            return result;
+        }
+        
+        /*
+         * Replace center to fix by the most distant point.
+         * Update IA0/RA0
+         */
+        pdistant = 0;
+        ddistant = initbuf->ra0.ptr.p_double[pdistant];
+        for(i=0; i<=npoints-1; i++)
+        {
+            if( ae_fp_greater(initbuf->ra0.ptr.p_double[i],ddistant) )
+            {
+                ddistant = initbuf->ra0.ptr.p_double[i];
+                pdistant = i;
+            }
+        }
+        if( ae_fp_eq(ddistant,0.0) )
+        {
+            break;
+        }
+        ae_v_move(&ct->ptr.pp_double[centertofix][0], 1, &xy->ptr.pp_double[pdistant][0], 1, ae_v_len(0,nvars-1));
+        for(i=0; i<=npoints-1; i++)
+        {
+            v = 0.0;
+            for(j=0; j<=nvars-1; j++)
+            {
+                v = v+ae_sqr(xy->ptr.pp_double[i][j]-ct->ptr.pp_double[centertofix][j], _state);
+            }
+            if( ae_fp_less(v,initbuf->ra0.ptr.p_double[i]) )
+            {
+                initbuf->ra0.ptr.p_double[i] = v;
+                initbuf->ia0.ptr.p_int[i] = centertofix;
+            }
+        }
+    }
+    result = ae_false;
+    return result;
+}
+
+
+/*************************************************************************
+This  function  performs  agglomerative  hierarchical  clustering    using
+precomputed  distance  matrix.  Internal  function,  should  not be called
+directly.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    D       -   distance matrix, array[S.NFeatures,S.NFeatures]
+                Contents of the matrix is destroyed during
+                algorithm operation.
+
+OUTPUT PARAMETERS:
+    Rep     -   clustering results; see description of AHCReport
+                structure for more information.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+static void clustering_clusterizerrunahcinternal(clusterizerstate* s,
+     /* Real    */ ae_matrix* d,
+     ahcreport* rep,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    double v;
+    ae_int_t mergeidx;
+    ae_int_t c0;
+    ae_int_t c1;
+    ae_int_t s0;
+    ae_int_t s1;
+    ae_int_t ar;
+    ae_int_t br;
+    ae_int_t npoints;
+    ae_vector cidx;
+    ae_vector csizes;
+    ae_vector nnidx;
+    ae_matrix cinfo;
+    ae_int_t n0;
+    ae_int_t n1;
+    ae_int_t ni;
+    double d01;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&cidx, 0, DT_INT, _state);
+    ae_vector_init(&csizes, 0, DT_INT, _state);
+    ae_vector_init(&nnidx, 0, DT_INT, _state);
+    ae_matrix_init(&cinfo, 0, 0, DT_INT, _state);
+
+    npoints = s->npoints;
+    
+    /*
+     * Fill Rep.NPoints, quick exit when NPoints<=1
+     */
+    rep->npoints = npoints;
+    if( npoints==0 )
+    {
+        ae_vector_set_length(&rep->p, 0, _state);
+        ae_matrix_set_length(&rep->z, 0, 0, _state);
+        ae_matrix_set_length(&rep->pz, 0, 0, _state);
+        ae_matrix_set_length(&rep->pm, 0, 0, _state);
+        ae_vector_set_length(&rep->mergedist, 0, _state);
+        rep->terminationtype = 1;
+        ae_frame_leave(_state);
+        return;
+    }
+    if( npoints==1 )
+    {
+        ae_vector_set_length(&rep->p, 1, _state);
+        ae_matrix_set_length(&rep->z, 0, 0, _state);
+        ae_matrix_set_length(&rep->pz, 0, 0, _state);
+        ae_matrix_set_length(&rep->pm, 0, 0, _state);
+        ae_vector_set_length(&rep->mergedist, 0, _state);
+        rep->p.ptr.p_int[0] = 0;
+        rep->terminationtype = 1;
+        ae_frame_leave(_state);
+        return;
+    }
+    ae_matrix_set_length(&rep->z, npoints-1, 2, _state);
+    ae_vector_set_length(&rep->mergedist, npoints-1, _state);
+    rep->terminationtype = 1;
+    
+    /*
+     * Build list of nearest neighbors
+     */
+    ae_vector_set_length(&nnidx, npoints, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        
+        /*
+         * Calculate index of the nearest neighbor
+         */
+        k = -1;
+        v = ae_maxrealnumber;
+        for(j=0; j<=npoints-1; j++)
+        {
+            if( j!=i&&ae_fp_less(d->ptr.pp_double[i][j],v) )
+            {
+                k = j;
+                v = d->ptr.pp_double[i][j];
+            }
+        }
+        ae_assert(ae_fp_less(v,ae_maxrealnumber), "ClusterizerRunAHC: internal error", _state);
+        nnidx.ptr.p_int[i] = k;
+    }
+    
+    /*
+     * For AHCAlgo=4 (Ward's method) replace distances by their squares times 0.5
+     */
+    if( s->ahcalgo==4 )
+    {
+        for(i=0; i<=npoints-1; i++)
+        {
+            for(j=0; j<=npoints-1; j++)
+            {
+                d->ptr.pp_double[i][j] = 0.5*d->ptr.pp_double[i][j]*d->ptr.pp_double[i][j];
+            }
+        }
+    }
+    
+    /*
+     * Distance matrix is built, perform merges.
+     *
+     * NOTE 1: CIdx is array[NPoints] which maps rows/columns of the
+     *         distance matrix D to indexes of clusters. Values of CIdx
+     *         from [0,NPoints) denote single-point clusters, and values
+     *         from [NPoints,2*NPoints-1) denote ones obtained by merging
+     *         smaller clusters. Negative calues correspond to absent clusters.
+     *
+     *         Initially it contains [0...NPoints-1], after each merge
+     *         one element of CIdx (one with index C0) is replaced by
+     *         NPoints+MergeIdx, and another one with index C1 is
+     *         rewritten by -1.
+     * 
+     * NOTE 2: CSizes is array[NPoints] which stores sizes of clusters.
+     *         
+     */
+    ae_vector_set_length(&cidx, npoints, _state);
+    ae_vector_set_length(&csizes, npoints, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        cidx.ptr.p_int[i] = i;
+        csizes.ptr.p_int[i] = 1;
+    }
+    for(mergeidx=0; mergeidx<=npoints-2; mergeidx++)
+    {
+        
+        /*
+         * Select pair of clusters (C0,C1) with CIdx[C0]<CIdx[C1] to merge.
+         */
+        c0 = -1;
+        c1 = -1;
+        d01 = ae_maxrealnumber;
+        for(i=0; i<=npoints-1; i++)
+        {
+            if( cidx.ptr.p_int[i]>=0 )
+            {
+                if( ae_fp_less(d->ptr.pp_double[i][nnidx.ptr.p_int[i]],d01) )
+                {
+                    c0 = i;
+                    c1 = nnidx.ptr.p_int[i];
+                    d01 = d->ptr.pp_double[i][nnidx.ptr.p_int[i]];
+                }
+            }
+        }
+        ae_assert(ae_fp_less(d01,ae_maxrealnumber), "ClusterizerRunAHC: internal error", _state);
+        if( cidx.ptr.p_int[c0]>cidx.ptr.p_int[c1] )
+        {
+            i = c1;
+            c1 = c0;
+            c0 = i;
+        }
+        
+        /*
+         * Fill one row of Rep.Z and one element of Rep.MergeDist
+         */
+        rep->z.ptr.pp_int[mergeidx][0] = cidx.ptr.p_int[c0];
+        rep->z.ptr.pp_int[mergeidx][1] = cidx.ptr.p_int[c1];
+        rep->mergedist.ptr.p_double[mergeidx] = d01;
+        
+        /*
+         * Update distance matrix:
+         * * row/column C0 are updated by distances to the new cluster
+         * * row/column C1 are considered empty (we can fill them by zeros,
+         *   but do not want to spend time - we just ignore them)
+         *
+         * NOTE: it is important to update distance matrix BEFORE CIdx/CSizes
+         *       are updated.
+         */
+        ae_assert((((s->ahcalgo==0||s->ahcalgo==1)||s->ahcalgo==2)||s->ahcalgo==3)||s->ahcalgo==4, "ClusterizerRunAHC: internal error", _state);
+        for(i=0; i<=npoints-1; i++)
+        {
+            if( i!=c0&&i!=c1 )
+            {
+                n0 = csizes.ptr.p_int[c0];
+                n1 = csizes.ptr.p_int[c1];
+                ni = csizes.ptr.p_int[i];
+                if( s->ahcalgo==0 )
+                {
+                    d->ptr.pp_double[i][c0] = ae_maxreal(d->ptr.pp_double[i][c0], d->ptr.pp_double[i][c1], _state);
+                }
+                if( s->ahcalgo==1 )
+                {
+                    d->ptr.pp_double[i][c0] = ae_minreal(d->ptr.pp_double[i][c0], d->ptr.pp_double[i][c1], _state);
+                }
+                if( s->ahcalgo==2 )
+                {
+                    d->ptr.pp_double[i][c0] = (csizes.ptr.p_int[c0]*d->ptr.pp_double[i][c0]+csizes.ptr.p_int[c1]*d->ptr.pp_double[i][c1])/(csizes.ptr.p_int[c0]+csizes.ptr.p_int[c1]);
+                }
+                if( s->ahcalgo==3 )
+                {
+                    d->ptr.pp_double[i][c0] = (d->ptr.pp_double[i][c0]+d->ptr.pp_double[i][c1])/2;
+                }
+                if( s->ahcalgo==4 )
+                {
+                    d->ptr.pp_double[i][c0] = ((n0+ni)*d->ptr.pp_double[i][c0]+(n1+ni)*d->ptr.pp_double[i][c1]-ni*d01)/(n0+n1+ni);
+                }
+                d->ptr.pp_double[c0][i] = d->ptr.pp_double[i][c0];
+            }
+        }
+        
+        /*
+         * Update CIdx and CSizes
+         */
+        cidx.ptr.p_int[c0] = npoints+mergeidx;
+        cidx.ptr.p_int[c1] = -1;
+        csizes.ptr.p_int[c0] = csizes.ptr.p_int[c0]+csizes.ptr.p_int[c1];
+        csizes.ptr.p_int[c1] = 0;
+        
+        /*
+         * Update nearest neighbors array:
+         * * update nearest neighbors of everything except for C0/C1
+         * * update neighbors of C0/C1
+         */
+        for(i=0; i<=npoints-1; i++)
+        {
+            if( (cidx.ptr.p_int[i]>=0&&i!=c0)&&(nnidx.ptr.p_int[i]==c0||nnidx.ptr.p_int[i]==c1) )
+            {
+                
+                /*
+                 * I-th cluster which is distinct from C0/C1 has former C0/C1 cluster as its nearest
+                 * neighbor. We handle this issue depending on specific AHC algorithm being used.
+                 */
+                if( s->ahcalgo==1 )
+                {
+                    
+                    /*
+                     * Single linkage. Merging of two clusters together
+                     * does NOT change distances between new cluster and
+                     * other clusters.
+                     *
+                     * The only thing we have to do is to update nearest neighbor index
+                     */
+                    nnidx.ptr.p_int[i] = c0;
+                }
+                else
+                {
+                    
+                    /*
+                     * Something other than single linkage. We have to re-examine
+                     * all the row to find nearest neighbor.
+                     */
+                    k = -1;
+                    v = ae_maxrealnumber;
+                    for(j=0; j<=npoints-1; j++)
+                    {
+                        if( (cidx.ptr.p_int[j]>=0&&j!=i)&&ae_fp_less(d->ptr.pp_double[i][j],v) )
+                        {
+                            k = j;
+                            v = d->ptr.pp_double[i][j];
+                        }
+                    }
+                    ae_assert(ae_fp_less(v,ae_maxrealnumber)||mergeidx==npoints-2, "ClusterizerRunAHC: internal error", _state);
+                    nnidx.ptr.p_int[i] = k;
+                }
+            }
+        }
+        k = -1;
+        v = ae_maxrealnumber;
+        for(j=0; j<=npoints-1; j++)
+        {
+            if( (cidx.ptr.p_int[j]>=0&&j!=c0)&&ae_fp_less(d->ptr.pp_double[c0][j],v) )
+            {
+                k = j;
+                v = d->ptr.pp_double[c0][j];
+            }
+        }
+        ae_assert(ae_fp_less(v,ae_maxrealnumber)||mergeidx==npoints-2, "ClusterizerRunAHC: internal error", _state);
+        nnidx.ptr.p_int[c0] = k;
+    }
+    
+    /*
+     * Calculate Rep.P and Rep.PM.
+     *
+     * In order to do that, we fill CInfo matrix - (2*NPoints-1)*3 matrix,
+     * with I-th row containing:
+     * * CInfo[I,0]     -   size of I-th cluster
+     * * CInfo[I,1]     -   beginning of I-th cluster
+     * * CInfo[I,2]     -   end of I-th cluster
+     * * CInfo[I,3]     -   height of I-th cluster
+     *
+     * We perform it as follows:
+     * * first NPoints clusters have unit size (CInfo[I,0]=1) and zero
+     *   height (CInfo[I,3]=0)
+     * * we replay NPoints-1 merges from first to last and fill sizes of
+     *   corresponding clusters (new size is a sum of sizes of clusters
+     *   being merged) and height (new height is max(heights)+1).
+     * * now we ready to determine locations of clusters. Last cluster
+     *   spans entire dataset, we know it. We replay merges from last to
+     *   first, during each merge we already know location of the merge
+     *   result, and we can position first cluster to the left part of
+     *   the result, and second cluster to the right part.
+     */
+    ae_vector_set_length(&rep->p, npoints, _state);
+    ae_matrix_set_length(&rep->pm, npoints-1, 6, _state);
+    ae_matrix_set_length(&cinfo, 2*npoints-1, 4, _state);
+    for(i=0; i<=npoints-1; i++)
+    {
+        cinfo.ptr.pp_int[i][0] = 1;
+        cinfo.ptr.pp_int[i][3] = 0;
+    }
+    for(i=0; i<=npoints-2; i++)
+    {
+        cinfo.ptr.pp_int[npoints+i][0] = cinfo.ptr.pp_int[rep->z.ptr.pp_int[i][0]][0]+cinfo.ptr.pp_int[rep->z.ptr.pp_int[i][1]][0];
+        cinfo.ptr.pp_int[npoints+i][3] = ae_maxint(cinfo.ptr.pp_int[rep->z.ptr.pp_int[i][0]][3], cinfo.ptr.pp_int[rep->z.ptr.pp_int[i][1]][3], _state)+1;
+    }
+    cinfo.ptr.pp_int[2*npoints-2][1] = 0;
+    cinfo.ptr.pp_int[2*npoints-2][2] = npoints-1;
+    for(i=npoints-2; i>=0; i--)
+    {
+        
+        /*
+         * We merge C0 which spans [A0,B0] and C1 (spans [A1,B1]),
+         * with unknown A0, B0, A1, B1. However, we know that result
+         * is CR, which spans [AR,BR] with known AR/BR, and we know
+         * sizes of C0, C1, CR (denotes as S0, S1, SR).
+         */
+        c0 = rep->z.ptr.pp_int[i][0];
+        c1 = rep->z.ptr.pp_int[i][1];
+        s0 = cinfo.ptr.pp_int[c0][0];
+        s1 = cinfo.ptr.pp_int[c1][0];
+        ar = cinfo.ptr.pp_int[npoints+i][1];
+        br = cinfo.ptr.pp_int[npoints+i][2];
+        cinfo.ptr.pp_int[c0][1] = ar;
+        cinfo.ptr.pp_int[c0][2] = ar+s0-1;
+        cinfo.ptr.pp_int[c1][1] = br-(s1-1);
+        cinfo.ptr.pp_int[c1][2] = br;
+        rep->pm.ptr.pp_int[i][0] = cinfo.ptr.pp_int[c0][1];
+        rep->pm.ptr.pp_int[i][1] = cinfo.ptr.pp_int[c0][2];
+        rep->pm.ptr.pp_int[i][2] = cinfo.ptr.pp_int[c1][1];
+        rep->pm.ptr.pp_int[i][3] = cinfo.ptr.pp_int[c1][2];
+        rep->pm.ptr.pp_int[i][4] = cinfo.ptr.pp_int[c0][3];
+        rep->pm.ptr.pp_int[i][5] = cinfo.ptr.pp_int[c1][3];
+    }
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_assert(cinfo.ptr.pp_int[i][1]==cinfo.ptr.pp_int[i][2], "Assertion failed", _state);
+        rep->p.ptr.p_int[i] = cinfo.ptr.pp_int[i][1];
+    }
+    
+    /*
+     * Calculate Rep.PZ
+     */
+    ae_matrix_set_length(&rep->pz, npoints-1, 2, _state);
+    for(i=0; i<=npoints-2; i++)
+    {
+        rep->pz.ptr.pp_int[i][0] = rep->z.ptr.pp_int[i][0];
+        rep->pz.ptr.pp_int[i][1] = rep->z.ptr.pp_int[i][1];
+        if( rep->pz.ptr.pp_int[i][0]<npoints )
+        {
+            rep->pz.ptr.pp_int[i][0] = rep->p.ptr.p_int[rep->pz.ptr.pp_int[i][0]];
+        }
+        if( rep->pz.ptr.pp_int[i][1]<npoints )
+        {
+            rep->pz.ptr.pp_int[i][1] = rep->p.ptr.p_int[rep->pz.ptr.pp_int[i][1]];
+        }
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+This function recursively evaluates distance matrix  for  SOME  (not all!)
+distance types.
+
+INPUT PARAMETERS:
+    XY      -   array[?,NFeatures], dataset
+    NFeatures-  number of features, >=1
+    DistType-   distance function:
+                *  0    Chebyshev distance  (L-inf norm)
+                *  1    city block distance (L1 norm)
+    D       -   preallocated output matrix
+    I0,I1   -   half interval of rows to calculate: [I0,I1) is processed
+    J0,J1   -   half interval of cols to calculate: [J0,J1) is processed
+
+OUTPUT PARAMETERS:
+    D       -   array[NPoints,NPoints], distance matrix
+                upper triangle and main diagonal are initialized with
+                data.
+
+NOTE: intersection of [I0,I1) and [J0,J1)  may  completely  lie  in  upper
+      triangle, only partially intersect with it, or have zero intersection.
+      In any case, only intersection of submatrix given by [I0,I1)*[J0,J1)
+      with upper triangle of the matrix is evaluated.
+      
+      Say, for 4x4 distance matrix A:
+      * [0,2)*[0,2) will result in evaluation of A00, A01, A11
+      * [2,4)*[2,4) will result in evaluation of A22, A23, A32, A33
+      * [2,4)*[0,2) will result in evaluation of empty set of elements
+      
+
+  -- ALGLIB --
+     Copyright 07.04.2013 by Bochkanov Sergey
+*************************************************************************/
+static void clustering_evaluatedistancematrixrec(/* Real    */ ae_matrix* xy,
+     ae_int_t nfeatures,
+     ae_int_t disttype,
+     /* Real    */ ae_matrix* d,
+     ae_int_t i0,
+     ae_int_t i1,
+     ae_int_t j0,
+     ae_int_t j1,
+     ae_state *_state)
+{
+    double rcomplexity;
+    ae_int_t len0;
+    ae_int_t len1;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    double v;
+    double vv;
+
+
+    ae_assert(disttype==0||disttype==1, "EvaluateDistanceMatrixRec: incorrect DistType", _state);
+    
+    /*
+     * Normalize J0/J1:
+     * * J0:=max(J0,I0) - we ignore lower triangle
+     * * J1:=max(J1,J0) - normalize J1
+     */
+    j0 = ae_maxint(j0, i0, _state);
+    j1 = ae_maxint(j1, j0, _state);
+    if( j1<=j0||i1<=i0 )
+    {
+        return;
+    }
+    
+    /*
+     * Try to process in parallel. Two condtions must hold in order to
+     * activate parallel processing:
+     * 1. I1-I0>2 or J1-J0>2
+     * 2. (I1-I0)*(J1-J0)*NFeatures>=ParallelComplexity
+     *
+     * NOTE: all quantities are converted to reals in order to avoid
+     *       integer overflow during multiplication
+     *
+     * NOTE: strict inequality in (1) is necessary to reduce task to 2x2
+     *       basecases. In future versions we will be able to handle such
+     *       basecases more efficiently than 1x1 cases.
+     */
+    rcomplexity = (double)(i1-i0);
+    rcomplexity = rcomplexity*(j1-j0);
+    rcomplexity = rcomplexity*nfeatures;
+    if( ae_fp_greater_eq(rcomplexity,clustering_parallelcomplexity)&&(i1-i0>2||j1-j0>2) )
+    {
+        
+        /*
+         * Recursive division along largest of dimensions
+         */
+        if( i1-i0>j1-j0 )
+        {
+            splitlengtheven(i1-i0, &len0, &len1, _state);
+            clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, i0, i0+len0, j0, j1, _state);
+            clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, i0+len0, i1, j0, j1, _state);
+        }
+        else
+        {
+            splitlengtheven(j1-j0, &len0, &len1, _state);
+            clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, i0, i1, j0, j0+len0, _state);
+            clustering_evaluatedistancematrixrec(xy, nfeatures, disttype, d, i0, i1, j0+len0, j1, _state);
+        }
+        return;
+    }
+    
+    /*
+     * Sequential processing
+     */
+    for(i=i0; i<=i1-1; i++)
+    {
+        for(j=j0; j<=j1-1; j++)
+        {
+            if( j>=i )
+            {
+                v = 0.0;
+                if( disttype==0 )
+                {
+                    for(k=0; k<=nfeatures-1; k++)
+                    {
+                        vv = xy->ptr.pp_double[i][k]-xy->ptr.pp_double[j][k];
+                        if( ae_fp_less(vv,(double)(0)) )
+                        {
+                            vv = -vv;
+                        }
+                        if( ae_fp_greater(vv,v) )
+                        {
+                            v = vv;
+                        }
+                    }
+                }
+                if( disttype==1 )
+                {
+                    for(k=0; k<=nfeatures-1; k++)
+                    {
+                        vv = xy->ptr.pp_double[i][k]-xy->ptr.pp_double[j][k];
+                        if( ae_fp_less(vv,(double)(0)) )
+                        {
+                            vv = -vv;
+                        }
+                        v = v+vv;
+                    }
+                }
+                d->ptr.pp_double[i][j] = v;
+            }
+        }
+    }
+}
+
+
+void _kmeansbuffers_init(void* _p, ae_state *_state)
+{
+    kmeansbuffers *p = (kmeansbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_init(&p->ct, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&p->ctbest, 0, 0, DT_REAL, _state);
+    ae_vector_init(&p->xycbest, 0, DT_INT, _state);
+    ae_vector_init(&p->xycprev, 0, DT_INT, _state);
+    ae_vector_init(&p->d2, 0, DT_REAL, _state);
+    ae_vector_init(&p->csizes, 0, DT_INT, _state);
+    _apbuffers_init(&p->initbuf, _state);
+    ae_shared_pool_init(&p->updatepool, _state);
+}
+
+
+void _kmeansbuffers_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    kmeansbuffers *dst = (kmeansbuffers*)_dst;
+    kmeansbuffers *src = (kmeansbuffers*)_src;
+    ae_matrix_init_copy(&dst->ct, &src->ct, _state);
+    ae_matrix_init_copy(&dst->ctbest, &src->ctbest, _state);
+    ae_vector_init_copy(&dst->xycbest, &src->xycbest, _state);
+    ae_vector_init_copy(&dst->xycprev, &src->xycprev, _state);
+    ae_vector_init_copy(&dst->d2, &src->d2, _state);
+    ae_vector_init_copy(&dst->csizes, &src->csizes, _state);
+    _apbuffers_init_copy(&dst->initbuf, &src->initbuf, _state);
+    ae_shared_pool_init_copy(&dst->updatepool, &src->updatepool, _state);
+}
+
+
+void _kmeansbuffers_clear(void* _p)
+{
+    kmeansbuffers *p = (kmeansbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_clear(&p->ct);
+    ae_matrix_clear(&p->ctbest);
+    ae_vector_clear(&p->xycbest);
+    ae_vector_clear(&p->xycprev);
+    ae_vector_clear(&p->d2);
+    ae_vector_clear(&p->csizes);
+    _apbuffers_clear(&p->initbuf);
+    ae_shared_pool_clear(&p->updatepool);
+}
+
+
+void _kmeansbuffers_destroy(void* _p)
+{
+    kmeansbuffers *p = (kmeansbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_destroy(&p->ct);
+    ae_matrix_destroy(&p->ctbest);
+    ae_vector_destroy(&p->xycbest);
+    ae_vector_destroy(&p->xycprev);
+    ae_vector_destroy(&p->d2);
+    ae_vector_destroy(&p->csizes);
+    _apbuffers_destroy(&p->initbuf);
+    ae_shared_pool_destroy(&p->updatepool);
+}
+
+
+void _clusterizerstate_init(void* _p, ae_state *_state)
+{
+    clusterizerstate *p = (clusterizerstate*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_init(&p->xy, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&p->d, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&p->tmpd, 0, 0, DT_REAL, _state);
+    _apbuffers_init(&p->distbuf, _state);
+    _kmeansbuffers_init(&p->kmeanstmp, _state);
+}
+
+
+void _clusterizerstate_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    clusterizerstate *dst = (clusterizerstate*)_dst;
+    clusterizerstate *src = (clusterizerstate*)_src;
+    dst->npoints = src->npoints;
+    dst->nfeatures = src->nfeatures;
+    dst->disttype = src->disttype;
+    ae_matrix_init_copy(&dst->xy, &src->xy, _state);
+    ae_matrix_init_copy(&dst->d, &src->d, _state);
+    dst->ahcalgo = src->ahcalgo;
+    dst->kmeansrestarts = src->kmeansrestarts;
+    dst->kmeansmaxits = src->kmeansmaxits;
+    dst->kmeansinitalgo = src->kmeansinitalgo;
+    dst->kmeansdbgnoits = src->kmeansdbgnoits;
+    dst->seed = src->seed;
+    ae_matrix_init_copy(&dst->tmpd, &src->tmpd, _state);
+    _apbuffers_init_copy(&dst->distbuf, &src->distbuf, _state);
+    _kmeansbuffers_init_copy(&dst->kmeanstmp, &src->kmeanstmp, _state);
+}
+
+
+void _clusterizerstate_clear(void* _p)
+{
+    clusterizerstate *p = (clusterizerstate*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_clear(&p->xy);
+    ae_matrix_clear(&p->d);
+    ae_matrix_clear(&p->tmpd);
+    _apbuffers_clear(&p->distbuf);
+    _kmeansbuffers_clear(&p->kmeanstmp);
+}
+
+
+void _clusterizerstate_destroy(void* _p)
+{
+    clusterizerstate *p = (clusterizerstate*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_destroy(&p->xy);
+    ae_matrix_destroy(&p->d);
+    ae_matrix_destroy(&p->tmpd);
+    _apbuffers_destroy(&p->distbuf);
+    _kmeansbuffers_destroy(&p->kmeanstmp);
+}
+
+
+void _ahcreport_init(void* _p, ae_state *_state)
+{
+    ahcreport *p = (ahcreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_init(&p->p, 0, DT_INT, _state);
+    ae_matrix_init(&p->z, 0, 0, DT_INT, _state);
+    ae_matrix_init(&p->pz, 0, 0, DT_INT, _state);
+    ae_matrix_init(&p->pm, 0, 0, DT_INT, _state);
+    ae_vector_init(&p->mergedist, 0, DT_REAL, _state);
+}
+
+
+void _ahcreport_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    ahcreport *dst = (ahcreport*)_dst;
+    ahcreport *src = (ahcreport*)_src;
+    dst->terminationtype = src->terminationtype;
+    dst->npoints = src->npoints;
+    ae_vector_init_copy(&dst->p, &src->p, _state);
+    ae_matrix_init_copy(&dst->z, &src->z, _state);
+    ae_matrix_init_copy(&dst->pz, &src->pz, _state);
+    ae_matrix_init_copy(&dst->pm, &src->pm, _state);
+    ae_vector_init_copy(&dst->mergedist, &src->mergedist, _state);
+}
+
+
+void _ahcreport_clear(void* _p)
+{
+    ahcreport *p = (ahcreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_clear(&p->p);
+    ae_matrix_clear(&p->z);
+    ae_matrix_clear(&p->pz);
+    ae_matrix_clear(&p->pm);
+    ae_vector_clear(&p->mergedist);
+}
+
+
+void _ahcreport_destroy(void* _p)
+{
+    ahcreport *p = (ahcreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_destroy(&p->p);
+    ae_matrix_destroy(&p->z);
+    ae_matrix_destroy(&p->pz);
+    ae_matrix_destroy(&p->pm);
+    ae_vector_destroy(&p->mergedist);
+}
+
+
+void _kmeansreport_init(void* _p, ae_state *_state)
+{
+    kmeansreport *p = (kmeansreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_init(&p->c, 0, 0, DT_REAL, _state);
+    ae_vector_init(&p->cidx, 0, DT_INT, _state);
+}
+
+
+void _kmeansreport_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    kmeansreport *dst = (kmeansreport*)_dst;
+    kmeansreport *src = (kmeansreport*)_src;
+    dst->npoints = src->npoints;
+    dst->nfeatures = src->nfeatures;
+    dst->terminationtype = src->terminationtype;
+    dst->iterationscount = src->iterationscount;
+    dst->energy = src->energy;
+    dst->k = src->k;
+    ae_matrix_init_copy(&dst->c, &src->c, _state);
+    ae_vector_init_copy(&dst->cidx, &src->cidx, _state);
+}
+
+
+void _kmeansreport_clear(void* _p)
+{
+    kmeansreport *p = (kmeansreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_clear(&p->c);
+    ae_vector_clear(&p->cidx);
+}
+
+
+void _kmeansreport_destroy(void* _p)
+{
+    kmeansreport *p = (kmeansreport*)_p;
+    ae_touch_ptr((void*)p);
+    ae_matrix_destroy(&p->c);
+    ae_vector_destroy(&p->cidx);
+}
+
+
+
+
+/*************************************************************************
+This subroutine builds random decision forest.
+
+INPUT PARAMETERS:
+    XY          -   training set
+    NPoints     -   training set size, NPoints>=1
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   task type:
+                    * NClasses=1 - regression task with one
+                                   dependent variable
+                    * NClasses>1 - classification task with
+                                   NClasses classes.
+    NTrees      -   number of trees in a forest, NTrees>=1.
+                    recommended values: 50-100.
+    R           -   percent of a training set used to build
+                    individual trees. 0<R<=1.
+                    recommended values: 0.1 <= R <= 0.66.
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed
+                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
+                          or R>1).
+                    *  1, if task has been solved
+    DF          -   model built
+    Rep         -   training report, contains error on a training set
+                    and out-of-bag estimates of generalization error.
+
+  -- ALGLIB --
+     Copyright 19.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfbuildrandomdecisionforest(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t ntrees,
+     double r,
+     ae_int_t* info,
+     decisionforest* df,
+     dfreport* rep,
+     ae_state *_state)
+{
+    ae_int_t samplesize;
+
+    *info = 0;
+    _decisionforest_clear(df);
+    _dfreport_clear(rep);
+
+    if( ae_fp_less_eq(r,(double)(0))||ae_fp_greater(r,(double)(1)) )
+    {
+        *info = -1;
+        return;
+    }
+    samplesize = ae_maxint(ae_round(r*npoints, _state), 1, _state);
+    dfbuildinternal(xy, npoints, nvars, nclasses, ntrees, samplesize, ae_maxint(nvars/2, 1, _state), dforest_dfusestrongsplits+dforest_dfuseevs, info, df, rep, _state);
+}
+
+
+/*************************************************************************
+This subroutine builds random decision forest.
+This function gives ability to tune number of variables used when choosing
+best split.
+
+INPUT PARAMETERS:
+    XY          -   training set
+    NPoints     -   training set size, NPoints>=1
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   task type:
+                    * NClasses=1 - regression task with one
+                                   dependent variable
+                    * NClasses>1 - classification task with
+                                   NClasses classes.
+    NTrees      -   number of trees in a forest, NTrees>=1.
+                    recommended values: 50-100.
+    NRndVars    -   number of variables used when choosing best split
+    R           -   percent of a training set used to build
+                    individual trees. 0<R<=1.
+                    recommended values: 0.1 <= R <= 0.66.
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed
+                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
+                          or R>1).
+                    *  1, if task has been solved
+    DF          -   model built
+    Rep         -   training report, contains error on a training set
+                    and out-of-bag estimates of generalization error.
+
+  -- ALGLIB --
+     Copyright 19.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfbuildrandomdecisionforestx1(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t ntrees,
+     ae_int_t nrndvars,
+     double r,
+     ae_int_t* info,
+     decisionforest* df,
+     dfreport* rep,
+     ae_state *_state)
+{
+    ae_int_t samplesize;
+
+    *info = 0;
+    _decisionforest_clear(df);
+    _dfreport_clear(rep);
+
+    if( ae_fp_less_eq(r,(double)(0))||ae_fp_greater(r,(double)(1)) )
+    {
+        *info = -1;
+        return;
+    }
+    if( nrndvars<=0||nrndvars>nvars )
+    {
+        *info = -1;
+        return;
+    }
+    samplesize = ae_maxint(ae_round(r*npoints, _state), 1, _state);
+    dfbuildinternal(xy, npoints, nvars, nclasses, ntrees, samplesize, nrndvars, dforest_dfusestrongsplits+dforest_dfuseevs, info, df, rep, _state);
+}
+
+
+void dfbuildinternal(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t ntrees,
+     ae_int_t samplesize,
+     ae_int_t nfeatures,
+     ae_int_t flags,
+     ae_int_t* info,
+     decisionforest* df,
+     dfreport* rep,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t tmpi;
+    ae_int_t lasttreeoffs;
+    ae_int_t offs;
+    ae_int_t ooboffs;
+    ae_int_t treesize;
+    ae_int_t nvarsinpool;
+    ae_bool useevs;
+    dfinternalbuffers bufs;
+    ae_vector permbuf;
+    ae_vector oobbuf;
+    ae_vector oobcntbuf;
+    ae_matrix xys;
+    ae_vector x;
+    ae_vector y;
+    ae_int_t oobcnt;
+    ae_int_t oobrelcnt;
+    double v;
+    double vmin;
+    double vmax;
+    ae_bool bflag;
+    hqrndstate rs;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    _decisionforest_clear(df);
+    _dfreport_clear(rep);
+    _dfinternalbuffers_init(&bufs, _state);
+    ae_vector_init(&permbuf, 0, DT_INT, _state);
+    ae_vector_init(&oobbuf, 0, DT_REAL, _state);
+    ae_vector_init(&oobcntbuf, 0, DT_INT, _state);
+    ae_matrix_init(&xys, 0, 0, DT_REAL, _state);
+    ae_vector_init(&x, 0, DT_REAL, _state);
+    ae_vector_init(&y, 0, DT_REAL, _state);
+    _hqrndstate_init(&rs, _state);
+
+    
+    /*
+     * Test for inputs
+     */
+    if( (((((npoints<1||samplesize<1)||samplesize>npoints)||nvars<1)||nclasses<1)||ntrees<1)||nfeatures<1 )
     {
         *info = -1;
         ae_frame_leave(_state);
         return;
     }
+    if( nclasses>1 )
+    {
+        for(i=0; i<=npoints-1; i++)
+        {
+            if( ae_round(xy->ptr.pp_double[i][nvars], _state)<0||ae_round(xy->ptr.pp_double[i][nvars], _state)>=nclasses )
+            {
+                *info = -2;
+                ae_frame_leave(_state);
+                return;
+            }
+        }
+    }
     *info = 1;
     
     /*
-     * Special case: NPoints=0
+     * Flags
      */
-    if( npoints==0 )
-    {
-        ae_vector_set_length(s2, nvars, _state);
-        ae_matrix_set_length(v, nvars, nvars, _state);
-        for(i=0; i<=nvars-1; i++)
-        {
-            s2->ptr.p_double[i] = (double)(0);
-        }
-        for(i=0; i<=nvars-1; i++)
-        {
-            for(j=0; j<=nvars-1; j++)
-            {
-                if( i==j )
-                {
-                    v->ptr.pp_double[i][j] = (double)(1);
-                }
-                else
-                {
-                    v->ptr.pp_double[i][j] = (double)(0);
-                }
-            }
-        }
-        ae_frame_leave(_state);
-        return;
-    }
+    useevs = flags/dforest_dfuseevs%2!=0;
     
     /*
-     * Calculate means
+     * Allocate data, prepare header
      */
-    ae_vector_set_length(&m, nvars, _state);
-    ae_vector_set_length(&t, npoints, _state);
-    for(j=0; j<=nvars-1; j++)
-    {
-        ae_v_move(&t.ptr.p_double[0], 1, &x->ptr.pp_double[0][j], x->stride, ae_v_len(0,npoints-1));
-        samplemoments(&t, npoints, &mean, &variance, &skewness, &kurtosis, _state);
-        m.ptr.p_double[j] = mean;
-    }
-    
-    /*
-     * Center, apply SVD, prepare output
-     */
-    ae_matrix_set_length(&a, ae_maxint(npoints, nvars, _state), nvars, _state);
+    treesize = 1+dforest_innernodewidth*(samplesize-1)+dforest_leafnodewidth*samplesize;
+    ae_vector_set_length(&permbuf, npoints-1+1, _state);
+    ae_vector_set_length(&bufs.treebuf, treesize-1+1, _state);
+    ae_vector_set_length(&bufs.idxbuf, npoints-1+1, _state);
+    ae_vector_set_length(&bufs.tmpbufr, npoints-1+1, _state);
+    ae_vector_set_length(&bufs.tmpbufr2, npoints-1+1, _state);
+    ae_vector_set_length(&bufs.tmpbufi, npoints-1+1, _state);
+    ae_vector_set_length(&bufs.sortrbuf, npoints, _state);
+    ae_vector_set_length(&bufs.sortrbuf2, npoints, _state);
+    ae_vector_set_length(&bufs.sortibuf, npoints, _state);
+    ae_vector_set_length(&bufs.varpool, nvars-1+1, _state);
+    ae_vector_set_length(&bufs.evsbin, nvars-1+1, _state);
+    ae_vector_set_length(&bufs.evssplits, nvars-1+1, _state);
+    ae_vector_set_length(&bufs.classibuf, 2*nclasses-1+1, _state);
+    ae_vector_set_length(&oobbuf, nclasses*npoints-1+1, _state);
+    ae_vector_set_length(&oobcntbuf, npoints-1+1, _state);
+    ae_vector_set_length(&df->trees, ntrees*treesize-1+1, _state);
+    ae_matrix_set_length(&xys, samplesize-1+1, nvars+1, _state);
+    ae_vector_set_length(&x, nvars-1+1, _state);
+    ae_vector_set_length(&y, nclasses-1+1, _state);
     for(i=0; i<=npoints-1; i++)
     {
-        ae_v_move(&a.ptr.pp_double[i][0], 1, &x->ptr.pp_double[i][0], 1, ae_v_len(0,nvars-1));
-        ae_v_sub(&a.ptr.pp_double[i][0], 1, &m.ptr.p_double[0], 1, ae_v_len(0,nvars-1));
+        permbuf.ptr.p_int[i] = i;
     }
-    for(i=npoints; i<=nvars-1; i++)
+    for(i=0; i<=npoints*nclasses-1; i++)
+    {
+        oobbuf.ptr.p_double[i] = (double)(0);
+    }
+    for(i=0; i<=npoints-1; i++)
+    {
+        oobcntbuf.ptr.p_int[i] = 0;
+    }
+    
+    /*
+     * Prepare variable pool and EVS (extended variable selection/splitting) buffers
+     * (whether EVS is turned on or not):
+     * 1. detect binary variables and pre-calculate splits for them
+     * 2. detect variables with non-distinct values and exclude them from pool
+     */
+    for(i=0; i<=nvars-1; i++)
+    {
+        bufs.varpool.ptr.p_int[i] = i;
+    }
+    nvarsinpool = nvars;
+    if( useevs )
     {
         for(j=0; j<=nvars-1; j++)
         {
-            a.ptr.pp_double[i][j] = (double)(0);
+            vmin = xy->ptr.pp_double[0][j];
+            vmax = vmin;
+            for(i=0; i<=npoints-1; i++)
+            {
+                v = xy->ptr.pp_double[i][j];
+                vmin = ae_minreal(vmin, v, _state);
+                vmax = ae_maxreal(vmax, v, _state);
+            }
+            if( ae_fp_eq(vmin,vmax) )
+            {
+                
+                /*
+                 * exclude variable from pool
+                 */
+                bufs.varpool.ptr.p_int[j] = bufs.varpool.ptr.p_int[nvarsinpool-1];
+                bufs.varpool.ptr.p_int[nvarsinpool-1] = -1;
+                nvarsinpool = nvarsinpool-1;
+                continue;
+            }
+            bflag = ae_false;
+            for(i=0; i<=npoints-1; i++)
+            {
+                v = xy->ptr.pp_double[i][j];
+                if( ae_fp_neq(v,vmin)&&ae_fp_neq(v,vmax) )
+                {
+                    bflag = ae_true;
+                    break;
+                }
+            }
+            if( bflag )
+            {
+                
+                /*
+                 * non-binary variable
+                 */
+                bufs.evsbin.ptr.p_bool[j] = ae_false;
+            }
+            else
+            {
+                
+                /*
+                 * Prepare
+                 */
+                bufs.evsbin.ptr.p_bool[j] = ae_true;
+                bufs.evssplits.ptr.p_double[j] = 0.5*(vmin+vmax);
+                if( ae_fp_less_eq(bufs.evssplits.ptr.p_double[j],vmin) )
+                {
+                    bufs.evssplits.ptr.p_double[j] = vmax;
+                }
+            }
         }
     }
-    if( !rmatrixsvd(&a, ae_maxint(npoints, nvars, _state), nvars, 0, 1, 2, s2, &u, &vt, _state) )
+    
+    /*
+     * RANDOM FOREST FORMAT
+     * W[0]         -   size of array
+     * W[1]         -   version number
+     * W[2]         -   NVars
+     * W[3]         -   NClasses (1 for regression)
+     * W[4]         -   NTrees
+     * W[5]         -   trees offset
+     *
+     *
+     * TREE FORMAT
+     * W[Offs]      -   size of sub-array
+     *     node info:
+     * W[K+0]       -   variable number        (-1 for leaf mode)
+     * W[K+1]       -   threshold              (class/value for leaf node)
+     * W[K+2]       -   ">=" branch index      (absent for leaf node)
+     *
+     */
+    df->nvars = nvars;
+    df->nclasses = nclasses;
+    df->ntrees = ntrees;
+    
+    /*
+     * Build forest
+     */
+    hqrndrandomize(&rs, _state);
+    offs = 0;
+    for(i=0; i<=ntrees-1; i++)
     {
-        *info = -4;
+        
+        /*
+         * Prepare sample
+         */
+        for(k=0; k<=samplesize-1; k++)
+        {
+            j = k+hqrnduniformi(&rs, npoints-k, _state);
+            tmpi = permbuf.ptr.p_int[k];
+            permbuf.ptr.p_int[k] = permbuf.ptr.p_int[j];
+            permbuf.ptr.p_int[j] = tmpi;
+            j = permbuf.ptr.p_int[k];
+            ae_v_move(&xys.ptr.pp_double[k][0], 1, &xy->ptr.pp_double[j][0], 1, ae_v_len(0,nvars));
+        }
+        
+        /*
+         * build tree, copy
+         */
+        dforest_dfbuildtree(&xys, samplesize, nvars, nclasses, nfeatures, nvarsinpool, flags, &bufs, &rs, _state);
+        j = ae_round(bufs.treebuf.ptr.p_double[0], _state);
+        ae_v_move(&df->trees.ptr.p_double[offs], 1, &bufs.treebuf.ptr.p_double[0], 1, ae_v_len(offs,offs+j-1));
+        lasttreeoffs = offs;
+        offs = offs+j;
+        
+        /*
+         * OOB estimates
+         */
+        for(k=samplesize; k<=npoints-1; k++)
+        {
+            for(j=0; j<=nclasses-1; j++)
+            {
+                y.ptr.p_double[j] = (double)(0);
+            }
+            j = permbuf.ptr.p_int[k];
+            ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[j][0], 1, ae_v_len(0,nvars-1));
+            dforest_dfprocessinternal(df, lasttreeoffs, &x, &y, _state);
+            ae_v_add(&oobbuf.ptr.p_double[j*nclasses], 1, &y.ptr.p_double[0], 1, ae_v_len(j*nclasses,(j+1)*nclasses-1));
+            oobcntbuf.ptr.p_int[j] = oobcntbuf.ptr.p_int[j]+1;
+        }
+    }
+    df->bufsize = offs;
+    
+    /*
+     * Normalize OOB results
+     */
+    for(i=0; i<=npoints-1; i++)
+    {
+        if( oobcntbuf.ptr.p_int[i]!=0 )
+        {
+            v = (double)1/(double)oobcntbuf.ptr.p_int[i];
+            ae_v_muld(&oobbuf.ptr.p_double[i*nclasses], 1, ae_v_len(i*nclasses,i*nclasses+nclasses-1), v);
+        }
+    }
+    
+    /*
+     * Calculate training set estimates
+     */
+    rep->relclserror = dfrelclserror(df, xy, npoints, _state);
+    rep->avgce = dfavgce(df, xy, npoints, _state);
+    rep->rmserror = dfrmserror(df, xy, npoints, _state);
+    rep->avgerror = dfavgerror(df, xy, npoints, _state);
+    rep->avgrelerror = dfavgrelerror(df, xy, npoints, _state);
+    
+    /*
+     * Calculate OOB estimates.
+     */
+    rep->oobrelclserror = (double)(0);
+    rep->oobavgce = (double)(0);
+    rep->oobrmserror = (double)(0);
+    rep->oobavgerror = (double)(0);
+    rep->oobavgrelerror = (double)(0);
+    oobcnt = 0;
+    oobrelcnt = 0;
+    for(i=0; i<=npoints-1; i++)
+    {
+        if( oobcntbuf.ptr.p_int[i]!=0 )
+        {
+            ooboffs = i*nclasses;
+            if( nclasses>1 )
+            {
+                
+                /*
+                 * classification-specific code
+                 */
+                k = ae_round(xy->ptr.pp_double[i][nvars], _state);
+                tmpi = 0;
+                for(j=1; j<=nclasses-1; j++)
+                {
+                    if( ae_fp_greater(oobbuf.ptr.p_double[ooboffs+j],oobbuf.ptr.p_double[ooboffs+tmpi]) )
+                    {
+                        tmpi = j;
+                    }
+                }
+                if( tmpi!=k )
+                {
+                    rep->oobrelclserror = rep->oobrelclserror+1;
+                }
+                if( ae_fp_neq(oobbuf.ptr.p_double[ooboffs+k],(double)(0)) )
+                {
+                    rep->oobavgce = rep->oobavgce-ae_log(oobbuf.ptr.p_double[ooboffs+k], _state);
+                }
+                else
+                {
+                    rep->oobavgce = rep->oobavgce-ae_log(ae_minrealnumber, _state);
+                }
+                for(j=0; j<=nclasses-1; j++)
+                {
+                    if( j==k )
+                    {
+                        rep->oobrmserror = rep->oobrmserror+ae_sqr(oobbuf.ptr.p_double[ooboffs+j]-1, _state);
+                        rep->oobavgerror = rep->oobavgerror+ae_fabs(oobbuf.ptr.p_double[ooboffs+j]-1, _state);
+                        rep->oobavgrelerror = rep->oobavgrelerror+ae_fabs(oobbuf.ptr.p_double[ooboffs+j]-1, _state);
+                        oobrelcnt = oobrelcnt+1;
+                    }
+                    else
+                    {
+                        rep->oobrmserror = rep->oobrmserror+ae_sqr(oobbuf.ptr.p_double[ooboffs+j], _state);
+                        rep->oobavgerror = rep->oobavgerror+ae_fabs(oobbuf.ptr.p_double[ooboffs+j], _state);
+                    }
+                }
+            }
+            else
+            {
+                
+                /*
+                 * regression-specific code
+                 */
+                rep->oobrmserror = rep->oobrmserror+ae_sqr(oobbuf.ptr.p_double[ooboffs]-xy->ptr.pp_double[i][nvars], _state);
+                rep->oobavgerror = rep->oobavgerror+ae_fabs(oobbuf.ptr.p_double[ooboffs]-xy->ptr.pp_double[i][nvars], _state);
+                if( ae_fp_neq(xy->ptr.pp_double[i][nvars],(double)(0)) )
+                {
+                    rep->oobavgrelerror = rep->oobavgrelerror+ae_fabs((oobbuf.ptr.p_double[ooboffs]-xy->ptr.pp_double[i][nvars])/xy->ptr.pp_double[i][nvars], _state);
+                    oobrelcnt = oobrelcnt+1;
+                }
+            }
+            
+            /*
+             * update OOB estimates count.
+             */
+            oobcnt = oobcnt+1;
+        }
+    }
+    if( oobcnt>0 )
+    {
+        rep->oobrelclserror = rep->oobrelclserror/oobcnt;
+        rep->oobavgce = rep->oobavgce/oobcnt;
+        rep->oobrmserror = ae_sqrt(rep->oobrmserror/(oobcnt*nclasses), _state);
+        rep->oobavgerror = rep->oobavgerror/(oobcnt*nclasses);
+        if( oobrelcnt>0 )
+        {
+            rep->oobavgrelerror = rep->oobavgrelerror/oobrelcnt;
+        }
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Procesing
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    X       -   input vector,  array[0..NVars-1].
+
+OUTPUT PARAMETERS:
+    Y       -   result. Regression estimate when solving regression  task,
+                vector of posterior probabilities for classification task.
+
+See also DFProcessI.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfprocess(decisionforest* df,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t offs;
+    ae_int_t i;
+    double v;
+
+
+    
+    /*
+     * Proceed
+     */
+    if( y->cnt<df->nclasses )
+    {
+        ae_vector_set_length(y, df->nclasses, _state);
+    }
+    offs = 0;
+    for(i=0; i<=df->nclasses-1; i++)
+    {
+        y->ptr.p_double[i] = (double)(0);
+    }
+    for(i=0; i<=df->ntrees-1; i++)
+    {
+        
+        /*
+         * Process basic tree
+         */
+        dforest_dfprocessinternal(df, offs, x, y, _state);
+        
+        /*
+         * Next tree
+         */
+        offs = offs+ae_round(df->trees.ptr.p_double[offs], _state);
+    }
+    v = (double)1/(double)df->ntrees;
+    ae_v_muld(&y->ptr.p_double[0], 1, ae_v_len(0,df->nclasses-1), v);
+}
+
+
+/*************************************************************************
+'interactive' variant of DFProcess for languages like Python which support
+constructs like "Y = DFProcessI(DF,X)" and interactive mode of interpreter
+
+This function allocates new array on each call,  so  it  is  significantly
+slower than its 'non-interactive' counterpart, but it is  more  convenient
+when you call it from command line.
+
+  -- ALGLIB --
+     Copyright 28.02.2010 by Bochkanov Sergey
+*************************************************************************/
+void dfprocessi(decisionforest* df,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+
+    ae_vector_clear(y);
+
+    dfprocess(df, x, y, _state);
+}
+
+
+/*************************************************************************
+Relative classification error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    percent of incorrectly classified cases.
+    Zero if model solves regression task.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfrelclserror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    double result;
+
+
+    result = (double)dforest_dfclserror(df, xy, npoints, _state)/(double)npoints;
+    return result;
+}
+
+
+/*************************************************************************
+Average cross-entropy (in bits per element) on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    CrossEntropy/(NPoints*LN(2)).
+    Zero if model solves regression task.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgce(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector x;
+    ae_vector y;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t tmpi;
+    double result;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&x, 0, DT_REAL, _state);
+    ae_vector_init(&y, 0, DT_REAL, _state);
+
+    ae_vector_set_length(&x, df->nvars-1+1, _state);
+    ae_vector_set_length(&y, df->nclasses-1+1, _state);
+    result = (double)(0);
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
+        dfprocess(df, &x, &y, _state);
+        if( df->nclasses>1 )
+        {
+            
+            /*
+             * classification-specific code
+             */
+            k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
+            tmpi = 0;
+            for(j=1; j<=df->nclasses-1; j++)
+            {
+                if( ae_fp_greater(y.ptr.p_double[j],y.ptr.p_double[tmpi]) )
+                {
+                    tmpi = j;
+                }
+            }
+            if( ae_fp_neq(y.ptr.p_double[k],(double)(0)) )
+            {
+                result = result-ae_log(y.ptr.p_double[k], _state);
+            }
+            else
+            {
+                result = result-ae_log(ae_minrealnumber, _state);
+            }
+        }
+    }
+    result = result/npoints;
+    ae_frame_leave(_state);
+    return result;
+}
+
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    root mean square error.
+    Its meaning for regression task is obvious. As for
+    classification task, RMS error means error when estimating posterior
+    probabilities.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfrmserror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector x;
+    ae_vector y;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t tmpi;
+    double result;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&x, 0, DT_REAL, _state);
+    ae_vector_init(&y, 0, DT_REAL, _state);
+
+    ae_vector_set_length(&x, df->nvars-1+1, _state);
+    ae_vector_set_length(&y, df->nclasses-1+1, _state);
+    result = (double)(0);
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
+        dfprocess(df, &x, &y, _state);
+        if( df->nclasses>1 )
+        {
+            
+            /*
+             * classification-specific code
+             */
+            k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
+            tmpi = 0;
+            for(j=1; j<=df->nclasses-1; j++)
+            {
+                if( ae_fp_greater(y.ptr.p_double[j],y.ptr.p_double[tmpi]) )
+                {
+                    tmpi = j;
+                }
+            }
+            for(j=0; j<=df->nclasses-1; j++)
+            {
+                if( j==k )
+                {
+                    result = result+ae_sqr(y.ptr.p_double[j]-1, _state);
+                }
+                else
+                {
+                    result = result+ae_sqr(y.ptr.p_double[j], _state);
+                }
+            }
+        }
+        else
+        {
+            
+            /*
+             * regression-specific code
+             */
+            result = result+ae_sqr(y.ptr.p_double[0]-xy->ptr.pp_double[i][df->nvars], _state);
+        }
+    }
+    result = ae_sqrt(result/(npoints*df->nclasses), _state);
+    ae_frame_leave(_state);
+    return result;
+}
+
+
+/*************************************************************************
+Average error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    Its meaning for regression task is obvious. As for
+    classification task, it means average error when estimating posterior
+    probabilities.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgerror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector x;
+    ae_vector y;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    double result;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&x, 0, DT_REAL, _state);
+    ae_vector_init(&y, 0, DT_REAL, _state);
+
+    ae_vector_set_length(&x, df->nvars-1+1, _state);
+    ae_vector_set_length(&y, df->nclasses-1+1, _state);
+    result = (double)(0);
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
+        dfprocess(df, &x, &y, _state);
+        if( df->nclasses>1 )
+        {
+            
+            /*
+             * classification-specific code
+             */
+            k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
+            for(j=0; j<=df->nclasses-1; j++)
+            {
+                if( j==k )
+                {
+                    result = result+ae_fabs(y.ptr.p_double[j]-1, _state);
+                }
+                else
+                {
+                    result = result+ae_fabs(y.ptr.p_double[j], _state);
+                }
+            }
+        }
+        else
+        {
+            
+            /*
+             * regression-specific code
+             */
+            result = result+ae_fabs(y.ptr.p_double[0]-xy->ptr.pp_double[i][df->nvars], _state);
+        }
+    }
+    result = result/(npoints*df->nclasses);
+    ae_frame_leave(_state);
+    return result;
+}
+
+
+/*************************************************************************
+Average relative error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    Its meaning for regression task is obvious. As for
+    classification task, it means average relative error when estimating
+    posterior probability of belonging to the correct class.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgrelerror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector x;
+    ae_vector y;
+    ae_int_t relcnt;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    double result;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&x, 0, DT_REAL, _state);
+    ae_vector_init(&y, 0, DT_REAL, _state);
+
+    ae_vector_set_length(&x, df->nvars-1+1, _state);
+    ae_vector_set_length(&y, df->nclasses-1+1, _state);
+    result = (double)(0);
+    relcnt = 0;
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
+        dfprocess(df, &x, &y, _state);
+        if( df->nclasses>1 )
+        {
+            
+            /*
+             * classification-specific code
+             */
+            k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
+            for(j=0; j<=df->nclasses-1; j++)
+            {
+                if( j==k )
+                {
+                    result = result+ae_fabs(y.ptr.p_double[j]-1, _state);
+                    relcnt = relcnt+1;
+                }
+            }
+        }
+        else
+        {
+            
+            /*
+             * regression-specific code
+             */
+            if( ae_fp_neq(xy->ptr.pp_double[i][df->nvars],(double)(0)) )
+            {
+                result = result+ae_fabs((y.ptr.p_double[0]-xy->ptr.pp_double[i][df->nvars])/xy->ptr.pp_double[i][df->nvars], _state);
+                relcnt = relcnt+1;
+            }
+        }
+    }
+    if( relcnt>0 )
+    {
+        result = result/relcnt;
+    }
+    ae_frame_leave(_state);
+    return result;
+}
+
+
+/*************************************************************************
+Copying of DecisionForest strucure
+
+INPUT PARAMETERS:
+    DF1 -   original
+
+OUTPUT PARAMETERS:
+    DF2 -   copy
+
+  -- ALGLIB --
+     Copyright 13.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfcopy(decisionforest* df1, decisionforest* df2, ae_state *_state)
+{
+
+    _decisionforest_clear(df2);
+
+    df2->nvars = df1->nvars;
+    df2->nclasses = df1->nclasses;
+    df2->ntrees = df1->ntrees;
+    df2->bufsize = df1->bufsize;
+    ae_vector_set_length(&df2->trees, df1->bufsize-1+1, _state);
+    ae_v_move(&df2->trees.ptr.p_double[0], 1, &df1->trees.ptr.p_double[0], 1, ae_v_len(0,df1->bufsize-1));
+}
+
+
+/*************************************************************************
+Serializer: allocation
+
+  -- ALGLIB --
+     Copyright 14.03.2011 by Bochkanov Sergey
+*************************************************************************/
+void dfalloc(ae_serializer* s, decisionforest* forest, ae_state *_state)
+{
+
+
+    ae_serializer_alloc_entry(s);
+    ae_serializer_alloc_entry(s);
+    ae_serializer_alloc_entry(s);
+    ae_serializer_alloc_entry(s);
+    ae_serializer_alloc_entry(s);
+    ae_serializer_alloc_entry(s);
+    allocrealarray(s, &forest->trees, forest->bufsize, _state);
+}
+
+
+/*************************************************************************
+Serializer: serialization
+
+  -- ALGLIB --
+     Copyright 14.03.2011 by Bochkanov Sergey
+*************************************************************************/
+void dfserialize(ae_serializer* s,
+     decisionforest* forest,
+     ae_state *_state)
+{
+
+
+    ae_serializer_serialize_int(s, getrdfserializationcode(_state), _state);
+    ae_serializer_serialize_int(s, dforest_dffirstversion, _state);
+    ae_serializer_serialize_int(s, forest->nvars, _state);
+    ae_serializer_serialize_int(s, forest->nclasses, _state);
+    ae_serializer_serialize_int(s, forest->ntrees, _state);
+    ae_serializer_serialize_int(s, forest->bufsize, _state);
+    serializerealarray(s, &forest->trees, forest->bufsize, _state);
+}
+
+
+/*************************************************************************
+Serializer: unserialization
+
+  -- ALGLIB --
+     Copyright 14.03.2011 by Bochkanov Sergey
+*************************************************************************/
+void dfunserialize(ae_serializer* s,
+     decisionforest* forest,
+     ae_state *_state)
+{
+    ae_int_t i0;
+    ae_int_t i1;
+
+    _decisionforest_clear(forest);
+
+    
+    /*
+     * check correctness of header
+     */
+    ae_serializer_unserialize_int(s, &i0, _state);
+    ae_assert(i0==getrdfserializationcode(_state), "DFUnserialize: stream header corrupted", _state);
+    ae_serializer_unserialize_int(s, &i1, _state);
+    ae_assert(i1==dforest_dffirstversion, "DFUnserialize: stream header corrupted", _state);
+    
+    /*
+     * Unserialize data
+     */
+    ae_serializer_unserialize_int(s, &forest->nvars, _state);
+    ae_serializer_unserialize_int(s, &forest->nclasses, _state);
+    ae_serializer_unserialize_int(s, &forest->ntrees, _state);
+    ae_serializer_unserialize_int(s, &forest->bufsize, _state);
+    unserializerealarray(s, &forest->trees, _state);
+}
+
+
+/*************************************************************************
+Classification error
+*************************************************************************/
+static ae_int_t dforest_dfclserror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector x;
+    ae_vector y;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t tmpi;
+    ae_int_t result;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&x, 0, DT_REAL, _state);
+    ae_vector_init(&y, 0, DT_REAL, _state);
+
+    if( df->nclasses<=1 )
+    {
+        result = 0;
         ae_frame_leave(_state);
+        return result;
+    }
+    ae_vector_set_length(&x, df->nvars-1+1, _state);
+    ae_vector_set_length(&y, df->nclasses-1+1, _state);
+    result = 0;
+    for(i=0; i<=npoints-1; i++)
+    {
+        ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,df->nvars-1));
+        dfprocess(df, &x, &y, _state);
+        k = ae_round(xy->ptr.pp_double[i][df->nvars], _state);
+        tmpi = 0;
+        for(j=1; j<=df->nclasses-1; j++)
+        {
+            if( ae_fp_greater(y.ptr.p_double[j],y.ptr.p_double[tmpi]) )
+            {
+                tmpi = j;
+            }
+        }
+        if( tmpi!=k )
+        {
+            result = result+1;
+        }
+    }
+    ae_frame_leave(_state);
+    return result;
+}
+
+
+/*************************************************************************
+Internal subroutine for processing one decision tree starting at Offs
+*************************************************************************/
+static void dforest_dfprocessinternal(decisionforest* df,
+     ae_int_t offs,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t k;
+    ae_int_t idx;
+
+
+    
+    /*
+     * Set pointer to the root
+     */
+    k = offs+1;
+    
+    /*
+     * Navigate through the tree
+     */
+    for(;;)
+    {
+        if( ae_fp_eq(df->trees.ptr.p_double[k],(double)(-1)) )
+        {
+            if( df->nclasses==1 )
+            {
+                y->ptr.p_double[0] = y->ptr.p_double[0]+df->trees.ptr.p_double[k+1];
+            }
+            else
+            {
+                idx = ae_round(df->trees.ptr.p_double[k+1], _state);
+                y->ptr.p_double[idx] = y->ptr.p_double[idx]+1;
+            }
+            break;
+        }
+        if( ae_fp_less(x->ptr.p_double[ae_round(df->trees.ptr.p_double[k], _state)],df->trees.ptr.p_double[k+1]) )
+        {
+            k = k+dforest_innernodewidth;
+        }
+        else
+        {
+            k = offs+ae_round(df->trees.ptr.p_double[k+2], _state);
+        }
+    }
+}
+
+
+/*************************************************************************
+Builds one decision tree. Just a wrapper for the DFBuildTreeRec.
+*************************************************************************/
+static void dforest_dfbuildtree(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t nfeatures,
+     ae_int_t nvarsinpool,
+     ae_int_t flags,
+     dfinternalbuffers* bufs,
+     hqrndstate* rs,
+     ae_state *_state)
+{
+    ae_int_t numprocessed;
+    ae_int_t i;
+
+
+    ae_assert(npoints>0, "Assertion failed", _state);
+    
+    /*
+     * Prepare IdxBuf. It stores indices of the training set elements.
+     * When training set is being split, contents of IdxBuf is
+     * correspondingly reordered so we can know which elements belong
+     * to which branch of decision tree.
+     */
+    for(i=0; i<=npoints-1; i++)
+    {
+        bufs->idxbuf.ptr.p_int[i] = i;
+    }
+    
+    /*
+     * Recursive procedure
+     */
+    numprocessed = 1;
+    dforest_dfbuildtreerec(xy, npoints, nvars, nclasses, nfeatures, nvarsinpool, flags, &numprocessed, 0, npoints-1, bufs, rs, _state);
+    bufs->treebuf.ptr.p_double[0] = (double)(numprocessed);
+}
+
+
+/*************************************************************************
+Builds one decision tree (internal recursive subroutine)
+
+Parameters:
+    TreeBuf     -   large enough array, at least TreeSize
+    IdxBuf      -   at least NPoints elements
+    TmpBufR     -   at least NPoints
+    TmpBufR2    -   at least NPoints
+    TmpBufI     -   at least NPoints
+    TmpBufI2    -   at least NPoints+1
+*************************************************************************/
+static void dforest_dfbuildtreerec(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t nfeatures,
+     ae_int_t nvarsinpool,
+     ae_int_t flags,
+     ae_int_t* numprocessed,
+     ae_int_t idx1,
+     ae_int_t idx2,
+     dfinternalbuffers* bufs,
+     hqrndstate* rs,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_bool bflag;
+    ae_int_t i1;
+    ae_int_t i2;
+    ae_int_t info;
+    double sl;
+    double sr;
+    double w;
+    ae_int_t idxbest;
+    double ebest;
+    double tbest;
+    ae_int_t varcur;
+    double s;
+    double v;
+    double v1;
+    double v2;
+    double threshold;
+    ae_int_t oldnp;
+    double currms;
+    ae_bool useevs;
+
+
+    
+    /*
+     * these initializers are not really necessary,
+     * but without them compiler complains about uninitialized locals
+     */
+    tbest = (double)(0);
+    
+    /*
+     * Prepare
+     */
+    ae_assert(npoints>0, "Assertion failed", _state);
+    ae_assert(idx2>=idx1, "Assertion failed", _state);
+    useevs = flags/dforest_dfuseevs%2!=0;
+    
+    /*
+     * Leaf node
+     */
+    if( idx2==idx1 )
+    {
+        bufs->treebuf.ptr.p_double[*numprocessed] = (double)(-1);
+        bufs->treebuf.ptr.p_double[*numprocessed+1] = xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[idx1]][nvars];
+        *numprocessed = *numprocessed+dforest_leafnodewidth;
         return;
     }
-    if( npoints!=1 )
+    
+    /*
+     * Non-leaf node.
+     * Select random variable, prepare split:
+     * 1. prepare default solution - no splitting, class at random
+     * 2. investigate possible splits, compare with default/best
+     */
+    idxbest = -1;
+    if( nclasses>1 )
     {
-        for(i=0; i<=nvars-1; i++)
+        
+        /*
+         * default solution for classification
+         */
+        for(i=0; i<=nclasses-1; i++)
         {
-            s2->ptr.p_double[i] = ae_sqr(s2->ptr.p_double[i], _state)/(npoints-1);
+            bufs->classibuf.ptr.p_int[i] = 0;
+        }
+        s = (double)(idx2-idx1+1);
+        for(i=idx1; i<=idx2; i++)
+        {
+            j = ae_round(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i]][nvars], _state);
+            bufs->classibuf.ptr.p_int[j] = bufs->classibuf.ptr.p_int[j]+1;
+        }
+        ebest = (double)(0);
+        for(i=0; i<=nclasses-1; i++)
+        {
+            ebest = ebest+bufs->classibuf.ptr.p_int[i]*ae_sqr(1-bufs->classibuf.ptr.p_int[i]/s, _state)+(s-bufs->classibuf.ptr.p_int[i])*ae_sqr(bufs->classibuf.ptr.p_int[i]/s, _state);
+        }
+        ebest = ae_sqrt(ebest/(nclasses*(idx2-idx1+1)), _state);
+    }
+    else
+    {
+        
+        /*
+         * default solution for regression
+         */
+        v = (double)(0);
+        for(i=idx1; i<=idx2; i++)
+        {
+            v = v+xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i]][nvars];
+        }
+        v = v/(idx2-idx1+1);
+        ebest = (double)(0);
+        for(i=idx1; i<=idx2; i++)
+        {
+            ebest = ebest+ae_sqr(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i]][nvars]-v, _state);
+        }
+        ebest = ae_sqrt(ebest/(idx2-idx1+1), _state);
+    }
+    i = 0;
+    while(i<=ae_minint(nfeatures, nvarsinpool, _state)-1)
+    {
+        
+        /*
+         * select variables from pool
+         */
+        j = i+hqrnduniformi(rs, nvarsinpool-i, _state);
+        k = bufs->varpool.ptr.p_int[i];
+        bufs->varpool.ptr.p_int[i] = bufs->varpool.ptr.p_int[j];
+        bufs->varpool.ptr.p_int[j] = k;
+        varcur = bufs->varpool.ptr.p_int[i];
+        
+        /*
+         * load variable values to working array
+         *
+         * apply EVS preprocessing: if all variable values are same,
+         * variable is excluded from pool.
+         *
+         * This is necessary for binary pre-splits (see later) to work.
+         */
+        for(j=idx1; j<=idx2; j++)
+        {
+            bufs->tmpbufr.ptr.p_double[j-idx1] = xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[j]][varcur];
+        }
+        if( useevs )
+        {
+            bflag = ae_false;
+            v = bufs->tmpbufr.ptr.p_double[0];
+            for(j=0; j<=idx2-idx1; j++)
+            {
+                if( ae_fp_neq(bufs->tmpbufr.ptr.p_double[j],v) )
+                {
+                    bflag = ae_true;
+                    break;
+                }
+            }
+            if( !bflag )
+            {
+                
+                /*
+                 * exclude variable from pool,
+                 * go to the next iteration.
+                 * I is not increased.
+                 */
+                k = bufs->varpool.ptr.p_int[i];
+                bufs->varpool.ptr.p_int[i] = bufs->varpool.ptr.p_int[nvarsinpool-1];
+                bufs->varpool.ptr.p_int[nvarsinpool-1] = k;
+                nvarsinpool = nvarsinpool-1;
+                continue;
+            }
+        }
+        
+        /*
+         * load labels to working array
+         */
+        if( nclasses>1 )
+        {
+            for(j=idx1; j<=idx2; j++)
+            {
+                bufs->tmpbufi.ptr.p_int[j-idx1] = ae_round(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[j]][nvars], _state);
+            }
+        }
+        else
+        {
+            for(j=idx1; j<=idx2; j++)
+            {
+                bufs->tmpbufr2.ptr.p_double[j-idx1] = xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[j]][nvars];
+            }
+        }
+        
+        /*
+         * calculate split
+         */
+        if( useevs&&bufs->evsbin.ptr.p_bool[varcur] )
+        {
+            
+            /*
+             * Pre-calculated splits for binary variables.
+             * Threshold is already known, just calculate RMS error
+             */
+            threshold = bufs->evssplits.ptr.p_double[varcur];
+            if( nclasses>1 )
+            {
+                
+                /*
+                 * classification-specific code
+                 */
+                for(j=0; j<=2*nclasses-1; j++)
+                {
+                    bufs->classibuf.ptr.p_int[j] = 0;
+                }
+                sl = (double)(0);
+                sr = (double)(0);
+                for(j=0; j<=idx2-idx1; j++)
+                {
+                    k = bufs->tmpbufi.ptr.p_int[j];
+                    if( ae_fp_less(bufs->tmpbufr.ptr.p_double[j],threshold) )
+                    {
+                        bufs->classibuf.ptr.p_int[k] = bufs->classibuf.ptr.p_int[k]+1;
+                        sl = sl+1;
+                    }
+                    else
+                    {
+                        bufs->classibuf.ptr.p_int[k+nclasses] = bufs->classibuf.ptr.p_int[k+nclasses]+1;
+                        sr = sr+1;
+                    }
+                }
+                ae_assert(ae_fp_neq(sl,(double)(0))&&ae_fp_neq(sr,(double)(0)), "DFBuildTreeRec: something strange!", _state);
+                currms = (double)(0);
+                for(j=0; j<=nclasses-1; j++)
+                {
+                    w = (double)(bufs->classibuf.ptr.p_int[j]);
+                    currms = currms+w*ae_sqr(w/sl-1, _state);
+                    currms = currms+(sl-w)*ae_sqr(w/sl, _state);
+                    w = (double)(bufs->classibuf.ptr.p_int[nclasses+j]);
+                    currms = currms+w*ae_sqr(w/sr-1, _state);
+                    currms = currms+(sr-w)*ae_sqr(w/sr, _state);
+                }
+                currms = ae_sqrt(currms/(nclasses*(idx2-idx1+1)), _state);
+            }
+            else
+            {
+                
+                /*
+                 * regression-specific code
+                 */
+                sl = (double)(0);
+                sr = (double)(0);
+                v1 = (double)(0);
+                v2 = (double)(0);
+                for(j=0; j<=idx2-idx1; j++)
+                {
+                    if( ae_fp_less(bufs->tmpbufr.ptr.p_double[j],threshold) )
+                    {
+                        v1 = v1+bufs->tmpbufr2.ptr.p_double[j];
+                        sl = sl+1;
+                    }
+                    else
+                    {
+                        v2 = v2+bufs->tmpbufr2.ptr.p_double[j];
+                        sr = sr+1;
+                    }
+                }
+                ae_assert(ae_fp_neq(sl,(double)(0))&&ae_fp_neq(sr,(double)(0)), "DFBuildTreeRec: something strange!", _state);
+                v1 = v1/sl;
+                v2 = v2/sr;
+                currms = (double)(0);
+                for(j=0; j<=idx2-idx1; j++)
+                {
+                    if( ae_fp_less(bufs->tmpbufr.ptr.p_double[j],threshold) )
+                    {
+                        currms = currms+ae_sqr(v1-bufs->tmpbufr2.ptr.p_double[j], _state);
+                    }
+                    else
+                    {
+                        currms = currms+ae_sqr(v2-bufs->tmpbufr2.ptr.p_double[j], _state);
+                    }
+                }
+                currms = ae_sqrt(currms/(idx2-idx1+1), _state);
+            }
+            info = 1;
+        }
+        else
+        {
+            
+            /*
+             * Generic splits
+             */
+            if( nclasses>1 )
+            {
+                dforest_dfsplitc(&bufs->tmpbufr, &bufs->tmpbufi, &bufs->classibuf, idx2-idx1+1, nclasses, dforest_dfusestrongsplits, &info, &threshold, &currms, &bufs->sortrbuf, &bufs->sortibuf, _state);
+            }
+            else
+            {
+                dforest_dfsplitr(&bufs->tmpbufr, &bufs->tmpbufr2, idx2-idx1+1, dforest_dfusestrongsplits, &info, &threshold, &currms, &bufs->sortrbuf, &bufs->sortrbuf2, _state);
+            }
+        }
+        if( info>0 )
+        {
+            if( ae_fp_less_eq(currms,ebest) )
+            {
+                ebest = currms;
+                idxbest = varcur;
+                tbest = threshold;
+            }
+        }
+        
+        /*
+         * Next iteration
+         */
+        i = i+1;
+    }
+    
+    /*
+     * to split or not to split
+     */
+    if( idxbest<0 )
+    {
+        
+        /*
+         * All values are same, cannot split.
+         */
+        bufs->treebuf.ptr.p_double[*numprocessed] = (double)(-1);
+        if( nclasses>1 )
+        {
+            
+            /*
+             * Select random class label (randomness allows us to
+             * approximate distribution of the classes)
+             */
+            bufs->treebuf.ptr.p_double[*numprocessed+1] = (double)(ae_round(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[idx1+hqrnduniformi(rs, idx2-idx1+1, _state)]][nvars], _state));
+        }
+        else
+        {
+            
+            /*
+             * Select average (for regression task).
+             */
+            v = (double)(0);
+            for(i=idx1; i<=idx2; i++)
+            {
+                v = v+xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i]][nvars]/(idx2-idx1+1);
+            }
+            bufs->treebuf.ptr.p_double[*numprocessed+1] = v;
+        }
+        *numprocessed = *numprocessed+dforest_leafnodewidth;
+    }
+    else
+    {
+        
+        /*
+         * we can split
+         */
+        bufs->treebuf.ptr.p_double[*numprocessed] = (double)(idxbest);
+        bufs->treebuf.ptr.p_double[*numprocessed+1] = tbest;
+        i1 = idx1;
+        i2 = idx2;
+        while(i1<=i2)
+        {
+            
+            /*
+             * Reorder indices so that left partition is in [Idx1..I1-1],
+             * and right partition is in [I2+1..Idx2]
+             */
+            if( ae_fp_less(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i1]][idxbest],tbest) )
+            {
+                i1 = i1+1;
+                continue;
+            }
+            if( ae_fp_greater_eq(xy->ptr.pp_double[bufs->idxbuf.ptr.p_int[i2]][idxbest],tbest) )
+            {
+                i2 = i2-1;
+                continue;
+            }
+            j = bufs->idxbuf.ptr.p_int[i1];
+            bufs->idxbuf.ptr.p_int[i1] = bufs->idxbuf.ptr.p_int[i2];
+            bufs->idxbuf.ptr.p_int[i2] = j;
+            i1 = i1+1;
+            i2 = i2-1;
+        }
+        oldnp = *numprocessed;
+        *numprocessed = *numprocessed+dforest_innernodewidth;
+        dforest_dfbuildtreerec(xy, npoints, nvars, nclasses, nfeatures, nvarsinpool, flags, numprocessed, idx1, i1-1, bufs, rs, _state);
+        bufs->treebuf.ptr.p_double[oldnp+2] = (double)(*numprocessed);
+        dforest_dfbuildtreerec(xy, npoints, nvars, nclasses, nfeatures, nvarsinpool, flags, numprocessed, i2+1, idx2, bufs, rs, _state);
+    }
+}
+
+
+/*************************************************************************
+Makes split on attribute
+*************************************************************************/
+static void dforest_dfsplitc(/* Real    */ ae_vector* x,
+     /* Integer */ ae_vector* c,
+     /* Integer */ ae_vector* cntbuf,
+     ae_int_t n,
+     ae_int_t nc,
+     ae_int_t flags,
+     ae_int_t* info,
+     double* threshold,
+     double* e,
+     /* Real    */ ae_vector* sortrbuf,
+     /* Integer */ ae_vector* sortibuf,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t neq;
+    ae_int_t nless;
+    ae_int_t ngreater;
+    ae_int_t q;
+    ae_int_t qmin;
+    ae_int_t qmax;
+    ae_int_t qcnt;
+    double cursplit;
+    ae_int_t nleft;
+    double v;
+    double cure;
+    double w;
+    double sl;
+    double sr;
+
+    *info = 0;
+    *threshold = 0;
+    *e = 0;
+
+    tagsortfasti(x, c, sortrbuf, sortibuf, n, _state);
+    *e = ae_maxrealnumber;
+    *threshold = 0.5*(x->ptr.p_double[0]+x->ptr.p_double[n-1]);
+    *info = -3;
+    if( flags/dforest_dfusestrongsplits%2==0 )
+    {
+        
+        /*
+         * weak splits, split at half
+         */
+        qcnt = 2;
+        qmin = 1;
+        qmax = 1;
+    }
+    else
+    {
+        
+        /*
+         * strong splits: choose best quartile
+         */
+        qcnt = 4;
+        qmin = 1;
+        qmax = 3;
+    }
+    for(q=qmin; q<=qmax; q++)
+    {
+        cursplit = x->ptr.p_double[n*q/qcnt];
+        neq = 0;
+        nless = 0;
+        ngreater = 0;
+        for(i=0; i<=n-1; i++)
+        {
+            if( ae_fp_less(x->ptr.p_double[i],cursplit) )
+            {
+                nless = nless+1;
+            }
+            if( ae_fp_eq(x->ptr.p_double[i],cursplit) )
+            {
+                neq = neq+1;
+            }
+            if( ae_fp_greater(x->ptr.p_double[i],cursplit) )
+            {
+                ngreater = ngreater+1;
+            }
+        }
+        ae_assert(neq!=0, "DFSplitR: NEq=0, something strange!!!", _state);
+        if( nless!=0||ngreater!=0 )
+        {
+            
+            /*
+             * set threshold between two partitions, with
+             * some tweaking to avoid problems with floating point
+             * arithmetics.
+             *
+             * The problem is that when you calculates C = 0.5*(A+B) there
+             * can be no C which lies strictly between A and B (for example,
+             * there is no floating point number which is
+             * greater than 1 and less than 1+eps). In such situations
+             * we choose right side as theshold (remember that
+             * points which lie on threshold falls to the right side).
+             */
+            if( nless<ngreater )
+            {
+                cursplit = 0.5*(x->ptr.p_double[nless+neq-1]+x->ptr.p_double[nless+neq]);
+                nleft = nless+neq;
+                if( ae_fp_less_eq(cursplit,x->ptr.p_double[nless+neq-1]) )
+                {
+                    cursplit = x->ptr.p_double[nless+neq];
+                }
+            }
+            else
+            {
+                cursplit = 0.5*(x->ptr.p_double[nless-1]+x->ptr.p_double[nless]);
+                nleft = nless;
+                if( ae_fp_less_eq(cursplit,x->ptr.p_double[nless-1]) )
+                {
+                    cursplit = x->ptr.p_double[nless];
+                }
+            }
+            *info = 1;
+            cure = (double)(0);
+            for(i=0; i<=2*nc-1; i++)
+            {
+                cntbuf->ptr.p_int[i] = 0;
+            }
+            for(i=0; i<=nleft-1; i++)
+            {
+                cntbuf->ptr.p_int[c->ptr.p_int[i]] = cntbuf->ptr.p_int[c->ptr.p_int[i]]+1;
+            }
+            for(i=nleft; i<=n-1; i++)
+            {
+                cntbuf->ptr.p_int[nc+c->ptr.p_int[i]] = cntbuf->ptr.p_int[nc+c->ptr.p_int[i]]+1;
+            }
+            sl = (double)(nleft);
+            sr = (double)(n-nleft);
+            v = (double)(0);
+            for(i=0; i<=nc-1; i++)
+            {
+                w = (double)(cntbuf->ptr.p_int[i]);
+                v = v+w*ae_sqr(w/sl-1, _state);
+                v = v+(sl-w)*ae_sqr(w/sl, _state);
+                w = (double)(cntbuf->ptr.p_int[nc+i]);
+                v = v+w*ae_sqr(w/sr-1, _state);
+                v = v+(sr-w)*ae_sqr(w/sr, _state);
+            }
+            cure = ae_sqrt(v/(nc*n), _state);
+            if( ae_fp_less(cure,*e) )
+            {
+                *threshold = cursplit;
+                *e = cure;
+            }
         }
     }
-    ae_matrix_set_length(v, nvars, nvars, _state);
-    copyandtranspose(&vt, 0, nvars-1, 0, nvars-1, v, 0, nvars-1, 0, nvars-1, _state);
+}
+
+
+/*************************************************************************
+Makes split on attribute
+*************************************************************************/
+static void dforest_dfsplitr(/* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_int_t n,
+     ae_int_t flags,
+     ae_int_t* info,
+     double* threshold,
+     double* e,
+     /* Real    */ ae_vector* sortrbuf,
+     /* Real    */ ae_vector* sortrbuf2,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t neq;
+    ae_int_t nless;
+    ae_int_t ngreater;
+    ae_int_t q;
+    ae_int_t qmin;
+    ae_int_t qmax;
+    ae_int_t qcnt;
+    double cursplit;
+    ae_int_t nleft;
+    double v;
+    double cure;
+
+    *info = 0;
+    *threshold = 0;
+    *e = 0;
+
+    tagsortfastr(x, y, sortrbuf, sortrbuf2, n, _state);
+    *e = ae_maxrealnumber;
+    *threshold = 0.5*(x->ptr.p_double[0]+x->ptr.p_double[n-1]);
+    *info = -3;
+    if( flags/dforest_dfusestrongsplits%2==0 )
+    {
+        
+        /*
+         * weak splits, split at half
+         */
+        qcnt = 2;
+        qmin = 1;
+        qmax = 1;
+    }
+    else
+    {
+        
+        /*
+         * strong splits: choose best quartile
+         */
+        qcnt = 4;
+        qmin = 1;
+        qmax = 3;
+    }
+    for(q=qmin; q<=qmax; q++)
+    {
+        cursplit = x->ptr.p_double[n*q/qcnt];
+        neq = 0;
+        nless = 0;
+        ngreater = 0;
+        for(i=0; i<=n-1; i++)
+        {
+            if( ae_fp_less(x->ptr.p_double[i],cursplit) )
+            {
+                nless = nless+1;
+            }
+            if( ae_fp_eq(x->ptr.p_double[i],cursplit) )
+            {
+                neq = neq+1;
+            }
+            if( ae_fp_greater(x->ptr.p_double[i],cursplit) )
+            {
+                ngreater = ngreater+1;
+            }
+        }
+        ae_assert(neq!=0, "DFSplitR: NEq=0, something strange!!!", _state);
+        if( nless!=0||ngreater!=0 )
+        {
+            
+            /*
+             * set threshold between two partitions, with
+             * some tweaking to avoid problems with floating point
+             * arithmetics.
+             *
+             * The problem is that when you calculates C = 0.5*(A+B) there
+             * can be no C which lies strictly between A and B (for example,
+             * there is no floating point number which is
+             * greater than 1 and less than 1+eps). In such situations
+             * we choose right side as theshold (remember that
+             * points which lie on threshold falls to the right side).
+             */
+            if( nless<ngreater )
+            {
+                cursplit = 0.5*(x->ptr.p_double[nless+neq-1]+x->ptr.p_double[nless+neq]);
+                nleft = nless+neq;
+                if( ae_fp_less_eq(cursplit,x->ptr.p_double[nless+neq-1]) )
+                {
+                    cursplit = x->ptr.p_double[nless+neq];
+                }
+            }
+            else
+            {
+                cursplit = 0.5*(x->ptr.p_double[nless-1]+x->ptr.p_double[nless]);
+                nleft = nless;
+                if( ae_fp_less_eq(cursplit,x->ptr.p_double[nless-1]) )
+                {
+                    cursplit = x->ptr.p_double[nless];
+                }
+            }
+            *info = 1;
+            cure = (double)(0);
+            v = (double)(0);
+            for(i=0; i<=nleft-1; i++)
+            {
+                v = v+y->ptr.p_double[i];
+            }
+            v = v/nleft;
+            for(i=0; i<=nleft-1; i++)
+            {
+                cure = cure+ae_sqr(y->ptr.p_double[i]-v, _state);
+            }
+            v = (double)(0);
+            for(i=nleft; i<=n-1; i++)
+            {
+                v = v+y->ptr.p_double[i];
+            }
+            v = v/(n-nleft);
+            for(i=nleft; i<=n-1; i++)
+            {
+                cure = cure+ae_sqr(y->ptr.p_double[i]-v, _state);
+            }
+            cure = ae_sqrt(cure/n, _state);
+            if( ae_fp_less(cure,*e) )
+            {
+                *threshold = cursplit;
+                *e = cure;
+            }
+        }
+    }
+}
+
+
+void _decisionforest_init(void* _p, ae_state *_state)
+{
+    decisionforest *p = (decisionforest*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_init(&p->trees, 0, DT_REAL, _state);
+}
+
+
+void _decisionforest_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    decisionforest *dst = (decisionforest*)_dst;
+    decisionforest *src = (decisionforest*)_src;
+    dst->nvars = src->nvars;
+    dst->nclasses = src->nclasses;
+    dst->ntrees = src->ntrees;
+    dst->bufsize = src->bufsize;
+    ae_vector_init_copy(&dst->trees, &src->trees, _state);
+}
+
+
+void _decisionforest_clear(void* _p)
+{
+    decisionforest *p = (decisionforest*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_clear(&p->trees);
+}
+
+
+void _decisionforest_destroy(void* _p)
+{
+    decisionforest *p = (decisionforest*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_destroy(&p->trees);
+}
+
+
+void _dfreport_init(void* _p, ae_state *_state)
+{
+    dfreport *p = (dfreport*)_p;
+    ae_touch_ptr((void*)p);
+}
+
+
+void _dfreport_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    dfreport *dst = (dfreport*)_dst;
+    dfreport *src = (dfreport*)_src;
+    dst->relclserror = src->relclserror;
+    dst->avgce = src->avgce;
+    dst->rmserror = src->rmserror;
+    dst->avgerror = src->avgerror;
+    dst->avgrelerror = src->avgrelerror;
+    dst->oobrelclserror = src->oobrelclserror;
+    dst->oobavgce = src->oobavgce;
+    dst->oobrmserror = src->oobrmserror;
+    dst->oobavgerror = src->oobavgerror;
+    dst->oobavgrelerror = src->oobavgrelerror;
+}
+
+
+void _dfreport_clear(void* _p)
+{
+    dfreport *p = (dfreport*)_p;
+    ae_touch_ptr((void*)p);
+}
+
+
+void _dfreport_destroy(void* _p)
+{
+    dfreport *p = (dfreport*)_p;
+    ae_touch_ptr((void*)p);
+}
+
+
+void _dfinternalbuffers_init(void* _p, ae_state *_state)
+{
+    dfinternalbuffers *p = (dfinternalbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_init(&p->treebuf, 0, DT_REAL, _state);
+    ae_vector_init(&p->idxbuf, 0, DT_INT, _state);
+    ae_vector_init(&p->tmpbufr, 0, DT_REAL, _state);
+    ae_vector_init(&p->tmpbufr2, 0, DT_REAL, _state);
+    ae_vector_init(&p->tmpbufi, 0, DT_INT, _state);
+    ae_vector_init(&p->classibuf, 0, DT_INT, _state);
+    ae_vector_init(&p->sortrbuf, 0, DT_REAL, _state);
+    ae_vector_init(&p->sortrbuf2, 0, DT_REAL, _state);
+    ae_vector_init(&p->sortibuf, 0, DT_INT, _state);
+    ae_vector_init(&p->varpool, 0, DT_INT, _state);
+    ae_vector_init(&p->evsbin, 0, DT_BOOL, _state);
+    ae_vector_init(&p->evssplits, 0, DT_REAL, _state);
+}
+
+
+void _dfinternalbuffers_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    dfinternalbuffers *dst = (dfinternalbuffers*)_dst;
+    dfinternalbuffers *src = (dfinternalbuffers*)_src;
+    ae_vector_init_copy(&dst->treebuf, &src->treebuf, _state);
+    ae_vector_init_copy(&dst->idxbuf, &src->idxbuf, _state);
+    ae_vector_init_copy(&dst->tmpbufr, &src->tmpbufr, _state);
+    ae_vector_init_copy(&dst->tmpbufr2, &src->tmpbufr2, _state);
+    ae_vector_init_copy(&dst->tmpbufi, &src->tmpbufi, _state);
+    ae_vector_init_copy(&dst->classibuf, &src->classibuf, _state);
+    ae_vector_init_copy(&dst->sortrbuf, &src->sortrbuf, _state);
+    ae_vector_init_copy(&dst->sortrbuf2, &src->sortrbuf2, _state);
+    ae_vector_init_copy(&dst->sortibuf, &src->sortibuf, _state);
+    ae_vector_init_copy(&dst->varpool, &src->varpool, _state);
+    ae_vector_init_copy(&dst->evsbin, &src->evsbin, _state);
+    ae_vector_init_copy(&dst->evssplits, &src->evssplits, _state);
+}
+
+
+void _dfinternalbuffers_clear(void* _p)
+{
+    dfinternalbuffers *p = (dfinternalbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_clear(&p->treebuf);
+    ae_vector_clear(&p->idxbuf);
+    ae_vector_clear(&p->tmpbufr);
+    ae_vector_clear(&p->tmpbufr2);
+    ae_vector_clear(&p->tmpbufi);
+    ae_vector_clear(&p->classibuf);
+    ae_vector_clear(&p->sortrbuf);
+    ae_vector_clear(&p->sortrbuf2);
+    ae_vector_clear(&p->sortibuf);
+    ae_vector_clear(&p->varpool);
+    ae_vector_clear(&p->evsbin);
+    ae_vector_clear(&p->evssplits);
+}
+
+
+void _dfinternalbuffers_destroy(void* _p)
+{
+    dfinternalbuffers *p = (dfinternalbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_destroy(&p->treebuf);
+    ae_vector_destroy(&p->idxbuf);
+    ae_vector_destroy(&p->tmpbufr);
+    ae_vector_destroy(&p->tmpbufr2);
+    ae_vector_destroy(&p->tmpbufi);
+    ae_vector_destroy(&p->classibuf);
+    ae_vector_destroy(&p->sortrbuf);
+    ae_vector_destroy(&p->sortrbuf2);
+    ae_vector_destroy(&p->sortibuf);
+    ae_vector_destroy(&p->varpool);
+    ae_vector_destroy(&p->evsbin);
+    ae_vector_destroy(&p->evssplits);
+}
+
+
+
+
+/*************************************************************************
+k-means++ clusterization.
+Backward compatibility function, we recommend to use CLUSTERING subpackage
+as better replacement.
+
+  -- ALGLIB --
+     Copyright 21.03.2009 by Bochkanov Sergey
+*************************************************************************/
+void kmeansgenerate(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t k,
+     ae_int_t restarts,
+     ae_int_t* info,
+     /* Real    */ ae_matrix* c,
+     /* Integer */ ae_vector* xyc,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_matrix dummy;
+    ae_int_t itscnt;
+    double e;
+    kmeansbuffers buf;
+
+    ae_frame_make(_state, &_frame_block);
+    *info = 0;
+    ae_matrix_clear(c);
+    ae_vector_clear(xyc);
+    ae_matrix_init(&dummy, 0, 0, DT_REAL, _state);
+    _kmeansbuffers_init(&buf, _state);
+
+    kmeansinitbuf(&buf, _state);
+    kmeansgenerateinternal(xy, npoints, nvars, k, 0, 1, 0, restarts, ae_false, info, &itscnt, c, ae_true, &dummy, ae_false, xyc, &e, &buf, _state);
     ae_frame_leave(_state);
 }
 

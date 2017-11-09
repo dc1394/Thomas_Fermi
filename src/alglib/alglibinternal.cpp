@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -84,10 +84,51 @@ static void tsort_tagsortfastrec(/* Real    */ ae_vector* a,
 
 
 
+static ae_bool safesolve_cbasicsolveandupdate(ae_complex alpha,
+     ae_complex beta,
+     double lnmax,
+     double bnorm,
+     double maxgrowth,
+     double* xnorm,
+     ae_complex* x,
+     ae_state *_state);
 
 
 
 
+
+
+
+
+static double linmin_ftol = 0.001;
+static double linmin_xtol = 100*ae_machineepsilon;
+static ae_int_t linmin_maxfev = 20;
+static double linmin_stpmin = 1.0E-50;
+static double linmin_defstpmax = 1.0E+50;
+static double linmin_armijofactor = 1.3;
+static void linmin_mcstep(double* stx,
+     double* fx,
+     double* dx,
+     double* sty,
+     double* fy,
+     double* dy,
+     double* stp,
+     double fp,
+     double dp,
+     ae_bool* brackt,
+     double stmin,
+     double stmax,
+     ae_int_t* info,
+     ae_state *_state);
+
+
+static void xblas_xsum(/* Real    */ ae_vector* w,
+     double mx,
+     ae_int_t n,
+     double* r,
+     double* rerr,
+     ae_state *_state);
+static double xblas_xfastpow(double r, ae_int_t n, ae_state *_state);
 
 
 static void hsschur_internalauxschur(ae_bool wantt,
@@ -124,16 +165,6 @@ static ae_int_t hsschur_extschursigntoone(double b, ae_state *_state);
 
 
 
-static ae_bool safesolve_cbasicsolveandupdate(ae_complex alpha,
-     ae_complex beta,
-     double lnmax,
-     double bnorm,
-     double maxgrowth,
-     double* xnorm,
-     ae_complex* x,
-     ae_state *_state);
-
-
 static ae_bool hpccores_hpcpreparechunkedgradientx(/* Real    */ ae_vector* weights,
      ae_int_t wcount,
      /* Real    */ ae_vector* hpcbuf,
@@ -141,37 +172,6 @@ static ae_bool hpccores_hpcpreparechunkedgradientx(/* Real    */ ae_vector* weig
 static ae_bool hpccores_hpcfinalizechunkedgradientx(/* Real    */ ae_vector* buf,
      ae_int_t wcount,
      /* Real    */ ae_vector* grad,
-     ae_state *_state);
-
-
-static void xblas_xsum(/* Real    */ ae_vector* w,
-     double mx,
-     ae_int_t n,
-     double* r,
-     double* rerr,
-     ae_state *_state);
-static double xblas_xfastpow(double r, ae_int_t n, ae_state *_state);
-
-
-static double linmin_ftol = 0.001;
-static double linmin_xtol = 100*ae_machineepsilon;
-static ae_int_t linmin_maxfev = 20;
-static double linmin_stpmin = 1.0E-50;
-static double linmin_defstpmax = 1.0E+50;
-static double linmin_armijofactor = 1.3;
-static void linmin_mcstep(double* stx,
-     double* fx,
-     double* dx,
-     double* sty,
-     double* fy,
-     double* dy,
-     double* stp,
-     double fp,
-     double dp,
-     ae_bool* brackt,
-     double stmin,
-     double stmax,
-     ae_int_t* info,
      ae_state *_state);
 
 
@@ -368,6 +368,58 @@ static void ftbase_ftbasefindsmoothrec(ae_int_t n,
 
 
 
+ae_int_t getrdfserializationcode(ae_state *_state)
+{
+    ae_int_t result;
+
+
+    result = 1;
+    return result;
+}
+
+
+ae_int_t getkdtreeserializationcode(ae_state *_state)
+{
+    ae_int_t result;
+
+
+    result = 2;
+    return result;
+}
+
+
+ae_int_t getmlpserializationcode(ae_state *_state)
+{
+    ae_int_t result;
+
+
+    result = 3;
+    return result;
+}
+
+
+ae_int_t getmlpeserializationcode(ae_state *_state)
+{
+    ae_int_t result;
+
+
+    result = 4;
+    return result;
+}
+
+
+ae_int_t getrbfserializationcode(ae_state *_state)
+{
+    ae_int_t result;
+
+
+    result = 5;
+    return result;
+}
+
+
+
+
 /*************************************************************************
 This function is used to set error flags  during  unit  tests.  When  COND
 parameter is True, FLAG variable is  set  to  True.  When  COND is  False,
@@ -449,6 +501,50 @@ void touchreal(double* a, ae_state *_state)
 
 
 /*************************************************************************
+The function performs zero-coalescing on real value.
+
+NOTE: no check is performed for B<>0
+
+  -- ALGLIB --
+     Copyright 18.05.2015 by Bochkanov Sergey
+*************************************************************************/
+double coalesce(double a, double b, ae_state *_state)
+{
+    double result;
+
+
+    result = a;
+    if( ae_fp_eq(a,0.0) )
+    {
+        result = b;
+    }
+    return result;
+}
+
+
+/*************************************************************************
+The function performs zero-coalescing on integer value.
+
+NOTE: no check is performed for B<>0
+
+  -- ALGLIB --
+     Copyright 18.05.2015 by Bochkanov Sergey
+*************************************************************************/
+ae_int_t coalescei(ae_int_t a, ae_int_t b, ae_state *_state)
+{
+    ae_int_t result;
+
+
+    result = a;
+    if( a==0 )
+    {
+        result = b;
+    }
+    return result;
+}
+
+
+/*************************************************************************
 The function convert integer value to real value.
 
   -- ALGLIB --
@@ -478,6 +574,24 @@ double logbase2(double x, ae_state *_state)
 
 
     result = ae_log(x, _state)/ae_log((double)(2), _state);
+    return result;
+}
+
+
+/*************************************************************************
+This function compares two numbers for approximate equality, with tolerance
+to errors as large as tol.
+
+
+  -- ALGLIB --
+     Copyright 02.12.2009 by Bochkanov Sergey
+*************************************************************************/
+ae_bool approxequal(double a, double b, double tol, ae_state *_state)
+{
+    ae_bool result;
+
+
+    result = ae_fp_less_eq(ae_fabs(a-b, _state),tol);
     return result;
 }
 
@@ -844,6 +958,82 @@ void rmatrixsetlengthatleast(/* Real    */ ae_matrix* x,
             ae_matrix_set_length(x, m, n, _state);
         }
     }
+}
+
+
+/*************************************************************************
+Resizes X and:
+* preserves old contents of X
+* fills new elements by zeros
+
+  -- ALGLIB --
+     Copyright 20.03.2009 by Bochkanov Sergey
+*************************************************************************/
+void ivectorresize(/* Integer */ ae_vector* x,
+     ae_int_t n,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector oldx;
+    ae_int_t i;
+    ae_int_t n2;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&oldx, 0, DT_INT, _state);
+
+    n2 = x->cnt;
+    ae_swap_vectors(x, &oldx);
+    ae_vector_set_length(x, n, _state);
+    for(i=0; i<=n-1; i++)
+    {
+        if( i<n2 )
+        {
+            x->ptr.p_int[i] = oldx.ptr.p_int[i];
+        }
+        else
+        {
+            x->ptr.p_int[i] = 0;
+        }
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Resizes X and:
+* preserves old contents of X
+* fills new elements by zeros
+
+  -- ALGLIB --
+     Copyright 20.03.2009 by Bochkanov Sergey
+*************************************************************************/
+void rvectorresize(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector oldx;
+    ae_int_t i;
+    ae_int_t n2;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&oldx, 0, DT_REAL, _state);
+
+    n2 = x->cnt;
+    ae_swap_vectors(x, &oldx);
+    ae_vector_set_length(x, n, _state);
+    for(i=0; i<=n-1; i++)
+    {
+        if( i<n2 )
+        {
+            x->ptr.p_double[i] = oldx.ptr.p_double[i];
+        }
+        else
+        {
+            x->ptr.p_double[i] = (double)(0);
+        }
+    }
+    ae_frame_leave(_state);
 }
 
 
@@ -1498,7 +1688,7 @@ double randomnormal(ae_state *_state)
              */
             s = ae_sqrt(-2*ae_log(s, _state), _state)/ae_sqrt(s, _state);
             result = u*s;
-            return result;
+            break;
         }
     }
     return result;
@@ -1572,6 +1762,27 @@ void swapr(double* v0, double* v1, ae_state *_state)
 
 
 /*************************************************************************
+This function is used to return maximum of three real values
+*************************************************************************/
+double maxreal3(double v0, double v1, double v2, ae_state *_state)
+{
+    double result;
+
+
+    result = v0;
+    if( ae_fp_less(result,v1) )
+    {
+        result = v1;
+    }
+    if( ae_fp_less(result,v2) )
+    {
+        result = v2;
+    }
+    return result;
+}
+
+
+/*************************************************************************
 This function is used to increment value of integer variable
 *************************************************************************/
 void inc(ae_int_t* v, ae_state *_state)
@@ -1611,6 +1822,20 @@ void countdown(ae_int_t* v, ae_state *_state)
     {
         *v = 0;
     }
+}
+
+
+/*************************************************************************
+This function returns product of two real numbers. It is convenient when
+you have to perform typecast-and-product of two INTEGERS.
+*************************************************************************/
+double rmul2(double v0, double v1, ae_state *_state)
+{
+    double result;
+
+
+    result = v0*v1;
+    return result;
 }
 
 
@@ -1994,6 +2219,39 @@ void copyrealmatrix(/* Real    */ ae_matrix* src,
 
 
 /*************************************************************************
+Clears integer array
+*************************************************************************/
+void unsetintegerarray(/* Integer */ ae_vector* a, ae_state *_state)
+{
+
+    ae_vector_clear(a);
+
+}
+
+
+/*************************************************************************
+Clears real array
+*************************************************************************/
+void unsetrealarray(/* Real    */ ae_vector* a, ae_state *_state)
+{
+
+    ae_vector_clear(a);
+
+}
+
+
+/*************************************************************************
+Clears real matrix
+*************************************************************************/
+void unsetrealmatrix(/* Real    */ ae_matrix* a, ae_state *_state)
+{
+
+    ae_matrix_clear(a);
+
+}
+
+
+/*************************************************************************
 This function searches integer array. Elements in this array are actually
 records, each NRec elements wide. Each record has unique header - NHeader
 integer values, which identify it. Records are lexicographically sorted by
@@ -2158,10 +2416,40 @@ void splitlength(ae_int_t tasksize,
 }
 
 
+/*************************************************************************
+This function is used to calculate number of chunks (including partial,
+non-complete chunks) in some set. It expects that ChunkSize>=1, TaskSize>=0.
+Assertion is thrown otherwise.
+
+Function result is equivalent to Ceil(TaskSize/ChunkSize), but with guarantees
+that rounding errors won't ruin results.
+
+  -- ALGLIB --
+     Copyright 21.01.2015 by Bochkanov Sergey
+*************************************************************************/
+ae_int_t chunkscount(ae_int_t tasksize,
+     ae_int_t chunksize,
+     ae_state *_state)
+{
+    ae_int_t result;
+
+
+    ae_assert(tasksize>=0, "ChunksCount: TaskSize<0", _state);
+    ae_assert(chunksize>=1, "ChunksCount: ChunkSize<1", _state);
+    result = tasksize/chunksize;
+    if( tasksize%chunksize!=0 )
+    {
+        result = result+1;
+    }
+    return result;
+}
+
+
 void _apbuffers_init(void* _p, ae_state *_state)
 {
     apbuffers *p = (apbuffers*)_p;
     ae_touch_ptr((void*)p);
+    ae_vector_init(&p->ba0, 0, DT_BOOL, _state);
     ae_vector_init(&p->ia0, 0, DT_INT, _state);
     ae_vector_init(&p->ia1, 0, DT_INT, _state);
     ae_vector_init(&p->ia2, 0, DT_INT, _state);
@@ -2170,6 +2458,8 @@ void _apbuffers_init(void* _p, ae_state *_state)
     ae_vector_init(&p->ra1, 0, DT_REAL, _state);
     ae_vector_init(&p->ra2, 0, DT_REAL, _state);
     ae_vector_init(&p->ra3, 0, DT_REAL, _state);
+    ae_matrix_init(&p->rm0, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&p->rm1, 0, 0, DT_REAL, _state);
 }
 
 
@@ -2177,6 +2467,7 @@ void _apbuffers_init_copy(void* _dst, void* _src, ae_state *_state)
 {
     apbuffers *dst = (apbuffers*)_dst;
     apbuffers *src = (apbuffers*)_src;
+    ae_vector_init_copy(&dst->ba0, &src->ba0, _state);
     ae_vector_init_copy(&dst->ia0, &src->ia0, _state);
     ae_vector_init_copy(&dst->ia1, &src->ia1, _state);
     ae_vector_init_copy(&dst->ia2, &src->ia2, _state);
@@ -2185,6 +2476,8 @@ void _apbuffers_init_copy(void* _dst, void* _src, ae_state *_state)
     ae_vector_init_copy(&dst->ra1, &src->ra1, _state);
     ae_vector_init_copy(&dst->ra2, &src->ra2, _state);
     ae_vector_init_copy(&dst->ra3, &src->ra3, _state);
+    ae_matrix_init_copy(&dst->rm0, &src->rm0, _state);
+    ae_matrix_init_copy(&dst->rm1, &src->rm1, _state);
 }
 
 
@@ -2192,6 +2485,7 @@ void _apbuffers_clear(void* _p)
 {
     apbuffers *p = (apbuffers*)_p;
     ae_touch_ptr((void*)p);
+    ae_vector_clear(&p->ba0);
     ae_vector_clear(&p->ia0);
     ae_vector_clear(&p->ia1);
     ae_vector_clear(&p->ia2);
@@ -2200,6 +2494,8 @@ void _apbuffers_clear(void* _p)
     ae_vector_clear(&p->ra1);
     ae_vector_clear(&p->ra2);
     ae_vector_clear(&p->ra3);
+    ae_matrix_clear(&p->rm0);
+    ae_matrix_clear(&p->rm1);
 }
 
 
@@ -2207,6 +2503,7 @@ void _apbuffers_destroy(void* _p)
 {
     apbuffers *p = (apbuffers*)_p;
     ae_touch_ptr((void*)p);
+    ae_vector_destroy(&p->ba0);
     ae_vector_destroy(&p->ia0);
     ae_vector_destroy(&p->ia1);
     ae_vector_destroy(&p->ia2);
@@ -2215,6 +2512,8 @@ void _apbuffers_destroy(void* _p)
     ae_vector_destroy(&p->ra1);
     ae_vector_destroy(&p->ra2);
     ae_vector_destroy(&p->ra3);
+    ae_matrix_destroy(&p->rm0);
+    ae_matrix_destroy(&p->rm1);
 }
 
 
@@ -2459,58 +2758,6 @@ void _scomplexarray_destroy(void* _p)
     scomplexarray *p = (scomplexarray*)_p;
     ae_touch_ptr((void*)p);
     ae_vector_destroy(&p->val);
-}
-
-
-
-
-ae_int_t getrdfserializationcode(ae_state *_state)
-{
-    ae_int_t result;
-
-
-    result = 1;
-    return result;
-}
-
-
-ae_int_t getkdtreeserializationcode(ae_state *_state)
-{
-    ae_int_t result;
-
-
-    result = 2;
-    return result;
-}
-
-
-ae_int_t getmlpserializationcode(ae_state *_state)
-{
-    ae_int_t result;
-
-
-    result = 3;
-    return result;
-}
-
-
-ae_int_t getmlpeserializationcode(ae_state *_state)
-{
-    ae_int_t result;
-
-
-    result = 4;
-    return result;
-}
-
-
-ae_int_t getrbfserializationcode(ae_state *_state)
-{
-    ae_int_t result;
-
-
-    result = 5;
-    return result;
 }
 
 
@@ -3921,119 +4168,555 @@ static void tsort_tagsortfastrec(/* Real    */ ae_vector* a,
 
 
 /*************************************************************************
-Internal ranking subroutine.
+Generation of an elementary reflection transformation
 
-INPUT PARAMETERS:
-    X       -   array to rank
-    N       -   array size
-    IsCentered- whether ranks are centered or not:
-                * True      -   ranks are centered in such way that  their
-                                sum is zero
-                * False     -   ranks are not centered
-    Buf     -   temporary buffers
-    
-NOTE: when IsCentered is True and all X[] are equal, this  function  fills
-      X by zeros (exact zeros are used, not sum which is only approximately
-      equal to zero).
+The subroutine generates elementary reflection H of order N, so that, for
+a given X, the following equality holds true:
+
+    ( X(1) )   ( Beta )
+H * (  ..  ) = (  0   )
+    ( X(n) )   (  0   )
+
+where
+              ( V(1) )
+H = 1 - Tau * (  ..  ) * ( V(1), ..., V(n) )
+              ( V(n) )
+
+where the first component of vector V equals 1.
+
+Input parameters:
+    X   -   vector. Array whose index ranges within [1..N].
+    N   -   reflection order.
+
+Output parameters:
+    X   -   components from 2 to N are replaced with vector V.
+            The first component is replaced with parameter Beta.
+    Tau -   scalar value Tau. If X is a null vector, Tau equals 0,
+            otherwise 1 <= Tau <= 2.
+
+This subroutine is the modification of the DLARFG subroutines from
+the LAPACK library.
+
+MODIFICATIONS:
+    24.12.2005 sign(Alpha) was replaced with an analogous to the Fortran SIGN code.
+
+  -- LAPACK auxiliary routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
 *************************************************************************/
-void rankx(/* Real    */ ae_vector* x,
+void generatereflection(/* Real    */ ae_vector* x,
      ae_int_t n,
-     ae_bool iscentered,
-     apbuffers* buf,
+     double* tau,
      ae_state *_state)
 {
-    ae_int_t i;
     ae_int_t j;
-    ae_int_t k;
-    double tmp;
-    double voffs;
+    double alpha;
+    double xnorm;
+    double v;
+    double beta;
+    double mx;
+    double s;
 
+    *tau = 0;
 
-    
-    /*
-     * Prepare
-     */
-    if( n<1 )
+    if( n<=1 )
     {
+        *tau = (double)(0);
         return;
     }
-    if( n==1 )
-    {
-        x->ptr.p_double[0] = (double)(0);
-        return;
-    }
-    if( buf->ra1.cnt<n )
-    {
-        ae_vector_set_length(&buf->ra1, n, _state);
-    }
-    if( buf->ia1.cnt<n )
-    {
-        ae_vector_set_length(&buf->ia1, n, _state);
-    }
-    for(i=0; i<=n-1; i++)
-    {
-        buf->ra1.ptr.p_double[i] = x->ptr.p_double[i];
-        buf->ia1.ptr.p_int[i] = i;
-    }
-    tagsortfasti(&buf->ra1, &buf->ia1, &buf->ra2, &buf->ia2, n, _state);
     
     /*
-     * Special test for all values being equal
+     * Scale if needed (to avoid overflow/underflow during intermediate
+     * calculations).
      */
-    if( ae_fp_eq(buf->ra1.ptr.p_double[0],buf->ra1.ptr.p_double[n-1]) )
+    mx = (double)(0);
+    for(j=1; j<=n; j++)
     {
-        if( iscentered )
+        mx = ae_maxreal(ae_fabs(x->ptr.p_double[j], _state), mx, _state);
+    }
+    s = (double)(1);
+    if( ae_fp_neq(mx,(double)(0)) )
+    {
+        if( ae_fp_less_eq(mx,ae_minrealnumber/ae_machineepsilon) )
         {
-            tmp = 0.0;
+            s = ae_minrealnumber/ae_machineepsilon;
+            v = 1/s;
+            ae_v_muld(&x->ptr.p_double[1], 1, ae_v_len(1,n), v);
+            mx = mx*v;
         }
         else
         {
-            tmp = (double)(n-1)/(double)2;
+            if( ae_fp_greater_eq(mx,ae_maxrealnumber*ae_machineepsilon) )
+            {
+                s = ae_maxrealnumber*ae_machineepsilon;
+                v = 1/s;
+                ae_v_muld(&x->ptr.p_double[1], 1, ae_v_len(1,n), v);
+                mx = mx*v;
+            }
         }
-        for(i=0; i<=n-1; i++)
+    }
+    
+    /*
+     * XNORM = DNRM2( N-1, X, INCX )
+     */
+    alpha = x->ptr.p_double[1];
+    xnorm = (double)(0);
+    if( ae_fp_neq(mx,(double)(0)) )
+    {
+        for(j=2; j<=n; j++)
         {
-            x->ptr.p_double[i] = tmp;
+            xnorm = xnorm+ae_sqr(x->ptr.p_double[j]/mx, _state);
         }
+        xnorm = ae_sqrt(xnorm, _state)*mx;
+    }
+    if( ae_fp_eq(xnorm,(double)(0)) )
+    {
+        
+        /*
+         * H  =  I
+         */
+        *tau = (double)(0);
+        x->ptr.p_double[1] = x->ptr.p_double[1]*s;
         return;
     }
     
     /*
-     * compute tied ranks
+     * general case
      */
-    i = 0;
-    while(i<=n-1)
+    mx = ae_maxreal(ae_fabs(alpha, _state), ae_fabs(xnorm, _state), _state);
+    beta = -mx*ae_sqrt(ae_sqr(alpha/mx, _state)+ae_sqr(xnorm/mx, _state), _state);
+    if( ae_fp_less(alpha,(double)(0)) )
     {
-        j = i+1;
-        while(j<=n-1)
-        {
-            if( ae_fp_neq(buf->ra1.ptr.p_double[j],buf->ra1.ptr.p_double[i]) )
-            {
-                break;
-            }
-            j = j+1;
-        }
-        for(k=i; k<=j-1; k++)
-        {
-            buf->ra1.ptr.p_double[k] = (double)(i+j-1)/(double)2;
-        }
-        i = j;
+        beta = -beta;
+    }
+    *tau = (beta-alpha)/beta;
+    v = 1/(alpha-beta);
+    ae_v_muld(&x->ptr.p_double[2], 1, ae_v_len(2,n), v);
+    x->ptr.p_double[1] = beta;
+    
+    /*
+     * Scale back outputs
+     */
+    x->ptr.p_double[1] = x->ptr.p_double[1]*s;
+}
+
+
+/*************************************************************************
+Application of an elementary reflection to a rectangular matrix of size MxN
+
+The algorithm pre-multiplies the matrix by an elementary reflection transformation
+which is given by column V and scalar Tau (see the description of the
+GenerateReflection procedure). Not the whole matrix but only a part of it
+is transformed (rows from M1 to M2, columns from N1 to N2). Only the elements
+of this submatrix are changed.
+
+Input parameters:
+    C       -   matrix to be transformed.
+    Tau     -   scalar defining the transformation.
+    V       -   column defining the transformation.
+                Array whose index ranges within [1..M2-M1+1].
+    M1, M2  -   range of rows to be transformed.
+    N1, N2  -   range of columns to be transformed.
+    WORK    -   working array whose indexes goes from N1 to N2.
+
+Output parameters:
+    C       -   the result of multiplying the input matrix C by the
+                transformation matrix which is given by Tau and V.
+                If N1>N2 or M1>M2, C is not modified.
+
+  -- LAPACK auxiliary routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
+*************************************************************************/
+void applyreflectionfromtheleft(/* Real    */ ae_matrix* c,
+     double tau,
+     /* Real    */ ae_vector* v,
+     ae_int_t m1,
+     ae_int_t m2,
+     ae_int_t n1,
+     ae_int_t n2,
+     /* Real    */ ae_vector* work,
+     ae_state *_state)
+{
+    double t;
+    ae_int_t i;
+
+
+    if( (ae_fp_eq(tau,(double)(0))||n1>n2)||m1>m2 )
+    {
+        return;
     }
     
     /*
-     * back to x
+     * w := C' * v
      */
-    if( iscentered )
+    for(i=n1; i<=n2; i++)
     {
-        voffs = (double)(n-1)/(double)2;
+        work->ptr.p_double[i] = (double)(0);
     }
-    else
+    for(i=m1; i<=m2; i++)
     {
-        voffs = 0.0;
+        t = v->ptr.p_double[i+1-m1];
+        ae_v_addd(&work->ptr.p_double[n1], 1, &c->ptr.pp_double[i][n1], 1, ae_v_len(n1,n2), t);
     }
-    for(i=0; i<=n-1; i++)
+    
+    /*
+     * C := C - tau * v * w'
+     */
+    for(i=m1; i<=m2; i++)
     {
-        x->ptr.p_double[buf->ia1.ptr.p_int[i]] = buf->ra1.ptr.p_double[i]-voffs;
+        t = v->ptr.p_double[i-m1+1]*tau;
+        ae_v_subd(&c->ptr.pp_double[i][n1], 1, &work->ptr.p_double[n1], 1, ae_v_len(n1,n2), t);
     }
+}
+
+
+/*************************************************************************
+Application of an elementary reflection to a rectangular matrix of size MxN
+
+The algorithm post-multiplies the matrix by an elementary reflection transformation
+which is given by column V and scalar Tau (see the description of the
+GenerateReflection procedure). Not the whole matrix but only a part of it
+is transformed (rows from M1 to M2, columns from N1 to N2). Only the
+elements of this submatrix are changed.
+
+Input parameters:
+    C       -   matrix to be transformed.
+    Tau     -   scalar defining the transformation.
+    V       -   column defining the transformation.
+                Array whose index ranges within [1..N2-N1+1].
+    M1, M2  -   range of rows to be transformed.
+    N1, N2  -   range of columns to be transformed.
+    WORK    -   working array whose indexes goes from M1 to M2.
+
+Output parameters:
+    C       -   the result of multiplying the input matrix C by the
+                transformation matrix which is given by Tau and V.
+                If N1>N2 or M1>M2, C is not modified.
+
+  -- LAPACK auxiliary routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
+*************************************************************************/
+void applyreflectionfromtheright(/* Real    */ ae_matrix* c,
+     double tau,
+     /* Real    */ ae_vector* v,
+     ae_int_t m1,
+     ae_int_t m2,
+     ae_int_t n1,
+     ae_int_t n2,
+     /* Real    */ ae_vector* work,
+     ae_state *_state)
+{
+    double t;
+    ae_int_t i;
+    ae_int_t vm;
+
+
+    if( (ae_fp_eq(tau,(double)(0))||n1>n2)||m1>m2 )
+    {
+        return;
+    }
+    vm = n2-n1+1;
+    for(i=m1; i<=m2; i++)
+    {
+        t = ae_v_dotproduct(&c->ptr.pp_double[i][n1], 1, &v->ptr.p_double[1], 1, ae_v_len(n1,n2));
+        t = t*tau;
+        ae_v_subd(&c->ptr.pp_double[i][n1], 1, &v->ptr.p_double[1], 1, ae_v_len(n1,n2), t);
+    }
+    
+    /*
+     * This line is necessary to avoid spurious compiler warnings
+     */
+    touchint(&vm, _state);
+}
+
+
+
+
+/*************************************************************************
+Generation of an elementary complex reflection transformation
+
+The subroutine generates elementary complex reflection H of  order  N,  so
+that, for a given X, the following equality holds true:
+
+     ( X(1) )   ( Beta )
+H' * (  ..  ) = (  0   ),   H'*H = I,   Beta is a real number
+     ( X(n) )   (  0   )
+
+where
+
+              ( V(1) )
+H = 1 - Tau * (  ..  ) * ( conj(V(1)), ..., conj(V(n)) )
+              ( V(n) )
+
+where the first component of vector V equals 1.
+
+Input parameters:
+    X   -   vector. Array with elements [1..N].
+    N   -   reflection order.
+
+Output parameters:
+    X   -   components from 2 to N are replaced by vector V.
+            The first component is replaced with parameter Beta.
+    Tau -   scalar value Tau.
+
+This subroutine is the modification of CLARFG subroutines  from the LAPACK
+library. It has similar functionality except for the fact that it  doesn't
+handle errors when intermediate results cause an overflow.
+
+  -- LAPACK auxiliary routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
+*************************************************************************/
+void complexgeneratereflection(/* Complex */ ae_vector* x,
+     ae_int_t n,
+     ae_complex* tau,
+     ae_state *_state)
+{
+    ae_int_t j;
+    ae_complex alpha;
+    double alphi;
+    double alphr;
+    double beta;
+    double xnorm;
+    double mx;
+    ae_complex t;
+    double s;
+    ae_complex v;
+
+    tau->x = 0;
+    tau->y = 0;
+
+    if( n<=0 )
+    {
+        *tau = ae_complex_from_i(0);
+        return;
+    }
+    
+    /*
+     * Scale if needed (to avoid overflow/underflow during intermediate
+     * calculations).
+     */
+    mx = (double)(0);
+    for(j=1; j<=n; j++)
+    {
+        mx = ae_maxreal(ae_c_abs(x->ptr.p_complex[j], _state), mx, _state);
+    }
+    s = (double)(1);
+    if( ae_fp_neq(mx,(double)(0)) )
+    {
+        if( ae_fp_less(mx,(double)(1)) )
+        {
+            s = ae_sqrt(ae_minrealnumber, _state);
+            v = ae_complex_from_d(1/s);
+            ae_v_cmulc(&x->ptr.p_complex[1], 1, ae_v_len(1,n), v);
+        }
+        else
+        {
+            s = ae_sqrt(ae_maxrealnumber, _state);
+            v = ae_complex_from_d(1/s);
+            ae_v_cmulc(&x->ptr.p_complex[1], 1, ae_v_len(1,n), v);
+        }
+    }
+    
+    /*
+     * calculate
+     */
+    alpha = x->ptr.p_complex[1];
+    mx = (double)(0);
+    for(j=2; j<=n; j++)
+    {
+        mx = ae_maxreal(ae_c_abs(x->ptr.p_complex[j], _state), mx, _state);
+    }
+    xnorm = (double)(0);
+    if( ae_fp_neq(mx,(double)(0)) )
+    {
+        for(j=2; j<=n; j++)
+        {
+            t = ae_c_div_d(x->ptr.p_complex[j],mx);
+            xnorm = xnorm+ae_c_mul(t,ae_c_conj(t, _state)).x;
+        }
+        xnorm = ae_sqrt(xnorm, _state)*mx;
+    }
+    alphr = alpha.x;
+    alphi = alpha.y;
+    if( ae_fp_eq(xnorm,(double)(0))&&ae_fp_eq(alphi,(double)(0)) )
+    {
+        *tau = ae_complex_from_i(0);
+        x->ptr.p_complex[1] = ae_c_mul_d(x->ptr.p_complex[1],s);
+        return;
+    }
+    mx = ae_maxreal(ae_fabs(alphr, _state), ae_fabs(alphi, _state), _state);
+    mx = ae_maxreal(mx, ae_fabs(xnorm, _state), _state);
+    beta = -mx*ae_sqrt(ae_sqr(alphr/mx, _state)+ae_sqr(alphi/mx, _state)+ae_sqr(xnorm/mx, _state), _state);
+    if( ae_fp_less(alphr,(double)(0)) )
+    {
+        beta = -beta;
+    }
+    tau->x = (beta-alphr)/beta;
+    tau->y = -alphi/beta;
+    alpha = ae_c_d_div(1,ae_c_sub_d(alpha,beta));
+    if( n>1 )
+    {
+        ae_v_cmulc(&x->ptr.p_complex[2], 1, ae_v_len(2,n), alpha);
+    }
+    alpha = ae_complex_from_d(beta);
+    x->ptr.p_complex[1] = alpha;
+    
+    /*
+     * Scale back
+     */
+    x->ptr.p_complex[1] = ae_c_mul_d(x->ptr.p_complex[1],s);
+}
+
+
+/*************************************************************************
+Application of an elementary reflection to a rectangular matrix of size MxN
+
+The  algorithm  pre-multiplies  the  matrix  by  an  elementary reflection
+transformation  which  is  given  by  column  V  and  scalar  Tau (see the
+description of the GenerateReflection). Not the whole matrix  but  only  a
+part of it is transformed (rows from M1 to M2, columns from N1 to N2). Only
+the elements of this submatrix are changed.
+
+Note: the matrix is multiplied by H, not by H'.   If  it  is  required  to
+multiply the matrix by H', it is necessary to pass Conj(Tau) instead of Tau.
+
+Input parameters:
+    C       -   matrix to be transformed.
+    Tau     -   scalar defining transformation.
+    V       -   column defining transformation.
+                Array whose index ranges within [1..M2-M1+1]
+    M1, M2  -   range of rows to be transformed.
+    N1, N2  -   range of columns to be transformed.
+    WORK    -   working array whose index goes from N1 to N2.
+
+Output parameters:
+    C       -   the result of multiplying the input matrix C by the
+                transformation matrix which is given by Tau and V.
+                If N1>N2 or M1>M2, C is not modified.
+
+  -- LAPACK auxiliary routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
+*************************************************************************/
+void complexapplyreflectionfromtheleft(/* Complex */ ae_matrix* c,
+     ae_complex tau,
+     /* Complex */ ae_vector* v,
+     ae_int_t m1,
+     ae_int_t m2,
+     ae_int_t n1,
+     ae_int_t n2,
+     /* Complex */ ae_vector* work,
+     ae_state *_state)
+{
+    ae_complex t;
+    ae_int_t i;
+
+
+    if( (ae_c_eq_d(tau,(double)(0))||n1>n2)||m1>m2 )
+    {
+        return;
+    }
+    
+    /*
+     * w := C^T * conj(v)
+     */
+    for(i=n1; i<=n2; i++)
+    {
+        work->ptr.p_complex[i] = ae_complex_from_i(0);
+    }
+    for(i=m1; i<=m2; i++)
+    {
+        t = ae_c_conj(v->ptr.p_complex[i+1-m1], _state);
+        ae_v_caddc(&work->ptr.p_complex[n1], 1, &c->ptr.pp_complex[i][n1], 1, "N", ae_v_len(n1,n2), t);
+    }
+    
+    /*
+     * C := C - tau * v * w^T
+     */
+    for(i=m1; i<=m2; i++)
+    {
+        t = ae_c_mul(v->ptr.p_complex[i-m1+1],tau);
+        ae_v_csubc(&c->ptr.pp_complex[i][n1], 1, &work->ptr.p_complex[n1], 1, "N", ae_v_len(n1,n2), t);
+    }
+}
+
+
+/*************************************************************************
+Application of an elementary reflection to a rectangular matrix of size MxN
+
+The  algorithm  post-multiplies  the  matrix  by  an elementary reflection
+transformation  which  is  given  by  column  V  and  scalar  Tau (see the
+description  of  the  GenerateReflection). Not the whole matrix but only a
+part  of  it  is  transformed (rows from M1 to M2, columns from N1 to N2).
+Only the elements of this submatrix are changed.
+
+Input parameters:
+    C       -   matrix to be transformed.
+    Tau     -   scalar defining transformation.
+    V       -   column defining transformation.
+                Array whose index ranges within [1..N2-N1+1]
+    M1, M2  -   range of rows to be transformed.
+    N1, N2  -   range of columns to be transformed.
+    WORK    -   working array whose index goes from M1 to M2.
+
+Output parameters:
+    C       -   the result of multiplying the input matrix C by the
+                transformation matrix which is given by Tau and V.
+                If N1>N2 or M1>M2, C is not modified.
+
+  -- LAPACK auxiliary routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
+*************************************************************************/
+void complexapplyreflectionfromtheright(/* Complex */ ae_matrix* c,
+     ae_complex tau,
+     /* Complex */ ae_vector* v,
+     ae_int_t m1,
+     ae_int_t m2,
+     ae_int_t n1,
+     ae_int_t n2,
+     /* Complex */ ae_vector* work,
+     ae_state *_state)
+{
+    ae_complex t;
+    ae_int_t i;
+    ae_int_t vm;
+
+
+    if( (ae_c_eq_d(tau,(double)(0))||n1>n2)||m1>m2 )
+    {
+        return;
+    }
+    
+    /*
+     * w := C * v
+     */
+    vm = n2-n1+1;
+    for(i=m1; i<=m2; i++)
+    {
+        t = ae_v_cdotproduct(&c->ptr.pp_complex[i][n1], 1, "N", &v->ptr.p_complex[1], 1, "N", ae_v_len(n1,n2));
+        work->ptr.p_complex[i] = t;
+    }
+    
+    /*
+     * C := C - w * conj(v^T)
+     */
+    ae_v_cmove(&v->ptr.p_complex[1], 1, &v->ptr.p_complex[1], 1, "Conj", ae_v_len(1,vm));
+    for(i=m1; i<=m2; i++)
+    {
+        t = ae_c_mul(work->ptr.p_complex[i],tau);
+        ae_v_csubc(&c->ptr.pp_complex[i][n1], 1, &v->ptr.p_complex[1], 1, "N", ae_v_len(n1,n2), t);
+    }
+    ae_v_cmove(&v->ptr.p_complex[1], 1, &v->ptr.p_complex[1], 1, "Conj", ae_v_len(1,vm));
 }
 
 
@@ -4544,9 +5227,9 @@ void cmatrixgemmk(ae_int_t m,
     }
     
     /*
-     * if K=0, then C=Beta*C
+     * if K=0 or Alpha=0, then C=Beta*C
      */
-    if( k==0 )
+    if( k==0||ae_c_eq_d(alpha,(double)(0)) )
     {
         if( ae_c_neq_d(beta,(double)(1)) )
         {
@@ -4887,7 +5570,7 @@ void rmatrixgemmk(ae_int_t m,
     }
     
     /*
-     * if K=0, then C=Beta*C
+     * if K=0 or Alpha=0, then C=Beta*C
      */
     if( k==0||ae_fp_eq(alpha,(double)(0)) )
     {
@@ -6703,1418 +7386,6 @@ ae_bool smatrixtdevdmkl(/* Real    */ ae_vector* d,
 
 
 
-double vectornorm2(/* Real    */ ae_vector* x,
-     ae_int_t i1,
-     ae_int_t i2,
-     ae_state *_state)
-{
-    ae_int_t n;
-    ae_int_t ix;
-    double absxi;
-    double scl;
-    double ssq;
-    double result;
-
-
-    n = i2-i1+1;
-    if( n<1 )
-    {
-        result = (double)(0);
-        return result;
-    }
-    if( n==1 )
-    {
-        result = ae_fabs(x->ptr.p_double[i1], _state);
-        return result;
-    }
-    scl = (double)(0);
-    ssq = (double)(1);
-    for(ix=i1; ix<=i2; ix++)
-    {
-        if( ae_fp_neq(x->ptr.p_double[ix],(double)(0)) )
-        {
-            absxi = ae_fabs(x->ptr.p_double[ix], _state);
-            if( ae_fp_less(scl,absxi) )
-            {
-                ssq = 1+ssq*ae_sqr(scl/absxi, _state);
-                scl = absxi;
-            }
-            else
-            {
-                ssq = ssq+ae_sqr(absxi/scl, _state);
-            }
-        }
-    }
-    result = scl*ae_sqrt(ssq, _state);
-    return result;
-}
-
-
-ae_int_t vectoridxabsmax(/* Real    */ ae_vector* x,
-     ae_int_t i1,
-     ae_int_t i2,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t result;
-
-
-    result = i1;
-    for(i=i1+1; i<=i2; i++)
-    {
-        if( ae_fp_greater(ae_fabs(x->ptr.p_double[i], _state),ae_fabs(x->ptr.p_double[result], _state)) )
-        {
-            result = i;
-        }
-    }
-    return result;
-}
-
-
-ae_int_t columnidxabsmax(/* Real    */ ae_matrix* x,
-     ae_int_t i1,
-     ae_int_t i2,
-     ae_int_t j,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t result;
-
-
-    result = i1;
-    for(i=i1+1; i<=i2; i++)
-    {
-        if( ae_fp_greater(ae_fabs(x->ptr.pp_double[i][j], _state),ae_fabs(x->ptr.pp_double[result][j], _state)) )
-        {
-            result = i;
-        }
-    }
-    return result;
-}
-
-
-ae_int_t rowidxabsmax(/* Real    */ ae_matrix* x,
-     ae_int_t j1,
-     ae_int_t j2,
-     ae_int_t i,
-     ae_state *_state)
-{
-    ae_int_t j;
-    ae_int_t result;
-
-
-    result = j1;
-    for(j=j1+1; j<=j2; j++)
-    {
-        if( ae_fp_greater(ae_fabs(x->ptr.pp_double[i][j], _state),ae_fabs(x->ptr.pp_double[i][result], _state)) )
-        {
-            result = j;
-        }
-    }
-    return result;
-}
-
-
-double upperhessenberg1norm(/* Real    */ ae_matrix* a,
-     ae_int_t i1,
-     ae_int_t i2,
-     ae_int_t j1,
-     ae_int_t j2,
-     /* Real    */ ae_vector* work,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t j;
-    double result;
-
-
-    ae_assert(i2-i1==j2-j1, "UpperHessenberg1Norm: I2-I1<>J2-J1!", _state);
-    for(j=j1; j<=j2; j++)
-    {
-        work->ptr.p_double[j] = (double)(0);
-    }
-    for(i=i1; i<=i2; i++)
-    {
-        for(j=ae_maxint(j1, j1+i-i1-1, _state); j<=j2; j++)
-        {
-            work->ptr.p_double[j] = work->ptr.p_double[j]+ae_fabs(a->ptr.pp_double[i][j], _state);
-        }
-    }
-    result = (double)(0);
-    for(j=j1; j<=j2; j++)
-    {
-        result = ae_maxreal(result, work->ptr.p_double[j], _state);
-    }
-    return result;
-}
-
-
-void copymatrix(/* Real    */ ae_matrix* a,
-     ae_int_t is1,
-     ae_int_t is2,
-     ae_int_t js1,
-     ae_int_t js2,
-     /* Real    */ ae_matrix* b,
-     ae_int_t id1,
-     ae_int_t id2,
-     ae_int_t jd1,
-     ae_int_t jd2,
-     ae_state *_state)
-{
-    ae_int_t isrc;
-    ae_int_t idst;
-
-
-    if( is1>is2||js1>js2 )
-    {
-        return;
-    }
-    ae_assert(is2-is1==id2-id1, "CopyMatrix: different sizes!", _state);
-    ae_assert(js2-js1==jd2-jd1, "CopyMatrix: different sizes!", _state);
-    for(isrc=is1; isrc<=is2; isrc++)
-    {
-        idst = isrc-is1+id1;
-        ae_v_move(&b->ptr.pp_double[idst][jd1], 1, &a->ptr.pp_double[isrc][js1], 1, ae_v_len(jd1,jd2));
-    }
-}
-
-
-void inplacetranspose(/* Real    */ ae_matrix* a,
-     ae_int_t i1,
-     ae_int_t i2,
-     ae_int_t j1,
-     ae_int_t j2,
-     /* Real    */ ae_vector* work,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t ips;
-    ae_int_t jps;
-    ae_int_t l;
-
-
-    if( i1>i2||j1>j2 )
-    {
-        return;
-    }
-    ae_assert(i1-i2==j1-j2, "InplaceTranspose error: incorrect array size!", _state);
-    for(i=i1; i<=i2-1; i++)
-    {
-        j = j1+i-i1;
-        ips = i+1;
-        jps = j1+ips-i1;
-        l = i2-i;
-        ae_v_move(&work->ptr.p_double[1], 1, &a->ptr.pp_double[ips][j], a->stride, ae_v_len(1,l));
-        ae_v_move(&a->ptr.pp_double[ips][j], a->stride, &a->ptr.pp_double[i][jps], 1, ae_v_len(ips,i2));
-        ae_v_move(&a->ptr.pp_double[i][jps], 1, &work->ptr.p_double[1], 1, ae_v_len(jps,j2));
-    }
-}
-
-
-void copyandtranspose(/* Real    */ ae_matrix* a,
-     ae_int_t is1,
-     ae_int_t is2,
-     ae_int_t js1,
-     ae_int_t js2,
-     /* Real    */ ae_matrix* b,
-     ae_int_t id1,
-     ae_int_t id2,
-     ae_int_t jd1,
-     ae_int_t jd2,
-     ae_state *_state)
-{
-    ae_int_t isrc;
-    ae_int_t jdst;
-
-
-    if( is1>is2||js1>js2 )
-    {
-        return;
-    }
-    ae_assert(is2-is1==jd2-jd1, "CopyAndTranspose: different sizes!", _state);
-    ae_assert(js2-js1==id2-id1, "CopyAndTranspose: different sizes!", _state);
-    for(isrc=is1; isrc<=is2; isrc++)
-    {
-        jdst = isrc-is1+jd1;
-        ae_v_move(&b->ptr.pp_double[id1][jdst], b->stride, &a->ptr.pp_double[isrc][js1], 1, ae_v_len(id1,id2));
-    }
-}
-
-
-void matrixvectormultiply(/* Real    */ ae_matrix* a,
-     ae_int_t i1,
-     ae_int_t i2,
-     ae_int_t j1,
-     ae_int_t j2,
-     ae_bool trans,
-     /* Real    */ ae_vector* x,
-     ae_int_t ix1,
-     ae_int_t ix2,
-     double alpha,
-     /* Real    */ ae_vector* y,
-     ae_int_t iy1,
-     ae_int_t iy2,
-     double beta,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double v;
-
-
-    if( !trans )
-    {
-        
-        /*
-         * y := alpha*A*x + beta*y;
-         */
-        if( i1>i2||j1>j2 )
-        {
-            return;
-        }
-        ae_assert(j2-j1==ix2-ix1, "MatrixVectorMultiply: A and X dont match!", _state);
-        ae_assert(i2-i1==iy2-iy1, "MatrixVectorMultiply: A and Y dont match!", _state);
-        
-        /*
-         * beta*y
-         */
-        if( ae_fp_eq(beta,(double)(0)) )
-        {
-            for(i=iy1; i<=iy2; i++)
-            {
-                y->ptr.p_double[i] = (double)(0);
-            }
-        }
-        else
-        {
-            ae_v_muld(&y->ptr.p_double[iy1], 1, ae_v_len(iy1,iy2), beta);
-        }
-        
-        /*
-         * alpha*A*x
-         */
-        for(i=i1; i<=i2; i++)
-        {
-            v = ae_v_dotproduct(&a->ptr.pp_double[i][j1], 1, &x->ptr.p_double[ix1], 1, ae_v_len(j1,j2));
-            y->ptr.p_double[iy1+i-i1] = y->ptr.p_double[iy1+i-i1]+alpha*v;
-        }
-    }
-    else
-    {
-        
-        /*
-         * y := alpha*A'*x + beta*y;
-         */
-        if( i1>i2||j1>j2 )
-        {
-            return;
-        }
-        ae_assert(i2-i1==ix2-ix1, "MatrixVectorMultiply: A and X dont match!", _state);
-        ae_assert(j2-j1==iy2-iy1, "MatrixVectorMultiply: A and Y dont match!", _state);
-        
-        /*
-         * beta*y
-         */
-        if( ae_fp_eq(beta,(double)(0)) )
-        {
-            for(i=iy1; i<=iy2; i++)
-            {
-                y->ptr.p_double[i] = (double)(0);
-            }
-        }
-        else
-        {
-            ae_v_muld(&y->ptr.p_double[iy1], 1, ae_v_len(iy1,iy2), beta);
-        }
-        
-        /*
-         * alpha*A'*x
-         */
-        for(i=i1; i<=i2; i++)
-        {
-            v = alpha*x->ptr.p_double[ix1+i-i1];
-            ae_v_addd(&y->ptr.p_double[iy1], 1, &a->ptr.pp_double[i][j1], 1, ae_v_len(iy1,iy2), v);
-        }
-    }
-}
-
-
-double pythag2(double x, double y, ae_state *_state)
-{
-    double w;
-    double xabs;
-    double yabs;
-    double z;
-    double result;
-
-
-    xabs = ae_fabs(x, _state);
-    yabs = ae_fabs(y, _state);
-    w = ae_maxreal(xabs, yabs, _state);
-    z = ae_minreal(xabs, yabs, _state);
-    if( ae_fp_eq(z,(double)(0)) )
-    {
-        result = w;
-    }
-    else
-    {
-        result = w*ae_sqrt(1+ae_sqr(z/w, _state), _state);
-    }
-    return result;
-}
-
-
-void matrixmatrixmultiply(/* Real    */ ae_matrix* a,
-     ae_int_t ai1,
-     ae_int_t ai2,
-     ae_int_t aj1,
-     ae_int_t aj2,
-     ae_bool transa,
-     /* Real    */ ae_matrix* b,
-     ae_int_t bi1,
-     ae_int_t bi2,
-     ae_int_t bj1,
-     ae_int_t bj2,
-     ae_bool transb,
-     double alpha,
-     /* Real    */ ae_matrix* c,
-     ae_int_t ci1,
-     ae_int_t ci2,
-     ae_int_t cj1,
-     ae_int_t cj2,
-     double beta,
-     /* Real    */ ae_vector* work,
-     ae_state *_state)
-{
-    ae_int_t arows;
-    ae_int_t acols;
-    ae_int_t brows;
-    ae_int_t bcols;
-    ae_int_t crows;
-    ae_int_t i;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t l;
-    ae_int_t r;
-    double v;
-
-
-    
-    /*
-     * Setup
-     */
-    if( !transa )
-    {
-        arows = ai2-ai1+1;
-        acols = aj2-aj1+1;
-    }
-    else
-    {
-        arows = aj2-aj1+1;
-        acols = ai2-ai1+1;
-    }
-    if( !transb )
-    {
-        brows = bi2-bi1+1;
-        bcols = bj2-bj1+1;
-    }
-    else
-    {
-        brows = bj2-bj1+1;
-        bcols = bi2-bi1+1;
-    }
-    ae_assert(acols==brows, "MatrixMatrixMultiply: incorrect matrix sizes!", _state);
-    if( ((arows<=0||acols<=0)||brows<=0)||bcols<=0 )
-    {
-        return;
-    }
-    crows = arows;
-    
-    /*
-     * Test WORK
-     */
-    i = ae_maxint(arows, acols, _state);
-    i = ae_maxint(brows, i, _state);
-    i = ae_maxint(i, bcols, _state);
-    work->ptr.p_double[1] = (double)(0);
-    work->ptr.p_double[i] = (double)(0);
-    
-    /*
-     * Prepare C
-     */
-    if( ae_fp_eq(beta,(double)(0)) )
-    {
-        for(i=ci1; i<=ci2; i++)
-        {
-            for(j=cj1; j<=cj2; j++)
-            {
-                c->ptr.pp_double[i][j] = (double)(0);
-            }
-        }
-    }
-    else
-    {
-        for(i=ci1; i<=ci2; i++)
-        {
-            ae_v_muld(&c->ptr.pp_double[i][cj1], 1, ae_v_len(cj1,cj2), beta);
-        }
-    }
-    
-    /*
-     * A*B
-     */
-    if( !transa&&!transb )
-    {
-        for(l=ai1; l<=ai2; l++)
-        {
-            for(r=bi1; r<=bi2; r++)
-            {
-                v = alpha*a->ptr.pp_double[l][aj1+r-bi1];
-                k = ci1+l-ai1;
-                ae_v_addd(&c->ptr.pp_double[k][cj1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(cj1,cj2), v);
-            }
-        }
-        return;
-    }
-    
-    /*
-     * A*B'
-     */
-    if( !transa&&transb )
-    {
-        if( arows*acols<brows*bcols )
-        {
-            for(r=bi1; r<=bi2; r++)
-            {
-                for(l=ai1; l<=ai2; l++)
-                {
-                    v = ae_v_dotproduct(&a->ptr.pp_double[l][aj1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(aj1,aj2));
-                    c->ptr.pp_double[ci1+l-ai1][cj1+r-bi1] = c->ptr.pp_double[ci1+l-ai1][cj1+r-bi1]+alpha*v;
-                }
-            }
-            return;
-        }
-        else
-        {
-            for(l=ai1; l<=ai2; l++)
-            {
-                for(r=bi1; r<=bi2; r++)
-                {
-                    v = ae_v_dotproduct(&a->ptr.pp_double[l][aj1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(aj1,aj2));
-                    c->ptr.pp_double[ci1+l-ai1][cj1+r-bi1] = c->ptr.pp_double[ci1+l-ai1][cj1+r-bi1]+alpha*v;
-                }
-            }
-            return;
-        }
-    }
-    
-    /*
-     * A'*B
-     */
-    if( transa&&!transb )
-    {
-        for(l=aj1; l<=aj2; l++)
-        {
-            for(r=bi1; r<=bi2; r++)
-            {
-                v = alpha*a->ptr.pp_double[ai1+r-bi1][l];
-                k = ci1+l-aj1;
-                ae_v_addd(&c->ptr.pp_double[k][cj1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(cj1,cj2), v);
-            }
-        }
-        return;
-    }
-    
-    /*
-     * A'*B'
-     */
-    if( transa&&transb )
-    {
-        if( arows*acols<brows*bcols )
-        {
-            for(r=bi1; r<=bi2; r++)
-            {
-                k = cj1+r-bi1;
-                for(i=1; i<=crows; i++)
-                {
-                    work->ptr.p_double[i] = 0.0;
-                }
-                for(l=ai1; l<=ai2; l++)
-                {
-                    v = alpha*b->ptr.pp_double[r][bj1+l-ai1];
-                    ae_v_addd(&work->ptr.p_double[1], 1, &a->ptr.pp_double[l][aj1], 1, ae_v_len(1,crows), v);
-                }
-                ae_v_add(&c->ptr.pp_double[ci1][k], c->stride, &work->ptr.p_double[1], 1, ae_v_len(ci1,ci2));
-            }
-            return;
-        }
-        else
-        {
-            for(l=aj1; l<=aj2; l++)
-            {
-                k = ai2-ai1+1;
-                ae_v_move(&work->ptr.p_double[1], 1, &a->ptr.pp_double[ai1][l], a->stride, ae_v_len(1,k));
-                for(r=bi1; r<=bi2; r++)
-                {
-                    v = ae_v_dotproduct(&work->ptr.p_double[1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(1,k));
-                    c->ptr.pp_double[ci1+l-aj1][cj1+r-bi1] = c->ptr.pp_double[ci1+l-aj1][cj1+r-bi1]+alpha*v;
-                }
-            }
-            return;
-        }
-    }
-}
-
-
-
-
-void hermitianmatrixvectormultiply(/* Complex */ ae_matrix* a,
-     ae_bool isupper,
-     ae_int_t i1,
-     ae_int_t i2,
-     /* Complex */ ae_vector* x,
-     ae_complex alpha,
-     /* Complex */ ae_vector* y,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t ba1;
-    ae_int_t by1;
-    ae_int_t by2;
-    ae_int_t bx1;
-    ae_int_t bx2;
-    ae_int_t n;
-    ae_complex v;
-
-
-    n = i2-i1+1;
-    if( n<=0 )
-    {
-        return;
-    }
-    
-    /*
-     * Let A = L + D + U, where
-     *  L is strictly lower triangular (main diagonal is zero)
-     *  D is diagonal
-     *  U is strictly upper triangular (main diagonal is zero)
-     *
-     * A*x = L*x + D*x + U*x
-     *
-     * Calculate D*x first
-     */
-    for(i=i1; i<=i2; i++)
-    {
-        y->ptr.p_complex[i-i1+1] = ae_c_mul(a->ptr.pp_complex[i][i],x->ptr.p_complex[i-i1+1]);
-    }
-    
-    /*
-     * Add L*x + U*x
-     */
-    if( isupper )
-    {
-        for(i=i1; i<=i2-1; i++)
-        {
-            
-            /*
-             * Add L*x to the result
-             */
-            v = x->ptr.p_complex[i-i1+1];
-            by1 = i-i1+2;
-            by2 = n;
-            ba1 = i+1;
-            ae_v_caddc(&y->ptr.p_complex[by1], 1, &a->ptr.pp_complex[i][ba1], 1, "Conj", ae_v_len(by1,by2), v);
-            
-            /*
-             * Add U*x to the result
-             */
-            bx1 = i-i1+2;
-            bx2 = n;
-            ba1 = i+1;
-            v = ae_v_cdotproduct(&x->ptr.p_complex[bx1], 1, "N", &a->ptr.pp_complex[i][ba1], 1, "N", ae_v_len(bx1,bx2));
-            y->ptr.p_complex[i-i1+1] = ae_c_add(y->ptr.p_complex[i-i1+1],v);
-        }
-    }
-    else
-    {
-        for(i=i1+1; i<=i2; i++)
-        {
-            
-            /*
-             * Add L*x to the result
-             */
-            bx1 = 1;
-            bx2 = i-i1;
-            ba1 = i1;
-            v = ae_v_cdotproduct(&x->ptr.p_complex[bx1], 1, "N", &a->ptr.pp_complex[i][ba1], 1, "N", ae_v_len(bx1,bx2));
-            y->ptr.p_complex[i-i1+1] = ae_c_add(y->ptr.p_complex[i-i1+1],v);
-            
-            /*
-             * Add U*x to the result
-             */
-            v = x->ptr.p_complex[i-i1+1];
-            by1 = 1;
-            by2 = i-i1;
-            ba1 = i1;
-            ae_v_caddc(&y->ptr.p_complex[by1], 1, &a->ptr.pp_complex[i][ba1], 1, "Conj", ae_v_len(by1,by2), v);
-        }
-    }
-    ae_v_cmulc(&y->ptr.p_complex[1], 1, ae_v_len(1,n), alpha);
-}
-
-
-void hermitianrank2update(/* Complex */ ae_matrix* a,
-     ae_bool isupper,
-     ae_int_t i1,
-     ae_int_t i2,
-     /* Complex */ ae_vector* x,
-     /* Complex */ ae_vector* y,
-     /* Complex */ ae_vector* t,
-     ae_complex alpha,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t tp1;
-    ae_int_t tp2;
-    ae_complex v;
-
-
-    if( isupper )
-    {
-        for(i=i1; i<=i2; i++)
-        {
-            tp1 = i+1-i1;
-            tp2 = i2-i1+1;
-            v = ae_c_mul(alpha,x->ptr.p_complex[i+1-i1]);
-            ae_v_cmovec(&t->ptr.p_complex[tp1], 1, &y->ptr.p_complex[tp1], 1, "Conj", ae_v_len(tp1,tp2), v);
-            v = ae_c_mul(ae_c_conj(alpha, _state),y->ptr.p_complex[i+1-i1]);
-            ae_v_caddc(&t->ptr.p_complex[tp1], 1, &x->ptr.p_complex[tp1], 1, "Conj", ae_v_len(tp1,tp2), v);
-            ae_v_cadd(&a->ptr.pp_complex[i][i], 1, &t->ptr.p_complex[tp1], 1, "N", ae_v_len(i,i2));
-        }
-    }
-    else
-    {
-        for(i=i1; i<=i2; i++)
-        {
-            tp1 = 1;
-            tp2 = i+1-i1;
-            v = ae_c_mul(alpha,x->ptr.p_complex[i+1-i1]);
-            ae_v_cmovec(&t->ptr.p_complex[tp1], 1, &y->ptr.p_complex[tp1], 1, "Conj", ae_v_len(tp1,tp2), v);
-            v = ae_c_mul(ae_c_conj(alpha, _state),y->ptr.p_complex[i+1-i1]);
-            ae_v_caddc(&t->ptr.p_complex[tp1], 1, &x->ptr.p_complex[tp1], 1, "Conj", ae_v_len(tp1,tp2), v);
-            ae_v_cadd(&a->ptr.pp_complex[i][i1], 1, &t->ptr.p_complex[tp1], 1, "N", ae_v_len(i1,i));
-        }
-    }
-}
-
-
-
-
-/*************************************************************************
-Generation of an elementary reflection transformation
-
-The subroutine generates elementary reflection H of order N, so that, for
-a given X, the following equality holds true:
-
-    ( X(1) )   ( Beta )
-H * (  ..  ) = (  0   )
-    ( X(n) )   (  0   )
-
-where
-              ( V(1) )
-H = 1 - Tau * (  ..  ) * ( V(1), ..., V(n) )
-              ( V(n) )
-
-where the first component of vector V equals 1.
-
-Input parameters:
-    X   -   vector. Array whose index ranges within [1..N].
-    N   -   reflection order.
-
-Output parameters:
-    X   -   components from 2 to N are replaced with vector V.
-            The first component is replaced with parameter Beta.
-    Tau -   scalar value Tau. If X is a null vector, Tau equals 0,
-            otherwise 1 <= Tau <= 2.
-
-This subroutine is the modification of the DLARFG subroutines from
-the LAPACK library.
-
-MODIFICATIONS:
-    24.12.2005 sign(Alpha) was replaced with an analogous to the Fortran SIGN code.
-
-  -- LAPACK auxiliary routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-void generatereflection(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double* tau,
-     ae_state *_state)
-{
-    ae_int_t j;
-    double alpha;
-    double xnorm;
-    double v;
-    double beta;
-    double mx;
-    double s;
-
-    *tau = 0;
-
-    if( n<=1 )
-    {
-        *tau = (double)(0);
-        return;
-    }
-    
-    /*
-     * Scale if needed (to avoid overflow/underflow during intermediate
-     * calculations).
-     */
-    mx = (double)(0);
-    for(j=1; j<=n; j++)
-    {
-        mx = ae_maxreal(ae_fabs(x->ptr.p_double[j], _state), mx, _state);
-    }
-    s = (double)(1);
-    if( ae_fp_neq(mx,(double)(0)) )
-    {
-        if( ae_fp_less_eq(mx,ae_minrealnumber/ae_machineepsilon) )
-        {
-            s = ae_minrealnumber/ae_machineepsilon;
-            v = 1/s;
-            ae_v_muld(&x->ptr.p_double[1], 1, ae_v_len(1,n), v);
-            mx = mx*v;
-        }
-        else
-        {
-            if( ae_fp_greater_eq(mx,ae_maxrealnumber*ae_machineepsilon) )
-            {
-                s = ae_maxrealnumber*ae_machineepsilon;
-                v = 1/s;
-                ae_v_muld(&x->ptr.p_double[1], 1, ae_v_len(1,n), v);
-                mx = mx*v;
-            }
-        }
-    }
-    
-    /*
-     * XNORM = DNRM2( N-1, X, INCX )
-     */
-    alpha = x->ptr.p_double[1];
-    xnorm = (double)(0);
-    if( ae_fp_neq(mx,(double)(0)) )
-    {
-        for(j=2; j<=n; j++)
-        {
-            xnorm = xnorm+ae_sqr(x->ptr.p_double[j]/mx, _state);
-        }
-        xnorm = ae_sqrt(xnorm, _state)*mx;
-    }
-    if( ae_fp_eq(xnorm,(double)(0)) )
-    {
-        
-        /*
-         * H  =  I
-         */
-        *tau = (double)(0);
-        x->ptr.p_double[1] = x->ptr.p_double[1]*s;
-        return;
-    }
-    
-    /*
-     * general case
-     */
-    mx = ae_maxreal(ae_fabs(alpha, _state), ae_fabs(xnorm, _state), _state);
-    beta = -mx*ae_sqrt(ae_sqr(alpha/mx, _state)+ae_sqr(xnorm/mx, _state), _state);
-    if( ae_fp_less(alpha,(double)(0)) )
-    {
-        beta = -beta;
-    }
-    *tau = (beta-alpha)/beta;
-    v = 1/(alpha-beta);
-    ae_v_muld(&x->ptr.p_double[2], 1, ae_v_len(2,n), v);
-    x->ptr.p_double[1] = beta;
-    
-    /*
-     * Scale back outputs
-     */
-    x->ptr.p_double[1] = x->ptr.p_double[1]*s;
-}
-
-
-/*************************************************************************
-Application of an elementary reflection to a rectangular matrix of size MxN
-
-The algorithm pre-multiplies the matrix by an elementary reflection transformation
-which is given by column V and scalar Tau (see the description of the
-GenerateReflection procedure). Not the whole matrix but only a part of it
-is transformed (rows from M1 to M2, columns from N1 to N2). Only the elements
-of this submatrix are changed.
-
-Input parameters:
-    C       -   matrix to be transformed.
-    Tau     -   scalar defining the transformation.
-    V       -   column defining the transformation.
-                Array whose index ranges within [1..M2-M1+1].
-    M1, M2  -   range of rows to be transformed.
-    N1, N2  -   range of columns to be transformed.
-    WORK    -   working array whose indexes goes from N1 to N2.
-
-Output parameters:
-    C       -   the result of multiplying the input matrix C by the
-                transformation matrix which is given by Tau and V.
-                If N1>N2 or M1>M2, C is not modified.
-
-  -- LAPACK auxiliary routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-void applyreflectionfromtheleft(/* Real    */ ae_matrix* c,
-     double tau,
-     /* Real    */ ae_vector* v,
-     ae_int_t m1,
-     ae_int_t m2,
-     ae_int_t n1,
-     ae_int_t n2,
-     /* Real    */ ae_vector* work,
-     ae_state *_state)
-{
-    double t;
-    ae_int_t i;
-
-
-    if( (ae_fp_eq(tau,(double)(0))||n1>n2)||m1>m2 )
-    {
-        return;
-    }
-    
-    /*
-     * w := C' * v
-     */
-    for(i=n1; i<=n2; i++)
-    {
-        work->ptr.p_double[i] = (double)(0);
-    }
-    for(i=m1; i<=m2; i++)
-    {
-        t = v->ptr.p_double[i+1-m1];
-        ae_v_addd(&work->ptr.p_double[n1], 1, &c->ptr.pp_double[i][n1], 1, ae_v_len(n1,n2), t);
-    }
-    
-    /*
-     * C := C - tau * v * w'
-     */
-    for(i=m1; i<=m2; i++)
-    {
-        t = v->ptr.p_double[i-m1+1]*tau;
-        ae_v_subd(&c->ptr.pp_double[i][n1], 1, &work->ptr.p_double[n1], 1, ae_v_len(n1,n2), t);
-    }
-}
-
-
-/*************************************************************************
-Application of an elementary reflection to a rectangular matrix of size MxN
-
-The algorithm post-multiplies the matrix by an elementary reflection transformation
-which is given by column V and scalar Tau (see the description of the
-GenerateReflection procedure). Not the whole matrix but only a part of it
-is transformed (rows from M1 to M2, columns from N1 to N2). Only the
-elements of this submatrix are changed.
-
-Input parameters:
-    C       -   matrix to be transformed.
-    Tau     -   scalar defining the transformation.
-    V       -   column defining the transformation.
-                Array whose index ranges within [1..N2-N1+1].
-    M1, M2  -   range of rows to be transformed.
-    N1, N2  -   range of columns to be transformed.
-    WORK    -   working array whose indexes goes from M1 to M2.
-
-Output parameters:
-    C       -   the result of multiplying the input matrix C by the
-                transformation matrix which is given by Tau and V.
-                If N1>N2 or M1>M2, C is not modified.
-
-  -- LAPACK auxiliary routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-void applyreflectionfromtheright(/* Real    */ ae_matrix* c,
-     double tau,
-     /* Real    */ ae_vector* v,
-     ae_int_t m1,
-     ae_int_t m2,
-     ae_int_t n1,
-     ae_int_t n2,
-     /* Real    */ ae_vector* work,
-     ae_state *_state)
-{
-    double t;
-    ae_int_t i;
-    ae_int_t vm;
-
-
-    if( (ae_fp_eq(tau,(double)(0))||n1>n2)||m1>m2 )
-    {
-        return;
-    }
-    vm = n2-n1+1;
-    for(i=m1; i<=m2; i++)
-    {
-        t = ae_v_dotproduct(&c->ptr.pp_double[i][n1], 1, &v->ptr.p_double[1], 1, ae_v_len(n1,n2));
-        t = t*tau;
-        ae_v_subd(&c->ptr.pp_double[i][n1], 1, &v->ptr.p_double[1], 1, ae_v_len(n1,n2), t);
-    }
-    
-    /*
-     * This line is necessary to avoid spurious compiler warnings
-     */
-    touchint(&vm, _state);
-}
-
-
-
-
-/*************************************************************************
-Generation of an elementary complex reflection transformation
-
-The subroutine generates elementary complex reflection H of  order  N,  so
-that, for a given X, the following equality holds true:
-
-     ( X(1) )   ( Beta )
-H' * (  ..  ) = (  0   ),   H'*H = I,   Beta is a real number
-     ( X(n) )   (  0   )
-
-where
-
-              ( V(1) )
-H = 1 - Tau * (  ..  ) * ( conj(V(1)), ..., conj(V(n)) )
-              ( V(n) )
-
-where the first component of vector V equals 1.
-
-Input parameters:
-    X   -   vector. Array with elements [1..N].
-    N   -   reflection order.
-
-Output parameters:
-    X   -   components from 2 to N are replaced by vector V.
-            The first component is replaced with parameter Beta.
-    Tau -   scalar value Tau.
-
-This subroutine is the modification of CLARFG subroutines  from the LAPACK
-library. It has similar functionality except for the fact that it  doesn’t
-handle errors when intermediate results cause an overflow.
-
-  -- LAPACK auxiliary routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-void complexgeneratereflection(/* Complex */ ae_vector* x,
-     ae_int_t n,
-     ae_complex* tau,
-     ae_state *_state)
-{
-    ae_int_t j;
-    ae_complex alpha;
-    double alphi;
-    double alphr;
-    double beta;
-    double xnorm;
-    double mx;
-    ae_complex t;
-    double s;
-    ae_complex v;
-
-    tau->x = 0;
-    tau->y = 0;
-
-    if( n<=0 )
-    {
-        *tau = ae_complex_from_i(0);
-        return;
-    }
-    
-    /*
-     * Scale if needed (to avoid overflow/underflow during intermediate
-     * calculations).
-     */
-    mx = (double)(0);
-    for(j=1; j<=n; j++)
-    {
-        mx = ae_maxreal(ae_c_abs(x->ptr.p_complex[j], _state), mx, _state);
-    }
-    s = (double)(1);
-    if( ae_fp_neq(mx,(double)(0)) )
-    {
-        if( ae_fp_less(mx,(double)(1)) )
-        {
-            s = ae_sqrt(ae_minrealnumber, _state);
-            v = ae_complex_from_d(1/s);
-            ae_v_cmulc(&x->ptr.p_complex[1], 1, ae_v_len(1,n), v);
-        }
-        else
-        {
-            s = ae_sqrt(ae_maxrealnumber, _state);
-            v = ae_complex_from_d(1/s);
-            ae_v_cmulc(&x->ptr.p_complex[1], 1, ae_v_len(1,n), v);
-        }
-    }
-    
-    /*
-     * calculate
-     */
-    alpha = x->ptr.p_complex[1];
-    mx = (double)(0);
-    for(j=2; j<=n; j++)
-    {
-        mx = ae_maxreal(ae_c_abs(x->ptr.p_complex[j], _state), mx, _state);
-    }
-    xnorm = (double)(0);
-    if( ae_fp_neq(mx,(double)(0)) )
-    {
-        for(j=2; j<=n; j++)
-        {
-            t = ae_c_div_d(x->ptr.p_complex[j],mx);
-            xnorm = xnorm+ae_c_mul(t,ae_c_conj(t, _state)).x;
-        }
-        xnorm = ae_sqrt(xnorm, _state)*mx;
-    }
-    alphr = alpha.x;
-    alphi = alpha.y;
-    if( ae_fp_eq(xnorm,(double)(0))&&ae_fp_eq(alphi,(double)(0)) )
-    {
-        *tau = ae_complex_from_i(0);
-        x->ptr.p_complex[1] = ae_c_mul_d(x->ptr.p_complex[1],s);
-        return;
-    }
-    mx = ae_maxreal(ae_fabs(alphr, _state), ae_fabs(alphi, _state), _state);
-    mx = ae_maxreal(mx, ae_fabs(xnorm, _state), _state);
-    beta = -mx*ae_sqrt(ae_sqr(alphr/mx, _state)+ae_sqr(alphi/mx, _state)+ae_sqr(xnorm/mx, _state), _state);
-    if( ae_fp_less(alphr,(double)(0)) )
-    {
-        beta = -beta;
-    }
-    tau->x = (beta-alphr)/beta;
-    tau->y = -alphi/beta;
-    alpha = ae_c_d_div(1,ae_c_sub_d(alpha,beta));
-    if( n>1 )
-    {
-        ae_v_cmulc(&x->ptr.p_complex[2], 1, ae_v_len(2,n), alpha);
-    }
-    alpha = ae_complex_from_d(beta);
-    x->ptr.p_complex[1] = alpha;
-    
-    /*
-     * Scale back
-     */
-    x->ptr.p_complex[1] = ae_c_mul_d(x->ptr.p_complex[1],s);
-}
-
-
-/*************************************************************************
-Application of an elementary reflection to a rectangular matrix of size MxN
-
-The  algorithm  pre-multiplies  the  matrix  by  an  elementary reflection
-transformation  which  is  given  by  column  V  and  scalar  Tau (see the
-description of the GenerateReflection). Not the whole matrix  but  only  a
-part of it is transformed (rows from M1 to M2, columns from N1 to N2). Only
-the elements of this submatrix are changed.
-
-Note: the matrix is multiplied by H, not by H'.   If  it  is  required  to
-multiply the matrix by H', it is necessary to pass Conj(Tau) instead of Tau.
-
-Input parameters:
-    C       -   matrix to be transformed.
-    Tau     -   scalar defining transformation.
-    V       -   column defining transformation.
-                Array whose index ranges within [1..M2-M1+1]
-    M1, M2  -   range of rows to be transformed.
-    N1, N2  -   range of columns to be transformed.
-    WORK    -   working array whose index goes from N1 to N2.
-
-Output parameters:
-    C       -   the result of multiplying the input matrix C by the
-                transformation matrix which is given by Tau and V.
-                If N1>N2 or M1>M2, C is not modified.
-
-  -- LAPACK auxiliary routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-void complexapplyreflectionfromtheleft(/* Complex */ ae_matrix* c,
-     ae_complex tau,
-     /* Complex */ ae_vector* v,
-     ae_int_t m1,
-     ae_int_t m2,
-     ae_int_t n1,
-     ae_int_t n2,
-     /* Complex */ ae_vector* work,
-     ae_state *_state)
-{
-    ae_complex t;
-    ae_int_t i;
-
-
-    if( (ae_c_eq_d(tau,(double)(0))||n1>n2)||m1>m2 )
-    {
-        return;
-    }
-    
-    /*
-     * w := C^T * conj(v)
-     */
-    for(i=n1; i<=n2; i++)
-    {
-        work->ptr.p_complex[i] = ae_complex_from_i(0);
-    }
-    for(i=m1; i<=m2; i++)
-    {
-        t = ae_c_conj(v->ptr.p_complex[i+1-m1], _state);
-        ae_v_caddc(&work->ptr.p_complex[n1], 1, &c->ptr.pp_complex[i][n1], 1, "N", ae_v_len(n1,n2), t);
-    }
-    
-    /*
-     * C := C - tau * v * w^T
-     */
-    for(i=m1; i<=m2; i++)
-    {
-        t = ae_c_mul(v->ptr.p_complex[i-m1+1],tau);
-        ae_v_csubc(&c->ptr.pp_complex[i][n1], 1, &work->ptr.p_complex[n1], 1, "N", ae_v_len(n1,n2), t);
-    }
-}
-
-
-/*************************************************************************
-Application of an elementary reflection to a rectangular matrix of size MxN
-
-The  algorithm  post-multiplies  the  matrix  by  an elementary reflection
-transformation  which  is  given  by  column  V  and  scalar  Tau (see the
-description  of  the  GenerateReflection). Not the whole matrix but only a
-part  of  it  is  transformed (rows from M1 to M2, columns from N1 to N2).
-Only the elements of this submatrix are changed.
-
-Input parameters:
-    C       -   matrix to be transformed.
-    Tau     -   scalar defining transformation.
-    V       -   column defining transformation.
-                Array whose index ranges within [1..N2-N1+1]
-    M1, M2  -   range of rows to be transformed.
-    N1, N2  -   range of columns to be transformed.
-    WORK    -   working array whose index goes from M1 to M2.
-
-Output parameters:
-    C       -   the result of multiplying the input matrix C by the
-                transformation matrix which is given by Tau and V.
-                If N1>N2 or M1>M2, C is not modified.
-
-  -- LAPACK auxiliary routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-void complexapplyreflectionfromtheright(/* Complex */ ae_matrix* c,
-     ae_complex tau,
-     /* Complex */ ae_vector* v,
-     ae_int_t m1,
-     ae_int_t m2,
-     ae_int_t n1,
-     ae_int_t n2,
-     /* Complex */ ae_vector* work,
-     ae_state *_state)
-{
-    ae_complex t;
-    ae_int_t i;
-    ae_int_t vm;
-
-
-    if( (ae_c_eq_d(tau,(double)(0))||n1>n2)||m1>m2 )
-    {
-        return;
-    }
-    
-    /*
-     * w := C * v
-     */
-    vm = n2-n1+1;
-    for(i=m1; i<=m2; i++)
-    {
-        t = ae_v_cdotproduct(&c->ptr.pp_complex[i][n1], 1, "N", &v->ptr.p_complex[1], 1, "N", ae_v_len(n1,n2));
-        work->ptr.p_complex[i] = t;
-    }
-    
-    /*
-     * C := C - w * conj(v^T)
-     */
-    ae_v_cmove(&v->ptr.p_complex[1], 1, &v->ptr.p_complex[1], 1, "Conj", ae_v_len(1,vm));
-    for(i=m1; i<=m2; i++)
-    {
-        t = ae_c_mul(work->ptr.p_complex[i],tau);
-        ae_v_csubc(&c->ptr.pp_complex[i][n1], 1, &v->ptr.p_complex[1], 1, "N", ae_v_len(n1,n2), t);
-    }
-    ae_v_cmove(&v->ptr.p_complex[1], 1, &v->ptr.p_complex[1], 1, "Conj", ae_v_len(1,vm));
-}
-
-
-
-
-void symmetricmatrixvectormultiply(/* Real    */ ae_matrix* a,
-     ae_bool isupper,
-     ae_int_t i1,
-     ae_int_t i2,
-     /* Real    */ ae_vector* x,
-     double alpha,
-     /* Real    */ ae_vector* y,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t ba1;
-    ae_int_t ba2;
-    ae_int_t by1;
-    ae_int_t by2;
-    ae_int_t bx1;
-    ae_int_t bx2;
-    ae_int_t n;
-    double v;
-
-
-    n = i2-i1+1;
-    if( n<=0 )
-    {
-        return;
-    }
-    
-    /*
-     * Let A = L + D + U, where
-     *  L is strictly lower triangular (main diagonal is zero)
-     *  D is diagonal
-     *  U is strictly upper triangular (main diagonal is zero)
-     *
-     * A*x = L*x + D*x + U*x
-     *
-     * Calculate D*x first
-     */
-    for(i=i1; i<=i2; i++)
-    {
-        y->ptr.p_double[i-i1+1] = a->ptr.pp_double[i][i]*x->ptr.p_double[i-i1+1];
-    }
-    
-    /*
-     * Add L*x + U*x
-     */
-    if( isupper )
-    {
-        for(i=i1; i<=i2-1; i++)
-        {
-            
-            /*
-             * Add L*x to the result
-             */
-            v = x->ptr.p_double[i-i1+1];
-            by1 = i-i1+2;
-            by2 = n;
-            ba1 = i+1;
-            ba2 = i2;
-            ae_v_addd(&y->ptr.p_double[by1], 1, &a->ptr.pp_double[i][ba1], 1, ae_v_len(by1,by2), v);
-            
-            /*
-             * Add U*x to the result
-             */
-            bx1 = i-i1+2;
-            bx2 = n;
-            ba1 = i+1;
-            ba2 = i2;
-            v = ae_v_dotproduct(&x->ptr.p_double[bx1], 1, &a->ptr.pp_double[i][ba1], 1, ae_v_len(bx1,bx2));
-            y->ptr.p_double[i-i1+1] = y->ptr.p_double[i-i1+1]+v;
-        }
-    }
-    else
-    {
-        for(i=i1+1; i<=i2; i++)
-        {
-            
-            /*
-             * Add L*x to the result
-             */
-            bx1 = 1;
-            bx2 = i-i1;
-            ba1 = i1;
-            ba2 = i-1;
-            v = ae_v_dotproduct(&x->ptr.p_double[bx1], 1, &a->ptr.pp_double[i][ba1], 1, ae_v_len(bx1,bx2));
-            y->ptr.p_double[i-i1+1] = y->ptr.p_double[i-i1+1]+v;
-            
-            /*
-             * Add U*x to the result
-             */
-            v = x->ptr.p_double[i-i1+1];
-            by1 = 1;
-            by2 = i-i1;
-            ba1 = i1;
-            ba2 = i-1;
-            ae_v_addd(&y->ptr.p_double[by1], 1, &a->ptr.pp_double[i][ba1], 1, ae_v_len(by1,by2), v);
-        }
-    }
-    ae_v_muld(&y->ptr.p_double[1], 1, ae_v_len(1,n), alpha);
-    touchint(&ba2, _state);
-}
-
-
-void symmetricrank2update(/* Real    */ ae_matrix* a,
-     ae_bool isupper,
-     ae_int_t i1,
-     ae_int_t i2,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     /* Real    */ ae_vector* t,
-     double alpha,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t tp1;
-    ae_int_t tp2;
-    double v;
-
-
-    if( isupper )
-    {
-        for(i=i1; i<=i2; i++)
-        {
-            tp1 = i+1-i1;
-            tp2 = i2-i1+1;
-            v = x->ptr.p_double[i+1-i1];
-            ae_v_moved(&t->ptr.p_double[tp1], 1, &y->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), v);
-            v = y->ptr.p_double[i+1-i1];
-            ae_v_addd(&t->ptr.p_double[tp1], 1, &x->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), v);
-            ae_v_muld(&t->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), alpha);
-            ae_v_add(&a->ptr.pp_double[i][i], 1, &t->ptr.p_double[tp1], 1, ae_v_len(i,i2));
-        }
-    }
-    else
-    {
-        for(i=i1; i<=i2; i++)
-        {
-            tp1 = 1;
-            tp2 = i+1-i1;
-            v = x->ptr.p_double[i+1-i1];
-            ae_v_moved(&t->ptr.p_double[tp1], 1, &y->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), v);
-            v = y->ptr.p_double[i+1-i1];
-            ae_v_addd(&t->ptr.p_double[tp1], 1, &x->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), v);
-            ae_v_muld(&t->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), alpha);
-            ae_v_add(&a->ptr.pp_double[i][i1], 1, &t->ptr.p_double[tp1], 1, ae_v_len(i1,i));
-        }
-    }
-}
-
-
-
-
 /*************************************************************************
 Application of a sequence of  elementary rotations to a matrix
 
@@ -8445,1378 +7716,6 @@ void generaterotation(double f,
             }
         }
     }
-}
-
-
-
-
-void rmatrixinternalschurdecomposition(/* Real    */ ae_matrix* h,
-     ae_int_t n,
-     ae_int_t tneeded,
-     ae_int_t zneeded,
-     /* Real    */ ae_vector* wr,
-     /* Real    */ ae_vector* wi,
-     /* Real    */ ae_matrix* z,
-     ae_int_t* info,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_int_t j;
-    ae_matrix h1;
-    ae_matrix z1;
-    ae_vector wr1;
-    ae_vector wi1;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_clear(wr);
-    ae_vector_clear(wi);
-    *info = 0;
-    ae_matrix_init(&h1, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&z1, 0, 0, DT_REAL, _state);
-    ae_vector_init(&wr1, 0, DT_REAL, _state);
-    ae_vector_init(&wi1, 0, DT_REAL, _state);
-
-    
-    /*
-     * Allocate space
-     */
-    ae_vector_set_length(wr, n, _state);
-    ae_vector_set_length(wi, n, _state);
-    if( zneeded==2 )
-    {
-        rmatrixsetlengthatleast(z, n, n, _state);
-    }
-    
-    /*
-     * MKL version
-     */
-    if( rmatrixinternalschurdecompositionmkl(h, n, tneeded, zneeded, wr, wi, z, info, _state) )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * ALGLIB version
-     */
-    ae_matrix_set_length(&h1, n+1, n+1, _state);
-    for(i=0; i<=n-1; i++)
-    {
-        for(j=0; j<=n-1; j++)
-        {
-            h1.ptr.pp_double[1+i][1+j] = h->ptr.pp_double[i][j];
-        }
-    }
-    if( zneeded==1 )
-    {
-        ae_matrix_set_length(&z1, n+1, n+1, _state);
-        for(i=0; i<=n-1; i++)
-        {
-            for(j=0; j<=n-1; j++)
-            {
-                z1.ptr.pp_double[1+i][1+j] = z->ptr.pp_double[i][j];
-            }
-        }
-    }
-    internalschurdecomposition(&h1, n, tneeded, zneeded, &wr1, &wi1, &z1, info, _state);
-    for(i=0; i<=n-1; i++)
-    {
-        wr->ptr.p_double[i] = wr1.ptr.p_double[i+1];
-        wi->ptr.p_double[i] = wi1.ptr.p_double[i+1];
-    }
-    if( tneeded!=0 )
-    {
-        for(i=0; i<=n-1; i++)
-        {
-            for(j=0; j<=n-1; j++)
-            {
-                h->ptr.pp_double[i][j] = h1.ptr.pp_double[1+i][1+j];
-            }
-        }
-    }
-    if( zneeded!=0 )
-    {
-        rmatrixsetlengthatleast(z, n, n, _state);
-        for(i=0; i<=n-1; i++)
-        {
-            for(j=0; j<=n-1; j++)
-            {
-                z->ptr.pp_double[i][j] = z1.ptr.pp_double[1+i][1+j];
-            }
-        }
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-Subroutine performing  the  Schur  decomposition  of  a  matrix  in  upper
-Hessenberg form using the QR algorithm with multiple shifts.
-
-The  source matrix  H  is  represented as  S'*H*S = T, where H - matrix in
-upper Hessenberg form,  S - orthogonal matrix (Schur vectors),   T - upper
-quasi-triangular matrix (with blocks of sizes  1x1  and  2x2  on  the main
-diagonal).
-
-Input parameters:
-    H   -   matrix to be decomposed.
-            Array whose indexes range within [1..N, 1..N].
-    N   -   size of H, N>=0.
-
-
-Output parameters:
-    H   –   contains the matrix T.
-            Array whose indexes range within [1..N, 1..N].
-            All elements below the blocks on the main diagonal are equal
-            to 0.
-    S   -   contains Schur vectors.
-            Array whose indexes range within [1..N, 1..N].
-
-Note 1:
-    The block structure of matrix T could be easily recognized: since  all
-    the elements  below  the blocks are zeros, the elements a[i+1,i] which
-    are equal to 0 show the block border.
-
-Note 2:
-    the algorithm  performance  depends  on  the  value  of  the  internal
-    parameter NS of InternalSchurDecomposition  subroutine  which  defines
-    the number of shifts in the QR algorithm (analog of  the  block  width
-    in block matrix algorithms in linear algebra). If you require  maximum
-    performance  on  your  machine,  it  is  recommended  to  adjust  this
-    parameter manually.
-
-Result:
-    True, if the algorithm has converged and the parameters H and S contain
-        the result.
-    False, if the algorithm has not converged.
-
-Algorithm implemented on the basis of subroutine DHSEQR (LAPACK 3.0 library).
-*************************************************************************/
-ae_bool upperhessenbergschurdecomposition(/* Real    */ ae_matrix* h,
-     ae_int_t n,
-     /* Real    */ ae_matrix* s,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector wi;
-    ae_vector wr;
-    ae_int_t info;
-    ae_bool result;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_matrix_clear(s);
-    ae_vector_init(&wi, 0, DT_REAL, _state);
-    ae_vector_init(&wr, 0, DT_REAL, _state);
-
-    internalschurdecomposition(h, n, 1, 2, &wr, &wi, s, &info, _state);
-    result = info==0;
-    ae_frame_leave(_state);
-    return result;
-}
-
-
-void internalschurdecomposition(/* Real    */ ae_matrix* h,
-     ae_int_t n,
-     ae_int_t tneeded,
-     ae_int_t zneeded,
-     /* Real    */ ae_vector* wr,
-     /* Real    */ ae_vector* wi,
-     /* Real    */ ae_matrix* z,
-     ae_int_t* info,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector work;
-    ae_int_t i;
-    ae_int_t i1;
-    ae_int_t i2;
-    ae_int_t ierr;
-    ae_int_t ii;
-    ae_int_t itemp;
-    ae_int_t itn;
-    ae_int_t its;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t l;
-    ae_int_t maxb;
-    ae_int_t nr;
-    ae_int_t ns;
-    ae_int_t nv;
-    double absw;
-    double smlnum;
-    double tau;
-    double temp;
-    double tst1;
-    double ulp;
-    double unfl;
-    ae_matrix s;
-    ae_vector v;
-    ae_vector vv;
-    ae_vector workc1;
-    ae_vector works1;
-    ae_vector workv3;
-    ae_vector tmpwr;
-    ae_vector tmpwi;
-    ae_bool initz;
-    ae_bool wantt;
-    ae_bool wantz;
-    double cnst;
-    ae_bool failflag;
-    ae_int_t p1;
-    ae_int_t p2;
-    double vt;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_clear(wr);
-    ae_vector_clear(wi);
-    *info = 0;
-    ae_vector_init(&work, 0, DT_REAL, _state);
-    ae_matrix_init(&s, 0, 0, DT_REAL, _state);
-    ae_vector_init(&v, 0, DT_REAL, _state);
-    ae_vector_init(&vv, 0, DT_REAL, _state);
-    ae_vector_init(&workc1, 0, DT_REAL, _state);
-    ae_vector_init(&works1, 0, DT_REAL, _state);
-    ae_vector_init(&workv3, 0, DT_REAL, _state);
-    ae_vector_init(&tmpwr, 0, DT_REAL, _state);
-    ae_vector_init(&tmpwi, 0, DT_REAL, _state);
-
-    
-    /*
-     * Set the order of the multi-shift QR algorithm to be used.
-     * If you want to tune algorithm, change this values
-     */
-    ns = 12;
-    maxb = 50;
-    
-    /*
-     * Now 2 < NS <= MAXB < NH.
-     */
-    maxb = ae_maxint(3, maxb, _state);
-    ns = ae_minint(maxb, ns, _state);
-    
-    /*
-     * Initialize
-     */
-    cnst = 1.5;
-    ae_vector_set_length(&work, ae_maxint(n, 1, _state)+1, _state);
-    ae_matrix_set_length(&s, ns+1, ns+1, _state);
-    ae_vector_set_length(&v, ns+1+1, _state);
-    ae_vector_set_length(&vv, ns+1+1, _state);
-    ae_vector_set_length(wr, ae_maxint(n, 1, _state)+1, _state);
-    ae_vector_set_length(wi, ae_maxint(n, 1, _state)+1, _state);
-    ae_vector_set_length(&workc1, 1+1, _state);
-    ae_vector_set_length(&works1, 1+1, _state);
-    ae_vector_set_length(&workv3, 3+1, _state);
-    ae_vector_set_length(&tmpwr, ae_maxint(n, 1, _state)+1, _state);
-    ae_vector_set_length(&tmpwi, ae_maxint(n, 1, _state)+1, _state);
-    ae_assert(n>=0, "InternalSchurDecomposition: incorrect N!", _state);
-    ae_assert(tneeded==0||tneeded==1, "InternalSchurDecomposition: incorrect TNeeded!", _state);
-    ae_assert((zneeded==0||zneeded==1)||zneeded==2, "InternalSchurDecomposition: incorrect ZNeeded!", _state);
-    wantt = tneeded==1;
-    initz = zneeded==2;
-    wantz = zneeded!=0;
-    *info = 0;
-    
-    /*
-     * Initialize Z, if necessary
-     */
-    if( initz )
-    {
-        rmatrixsetlengthatleast(z, n+1, n+1, _state);
-        for(i=1; i<=n; i++)
-        {
-            for(j=1; j<=n; j++)
-            {
-                if( i==j )
-                {
-                    z->ptr.pp_double[i][j] = (double)(1);
-                }
-                else
-                {
-                    z->ptr.pp_double[i][j] = (double)(0);
-                }
-            }
-        }
-    }
-    
-    /*
-     * Quick return if possible
-     */
-    if( n==0 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    if( n==1 )
-    {
-        wr->ptr.p_double[1] = h->ptr.pp_double[1][1];
-        wi->ptr.p_double[1] = (double)(0);
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Set rows and columns 1 to N to zero below the first
-     * subdiagonal.
-     */
-    for(j=1; j<=n-2; j++)
-    {
-        for(i=j+2; i<=n; i++)
-        {
-            h->ptr.pp_double[i][j] = (double)(0);
-        }
-    }
-    
-    /*
-     * Test if N is sufficiently small
-     */
-    if( (ns<=2||ns>n)||maxb>=n )
-    {
-        
-        /*
-         * Use the standard double-shift algorithm
-         */
-        hsschur_internalauxschur(wantt, wantz, n, 1, n, h, wr, wi, 1, n, z, &work, &workv3, &workc1, &works1, info, _state);
-        
-        /*
-         * fill entries under diagonal blocks of T with zeros
-         */
-        if( wantt )
-        {
-            j = 1;
-            while(j<=n)
-            {
-                if( ae_fp_eq(wi->ptr.p_double[j],(double)(0)) )
-                {
-                    for(i=j+1; i<=n; i++)
-                    {
-                        h->ptr.pp_double[i][j] = (double)(0);
-                    }
-                    j = j+1;
-                }
-                else
-                {
-                    for(i=j+2; i<=n; i++)
-                    {
-                        h->ptr.pp_double[i][j] = (double)(0);
-                        h->ptr.pp_double[i][j+1] = (double)(0);
-                    }
-                    j = j+2;
-                }
-            }
-        }
-        ae_frame_leave(_state);
-        return;
-    }
-    unfl = ae_minrealnumber;
-    ulp = 2*ae_machineepsilon;
-    smlnum = unfl*(n/ulp);
-    
-    /*
-     * I1 and I2 are the indices of the first row and last column of H
-     * to which transformations must be applied. If eigenvalues only are
-     * being computed, I1 and I2 are set inside the main loop.
-     */
-    i1 = 1;
-    i2 = n;
-    
-    /*
-     * ITN is the total number of multiple-shift QR iterations allowed.
-     */
-    itn = 30*n;
-    
-    /*
-     * The main loop begins here. I is the loop index and decreases from
-     * IHI to ILO in steps of at most MAXB. Each iteration of the loop
-     * works with the active submatrix in rows and columns L to I.
-     * Eigenvalues I+1 to IHI have already converged. Either L = ILO or
-     * H(L,L-1) is negligible so that the matrix splits.
-     */
-    i = n;
-    for(;;)
-    {
-        l = 1;
-        if( i<1 )
-        {
-            
-            /*
-             * fill entries under diagonal blocks of T with zeros
-             */
-            if( wantt )
-            {
-                j = 1;
-                while(j<=n)
-                {
-                    if( ae_fp_eq(wi->ptr.p_double[j],(double)(0)) )
-                    {
-                        for(i=j+1; i<=n; i++)
-                        {
-                            h->ptr.pp_double[i][j] = (double)(0);
-                        }
-                        j = j+1;
-                    }
-                    else
-                    {
-                        for(i=j+2; i<=n; i++)
-                        {
-                            h->ptr.pp_double[i][j] = (double)(0);
-                            h->ptr.pp_double[i][j+1] = (double)(0);
-                        }
-                        j = j+2;
-                    }
-                }
-            }
-            
-            /*
-             * Exit
-             */
-            ae_frame_leave(_state);
-            return;
-        }
-        
-        /*
-         * Perform multiple-shift QR iterations on rows and columns ILO to I
-         * until a submatrix of order at most MAXB splits off at the bottom
-         * because a subdiagonal element has become negligible.
-         */
-        failflag = ae_true;
-        for(its=0; its<=itn; its++)
-        {
-            
-            /*
-             * Look for a single small subdiagonal element.
-             */
-            for(k=i; k>=l+1; k--)
-            {
-                tst1 = ae_fabs(h->ptr.pp_double[k-1][k-1], _state)+ae_fabs(h->ptr.pp_double[k][k], _state);
-                if( ae_fp_eq(tst1,(double)(0)) )
-                {
-                    tst1 = upperhessenberg1norm(h, l, i, l, i, &work, _state);
-                }
-                if( ae_fp_less_eq(ae_fabs(h->ptr.pp_double[k][k-1], _state),ae_maxreal(ulp*tst1, smlnum, _state)) )
-                {
-                    break;
-                }
-            }
-            l = k;
-            if( l>1 )
-            {
-                
-                /*
-                 * H(L,L-1) is negligible.
-                 */
-                h->ptr.pp_double[l][l-1] = (double)(0);
-            }
-            
-            /*
-             * Exit from loop if a submatrix of order <= MAXB has split off.
-             */
-            if( l>=i-maxb+1 )
-            {
-                failflag = ae_false;
-                break;
-            }
-            
-            /*
-             * Now the active submatrix is in rows and columns L to I. If
-             * eigenvalues only are being computed, only the active submatrix
-             * need be transformed.
-             */
-            if( its==20||its==30 )
-            {
-                
-                /*
-                 * Exceptional shifts.
-                 */
-                for(ii=i-ns+1; ii<=i; ii++)
-                {
-                    wr->ptr.p_double[ii] = cnst*(ae_fabs(h->ptr.pp_double[ii][ii-1], _state)+ae_fabs(h->ptr.pp_double[ii][ii], _state));
-                    wi->ptr.p_double[ii] = (double)(0);
-                }
-            }
-            else
-            {
-                
-                /*
-                 * Use eigenvalues of trailing submatrix of order NS as shifts.
-                 */
-                copymatrix(h, i-ns+1, i, i-ns+1, i, &s, 1, ns, 1, ns, _state);
-                hsschur_internalauxschur(ae_false, ae_false, ns, 1, ns, &s, &tmpwr, &tmpwi, 1, ns, z, &work, &workv3, &workc1, &works1, &ierr, _state);
-                for(p1=1; p1<=ns; p1++)
-                {
-                    wr->ptr.p_double[i-ns+p1] = tmpwr.ptr.p_double[p1];
-                    wi->ptr.p_double[i-ns+p1] = tmpwi.ptr.p_double[p1];
-                }
-                if( ierr>0 )
-                {
-                    
-                    /*
-                     * If DLAHQR failed to compute all NS eigenvalues, use the
-                     * unconverged diagonal elements as the remaining shifts.
-                     */
-                    for(ii=1; ii<=ierr; ii++)
-                    {
-                        wr->ptr.p_double[i-ns+ii] = s.ptr.pp_double[ii][ii];
-                        wi->ptr.p_double[i-ns+ii] = (double)(0);
-                    }
-                }
-            }
-            
-            /*
-             * Form the first column of (G-w(1)) (G-w(2)) . . . (G-w(ns))
-             * where G is the Hessenberg submatrix H(L:I,L:I) and w is
-             * the vector of shifts (stored in WR and WI). The result is
-             * stored in the local array V.
-             */
-            v.ptr.p_double[1] = (double)(1);
-            for(ii=2; ii<=ns+1; ii++)
-            {
-                v.ptr.p_double[ii] = (double)(0);
-            }
-            nv = 1;
-            for(j=i-ns+1; j<=i; j++)
-            {
-                if( ae_fp_greater_eq(wi->ptr.p_double[j],(double)(0)) )
-                {
-                    if( ae_fp_eq(wi->ptr.p_double[j],(double)(0)) )
-                    {
-                        
-                        /*
-                         * real shift
-                         */
-                        p1 = nv+1;
-                        ae_v_move(&vv.ptr.p_double[1], 1, &v.ptr.p_double[1], 1, ae_v_len(1,p1));
-                        matrixvectormultiply(h, l, l+nv, l, l+nv-1, ae_false, &vv, 1, nv, 1.0, &v, 1, nv+1, -wr->ptr.p_double[j], _state);
-                        nv = nv+1;
-                    }
-                    else
-                    {
-                        if( ae_fp_greater(wi->ptr.p_double[j],(double)(0)) )
-                        {
-                            
-                            /*
-                             * complex conjugate pair of shifts
-                             */
-                            p1 = nv+1;
-                            ae_v_move(&vv.ptr.p_double[1], 1, &v.ptr.p_double[1], 1, ae_v_len(1,p1));
-                            matrixvectormultiply(h, l, l+nv, l, l+nv-1, ae_false, &v, 1, nv, 1.0, &vv, 1, nv+1, -2*wr->ptr.p_double[j], _state);
-                            itemp = vectoridxabsmax(&vv, 1, nv+1, _state);
-                            temp = 1/ae_maxreal(ae_fabs(vv.ptr.p_double[itemp], _state), smlnum, _state);
-                            p1 = nv+1;
-                            ae_v_muld(&vv.ptr.p_double[1], 1, ae_v_len(1,p1), temp);
-                            absw = pythag2(wr->ptr.p_double[j], wi->ptr.p_double[j], _state);
-                            temp = temp*absw*absw;
-                            matrixvectormultiply(h, l, l+nv+1, l, l+nv, ae_false, &vv, 1, nv+1, 1.0, &v, 1, nv+2, temp, _state);
-                            nv = nv+2;
-                        }
-                    }
-                    
-                    /*
-                     * Scale V(1:NV) so that max(abs(V(i))) = 1. If V is zero,
-                     * reset it to the unit vector.
-                     */
-                    itemp = vectoridxabsmax(&v, 1, nv, _state);
-                    temp = ae_fabs(v.ptr.p_double[itemp], _state);
-                    if( ae_fp_eq(temp,(double)(0)) )
-                    {
-                        v.ptr.p_double[1] = (double)(1);
-                        for(ii=2; ii<=nv; ii++)
-                        {
-                            v.ptr.p_double[ii] = (double)(0);
-                        }
-                    }
-                    else
-                    {
-                        temp = ae_maxreal(temp, smlnum, _state);
-                        vt = 1/temp;
-                        ae_v_muld(&v.ptr.p_double[1], 1, ae_v_len(1,nv), vt);
-                    }
-                }
-            }
-            
-            /*
-             * Multiple-shift QR step
-             */
-            for(k=l; k<=i-1; k++)
-            {
-                
-                /*
-                 * The first iteration of this loop determines a reflection G
-                 * from the vector V and applies it from left and right to H,
-                 * thus creating a nonzero bulge below the subdiagonal.
-                 *
-                 * Each subsequent iteration determines a reflection G to
-                 * restore the Hessenberg form in the (K-1)th column, and thus
-                 * chases the bulge one step toward the bottom of the active
-                 * submatrix. NR is the order of G.
-                 */
-                nr = ae_minint(ns+1, i-k+1, _state);
-                if( k>l )
-                {
-                    p1 = k-1;
-                    p2 = k+nr-1;
-                    ae_v_move(&v.ptr.p_double[1], 1, &h->ptr.pp_double[k][p1], h->stride, ae_v_len(1,nr));
-                    touchint(&p2, _state);
-                }
-                generatereflection(&v, nr, &tau, _state);
-                if( k>l )
-                {
-                    h->ptr.pp_double[k][k-1] = v.ptr.p_double[1];
-                    for(ii=k+1; ii<=i; ii++)
-                    {
-                        h->ptr.pp_double[ii][k-1] = (double)(0);
-                    }
-                }
-                v.ptr.p_double[1] = (double)(1);
-                
-                /*
-                 * Apply G from the left to transform the rows of the matrix in
-                 * columns K to I2.
-                 */
-                applyreflectionfromtheleft(h, tau, &v, k, k+nr-1, k, i2, &work, _state);
-                
-                /*
-                 * Apply G from the right to transform the columns of the
-                 * matrix in rows I1 to min(K+NR,I).
-                 */
-                applyreflectionfromtheright(h, tau, &v, i1, ae_minint(k+nr, i, _state), k, k+nr-1, &work, _state);
-                if( wantz )
-                {
-                    
-                    /*
-                     * Accumulate transformations in the matrix Z
-                     */
-                    applyreflectionfromtheright(z, tau, &v, 1, n, k, k+nr-1, &work, _state);
-                }
-            }
-        }
-        
-        /*
-         * Failure to converge in remaining number of iterations
-         */
-        if( failflag )
-        {
-            *info = i;
-            ae_frame_leave(_state);
-            return;
-        }
-        
-        /*
-         * A submatrix of order <= MAXB in rows and columns L to I has split
-         * off. Use the double-shift QR algorithm to handle it.
-         */
-        hsschur_internalauxschur(wantt, wantz, n, l, i, h, wr, wi, 1, n, z, &work, &workv3, &workc1, &works1, info, _state);
-        if( *info>0 )
-        {
-            ae_frame_leave(_state);
-            return;
-        }
-        
-        /*
-         * Decrement number of remaining iterations, and return to start of
-         * the main loop with a new value of I.
-         */
-        itn = itn-its;
-        i = l-1;
-    }
-    ae_frame_leave(_state);
-}
-
-
-static void hsschur_internalauxschur(ae_bool wantt,
-     ae_bool wantz,
-     ae_int_t n,
-     ae_int_t ilo,
-     ae_int_t ihi,
-     /* Real    */ ae_matrix* h,
-     /* Real    */ ae_vector* wr,
-     /* Real    */ ae_vector* wi,
-     ae_int_t iloz,
-     ae_int_t ihiz,
-     /* Real    */ ae_matrix* z,
-     /* Real    */ ae_vector* work,
-     /* Real    */ ae_vector* workv3,
-     /* Real    */ ae_vector* workc1,
-     /* Real    */ ae_vector* works1,
-     ae_int_t* info,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t i1;
-    ae_int_t i2;
-    ae_int_t itn;
-    ae_int_t its;
-    ae_int_t j;
-    ae_int_t k;
-    ae_int_t l;
-    ae_int_t m;
-    ae_int_t nh;
-    ae_int_t nr;
-    ae_int_t nz;
-    double ave;
-    double cs;
-    double disc;
-    double h00;
-    double h10;
-    double h11;
-    double h12;
-    double h21;
-    double h22;
-    double h33;
-    double h33s;
-    double h43h34;
-    double h44;
-    double h44s;
-    double s;
-    double smlnum;
-    double sn;
-    double sum;
-    double t1;
-    double t2;
-    double t3;
-    double tst1;
-    double unfl;
-    double v1;
-    double v2;
-    double v3;
-    ae_bool failflag;
-    double dat1;
-    double dat2;
-    ae_int_t p1;
-    double him1im1;
-    double him1i;
-    double hiim1;
-    double hii;
-    double wrim1;
-    double wri;
-    double wiim1;
-    double wii;
-    double ulp;
-
-    *info = 0;
-
-    *info = 0;
-    dat1 = 0.75;
-    dat2 = -0.4375;
-    ulp = ae_machineepsilon;
-    
-    /*
-     * Quick return if possible
-     */
-    if( n==0 )
-    {
-        return;
-    }
-    if( ilo==ihi )
-    {
-        wr->ptr.p_double[ilo] = h->ptr.pp_double[ilo][ilo];
-        wi->ptr.p_double[ilo] = (double)(0);
-        return;
-    }
-    nh = ihi-ilo+1;
-    nz = ihiz-iloz+1;
-    
-    /*
-     * Set machine-dependent constants for the stopping criterion.
-     * If norm(H) <= sqrt(MaxRealNumber), overflow should not occur.
-     */
-    unfl = ae_minrealnumber;
-    smlnum = unfl*(nh/ulp);
-    
-    /*
-     * I1 and I2 are the indices of the first row and last column of H
-     * to which transformations must be applied. If eigenvalues only are
-     * being computed, I1 and I2 are set inside the main loop.
-     */
-    i1 = 1;
-    i2 = n;
-    
-    /*
-     * ITN is the total number of QR iterations allowed.
-     */
-    itn = 30*nh;
-    
-    /*
-     * The main loop begins here. I is the loop index and decreases from
-     * IHI to ILO in steps of 1 or 2. Each iteration of the loop works
-     * with the active submatrix in rows and columns L to I.
-     * Eigenvalues I+1 to IHI have already converged. Either L = ILO or
-     * H(L,L-1) is negligible so that the matrix splits.
-     */
-    i = ihi;
-    for(;;)
-    {
-        l = ilo;
-        if( i<ilo )
-        {
-            return;
-        }
-        
-        /*
-         * Perform QR iterations on rows and columns ILO to I until a
-         * submatrix of order 1 or 2 splits off at the bottom because a
-         * subdiagonal element has become negligible.
-         */
-        failflag = ae_true;
-        for(its=0; its<=itn; its++)
-        {
-            
-            /*
-             * Look for a single small subdiagonal element.
-             */
-            for(k=i; k>=l+1; k--)
-            {
-                tst1 = ae_fabs(h->ptr.pp_double[k-1][k-1], _state)+ae_fabs(h->ptr.pp_double[k][k], _state);
-                if( ae_fp_eq(tst1,(double)(0)) )
-                {
-                    tst1 = upperhessenberg1norm(h, l, i, l, i, work, _state);
-                }
-                if( ae_fp_less_eq(ae_fabs(h->ptr.pp_double[k][k-1], _state),ae_maxreal(ulp*tst1, smlnum, _state)) )
-                {
-                    break;
-                }
-            }
-            l = k;
-            if( l>ilo )
-            {
-                
-                /*
-                 * H(L,L-1) is negligible
-                 */
-                h->ptr.pp_double[l][l-1] = (double)(0);
-            }
-            
-            /*
-             * Exit from loop if a submatrix of order 1 or 2 has split off.
-             */
-            if( l>=i-1 )
-            {
-                failflag = ae_false;
-                break;
-            }
-            
-            /*
-             * Now the active submatrix is in rows and columns L to I. If
-             * eigenvalues only are being computed, only the active submatrix
-             * need be transformed.
-             */
-            if( its==10||its==20 )
-            {
-                
-                /*
-                 * Exceptional shift.
-                 */
-                s = ae_fabs(h->ptr.pp_double[i][i-1], _state)+ae_fabs(h->ptr.pp_double[i-1][i-2], _state);
-                h44 = dat1*s+h->ptr.pp_double[i][i];
-                h33 = h44;
-                h43h34 = dat2*s*s;
-            }
-            else
-            {
-                
-                /*
-                 * Prepare to use Francis' double shift
-                 * (i.e. 2nd degree generalized Rayleigh quotient)
-                 */
-                h44 = h->ptr.pp_double[i][i];
-                h33 = h->ptr.pp_double[i-1][i-1];
-                h43h34 = h->ptr.pp_double[i][i-1]*h->ptr.pp_double[i-1][i];
-                s = h->ptr.pp_double[i-1][i-2]*h->ptr.pp_double[i-1][i-2];
-                disc = (h33-h44)*0.5;
-                disc = disc*disc+h43h34;
-                if( ae_fp_greater(disc,(double)(0)) )
-                {
-                    
-                    /*
-                     * Real roots: use Wilkinson's shift twice
-                     */
-                    disc = ae_sqrt(disc, _state);
-                    ave = 0.5*(h33+h44);
-                    if( ae_fp_greater(ae_fabs(h33, _state)-ae_fabs(h44, _state),(double)(0)) )
-                    {
-                        h33 = h33*h44-h43h34;
-                        h44 = h33/(hsschur_extschursign(disc, ave, _state)+ave);
-                    }
-                    else
-                    {
-                        h44 = hsschur_extschursign(disc, ave, _state)+ave;
-                    }
-                    h33 = h44;
-                    h43h34 = (double)(0);
-                }
-            }
-            
-            /*
-             * Look for two consecutive small subdiagonal elements.
-             */
-            for(m=i-2; m>=l; m--)
-            {
-                
-                /*
-                 * Determine the effect of starting the double-shift QR
-                 * iteration at row M, and see if this would make H(M,M-1)
-                 * negligible.
-                 */
-                h11 = h->ptr.pp_double[m][m];
-                h22 = h->ptr.pp_double[m+1][m+1];
-                h21 = h->ptr.pp_double[m+1][m];
-                h12 = h->ptr.pp_double[m][m+1];
-                h44s = h44-h11;
-                h33s = h33-h11;
-                v1 = (h33s*h44s-h43h34)/h21+h12;
-                v2 = h22-h11-h33s-h44s;
-                v3 = h->ptr.pp_double[m+2][m+1];
-                s = ae_fabs(v1, _state)+ae_fabs(v2, _state)+ae_fabs(v3, _state);
-                v1 = v1/s;
-                v2 = v2/s;
-                v3 = v3/s;
-                workv3->ptr.p_double[1] = v1;
-                workv3->ptr.p_double[2] = v2;
-                workv3->ptr.p_double[3] = v3;
-                if( m==l )
-                {
-                    break;
-                }
-                h00 = h->ptr.pp_double[m-1][m-1];
-                h10 = h->ptr.pp_double[m][m-1];
-                tst1 = ae_fabs(v1, _state)*(ae_fabs(h00, _state)+ae_fabs(h11, _state)+ae_fabs(h22, _state));
-                if( ae_fp_less_eq(ae_fabs(h10, _state)*(ae_fabs(v2, _state)+ae_fabs(v3, _state)),ulp*tst1) )
-                {
-                    break;
-                }
-            }
-            
-            /*
-             * Double-shift QR step
-             */
-            for(k=m; k<=i-1; k++)
-            {
-                
-                /*
-                 * The first iteration of this loop determines a reflection G
-                 * from the vector V and applies it from left and right to H,
-                 * thus creating a nonzero bulge below the subdiagonal.
-                 *
-                 * Each subsequent iteration determines a reflection G to
-                 * restore the Hessenberg form in the (K-1)th column, and thus
-                 * chases the bulge one step toward the bottom of the active
-                 * submatrix. NR is the order of G.
-                 */
-                nr = ae_minint(3, i-k+1, _state);
-                if( k>m )
-                {
-                    for(p1=1; p1<=nr; p1++)
-                    {
-                        workv3->ptr.p_double[p1] = h->ptr.pp_double[k+p1-1][k-1];
-                    }
-                }
-                generatereflection(workv3, nr, &t1, _state);
-                if( k>m )
-                {
-                    h->ptr.pp_double[k][k-1] = workv3->ptr.p_double[1];
-                    h->ptr.pp_double[k+1][k-1] = (double)(0);
-                    if( k<i-1 )
-                    {
-                        h->ptr.pp_double[k+2][k-1] = (double)(0);
-                    }
-                }
-                else
-                {
-                    if( m>l )
-                    {
-                        h->ptr.pp_double[k][k-1] = -h->ptr.pp_double[k][k-1];
-                    }
-                }
-                v2 = workv3->ptr.p_double[2];
-                t2 = t1*v2;
-                if( nr==3 )
-                {
-                    v3 = workv3->ptr.p_double[3];
-                    t3 = t1*v3;
-                    
-                    /*
-                     * Apply G from the left to transform the rows of the matrix
-                     * in columns K to I2.
-                     */
-                    for(j=k; j<=i2; j++)
-                    {
-                        sum = h->ptr.pp_double[k][j]+v2*h->ptr.pp_double[k+1][j]+v3*h->ptr.pp_double[k+2][j];
-                        h->ptr.pp_double[k][j] = h->ptr.pp_double[k][j]-sum*t1;
-                        h->ptr.pp_double[k+1][j] = h->ptr.pp_double[k+1][j]-sum*t2;
-                        h->ptr.pp_double[k+2][j] = h->ptr.pp_double[k+2][j]-sum*t3;
-                    }
-                    
-                    /*
-                     * Apply G from the right to transform the columns of the
-                     * matrix in rows I1 to min(K+3,I).
-                     */
-                    for(j=i1; j<=ae_minint(k+3, i, _state); j++)
-                    {
-                        sum = h->ptr.pp_double[j][k]+v2*h->ptr.pp_double[j][k+1]+v3*h->ptr.pp_double[j][k+2];
-                        h->ptr.pp_double[j][k] = h->ptr.pp_double[j][k]-sum*t1;
-                        h->ptr.pp_double[j][k+1] = h->ptr.pp_double[j][k+1]-sum*t2;
-                        h->ptr.pp_double[j][k+2] = h->ptr.pp_double[j][k+2]-sum*t3;
-                    }
-                    if( wantz )
-                    {
-                        
-                        /*
-                         * Accumulate transformations in the matrix Z
-                         */
-                        for(j=iloz; j<=ihiz; j++)
-                        {
-                            sum = z->ptr.pp_double[j][k]+v2*z->ptr.pp_double[j][k+1]+v3*z->ptr.pp_double[j][k+2];
-                            z->ptr.pp_double[j][k] = z->ptr.pp_double[j][k]-sum*t1;
-                            z->ptr.pp_double[j][k+1] = z->ptr.pp_double[j][k+1]-sum*t2;
-                            z->ptr.pp_double[j][k+2] = z->ptr.pp_double[j][k+2]-sum*t3;
-                        }
-                    }
-                }
-                else
-                {
-                    if( nr==2 )
-                    {
-                        
-                        /*
-                         * Apply G from the left to transform the rows of the matrix
-                         * in columns K to I2.
-                         */
-                        for(j=k; j<=i2; j++)
-                        {
-                            sum = h->ptr.pp_double[k][j]+v2*h->ptr.pp_double[k+1][j];
-                            h->ptr.pp_double[k][j] = h->ptr.pp_double[k][j]-sum*t1;
-                            h->ptr.pp_double[k+1][j] = h->ptr.pp_double[k+1][j]-sum*t2;
-                        }
-                        
-                        /*
-                         * Apply G from the right to transform the columns of the
-                         * matrix in rows I1 to min(K+3,I).
-                         */
-                        for(j=i1; j<=i; j++)
-                        {
-                            sum = h->ptr.pp_double[j][k]+v2*h->ptr.pp_double[j][k+1];
-                            h->ptr.pp_double[j][k] = h->ptr.pp_double[j][k]-sum*t1;
-                            h->ptr.pp_double[j][k+1] = h->ptr.pp_double[j][k+1]-sum*t2;
-                        }
-                        if( wantz )
-                        {
-                            
-                            /*
-                             * Accumulate transformations in the matrix Z
-                             */
-                            for(j=iloz; j<=ihiz; j++)
-                            {
-                                sum = z->ptr.pp_double[j][k]+v2*z->ptr.pp_double[j][k+1];
-                                z->ptr.pp_double[j][k] = z->ptr.pp_double[j][k]-sum*t1;
-                                z->ptr.pp_double[j][k+1] = z->ptr.pp_double[j][k+1]-sum*t2;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if( failflag )
-        {
-            
-            /*
-             * Failure to converge in remaining number of iterations
-             */
-            *info = i;
-            return;
-        }
-        if( l==i )
-        {
-            
-            /*
-             * H(I,I-1) is negligible: one eigenvalue has converged.
-             */
-            wr->ptr.p_double[i] = h->ptr.pp_double[i][i];
-            wi->ptr.p_double[i] = (double)(0);
-        }
-        else
-        {
-            if( l==i-1 )
-            {
-                
-                /*
-                 * H(I-1,I-2) is negligible: a pair of eigenvalues have converged.
-                 *
-                 *        Transform the 2-by-2 submatrix to standard Schur form,
-                 *        and compute and store the eigenvalues.
-                 */
-                him1im1 = h->ptr.pp_double[i-1][i-1];
-                him1i = h->ptr.pp_double[i-1][i];
-                hiim1 = h->ptr.pp_double[i][i-1];
-                hii = h->ptr.pp_double[i][i];
-                hsschur_aux2x2schur(&him1im1, &him1i, &hiim1, &hii, &wrim1, &wiim1, &wri, &wii, &cs, &sn, _state);
-                wr->ptr.p_double[i-1] = wrim1;
-                wi->ptr.p_double[i-1] = wiim1;
-                wr->ptr.p_double[i] = wri;
-                wi->ptr.p_double[i] = wii;
-                h->ptr.pp_double[i-1][i-1] = him1im1;
-                h->ptr.pp_double[i-1][i] = him1i;
-                h->ptr.pp_double[i][i-1] = hiim1;
-                h->ptr.pp_double[i][i] = hii;
-                if( wantt )
-                {
-                    
-                    /*
-                     * Apply the transformation to the rest of H.
-                     */
-                    if( i2>i )
-                    {
-                        workc1->ptr.p_double[1] = cs;
-                        works1->ptr.p_double[1] = sn;
-                        applyrotationsfromtheleft(ae_true, i-1, i, i+1, i2, workc1, works1, h, work, _state);
-                    }
-                    workc1->ptr.p_double[1] = cs;
-                    works1->ptr.p_double[1] = sn;
-                    applyrotationsfromtheright(ae_true, i1, i-2, i-1, i, workc1, works1, h, work, _state);
-                }
-                if( wantz )
-                {
-                    
-                    /*
-                     * Apply the transformation to Z.
-                     */
-                    workc1->ptr.p_double[1] = cs;
-                    works1->ptr.p_double[1] = sn;
-                    applyrotationsfromtheright(ae_true, iloz, iloz+nz-1, i-1, i, workc1, works1, z, work, _state);
-                }
-            }
-        }
-        
-        /*
-         * Decrement number of remaining iterations, and return to start of
-         * the main loop with new value of I.
-         */
-        itn = itn-its;
-        i = l-1;
-    }
-}
-
-
-static void hsschur_aux2x2schur(double* a,
-     double* b,
-     double* c,
-     double* d,
-     double* rt1r,
-     double* rt1i,
-     double* rt2r,
-     double* rt2i,
-     double* cs,
-     double* sn,
-     ae_state *_state)
-{
-    double multpl;
-    double aa;
-    double bb;
-    double bcmax;
-    double bcmis;
-    double cc;
-    double cs1;
-    double dd;
-    double eps;
-    double p;
-    double sab;
-    double sac;
-    double scl;
-    double sigma;
-    double sn1;
-    double tau;
-    double temp;
-    double z;
-
-    *rt1r = 0;
-    *rt1i = 0;
-    *rt2r = 0;
-    *rt2i = 0;
-    *cs = 0;
-    *sn = 0;
-
-    multpl = 4.0;
-    eps = ae_machineepsilon;
-    if( ae_fp_eq(*c,(double)(0)) )
-    {
-        *cs = (double)(1);
-        *sn = (double)(0);
-    }
-    else
-    {
-        if( ae_fp_eq(*b,(double)(0)) )
-        {
-            
-            /*
-             * Swap rows and columns
-             */
-            *cs = (double)(0);
-            *sn = (double)(1);
-            temp = *d;
-            *d = *a;
-            *a = temp;
-            *b = -*c;
-            *c = (double)(0);
-        }
-        else
-        {
-            if( ae_fp_eq(*a-(*d),(double)(0))&&hsschur_extschursigntoone(*b, _state)!=hsschur_extschursigntoone(*c, _state) )
-            {
-                *cs = (double)(1);
-                *sn = (double)(0);
-            }
-            else
-            {
-                temp = *a-(*d);
-                p = 0.5*temp;
-                bcmax = ae_maxreal(ae_fabs(*b, _state), ae_fabs(*c, _state), _state);
-                bcmis = ae_minreal(ae_fabs(*b, _state), ae_fabs(*c, _state), _state)*hsschur_extschursigntoone(*b, _state)*hsschur_extschursigntoone(*c, _state);
-                scl = ae_maxreal(ae_fabs(p, _state), bcmax, _state);
-                z = p/scl*p+bcmax/scl*bcmis;
-                
-                /*
-                 * If Z is of the order of the machine accuracy, postpone the
-                 * decision on the nature of eigenvalues
-                 */
-                if( ae_fp_greater_eq(z,multpl*eps) )
-                {
-                    
-                    /*
-                     * Real eigenvalues. Compute A and D.
-                     */
-                    z = p+hsschur_extschursign(ae_sqrt(scl, _state)*ae_sqrt(z, _state), p, _state);
-                    *a = *d+z;
-                    *d = *d-bcmax/z*bcmis;
-                    
-                    /*
-                     * Compute B and the rotation matrix
-                     */
-                    tau = pythag2(*c, z, _state);
-                    *cs = z/tau;
-                    *sn = *c/tau;
-                    *b = *b-(*c);
-                    *c = (double)(0);
-                }
-                else
-                {
-                    
-                    /*
-                     * Complex eigenvalues, or real (almost) equal eigenvalues.
-                     * Make diagonal elements equal.
-                     */
-                    sigma = *b+(*c);
-                    tau = pythag2(sigma, temp, _state);
-                    *cs = ae_sqrt(0.5*(1+ae_fabs(sigma, _state)/tau), _state);
-                    *sn = -p/(tau*(*cs))*hsschur_extschursign((double)(1), sigma, _state);
-                    
-                    /*
-                     * Compute [ AA  BB ] = [ A  B ] [ CS -SN ]
-                     *         [ CC  DD ]   [ C  D ] [ SN  CS ]
-                     */
-                    aa = *a*(*cs)+*b*(*sn);
-                    bb = -*a*(*sn)+*b*(*cs);
-                    cc = *c*(*cs)+*d*(*sn);
-                    dd = -*c*(*sn)+*d*(*cs);
-                    
-                    /*
-                     * Compute [ A  B ] = [ CS  SN ] [ AA  BB ]
-                     *         [ C  D ]   [-SN  CS ] [ CC  DD ]
-                     */
-                    *a = aa*(*cs)+cc*(*sn);
-                    *b = bb*(*cs)+dd*(*sn);
-                    *c = -aa*(*sn)+cc*(*cs);
-                    *d = -bb*(*sn)+dd*(*cs);
-                    temp = 0.5*(*a+(*d));
-                    *a = temp;
-                    *d = temp;
-                    if( ae_fp_neq(*c,(double)(0)) )
-                    {
-                        if( ae_fp_neq(*b,(double)(0)) )
-                        {
-                            if( hsschur_extschursigntoone(*b, _state)==hsschur_extschursigntoone(*c, _state) )
-                            {
-                                
-                                /*
-                                 * Real eigenvalues: reduce to upper triangular form
-                                 */
-                                sab = ae_sqrt(ae_fabs(*b, _state), _state);
-                                sac = ae_sqrt(ae_fabs(*c, _state), _state);
-                                p = hsschur_extschursign(sab*sac, *c, _state);
-                                tau = 1/ae_sqrt(ae_fabs(*b+(*c), _state), _state);
-                                *a = temp+p;
-                                *d = temp-p;
-                                *b = *b-(*c);
-                                *c = (double)(0);
-                                cs1 = sab*tau;
-                                sn1 = sac*tau;
-                                temp = *cs*cs1-*sn*sn1;
-                                *sn = *cs*sn1+*sn*cs1;
-                                *cs = temp;
-                            }
-                        }
-                        else
-                        {
-                            *b = -*c;
-                            *c = (double)(0);
-                            temp = *cs;
-                            *cs = -*sn;
-                            *sn = temp;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    /*
-     * Store eigenvalues in (RT1R,RT1I) and (RT2R,RT2I).
-     */
-    *rt1r = *a;
-    *rt2r = *d;
-    if( ae_fp_eq(*c,(double)(0)) )
-    {
-        *rt1i = (double)(0);
-        *rt2i = (double)(0);
-    }
-    else
-    {
-        *rt1i = ae_sqrt(ae_fabs(*b, _state), _state)*ae_sqrt(ae_fabs(*c, _state), _state);
-        *rt2i = -*rt1i;
-    }
-}
-
-
-static double hsschur_extschursign(double a, double b, ae_state *_state)
-{
-    double result;
-
-
-    if( ae_fp_greater_eq(b,(double)(0)) )
-    {
-        result = ae_fabs(a, _state);
-    }
-    else
-    {
-        result = -ae_fabs(a, _state);
-    }
-    return result;
-}
-
-
-static ae_int_t hsschur_extschursigntoone(double b, ae_state *_state)
-{
-    ae_int_t result;
-
-
-    if( ae_fp_greater_eq(b,(double)(0)) )
-    {
-        result = 1;
-    }
-    else
-    {
-        result = -1;
-    }
-    return result;
 }
 
 
@@ -11438,634 +9337,858 @@ static ae_bool safesolve_cbasicsolveandupdate(ae_complex alpha,
 
 
 
-/*************************************************************************
-Prepares HPC compuations  of  chunked  gradient with HPCChunkedGradient().
-You  have to call this function  before  calling  HPCChunkedGradient() for
-a new set of weights. You have to call it only once, see example below:
-
-HOW TO PROCESS DATASET WITH THIS FUNCTION:
-    Grad:=0
-    HPCPrepareChunkedGradient(Weights, WCount, NTotal, NOut, Buf)
-    foreach chunk-of-dataset do
-        HPCChunkedGradient(...)
-    HPCFinalizeChunkedGradient(Buf, Grad)
-
-*************************************************************************/
-void hpcpreparechunkedgradient(/* Real    */ ae_vector* weights,
-     ae_int_t wcount,
-     ae_int_t ntotal,
-     ae_int_t nin,
-     ae_int_t nout,
-     mlpbuffers* buf,
+void hermitianmatrixvectormultiply(/* Complex */ ae_matrix* a,
+     ae_bool isupper,
+     ae_int_t i1,
+     ae_int_t i2,
+     /* Complex */ ae_vector* x,
+     ae_complex alpha,
+     /* Complex */ ae_vector* y,
      ae_state *_state)
 {
     ae_int_t i;
-    ae_int_t batch4size;
-    ae_int_t chunksize;
+    ae_int_t ba1;
+    ae_int_t by1;
+    ae_int_t by2;
+    ae_int_t bx1;
+    ae_int_t bx2;
+    ae_int_t n;
+    ae_complex v;
 
 
-    chunksize = 4;
-    batch4size = 3*chunksize*ntotal+chunksize*(2*nout+1);
-    if( buf->xy.rows<chunksize||buf->xy.cols<nin+nout )
+    n = i2-i1+1;
+    if( n<=0 )
     {
-        ae_matrix_set_length(&buf->xy, chunksize, nin+nout, _state);
-    }
-    if( buf->xy2.rows<chunksize||buf->xy2.cols<nin+nout )
-    {
-        ae_matrix_set_length(&buf->xy2, chunksize, nin+nout, _state);
-    }
-    if( buf->xyrow.cnt<nin+nout )
-    {
-        ae_vector_set_length(&buf->xyrow, nin+nout, _state);
-    }
-    if( buf->x.cnt<nin )
-    {
-        ae_vector_set_length(&buf->x, nin, _state);
-    }
-    if( buf->y.cnt<nout )
-    {
-        ae_vector_set_length(&buf->y, nout, _state);
-    }
-    if( buf->desiredy.cnt<nout )
-    {
-        ae_vector_set_length(&buf->desiredy, nout, _state);
-    }
-    if( buf->batch4buf.cnt<batch4size )
-    {
-        ae_vector_set_length(&buf->batch4buf, batch4size, _state);
-    }
-    if( buf->hpcbuf.cnt<wcount )
-    {
-        ae_vector_set_length(&buf->hpcbuf, wcount, _state);
-    }
-    if( buf->g.cnt<wcount )
-    {
-        ae_vector_set_length(&buf->g, wcount, _state);
-    }
-    if( !hpccores_hpcpreparechunkedgradientx(weights, wcount, &buf->hpcbuf, _state) )
-    {
-        for(i=0; i<=wcount-1; i++)
-        {
-            buf->hpcbuf.ptr.p_double[i] = 0.0;
-        }
-    }
-    buf->wcount = wcount;
-    buf->ntotal = ntotal;
-    buf->nin = nin;
-    buf->nout = nout;
-    buf->chunksize = chunksize;
-}
-
-
-/*************************************************************************
-Finalizes HPC compuations  of  chunked gradient with HPCChunkedGradient().
-You  have to call this function  after  calling  HPCChunkedGradient()  for
-a new set of weights. You have to call it only once, see example below:
-
-HOW TO PROCESS DATASET WITH THIS FUNCTION:
-    Grad:=0
-    HPCPrepareChunkedGradient(Weights, WCount, NTotal, NOut, Buf)
-    foreach chunk-of-dataset do
-        HPCChunkedGradient(...)
-    HPCFinalizeChunkedGradient(Buf, Grad)
-
-*************************************************************************/
-void hpcfinalizechunkedgradient(mlpbuffers* buf,
-     /* Real    */ ae_vector* grad,
-     ae_state *_state)
-{
-    ae_int_t i;
-
-
-    if( !hpccores_hpcfinalizechunkedgradientx(&buf->hpcbuf, buf->wcount, grad, _state) )
-    {
-        for(i=0; i<=buf->wcount-1; i++)
-        {
-            grad->ptr.p_double[i] = grad->ptr.p_double[i]+buf->hpcbuf.ptr.p_double[i];
-        }
-    }
-}
-
-
-/*************************************************************************
-Fast kernel for chunked gradient.
-
-*************************************************************************/
-ae_bool hpcchunkedgradient(/* Real    */ ae_vector* weights,
-     /* Integer */ ae_vector* structinfo,
-     /* Real    */ ae_vector* columnmeans,
-     /* Real    */ ae_vector* columnsigmas,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t cstart,
-     ae_int_t csize,
-     /* Real    */ ae_vector* batch4buf,
-     /* Real    */ ae_vector* hpcbuf,
-     double* e,
-     ae_bool naturalerrorfunc,
-     ae_state *_state)
-{
-#ifndef ALGLIB_INTERCEPTS_SSE2
-    ae_bool result;
-
-
-    result = ae_false;
-    return result;
-#else
-    return _ialglib_i_hpcchunkedgradient(weights, structinfo, columnmeans, columnsigmas, xy, cstart, csize, batch4buf, hpcbuf, e, naturalerrorfunc);
-#endif
-}
-
-
-/*************************************************************************
-Fast kernel for chunked processing.
-
-*************************************************************************/
-ae_bool hpcchunkedprocess(/* Real    */ ae_vector* weights,
-     /* Integer */ ae_vector* structinfo,
-     /* Real    */ ae_vector* columnmeans,
-     /* Real    */ ae_vector* columnsigmas,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t cstart,
-     ae_int_t csize,
-     /* Real    */ ae_vector* batch4buf,
-     /* Real    */ ae_vector* hpcbuf,
-     ae_state *_state)
-{
-#ifndef ALGLIB_INTERCEPTS_SSE2
-    ae_bool result;
-
-
-    result = ae_false;
-    return result;
-#else
-    return _ialglib_i_hpcchunkedprocess(weights, structinfo, columnmeans, columnsigmas, xy, cstart, csize, batch4buf, hpcbuf);
-#endif
-}
-
-
-/*************************************************************************
-Stub function.
-
-  -- ALGLIB routine --
-     14.06.2013
-     Bochkanov Sergey
-*************************************************************************/
-static ae_bool hpccores_hpcpreparechunkedgradientx(/* Real    */ ae_vector* weights,
-     ae_int_t wcount,
-     /* Real    */ ae_vector* hpcbuf,
-     ae_state *_state)
-{
-#ifndef ALGLIB_INTERCEPTS_SSE2
-    ae_bool result;
-
-
-    result = ae_false;
-    return result;
-#else
-    return _ialglib_i_hpcpreparechunkedgradientx(weights, wcount, hpcbuf);
-#endif
-}
-
-
-/*************************************************************************
-Stub function.
-
-  -- ALGLIB routine --
-     14.06.2013
-     Bochkanov Sergey
-*************************************************************************/
-static ae_bool hpccores_hpcfinalizechunkedgradientx(/* Real    */ ae_vector* buf,
-     ae_int_t wcount,
-     /* Real    */ ae_vector* grad,
-     ae_state *_state)
-{
-#ifndef ALGLIB_INTERCEPTS_SSE2
-    ae_bool result;
-
-
-    result = ae_false;
-    return result;
-#else
-    return _ialglib_i_hpcfinalizechunkedgradientx(buf, wcount, grad);
-#endif
-}
-
-
-void _mlpbuffers_init(void* _p, ae_state *_state)
-{
-    mlpbuffers *p = (mlpbuffers*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_init(&p->batch4buf, 0, DT_REAL, _state);
-    ae_vector_init(&p->hpcbuf, 0, DT_REAL, _state);
-    ae_matrix_init(&p->xy, 0, 0, DT_REAL, _state);
-    ae_matrix_init(&p->xy2, 0, 0, DT_REAL, _state);
-    ae_vector_init(&p->xyrow, 0, DT_REAL, _state);
-    ae_vector_init(&p->x, 0, DT_REAL, _state);
-    ae_vector_init(&p->y, 0, DT_REAL, _state);
-    ae_vector_init(&p->desiredy, 0, DT_REAL, _state);
-    ae_vector_init(&p->g, 0, DT_REAL, _state);
-    ae_vector_init(&p->tmp0, 0, DT_REAL, _state);
-}
-
-
-void _mlpbuffers_init_copy(void* _dst, void* _src, ae_state *_state)
-{
-    mlpbuffers *dst = (mlpbuffers*)_dst;
-    mlpbuffers *src = (mlpbuffers*)_src;
-    dst->chunksize = src->chunksize;
-    dst->ntotal = src->ntotal;
-    dst->nin = src->nin;
-    dst->nout = src->nout;
-    dst->wcount = src->wcount;
-    ae_vector_init_copy(&dst->batch4buf, &src->batch4buf, _state);
-    ae_vector_init_copy(&dst->hpcbuf, &src->hpcbuf, _state);
-    ae_matrix_init_copy(&dst->xy, &src->xy, _state);
-    ae_matrix_init_copy(&dst->xy2, &src->xy2, _state);
-    ae_vector_init_copy(&dst->xyrow, &src->xyrow, _state);
-    ae_vector_init_copy(&dst->x, &src->x, _state);
-    ae_vector_init_copy(&dst->y, &src->y, _state);
-    ae_vector_init_copy(&dst->desiredy, &src->desiredy, _state);
-    dst->e = src->e;
-    ae_vector_init_copy(&dst->g, &src->g, _state);
-    ae_vector_init_copy(&dst->tmp0, &src->tmp0, _state);
-}
-
-
-void _mlpbuffers_clear(void* _p)
-{
-    mlpbuffers *p = (mlpbuffers*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_clear(&p->batch4buf);
-    ae_vector_clear(&p->hpcbuf);
-    ae_matrix_clear(&p->xy);
-    ae_matrix_clear(&p->xy2);
-    ae_vector_clear(&p->xyrow);
-    ae_vector_clear(&p->x);
-    ae_vector_clear(&p->y);
-    ae_vector_clear(&p->desiredy);
-    ae_vector_clear(&p->g);
-    ae_vector_clear(&p->tmp0);
-}
-
-
-void _mlpbuffers_destroy(void* _p)
-{
-    mlpbuffers *p = (mlpbuffers*)_p;
-    ae_touch_ptr((void*)p);
-    ae_vector_destroy(&p->batch4buf);
-    ae_vector_destroy(&p->hpcbuf);
-    ae_matrix_destroy(&p->xy);
-    ae_matrix_destroy(&p->xy2);
-    ae_vector_destroy(&p->xyrow);
-    ae_vector_destroy(&p->x);
-    ae_vector_destroy(&p->y);
-    ae_vector_destroy(&p->desiredy);
-    ae_vector_destroy(&p->g);
-    ae_vector_destroy(&p->tmp0);
-}
-
-
-
-
-/*************************************************************************
-More precise dot-product. Absolute error of  subroutine  result  is  about
-1 ulp of max(MX,V), where:
-    MX = max( |a[i]*b[i]| )
-    V  = |(a,b)|
-
-INPUT PARAMETERS
-    A       -   array[0..N-1], vector 1
-    B       -   array[0..N-1], vector 2
-    N       -   vectors length, N<2^29.
-    Temp    -   array[0..N-1], pre-allocated temporary storage
-
-OUTPUT PARAMETERS
-    R       -   (A,B)
-    RErr    -   estimate of error. This estimate accounts for both  errors
-                during  calculation  of  (A,B)  and  errors  introduced by
-                rounding of A and B to fit in double (about 1 ulp).
-
-  -- ALGLIB --
-     Copyright 24.08.2009 by Bochkanov Sergey
-*************************************************************************/
-void xdot(/* Real    */ ae_vector* a,
-     /* Real    */ ae_vector* b,
-     ae_int_t n,
-     /* Real    */ ae_vector* temp,
-     double* r,
-     double* rerr,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double mx;
-    double v;
-
-    *r = 0;
-    *rerr = 0;
-
-    
-    /*
-     * special cases:
-     * * N=0
-     */
-    if( n==0 )
-    {
-        *r = (double)(0);
-        *rerr = (double)(0);
-        return;
-    }
-    mx = (double)(0);
-    for(i=0; i<=n-1; i++)
-    {
-        v = a->ptr.p_double[i]*b->ptr.p_double[i];
-        temp->ptr.p_double[i] = v;
-        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
-    }
-    if( ae_fp_eq(mx,(double)(0)) )
-    {
-        *r = (double)(0);
-        *rerr = (double)(0);
-        return;
-    }
-    xblas_xsum(temp, mx, n, r, rerr, _state);
-}
-
-
-/*************************************************************************
-More precise complex dot-product. Absolute error of  subroutine  result is
-about 1 ulp of max(MX,V), where:
-    MX = max( |a[i]*b[i]| )
-    V  = |(a,b)|
-
-INPUT PARAMETERS
-    A       -   array[0..N-1], vector 1
-    B       -   array[0..N-1], vector 2
-    N       -   vectors length, N<2^29.
-    Temp    -   array[0..2*N-1], pre-allocated temporary storage
-
-OUTPUT PARAMETERS
-    R       -   (A,B)
-    RErr    -   estimate of error. This estimate accounts for both  errors
-                during  calculation  of  (A,B)  and  errors  introduced by
-                rounding of A and B to fit in double (about 1 ulp).
-
-  -- ALGLIB --
-     Copyright 27.01.2010 by Bochkanov Sergey
-*************************************************************************/
-void xcdot(/* Complex */ ae_vector* a,
-     /* Complex */ ae_vector* b,
-     ae_int_t n,
-     /* Real    */ ae_vector* temp,
-     ae_complex* r,
-     double* rerr,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double mx;
-    double v;
-    double rerrx;
-    double rerry;
-
-    r->x = 0;
-    r->y = 0;
-    *rerr = 0;
-
-    
-    /*
-     * special cases:
-     * * N=0
-     */
-    if( n==0 )
-    {
-        *r = ae_complex_from_i(0);
-        *rerr = (double)(0);
         return;
     }
     
     /*
-     * calculate real part
-     */
-    mx = (double)(0);
-    for(i=0; i<=n-1; i++)
-    {
-        v = a->ptr.p_complex[i].x*b->ptr.p_complex[i].x;
-        temp->ptr.p_double[2*i+0] = v;
-        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
-        v = -a->ptr.p_complex[i].y*b->ptr.p_complex[i].y;
-        temp->ptr.p_double[2*i+1] = v;
-        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
-    }
-    if( ae_fp_eq(mx,(double)(0)) )
-    {
-        r->x = (double)(0);
-        rerrx = (double)(0);
-    }
-    else
-    {
-        xblas_xsum(temp, mx, 2*n, &r->x, &rerrx, _state);
-    }
-    
-    /*
-     * calculate imaginary part
-     */
-    mx = (double)(0);
-    for(i=0; i<=n-1; i++)
-    {
-        v = a->ptr.p_complex[i].x*b->ptr.p_complex[i].y;
-        temp->ptr.p_double[2*i+0] = v;
-        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
-        v = a->ptr.p_complex[i].y*b->ptr.p_complex[i].x;
-        temp->ptr.p_double[2*i+1] = v;
-        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
-    }
-    if( ae_fp_eq(mx,(double)(0)) )
-    {
-        r->y = (double)(0);
-        rerry = (double)(0);
-    }
-    else
-    {
-        xblas_xsum(temp, mx, 2*n, &r->y, &rerry, _state);
-    }
-    
-    /*
-     * total error
-     */
-    if( ae_fp_eq(rerrx,(double)(0))&&ae_fp_eq(rerry,(double)(0)) )
-    {
-        *rerr = (double)(0);
-    }
-    else
-    {
-        *rerr = ae_maxreal(rerrx, rerry, _state)*ae_sqrt(1+ae_sqr(ae_minreal(rerrx, rerry, _state)/ae_maxreal(rerrx, rerry, _state), _state), _state);
-    }
-}
-
-
-/*************************************************************************
-Internal subroutine for extra-precise calculation of SUM(w[i]).
-
-INPUT PARAMETERS:
-    W   -   array[0..N-1], values to be added
-            W is modified during calculations.
-    MX  -   max(W[i])
-    N   -   array size
-    
-OUTPUT PARAMETERS:
-    R   -   SUM(w[i])
-    RErr-   error estimate for R
-
-  -- ALGLIB --
-     Copyright 24.08.2009 by Bochkanov Sergey
-*************************************************************************/
-static void xblas_xsum(/* Real    */ ae_vector* w,
-     double mx,
-     ae_int_t n,
-     double* r,
-     double* rerr,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t k;
-    ae_int_t ks;
-    double v;
-    double s;
-    double ln2;
-    double chunk;
-    double invchunk;
-    ae_bool allzeros;
-
-    *r = 0;
-    *rerr = 0;
-
-    
-    /*
-     * special cases:
-     * * N=0
-     * * N is too large to use integer arithmetics
-     */
-    if( n==0 )
-    {
-        *r = (double)(0);
-        *rerr = (double)(0);
-        return;
-    }
-    if( ae_fp_eq(mx,(double)(0)) )
-    {
-        *r = (double)(0);
-        *rerr = (double)(0);
-        return;
-    }
-    ae_assert(n<536870912, "XDot: N is too large!", _state);
-    
-    /*
-     * Prepare
-     */
-    ln2 = ae_log((double)(2), _state);
-    *rerr = mx*ae_machineepsilon;
-    
-    /*
-     * 1. find S such that 0.5<=S*MX<1
-     * 2. multiply W by S, so task is normalized in some sense
-     * 3. S:=1/S so we can obtain original vector multiplying by S
-     */
-    k = ae_round(ae_log(mx, _state)/ln2, _state);
-    s = xblas_xfastpow((double)(2), -k, _state);
-    while(ae_fp_greater_eq(s*mx,(double)(1)))
-    {
-        s = 0.5*s;
-    }
-    while(ae_fp_less(s*mx,0.5))
-    {
-        s = 2*s;
-    }
-    ae_v_muld(&w->ptr.p_double[0], 1, ae_v_len(0,n-1), s);
-    s = 1/s;
-    
-    /*
-     * find Chunk=2^M such that N*Chunk<2^29
+     * Let A = L + D + U, where
+     *  L is strictly lower triangular (main diagonal is zero)
+     *  D is diagonal
+     *  U is strictly upper triangular (main diagonal is zero)
      *
-     * we have chosen upper limit (2^29) with enough space left
-     * to tolerate possible problems with rounding and N's close
-     * to the limit, so we don't want to be very strict here.
+     * A*x = L*x + D*x + U*x
+     *
+     * Calculate D*x first
      */
-    k = ae_trunc(ae_log((double)536870912/(double)n, _state)/ln2, _state);
-    chunk = xblas_xfastpow((double)(2), k, _state);
-    if( ae_fp_less(chunk,(double)(2)) )
+    for(i=i1; i<=i2; i++)
     {
-        chunk = (double)(2);
-    }
-    invchunk = 1/chunk;
-    
-    /*
-     * calculate result
-     */
-    *r = (double)(0);
-    ae_v_muld(&w->ptr.p_double[0], 1, ae_v_len(0,n-1), chunk);
-    for(;;)
-    {
-        s = s*invchunk;
-        allzeros = ae_true;
-        ks = 0;
-        for(i=0; i<=n-1; i++)
-        {
-            v = w->ptr.p_double[i];
-            k = ae_trunc(v, _state);
-            if( ae_fp_neq(v,(double)(k)) )
-            {
-                allzeros = ae_false;
-            }
-            w->ptr.p_double[i] = chunk*(v-k);
-            ks = ks+k;
-        }
-        *r = *r+s*ks;
-        v = ae_fabs(*r, _state);
-        if( allzeros||ae_fp_eq(s*n+mx,mx) )
-        {
-            break;
-        }
+        y->ptr.p_complex[i-i1+1] = ae_c_mul(a->ptr.pp_complex[i][i],x->ptr.p_complex[i-i1+1]);
     }
     
     /*
-     * correct error
+     * Add L*x + U*x
      */
-    *rerr = ae_maxreal(*rerr, ae_fabs(*r, _state)*ae_machineepsilon, _state);
+    if( isupper )
+    {
+        for(i=i1; i<=i2-1; i++)
+        {
+            
+            /*
+             * Add L*x to the result
+             */
+            v = x->ptr.p_complex[i-i1+1];
+            by1 = i-i1+2;
+            by2 = n;
+            ba1 = i+1;
+            ae_v_caddc(&y->ptr.p_complex[by1], 1, &a->ptr.pp_complex[i][ba1], 1, "Conj", ae_v_len(by1,by2), v);
+            
+            /*
+             * Add U*x to the result
+             */
+            bx1 = i-i1+2;
+            bx2 = n;
+            ba1 = i+1;
+            v = ae_v_cdotproduct(&x->ptr.p_complex[bx1], 1, "N", &a->ptr.pp_complex[i][ba1], 1, "N", ae_v_len(bx1,bx2));
+            y->ptr.p_complex[i-i1+1] = ae_c_add(y->ptr.p_complex[i-i1+1],v);
+        }
+    }
+    else
+    {
+        for(i=i1+1; i<=i2; i++)
+        {
+            
+            /*
+             * Add L*x to the result
+             */
+            bx1 = 1;
+            bx2 = i-i1;
+            ba1 = i1;
+            v = ae_v_cdotproduct(&x->ptr.p_complex[bx1], 1, "N", &a->ptr.pp_complex[i][ba1], 1, "N", ae_v_len(bx1,bx2));
+            y->ptr.p_complex[i-i1+1] = ae_c_add(y->ptr.p_complex[i-i1+1],v);
+            
+            /*
+             * Add U*x to the result
+             */
+            v = x->ptr.p_complex[i-i1+1];
+            by1 = 1;
+            by2 = i-i1;
+            ba1 = i1;
+            ae_v_caddc(&y->ptr.p_complex[by1], 1, &a->ptr.pp_complex[i][ba1], 1, "Conj", ae_v_len(by1,by2), v);
+        }
+    }
+    ae_v_cmulc(&y->ptr.p_complex[1], 1, ae_v_len(1,n), alpha);
 }
 
 
-/*************************************************************************
-Fast Pow
-
-  -- ALGLIB --
-     Copyright 24.08.2009 by Bochkanov Sergey
-*************************************************************************/
-static double xblas_xfastpow(double r, ae_int_t n, ae_state *_state)
+void hermitianrank2update(/* Complex */ ae_matrix* a,
+     ae_bool isupper,
+     ae_int_t i1,
+     ae_int_t i2,
+     /* Complex */ ae_vector* x,
+     /* Complex */ ae_vector* y,
+     /* Complex */ ae_vector* t,
+     ae_complex alpha,
+     ae_state *_state)
 {
+    ae_int_t i;
+    ae_int_t tp1;
+    ae_int_t tp2;
+    ae_complex v;
+
+
+    if( isupper )
+    {
+        for(i=i1; i<=i2; i++)
+        {
+            tp1 = i+1-i1;
+            tp2 = i2-i1+1;
+            v = ae_c_mul(alpha,x->ptr.p_complex[i+1-i1]);
+            ae_v_cmovec(&t->ptr.p_complex[tp1], 1, &y->ptr.p_complex[tp1], 1, "Conj", ae_v_len(tp1,tp2), v);
+            v = ae_c_mul(ae_c_conj(alpha, _state),y->ptr.p_complex[i+1-i1]);
+            ae_v_caddc(&t->ptr.p_complex[tp1], 1, &x->ptr.p_complex[tp1], 1, "Conj", ae_v_len(tp1,tp2), v);
+            ae_v_cadd(&a->ptr.pp_complex[i][i], 1, &t->ptr.p_complex[tp1], 1, "N", ae_v_len(i,i2));
+        }
+    }
+    else
+    {
+        for(i=i1; i<=i2; i++)
+        {
+            tp1 = 1;
+            tp2 = i+1-i1;
+            v = ae_c_mul(alpha,x->ptr.p_complex[i+1-i1]);
+            ae_v_cmovec(&t->ptr.p_complex[tp1], 1, &y->ptr.p_complex[tp1], 1, "Conj", ae_v_len(tp1,tp2), v);
+            v = ae_c_mul(ae_c_conj(alpha, _state),y->ptr.p_complex[i+1-i1]);
+            ae_v_caddc(&t->ptr.p_complex[tp1], 1, &x->ptr.p_complex[tp1], 1, "Conj", ae_v_len(tp1,tp2), v);
+            ae_v_cadd(&a->ptr.pp_complex[i][i1], 1, &t->ptr.p_complex[tp1], 1, "N", ae_v_len(i1,i));
+        }
+    }
+}
+
+
+
+
+void symmetricmatrixvectormultiply(/* Real    */ ae_matrix* a,
+     ae_bool isupper,
+     ae_int_t i1,
+     ae_int_t i2,
+     /* Real    */ ae_vector* x,
+     double alpha,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t ba1;
+    ae_int_t ba2;
+    ae_int_t by1;
+    ae_int_t by2;
+    ae_int_t bx1;
+    ae_int_t bx2;
+    ae_int_t n;
+    double v;
+
+
+    n = i2-i1+1;
+    if( n<=0 )
+    {
+        return;
+    }
+    
+    /*
+     * Let A = L + D + U, where
+     *  L is strictly lower triangular (main diagonal is zero)
+     *  D is diagonal
+     *  U is strictly upper triangular (main diagonal is zero)
+     *
+     * A*x = L*x + D*x + U*x
+     *
+     * Calculate D*x first
+     */
+    for(i=i1; i<=i2; i++)
+    {
+        y->ptr.p_double[i-i1+1] = a->ptr.pp_double[i][i]*x->ptr.p_double[i-i1+1];
+    }
+    
+    /*
+     * Add L*x + U*x
+     */
+    if( isupper )
+    {
+        for(i=i1; i<=i2-1; i++)
+        {
+            
+            /*
+             * Add L*x to the result
+             */
+            v = x->ptr.p_double[i-i1+1];
+            by1 = i-i1+2;
+            by2 = n;
+            ba1 = i+1;
+            ba2 = i2;
+            ae_v_addd(&y->ptr.p_double[by1], 1, &a->ptr.pp_double[i][ba1], 1, ae_v_len(by1,by2), v);
+            
+            /*
+             * Add U*x to the result
+             */
+            bx1 = i-i1+2;
+            bx2 = n;
+            ba1 = i+1;
+            ba2 = i2;
+            v = ae_v_dotproduct(&x->ptr.p_double[bx1], 1, &a->ptr.pp_double[i][ba1], 1, ae_v_len(bx1,bx2));
+            y->ptr.p_double[i-i1+1] = y->ptr.p_double[i-i1+1]+v;
+        }
+    }
+    else
+    {
+        for(i=i1+1; i<=i2; i++)
+        {
+            
+            /*
+             * Add L*x to the result
+             */
+            bx1 = 1;
+            bx2 = i-i1;
+            ba1 = i1;
+            ba2 = i-1;
+            v = ae_v_dotproduct(&x->ptr.p_double[bx1], 1, &a->ptr.pp_double[i][ba1], 1, ae_v_len(bx1,bx2));
+            y->ptr.p_double[i-i1+1] = y->ptr.p_double[i-i1+1]+v;
+            
+            /*
+             * Add U*x to the result
+             */
+            v = x->ptr.p_double[i-i1+1];
+            by1 = 1;
+            by2 = i-i1;
+            ba1 = i1;
+            ba2 = i-1;
+            ae_v_addd(&y->ptr.p_double[by1], 1, &a->ptr.pp_double[i][ba1], 1, ae_v_len(by1,by2), v);
+        }
+    }
+    ae_v_muld(&y->ptr.p_double[1], 1, ae_v_len(1,n), alpha);
+    touchint(&ba2, _state);
+}
+
+
+void symmetricrank2update(/* Real    */ ae_matrix* a,
+     ae_bool isupper,
+     ae_int_t i1,
+     ae_int_t i2,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_vector* t,
+     double alpha,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t tp1;
+    ae_int_t tp2;
+    double v;
+
+
+    if( isupper )
+    {
+        for(i=i1; i<=i2; i++)
+        {
+            tp1 = i+1-i1;
+            tp2 = i2-i1+1;
+            v = x->ptr.p_double[i+1-i1];
+            ae_v_moved(&t->ptr.p_double[tp1], 1, &y->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), v);
+            v = y->ptr.p_double[i+1-i1];
+            ae_v_addd(&t->ptr.p_double[tp1], 1, &x->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), v);
+            ae_v_muld(&t->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), alpha);
+            ae_v_add(&a->ptr.pp_double[i][i], 1, &t->ptr.p_double[tp1], 1, ae_v_len(i,i2));
+        }
+    }
+    else
+    {
+        for(i=i1; i<=i2; i++)
+        {
+            tp1 = 1;
+            tp2 = i+1-i1;
+            v = x->ptr.p_double[i+1-i1];
+            ae_v_moved(&t->ptr.p_double[tp1], 1, &y->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), v);
+            v = y->ptr.p_double[i+1-i1];
+            ae_v_addd(&t->ptr.p_double[tp1], 1, &x->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), v);
+            ae_v_muld(&t->ptr.p_double[tp1], 1, ae_v_len(tp1,tp2), alpha);
+            ae_v_add(&a->ptr.pp_double[i][i1], 1, &t->ptr.p_double[tp1], 1, ae_v_len(i1,i));
+        }
+    }
+}
+
+
+
+
+double vectornorm2(/* Real    */ ae_vector* x,
+     ae_int_t i1,
+     ae_int_t i2,
+     ae_state *_state)
+{
+    ae_int_t n;
+    ae_int_t ix;
+    double absxi;
+    double scl;
+    double ssq;
     double result;
 
 
-    result = (double)(0);
-    if( n>0 )
+    n = i2-i1+1;
+    if( n<1 )
     {
-        if( n%2==0 )
+        result = (double)(0);
+        return result;
+    }
+    if( n==1 )
+    {
+        result = ae_fabs(x->ptr.p_double[i1], _state);
+        return result;
+    }
+    scl = (double)(0);
+    ssq = (double)(1);
+    for(ix=i1; ix<=i2; ix++)
+    {
+        if( ae_fp_neq(x->ptr.p_double[ix],(double)(0)) )
         {
-            result = ae_sqr(xblas_xfastpow(r, n/2, _state), _state);
+            absxi = ae_fabs(x->ptr.p_double[ix], _state);
+            if( ae_fp_less(scl,absxi) )
+            {
+                ssq = 1+ssq*ae_sqr(scl/absxi, _state);
+                scl = absxi;
+            }
+            else
+            {
+                ssq = ssq+ae_sqr(absxi/scl, _state);
+            }
+        }
+    }
+    result = scl*ae_sqrt(ssq, _state);
+    return result;
+}
+
+
+ae_int_t vectoridxabsmax(/* Real    */ ae_vector* x,
+     ae_int_t i1,
+     ae_int_t i2,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t result;
+
+
+    result = i1;
+    for(i=i1+1; i<=i2; i++)
+    {
+        if( ae_fp_greater(ae_fabs(x->ptr.p_double[i], _state),ae_fabs(x->ptr.p_double[result], _state)) )
+        {
+            result = i;
+        }
+    }
+    return result;
+}
+
+
+ae_int_t columnidxabsmax(/* Real    */ ae_matrix* x,
+     ae_int_t i1,
+     ae_int_t i2,
+     ae_int_t j,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t result;
+
+
+    result = i1;
+    for(i=i1+1; i<=i2; i++)
+    {
+        if( ae_fp_greater(ae_fabs(x->ptr.pp_double[i][j], _state),ae_fabs(x->ptr.pp_double[result][j], _state)) )
+        {
+            result = i;
+        }
+    }
+    return result;
+}
+
+
+ae_int_t rowidxabsmax(/* Real    */ ae_matrix* x,
+     ae_int_t j1,
+     ae_int_t j2,
+     ae_int_t i,
+     ae_state *_state)
+{
+    ae_int_t j;
+    ae_int_t result;
+
+
+    result = j1;
+    for(j=j1+1; j<=j2; j++)
+    {
+        if( ae_fp_greater(ae_fabs(x->ptr.pp_double[i][j], _state),ae_fabs(x->ptr.pp_double[i][result], _state)) )
+        {
+            result = j;
+        }
+    }
+    return result;
+}
+
+
+double upperhessenberg1norm(/* Real    */ ae_matrix* a,
+     ae_int_t i1,
+     ae_int_t i2,
+     ae_int_t j1,
+     ae_int_t j2,
+     /* Real    */ ae_vector* work,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    double result;
+
+
+    ae_assert(i2-i1==j2-j1, "UpperHessenberg1Norm: I2-I1<>J2-J1!", _state);
+    for(j=j1; j<=j2; j++)
+    {
+        work->ptr.p_double[j] = (double)(0);
+    }
+    for(i=i1; i<=i2; i++)
+    {
+        for(j=ae_maxint(j1, j1+i-i1-1, _state); j<=j2; j++)
+        {
+            work->ptr.p_double[j] = work->ptr.p_double[j]+ae_fabs(a->ptr.pp_double[i][j], _state);
+        }
+    }
+    result = (double)(0);
+    for(j=j1; j<=j2; j++)
+    {
+        result = ae_maxreal(result, work->ptr.p_double[j], _state);
+    }
+    return result;
+}
+
+
+void copymatrix(/* Real    */ ae_matrix* a,
+     ae_int_t is1,
+     ae_int_t is2,
+     ae_int_t js1,
+     ae_int_t js2,
+     /* Real    */ ae_matrix* b,
+     ae_int_t id1,
+     ae_int_t id2,
+     ae_int_t jd1,
+     ae_int_t jd2,
+     ae_state *_state)
+{
+    ae_int_t isrc;
+    ae_int_t idst;
+
+
+    if( is1>is2||js1>js2 )
+    {
+        return;
+    }
+    ae_assert(is2-is1==id2-id1, "CopyMatrix: different sizes!", _state);
+    ae_assert(js2-js1==jd2-jd1, "CopyMatrix: different sizes!", _state);
+    for(isrc=is1; isrc<=is2; isrc++)
+    {
+        idst = isrc-is1+id1;
+        ae_v_move(&b->ptr.pp_double[idst][jd1], 1, &a->ptr.pp_double[isrc][js1], 1, ae_v_len(jd1,jd2));
+    }
+}
+
+
+void inplacetranspose(/* Real    */ ae_matrix* a,
+     ae_int_t i1,
+     ae_int_t i2,
+     ae_int_t j1,
+     ae_int_t j2,
+     /* Real    */ ae_vector* work,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t ips;
+    ae_int_t jps;
+    ae_int_t l;
+
+
+    if( i1>i2||j1>j2 )
+    {
+        return;
+    }
+    ae_assert(i1-i2==j1-j2, "InplaceTranspose error: incorrect array size!", _state);
+    for(i=i1; i<=i2-1; i++)
+    {
+        j = j1+i-i1;
+        ips = i+1;
+        jps = j1+ips-i1;
+        l = i2-i;
+        ae_v_move(&work->ptr.p_double[1], 1, &a->ptr.pp_double[ips][j], a->stride, ae_v_len(1,l));
+        ae_v_move(&a->ptr.pp_double[ips][j], a->stride, &a->ptr.pp_double[i][jps], 1, ae_v_len(ips,i2));
+        ae_v_move(&a->ptr.pp_double[i][jps], 1, &work->ptr.p_double[1], 1, ae_v_len(jps,j2));
+    }
+}
+
+
+void copyandtranspose(/* Real    */ ae_matrix* a,
+     ae_int_t is1,
+     ae_int_t is2,
+     ae_int_t js1,
+     ae_int_t js2,
+     /* Real    */ ae_matrix* b,
+     ae_int_t id1,
+     ae_int_t id2,
+     ae_int_t jd1,
+     ae_int_t jd2,
+     ae_state *_state)
+{
+    ae_int_t isrc;
+    ae_int_t jdst;
+
+
+    if( is1>is2||js1>js2 )
+    {
+        return;
+    }
+    ae_assert(is2-is1==jd2-jd1, "CopyAndTranspose: different sizes!", _state);
+    ae_assert(js2-js1==id2-id1, "CopyAndTranspose: different sizes!", _state);
+    for(isrc=is1; isrc<=is2; isrc++)
+    {
+        jdst = isrc-is1+jd1;
+        ae_v_move(&b->ptr.pp_double[id1][jdst], b->stride, &a->ptr.pp_double[isrc][js1], 1, ae_v_len(id1,id2));
+    }
+}
+
+
+void matrixvectormultiply(/* Real    */ ae_matrix* a,
+     ae_int_t i1,
+     ae_int_t i2,
+     ae_int_t j1,
+     ae_int_t j2,
+     ae_bool trans,
+     /* Real    */ ae_vector* x,
+     ae_int_t ix1,
+     ae_int_t ix2,
+     double alpha,
+     /* Real    */ ae_vector* y,
+     ae_int_t iy1,
+     ae_int_t iy2,
+     double beta,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+
+
+    if( !trans )
+    {
+        
+        /*
+         * y := alpha*A*x + beta*y;
+         */
+        if( i1>i2||j1>j2 )
+        {
+            return;
+        }
+        ae_assert(j2-j1==ix2-ix1, "MatrixVectorMultiply: A and X dont match!", _state);
+        ae_assert(i2-i1==iy2-iy1, "MatrixVectorMultiply: A and Y dont match!", _state);
+        
+        /*
+         * beta*y
+         */
+        if( ae_fp_eq(beta,(double)(0)) )
+        {
+            for(i=iy1; i<=iy2; i++)
+            {
+                y->ptr.p_double[i] = (double)(0);
+            }
         }
         else
         {
-            result = r*xblas_xfastpow(r, n-1, _state);
+            ae_v_muld(&y->ptr.p_double[iy1], 1, ae_v_len(iy1,iy2), beta);
         }
-        return result;
+        
+        /*
+         * alpha*A*x
+         */
+        for(i=i1; i<=i2; i++)
+        {
+            v = ae_v_dotproduct(&a->ptr.pp_double[i][j1], 1, &x->ptr.p_double[ix1], 1, ae_v_len(j1,j2));
+            y->ptr.p_double[iy1+i-i1] = y->ptr.p_double[iy1+i-i1]+alpha*v;
+        }
     }
-    if( n==0 )
+    else
     {
-        result = (double)(1);
+        
+        /*
+         * y := alpha*A'*x + beta*y;
+         */
+        if( i1>i2||j1>j2 )
+        {
+            return;
+        }
+        ae_assert(i2-i1==ix2-ix1, "MatrixVectorMultiply: A and X dont match!", _state);
+        ae_assert(j2-j1==iy2-iy1, "MatrixVectorMultiply: A and Y dont match!", _state);
+        
+        /*
+         * beta*y
+         */
+        if( ae_fp_eq(beta,(double)(0)) )
+        {
+            for(i=iy1; i<=iy2; i++)
+            {
+                y->ptr.p_double[i] = (double)(0);
+            }
+        }
+        else
+        {
+            ae_v_muld(&y->ptr.p_double[iy1], 1, ae_v_len(iy1,iy2), beta);
+        }
+        
+        /*
+         * alpha*A'*x
+         */
+        for(i=i1; i<=i2; i++)
+        {
+            v = alpha*x->ptr.p_double[ix1+i-i1];
+            ae_v_addd(&y->ptr.p_double[iy1], 1, &a->ptr.pp_double[i][j1], 1, ae_v_len(iy1,iy2), v);
+        }
     }
-    if( n<0 )
+}
+
+
+double pythag2(double x, double y, ae_state *_state)
+{
+    double w;
+    double xabs;
+    double yabs;
+    double z;
+    double result;
+
+
+    xabs = ae_fabs(x, _state);
+    yabs = ae_fabs(y, _state);
+    w = ae_maxreal(xabs, yabs, _state);
+    z = ae_minreal(xabs, yabs, _state);
+    if( ae_fp_eq(z,(double)(0)) )
     {
-        result = xblas_xfastpow(1/r, -n, _state);
+        result = w;
+    }
+    else
+    {
+        result = w*ae_sqrt(1+ae_sqr(z/w, _state), _state);
     }
     return result;
+}
+
+
+void matrixmatrixmultiply(/* Real    */ ae_matrix* a,
+     ae_int_t ai1,
+     ae_int_t ai2,
+     ae_int_t aj1,
+     ae_int_t aj2,
+     ae_bool transa,
+     /* Real    */ ae_matrix* b,
+     ae_int_t bi1,
+     ae_int_t bi2,
+     ae_int_t bj1,
+     ae_int_t bj2,
+     ae_bool transb,
+     double alpha,
+     /* Real    */ ae_matrix* c,
+     ae_int_t ci1,
+     ae_int_t ci2,
+     ae_int_t cj1,
+     ae_int_t cj2,
+     double beta,
+     /* Real    */ ae_vector* work,
+     ae_state *_state)
+{
+    ae_int_t arows;
+    ae_int_t acols;
+    ae_int_t brows;
+    ae_int_t bcols;
+    ae_int_t crows;
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t l;
+    ae_int_t r;
+    double v;
+
+
+    
+    /*
+     * Setup
+     */
+    if( !transa )
+    {
+        arows = ai2-ai1+1;
+        acols = aj2-aj1+1;
+    }
+    else
+    {
+        arows = aj2-aj1+1;
+        acols = ai2-ai1+1;
+    }
+    if( !transb )
+    {
+        brows = bi2-bi1+1;
+        bcols = bj2-bj1+1;
+    }
+    else
+    {
+        brows = bj2-bj1+1;
+        bcols = bi2-bi1+1;
+    }
+    ae_assert(acols==brows, "MatrixMatrixMultiply: incorrect matrix sizes!", _state);
+    if( ((arows<=0||acols<=0)||brows<=0)||bcols<=0 )
+    {
+        return;
+    }
+    crows = arows;
+    
+    /*
+     * Test WORK
+     */
+    i = ae_maxint(arows, acols, _state);
+    i = ae_maxint(brows, i, _state);
+    i = ae_maxint(i, bcols, _state);
+    work->ptr.p_double[1] = (double)(0);
+    work->ptr.p_double[i] = (double)(0);
+    
+    /*
+     * Prepare C
+     */
+    if( ae_fp_eq(beta,(double)(0)) )
+    {
+        for(i=ci1; i<=ci2; i++)
+        {
+            for(j=cj1; j<=cj2; j++)
+            {
+                c->ptr.pp_double[i][j] = (double)(0);
+            }
+        }
+    }
+    else
+    {
+        for(i=ci1; i<=ci2; i++)
+        {
+            ae_v_muld(&c->ptr.pp_double[i][cj1], 1, ae_v_len(cj1,cj2), beta);
+        }
+    }
+    
+    /*
+     * A*B
+     */
+    if( !transa&&!transb )
+    {
+        for(l=ai1; l<=ai2; l++)
+        {
+            for(r=bi1; r<=bi2; r++)
+            {
+                v = alpha*a->ptr.pp_double[l][aj1+r-bi1];
+                k = ci1+l-ai1;
+                ae_v_addd(&c->ptr.pp_double[k][cj1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(cj1,cj2), v);
+            }
+        }
+        return;
+    }
+    
+    /*
+     * A*B'
+     */
+    if( !transa&&transb )
+    {
+        if( arows*acols<brows*bcols )
+        {
+            for(r=bi1; r<=bi2; r++)
+            {
+                for(l=ai1; l<=ai2; l++)
+                {
+                    v = ae_v_dotproduct(&a->ptr.pp_double[l][aj1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(aj1,aj2));
+                    c->ptr.pp_double[ci1+l-ai1][cj1+r-bi1] = c->ptr.pp_double[ci1+l-ai1][cj1+r-bi1]+alpha*v;
+                }
+            }
+            return;
+        }
+        else
+        {
+            for(l=ai1; l<=ai2; l++)
+            {
+                for(r=bi1; r<=bi2; r++)
+                {
+                    v = ae_v_dotproduct(&a->ptr.pp_double[l][aj1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(aj1,aj2));
+                    c->ptr.pp_double[ci1+l-ai1][cj1+r-bi1] = c->ptr.pp_double[ci1+l-ai1][cj1+r-bi1]+alpha*v;
+                }
+            }
+            return;
+        }
+    }
+    
+    /*
+     * A'*B
+     */
+    if( transa&&!transb )
+    {
+        for(l=aj1; l<=aj2; l++)
+        {
+            for(r=bi1; r<=bi2; r++)
+            {
+                v = alpha*a->ptr.pp_double[ai1+r-bi1][l];
+                k = ci1+l-aj1;
+                ae_v_addd(&c->ptr.pp_double[k][cj1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(cj1,cj2), v);
+            }
+        }
+        return;
+    }
+    
+    /*
+     * A'*B'
+     */
+    if( transa&&transb )
+    {
+        if( arows*acols<brows*bcols )
+        {
+            for(r=bi1; r<=bi2; r++)
+            {
+                k = cj1+r-bi1;
+                for(i=1; i<=crows; i++)
+                {
+                    work->ptr.p_double[i] = 0.0;
+                }
+                for(l=ai1; l<=ai2; l++)
+                {
+                    v = alpha*b->ptr.pp_double[r][bj1+l-ai1];
+                    ae_v_addd(&work->ptr.p_double[1], 1, &a->ptr.pp_double[l][aj1], 1, ae_v_len(1,crows), v);
+                }
+                ae_v_add(&c->ptr.pp_double[ci1][k], c->stride, &work->ptr.p_double[1], 1, ae_v_len(ci1,ci2));
+            }
+            return;
+        }
+        else
+        {
+            for(l=aj1; l<=aj2; l++)
+            {
+                k = ai2-ai1+1;
+                ae_v_move(&work->ptr.p_double[1], 1, &a->ptr.pp_double[ai1][l], a->stride, ae_v_len(1,k));
+                for(r=bi1; r<=bi2; r++)
+                {
+                    v = ae_v_dotproduct(&work->ptr.p_double[1], 1, &b->ptr.pp_double[r][bj1], 1, ae_v_len(1,k));
+                    c->ptr.pp_double[ci1+l-aj1][cj1+r-bi1] = c->ptr.pp_double[ci1+l-aj1][cj1+r-bi1]+alpha*v;
+                }
+            }
+            return;
+        }
+    }
 }
 
 
@@ -12643,8 +10766,8 @@ ae_bool armijoiteration(armijostate* state, ae_state *_state)
     }
     else
     {
-        n = -983;
-        v = -989;
+        n = 359;
+        v = -58;
     }
     if( state->rstate.stage==0 )
     {
@@ -13253,6 +11376,2296 @@ void _armijostate_destroy(void* _p)
     ae_vector_destroy(&p->xbase);
     ae_vector_destroy(&p->s);
     _rcommstate_destroy(&p->rstate);
+}
+
+
+
+
+/*************************************************************************
+More precise dot-product. Absolute error of  subroutine  result  is  about
+1 ulp of max(MX,V), where:
+    MX = max( |a[i]*b[i]| )
+    V  = |(a,b)|
+
+INPUT PARAMETERS
+    A       -   array[0..N-1], vector 1
+    B       -   array[0..N-1], vector 2
+    N       -   vectors length, N<2^29.
+    Temp    -   array[0..N-1], pre-allocated temporary storage
+
+OUTPUT PARAMETERS
+    R       -   (A,B)
+    RErr    -   estimate of error. This estimate accounts for both  errors
+                during  calculation  of  (A,B)  and  errors  introduced by
+                rounding of A and B to fit in double (about 1 ulp).
+
+  -- ALGLIB --
+     Copyright 24.08.2009 by Bochkanov Sergey
+*************************************************************************/
+void xdot(/* Real    */ ae_vector* a,
+     /* Real    */ ae_vector* b,
+     ae_int_t n,
+     /* Real    */ ae_vector* temp,
+     double* r,
+     double* rerr,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double mx;
+    double v;
+
+    *r = 0;
+    *rerr = 0;
+
+    
+    /*
+     * special cases:
+     * * N=0
+     */
+    if( n==0 )
+    {
+        *r = (double)(0);
+        *rerr = (double)(0);
+        return;
+    }
+    mx = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        v = a->ptr.p_double[i]*b->ptr.p_double[i];
+        temp->ptr.p_double[i] = v;
+        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
+    }
+    if( ae_fp_eq(mx,(double)(0)) )
+    {
+        *r = (double)(0);
+        *rerr = (double)(0);
+        return;
+    }
+    xblas_xsum(temp, mx, n, r, rerr, _state);
+}
+
+
+/*************************************************************************
+More precise complex dot-product. Absolute error of  subroutine  result is
+about 1 ulp of max(MX,V), where:
+    MX = max( |a[i]*b[i]| )
+    V  = |(a,b)|
+
+INPUT PARAMETERS
+    A       -   array[0..N-1], vector 1
+    B       -   array[0..N-1], vector 2
+    N       -   vectors length, N<2^29.
+    Temp    -   array[0..2*N-1], pre-allocated temporary storage
+
+OUTPUT PARAMETERS
+    R       -   (A,B)
+    RErr    -   estimate of error. This estimate accounts for both  errors
+                during  calculation  of  (A,B)  and  errors  introduced by
+                rounding of A and B to fit in double (about 1 ulp).
+
+  -- ALGLIB --
+     Copyright 27.01.2010 by Bochkanov Sergey
+*************************************************************************/
+void xcdot(/* Complex */ ae_vector* a,
+     /* Complex */ ae_vector* b,
+     ae_int_t n,
+     /* Real    */ ae_vector* temp,
+     ae_complex* r,
+     double* rerr,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double mx;
+    double v;
+    double rerrx;
+    double rerry;
+
+    r->x = 0;
+    r->y = 0;
+    *rerr = 0;
+
+    
+    /*
+     * special cases:
+     * * N=0
+     */
+    if( n==0 )
+    {
+        *r = ae_complex_from_i(0);
+        *rerr = (double)(0);
+        return;
+    }
+    
+    /*
+     * calculate real part
+     */
+    mx = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        v = a->ptr.p_complex[i].x*b->ptr.p_complex[i].x;
+        temp->ptr.p_double[2*i+0] = v;
+        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
+        v = -a->ptr.p_complex[i].y*b->ptr.p_complex[i].y;
+        temp->ptr.p_double[2*i+1] = v;
+        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
+    }
+    if( ae_fp_eq(mx,(double)(0)) )
+    {
+        r->x = (double)(0);
+        rerrx = (double)(0);
+    }
+    else
+    {
+        xblas_xsum(temp, mx, 2*n, &r->x, &rerrx, _state);
+    }
+    
+    /*
+     * calculate imaginary part
+     */
+    mx = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        v = a->ptr.p_complex[i].x*b->ptr.p_complex[i].y;
+        temp->ptr.p_double[2*i+0] = v;
+        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
+        v = a->ptr.p_complex[i].y*b->ptr.p_complex[i].x;
+        temp->ptr.p_double[2*i+1] = v;
+        mx = ae_maxreal(mx, ae_fabs(v, _state), _state);
+    }
+    if( ae_fp_eq(mx,(double)(0)) )
+    {
+        r->y = (double)(0);
+        rerry = (double)(0);
+    }
+    else
+    {
+        xblas_xsum(temp, mx, 2*n, &r->y, &rerry, _state);
+    }
+    
+    /*
+     * total error
+     */
+    if( ae_fp_eq(rerrx,(double)(0))&&ae_fp_eq(rerry,(double)(0)) )
+    {
+        *rerr = (double)(0);
+    }
+    else
+    {
+        *rerr = ae_maxreal(rerrx, rerry, _state)*ae_sqrt(1+ae_sqr(ae_minreal(rerrx, rerry, _state)/ae_maxreal(rerrx, rerry, _state), _state), _state);
+    }
+}
+
+
+/*************************************************************************
+Internal subroutine for extra-precise calculation of SUM(w[i]).
+
+INPUT PARAMETERS:
+    W   -   array[0..N-1], values to be added
+            W is modified during calculations.
+    MX  -   max(W[i])
+    N   -   array size
+    
+OUTPUT PARAMETERS:
+    R   -   SUM(w[i])
+    RErr-   error estimate for R
+
+  -- ALGLIB --
+     Copyright 24.08.2009 by Bochkanov Sergey
+*************************************************************************/
+static void xblas_xsum(/* Real    */ ae_vector* w,
+     double mx,
+     ae_int_t n,
+     double* r,
+     double* rerr,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t k;
+    ae_int_t ks;
+    double v;
+    double s;
+    double ln2;
+    double chunk;
+    double invchunk;
+    ae_bool allzeros;
+
+    *r = 0;
+    *rerr = 0;
+
+    
+    /*
+     * special cases:
+     * * N=0
+     * * N is too large to use integer arithmetics
+     */
+    if( n==0 )
+    {
+        *r = (double)(0);
+        *rerr = (double)(0);
+        return;
+    }
+    if( ae_fp_eq(mx,(double)(0)) )
+    {
+        *r = (double)(0);
+        *rerr = (double)(0);
+        return;
+    }
+    ae_assert(n<536870912, "XDot: N is too large!", _state);
+    
+    /*
+     * Prepare
+     */
+    ln2 = ae_log((double)(2), _state);
+    *rerr = mx*ae_machineepsilon;
+    
+    /*
+     * 1. find S such that 0.5<=S*MX<1
+     * 2. multiply W by S, so task is normalized in some sense
+     * 3. S:=1/S so we can obtain original vector multiplying by S
+     */
+    k = ae_round(ae_log(mx, _state)/ln2, _state);
+    s = xblas_xfastpow((double)(2), -k, _state);
+    if( !ae_isfinite(s, _state) )
+    {
+        
+        /*
+         * Overflow or underflow during evaluation of S; fallback low-precision code
+         */
+        *r = (double)(0);
+        *rerr = mx*ae_machineepsilon;
+        for(i=0; i<=n-1; i++)
+        {
+            *r = *r+w->ptr.p_double[i];
+        }
+        return;
+    }
+    while(ae_fp_greater_eq(s*mx,(double)(1)))
+    {
+        s = 0.5*s;
+    }
+    while(ae_fp_less(s*mx,0.5))
+    {
+        s = 2*s;
+    }
+    ae_v_muld(&w->ptr.p_double[0], 1, ae_v_len(0,n-1), s);
+    s = 1/s;
+    
+    /*
+     * find Chunk=2^M such that N*Chunk<2^29
+     *
+     * we have chosen upper limit (2^29) with enough space left
+     * to tolerate possible problems with rounding and N's close
+     * to the limit, so we don't want to be very strict here.
+     */
+    k = ae_trunc(ae_log((double)536870912/(double)n, _state)/ln2, _state);
+    chunk = xblas_xfastpow((double)(2), k, _state);
+    if( ae_fp_less(chunk,(double)(2)) )
+    {
+        chunk = (double)(2);
+    }
+    invchunk = 1/chunk;
+    
+    /*
+     * calculate result
+     */
+    *r = (double)(0);
+    ae_v_muld(&w->ptr.p_double[0], 1, ae_v_len(0,n-1), chunk);
+    for(;;)
+    {
+        s = s*invchunk;
+        allzeros = ae_true;
+        ks = 0;
+        for(i=0; i<=n-1; i++)
+        {
+            v = w->ptr.p_double[i];
+            k = ae_trunc(v, _state);
+            if( ae_fp_neq(v,(double)(k)) )
+            {
+                allzeros = ae_false;
+            }
+            w->ptr.p_double[i] = chunk*(v-k);
+            ks = ks+k;
+        }
+        *r = *r+s*ks;
+        v = ae_fabs(*r, _state);
+        if( allzeros||ae_fp_eq(s*n+mx,mx) )
+        {
+            break;
+        }
+    }
+    
+    /*
+     * correct error
+     */
+    *rerr = ae_maxreal(*rerr, ae_fabs(*r, _state)*ae_machineepsilon, _state);
+}
+
+
+/*************************************************************************
+Fast Pow
+
+  -- ALGLIB --
+     Copyright 24.08.2009 by Bochkanov Sergey
+*************************************************************************/
+static double xblas_xfastpow(double r, ae_int_t n, ae_state *_state)
+{
+    double result;
+
+
+    result = (double)(0);
+    if( n>0 )
+    {
+        if( n%2==0 )
+        {
+            result = ae_sqr(xblas_xfastpow(r, n/2, _state), _state);
+        }
+        else
+        {
+            result = r*xblas_xfastpow(r, n-1, _state);
+        }
+        return result;
+    }
+    if( n==0 )
+    {
+        result = (double)(1);
+    }
+    if( n<0 )
+    {
+        result = xblas_xfastpow(1/r, -n, _state);
+    }
+    return result;
+}
+
+
+
+
+void rmatrixinternalschurdecomposition(/* Real    */ ae_matrix* h,
+     ae_int_t n,
+     ae_int_t tneeded,
+     ae_int_t zneeded,
+     /* Real    */ ae_vector* wr,
+     /* Real    */ ae_vector* wi,
+     /* Real    */ ae_matrix* z,
+     ae_int_t* info,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_int_t j;
+    ae_matrix h1;
+    ae_matrix z1;
+    ae_vector wr1;
+    ae_vector wi1;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_clear(wr);
+    ae_vector_clear(wi);
+    *info = 0;
+    ae_matrix_init(&h1, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&z1, 0, 0, DT_REAL, _state);
+    ae_vector_init(&wr1, 0, DT_REAL, _state);
+    ae_vector_init(&wi1, 0, DT_REAL, _state);
+
+    
+    /*
+     * Allocate space
+     */
+    ae_vector_set_length(wr, n, _state);
+    ae_vector_set_length(wi, n, _state);
+    if( zneeded==2 )
+    {
+        rmatrixsetlengthatleast(z, n, n, _state);
+    }
+    
+    /*
+     * MKL version
+     */
+    if( rmatrixinternalschurdecompositionmkl(h, n, tneeded, zneeded, wr, wi, z, info, _state) )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * ALGLIB version
+     */
+    ae_matrix_set_length(&h1, n+1, n+1, _state);
+    for(i=0; i<=n-1; i++)
+    {
+        for(j=0; j<=n-1; j++)
+        {
+            h1.ptr.pp_double[1+i][1+j] = h->ptr.pp_double[i][j];
+        }
+    }
+    if( zneeded==1 )
+    {
+        ae_matrix_set_length(&z1, n+1, n+1, _state);
+        for(i=0; i<=n-1; i++)
+        {
+            for(j=0; j<=n-1; j++)
+            {
+                z1.ptr.pp_double[1+i][1+j] = z->ptr.pp_double[i][j];
+            }
+        }
+    }
+    internalschurdecomposition(&h1, n, tneeded, zneeded, &wr1, &wi1, &z1, info, _state);
+    for(i=0; i<=n-1; i++)
+    {
+        wr->ptr.p_double[i] = wr1.ptr.p_double[i+1];
+        wi->ptr.p_double[i] = wi1.ptr.p_double[i+1];
+    }
+    if( tneeded!=0 )
+    {
+        for(i=0; i<=n-1; i++)
+        {
+            for(j=0; j<=n-1; j++)
+            {
+                h->ptr.pp_double[i][j] = h1.ptr.pp_double[1+i][1+j];
+            }
+        }
+    }
+    if( zneeded!=0 )
+    {
+        rmatrixsetlengthatleast(z, n, n, _state);
+        for(i=0; i<=n-1; i++)
+        {
+            for(j=0; j<=n-1; j++)
+            {
+                z->ptr.pp_double[i][j] = z1.ptr.pp_double[1+i][1+j];
+            }
+        }
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Subroutine performing  the  Schur  decomposition  of  a  matrix  in  upper
+Hessenberg form using the QR algorithm with multiple shifts.
+
+The  source matrix  H  is  represented as  S'*H*S = T, where H - matrix in
+upper Hessenberg form,  S - orthogonal matrix (Schur vectors),   T - upper
+quasi-triangular matrix (with blocks of sizes  1x1  and  2x2  on  the main
+diagonal).
+
+Input parameters:
+    H   -   matrix to be decomposed.
+            Array whose indexes range within [1..N, 1..N].
+    N   -   size of H, N>=0.
+
+
+Output parameters:
+    H   -   contains the matrix T.
+            Array whose indexes range within [1..N, 1..N].
+            All elements below the blocks on the main diagonal are equal
+            to 0.
+    S   -   contains Schur vectors.
+            Array whose indexes range within [1..N, 1..N].
+
+Note 1:
+    The block structure of matrix T could be easily recognized: since  all
+    the elements  below  the blocks are zeros, the elements a[i+1,i] which
+    are equal to 0 show the block border.
+
+Note 2:
+    the algorithm  performance  depends  on  the  value  of  the  internal
+    parameter NS of InternalSchurDecomposition  subroutine  which  defines
+    the number of shifts in the QR algorithm (analog of  the  block  width
+    in block matrix algorithms in linear algebra). If you require  maximum
+    performance  on  your  machine,  it  is  recommended  to  adjust  this
+    parameter manually.
+
+Result:
+    True, if the algorithm has converged and the parameters H and S contain
+        the result.
+    False, if the algorithm has not converged.
+
+Algorithm implemented on the basis of subroutine DHSEQR (LAPACK 3.0 library).
+*************************************************************************/
+ae_bool upperhessenbergschurdecomposition(/* Real    */ ae_matrix* h,
+     ae_int_t n,
+     /* Real    */ ae_matrix* s,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector wi;
+    ae_vector wr;
+    ae_int_t info;
+    ae_bool result;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_matrix_clear(s);
+    ae_vector_init(&wi, 0, DT_REAL, _state);
+    ae_vector_init(&wr, 0, DT_REAL, _state);
+
+    internalschurdecomposition(h, n, 1, 2, &wr, &wi, s, &info, _state);
+    result = info==0;
+    ae_frame_leave(_state);
+    return result;
+}
+
+
+void internalschurdecomposition(/* Real    */ ae_matrix* h,
+     ae_int_t n,
+     ae_int_t tneeded,
+     ae_int_t zneeded,
+     /* Real    */ ae_vector* wr,
+     /* Real    */ ae_vector* wi,
+     /* Real    */ ae_matrix* z,
+     ae_int_t* info,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector work;
+    ae_int_t i;
+    ae_int_t i1;
+    ae_int_t i2;
+    ae_int_t ierr;
+    ae_int_t ii;
+    ae_int_t itemp;
+    ae_int_t itn;
+    ae_int_t its;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t l;
+    ae_int_t maxb;
+    ae_int_t nr;
+    ae_int_t ns;
+    ae_int_t nv;
+    double absw;
+    double smlnum;
+    double tau;
+    double temp;
+    double tst1;
+    double ulp;
+    double unfl;
+    ae_matrix s;
+    ae_vector v;
+    ae_vector vv;
+    ae_vector workc1;
+    ae_vector works1;
+    ae_vector workv3;
+    ae_vector tmpwr;
+    ae_vector tmpwi;
+    ae_bool initz;
+    ae_bool wantt;
+    ae_bool wantz;
+    double cnst;
+    ae_bool failflag;
+    ae_int_t p1;
+    ae_int_t p2;
+    double vt;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_clear(wr);
+    ae_vector_clear(wi);
+    *info = 0;
+    ae_vector_init(&work, 0, DT_REAL, _state);
+    ae_matrix_init(&s, 0, 0, DT_REAL, _state);
+    ae_vector_init(&v, 0, DT_REAL, _state);
+    ae_vector_init(&vv, 0, DT_REAL, _state);
+    ae_vector_init(&workc1, 0, DT_REAL, _state);
+    ae_vector_init(&works1, 0, DT_REAL, _state);
+    ae_vector_init(&workv3, 0, DT_REAL, _state);
+    ae_vector_init(&tmpwr, 0, DT_REAL, _state);
+    ae_vector_init(&tmpwi, 0, DT_REAL, _state);
+
+    
+    /*
+     * Set the order of the multi-shift QR algorithm to be used.
+     * If you want to tune algorithm, change this values
+     */
+    ns = 12;
+    maxb = 50;
+    
+    /*
+     * Now 2 < NS <= MAXB < NH.
+     */
+    maxb = ae_maxint(3, maxb, _state);
+    ns = ae_minint(maxb, ns, _state);
+    
+    /*
+     * Initialize
+     */
+    cnst = 1.5;
+    ae_vector_set_length(&work, ae_maxint(n, 1, _state)+1, _state);
+    ae_matrix_set_length(&s, ns+1, ns+1, _state);
+    ae_vector_set_length(&v, ns+1+1, _state);
+    ae_vector_set_length(&vv, ns+1+1, _state);
+    ae_vector_set_length(wr, ae_maxint(n, 1, _state)+1, _state);
+    ae_vector_set_length(wi, ae_maxint(n, 1, _state)+1, _state);
+    ae_vector_set_length(&workc1, 1+1, _state);
+    ae_vector_set_length(&works1, 1+1, _state);
+    ae_vector_set_length(&workv3, 3+1, _state);
+    ae_vector_set_length(&tmpwr, ae_maxint(n, 1, _state)+1, _state);
+    ae_vector_set_length(&tmpwi, ae_maxint(n, 1, _state)+1, _state);
+    ae_assert(n>=0, "InternalSchurDecomposition: incorrect N!", _state);
+    ae_assert(tneeded==0||tneeded==1, "InternalSchurDecomposition: incorrect TNeeded!", _state);
+    ae_assert((zneeded==0||zneeded==1)||zneeded==2, "InternalSchurDecomposition: incorrect ZNeeded!", _state);
+    wantt = tneeded==1;
+    initz = zneeded==2;
+    wantz = zneeded!=0;
+    *info = 0;
+    
+    /*
+     * Initialize Z, if necessary
+     */
+    if( initz )
+    {
+        rmatrixsetlengthatleast(z, n+1, n+1, _state);
+        for(i=1; i<=n; i++)
+        {
+            for(j=1; j<=n; j++)
+            {
+                if( i==j )
+                {
+                    z->ptr.pp_double[i][j] = (double)(1);
+                }
+                else
+                {
+                    z->ptr.pp_double[i][j] = (double)(0);
+                }
+            }
+        }
+    }
+    
+    /*
+     * Quick return if possible
+     */
+    if( n==0 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    if( n==1 )
+    {
+        wr->ptr.p_double[1] = h->ptr.pp_double[1][1];
+        wi->ptr.p_double[1] = (double)(0);
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Set rows and columns 1 to N to zero below the first
+     * subdiagonal.
+     */
+    for(j=1; j<=n-2; j++)
+    {
+        for(i=j+2; i<=n; i++)
+        {
+            h->ptr.pp_double[i][j] = (double)(0);
+        }
+    }
+    
+    /*
+     * Test if N is sufficiently small
+     */
+    if( (ns<=2||ns>n)||maxb>=n )
+    {
+        
+        /*
+         * Use the standard double-shift algorithm
+         */
+        hsschur_internalauxschur(wantt, wantz, n, 1, n, h, wr, wi, 1, n, z, &work, &workv3, &workc1, &works1, info, _state);
+        
+        /*
+         * fill entries under diagonal blocks of T with zeros
+         */
+        if( wantt )
+        {
+            j = 1;
+            while(j<=n)
+            {
+                if( ae_fp_eq(wi->ptr.p_double[j],(double)(0)) )
+                {
+                    for(i=j+1; i<=n; i++)
+                    {
+                        h->ptr.pp_double[i][j] = (double)(0);
+                    }
+                    j = j+1;
+                }
+                else
+                {
+                    for(i=j+2; i<=n; i++)
+                    {
+                        h->ptr.pp_double[i][j] = (double)(0);
+                        h->ptr.pp_double[i][j+1] = (double)(0);
+                    }
+                    j = j+2;
+                }
+            }
+        }
+        ae_frame_leave(_state);
+        return;
+    }
+    unfl = ae_minrealnumber;
+    ulp = 2*ae_machineepsilon;
+    smlnum = unfl*(n/ulp);
+    
+    /*
+     * I1 and I2 are the indices of the first row and last column of H
+     * to which transformations must be applied. If eigenvalues only are
+     * being computed, I1 and I2 are set inside the main loop.
+     */
+    i1 = 1;
+    i2 = n;
+    
+    /*
+     * ITN is the total number of multiple-shift QR iterations allowed.
+     */
+    itn = 30*n;
+    
+    /*
+     * The main loop begins here. I is the loop index and decreases from
+     * IHI to ILO in steps of at most MAXB. Each iteration of the loop
+     * works with the active submatrix in rows and columns L to I.
+     * Eigenvalues I+1 to IHI have already converged. Either L = ILO or
+     * H(L,L-1) is negligible so that the matrix splits.
+     */
+    i = n;
+    for(;;)
+    {
+        l = 1;
+        if( i<1 )
+        {
+            
+            /*
+             * fill entries under diagonal blocks of T with zeros
+             */
+            if( wantt )
+            {
+                j = 1;
+                while(j<=n)
+                {
+                    if( ae_fp_eq(wi->ptr.p_double[j],(double)(0)) )
+                    {
+                        for(i=j+1; i<=n; i++)
+                        {
+                            h->ptr.pp_double[i][j] = (double)(0);
+                        }
+                        j = j+1;
+                    }
+                    else
+                    {
+                        for(i=j+2; i<=n; i++)
+                        {
+                            h->ptr.pp_double[i][j] = (double)(0);
+                            h->ptr.pp_double[i][j+1] = (double)(0);
+                        }
+                        j = j+2;
+                    }
+                }
+            }
+            
+            /*
+             * Exit
+             */
+            ae_frame_leave(_state);
+            return;
+        }
+        
+        /*
+         * Perform multiple-shift QR iterations on rows and columns ILO to I
+         * until a submatrix of order at most MAXB splits off at the bottom
+         * because a subdiagonal element has become negligible.
+         */
+        failflag = ae_true;
+        for(its=0; its<=itn; its++)
+        {
+            
+            /*
+             * Look for a single small subdiagonal element.
+             */
+            for(k=i; k>=l+1; k--)
+            {
+                tst1 = ae_fabs(h->ptr.pp_double[k-1][k-1], _state)+ae_fabs(h->ptr.pp_double[k][k], _state);
+                if( ae_fp_eq(tst1,(double)(0)) )
+                {
+                    tst1 = upperhessenberg1norm(h, l, i, l, i, &work, _state);
+                }
+                if( ae_fp_less_eq(ae_fabs(h->ptr.pp_double[k][k-1], _state),ae_maxreal(ulp*tst1, smlnum, _state)) )
+                {
+                    break;
+                }
+            }
+            l = k;
+            if( l>1 )
+            {
+                
+                /*
+                 * H(L,L-1) is negligible.
+                 */
+                h->ptr.pp_double[l][l-1] = (double)(0);
+            }
+            
+            /*
+             * Exit from loop if a submatrix of order <= MAXB has split off.
+             */
+            if( l>=i-maxb+1 )
+            {
+                failflag = ae_false;
+                break;
+            }
+            
+            /*
+             * Now the active submatrix is in rows and columns L to I. If
+             * eigenvalues only are being computed, only the active submatrix
+             * need be transformed.
+             */
+            if( its==20||its==30 )
+            {
+                
+                /*
+                 * Exceptional shifts.
+                 */
+                for(ii=i-ns+1; ii<=i; ii++)
+                {
+                    wr->ptr.p_double[ii] = cnst*(ae_fabs(h->ptr.pp_double[ii][ii-1], _state)+ae_fabs(h->ptr.pp_double[ii][ii], _state));
+                    wi->ptr.p_double[ii] = (double)(0);
+                }
+            }
+            else
+            {
+                
+                /*
+                 * Use eigenvalues of trailing submatrix of order NS as shifts.
+                 */
+                copymatrix(h, i-ns+1, i, i-ns+1, i, &s, 1, ns, 1, ns, _state);
+                hsschur_internalauxschur(ae_false, ae_false, ns, 1, ns, &s, &tmpwr, &tmpwi, 1, ns, z, &work, &workv3, &workc1, &works1, &ierr, _state);
+                for(p1=1; p1<=ns; p1++)
+                {
+                    wr->ptr.p_double[i-ns+p1] = tmpwr.ptr.p_double[p1];
+                    wi->ptr.p_double[i-ns+p1] = tmpwi.ptr.p_double[p1];
+                }
+                if( ierr>0 )
+                {
+                    
+                    /*
+                     * If DLAHQR failed to compute all NS eigenvalues, use the
+                     * unconverged diagonal elements as the remaining shifts.
+                     */
+                    for(ii=1; ii<=ierr; ii++)
+                    {
+                        wr->ptr.p_double[i-ns+ii] = s.ptr.pp_double[ii][ii];
+                        wi->ptr.p_double[i-ns+ii] = (double)(0);
+                    }
+                }
+            }
+            
+            /*
+             * Form the first column of (G-w(1)) (G-w(2)) . . . (G-w(ns))
+             * where G is the Hessenberg submatrix H(L:I,L:I) and w is
+             * the vector of shifts (stored in WR and WI). The result is
+             * stored in the local array V.
+             */
+            v.ptr.p_double[1] = (double)(1);
+            for(ii=2; ii<=ns+1; ii++)
+            {
+                v.ptr.p_double[ii] = (double)(0);
+            }
+            nv = 1;
+            for(j=i-ns+1; j<=i; j++)
+            {
+                if( ae_fp_greater_eq(wi->ptr.p_double[j],(double)(0)) )
+                {
+                    if( ae_fp_eq(wi->ptr.p_double[j],(double)(0)) )
+                    {
+                        
+                        /*
+                         * real shift
+                         */
+                        p1 = nv+1;
+                        ae_v_move(&vv.ptr.p_double[1], 1, &v.ptr.p_double[1], 1, ae_v_len(1,p1));
+                        matrixvectormultiply(h, l, l+nv, l, l+nv-1, ae_false, &vv, 1, nv, 1.0, &v, 1, nv+1, -wr->ptr.p_double[j], _state);
+                        nv = nv+1;
+                    }
+                    else
+                    {
+                        if( ae_fp_greater(wi->ptr.p_double[j],(double)(0)) )
+                        {
+                            
+                            /*
+                             * complex conjugate pair of shifts
+                             */
+                            p1 = nv+1;
+                            ae_v_move(&vv.ptr.p_double[1], 1, &v.ptr.p_double[1], 1, ae_v_len(1,p1));
+                            matrixvectormultiply(h, l, l+nv, l, l+nv-1, ae_false, &v, 1, nv, 1.0, &vv, 1, nv+1, -2*wr->ptr.p_double[j], _state);
+                            itemp = vectoridxabsmax(&vv, 1, nv+1, _state);
+                            temp = 1/ae_maxreal(ae_fabs(vv.ptr.p_double[itemp], _state), smlnum, _state);
+                            p1 = nv+1;
+                            ae_v_muld(&vv.ptr.p_double[1], 1, ae_v_len(1,p1), temp);
+                            absw = pythag2(wr->ptr.p_double[j], wi->ptr.p_double[j], _state);
+                            temp = temp*absw*absw;
+                            matrixvectormultiply(h, l, l+nv+1, l, l+nv, ae_false, &vv, 1, nv+1, 1.0, &v, 1, nv+2, temp, _state);
+                            nv = nv+2;
+                        }
+                    }
+                    
+                    /*
+                     * Scale V(1:NV) so that max(abs(V(i))) = 1. If V is zero,
+                     * reset it to the unit vector.
+                     */
+                    itemp = vectoridxabsmax(&v, 1, nv, _state);
+                    temp = ae_fabs(v.ptr.p_double[itemp], _state);
+                    if( ae_fp_eq(temp,(double)(0)) )
+                    {
+                        v.ptr.p_double[1] = (double)(1);
+                        for(ii=2; ii<=nv; ii++)
+                        {
+                            v.ptr.p_double[ii] = (double)(0);
+                        }
+                    }
+                    else
+                    {
+                        temp = ae_maxreal(temp, smlnum, _state);
+                        vt = 1/temp;
+                        ae_v_muld(&v.ptr.p_double[1], 1, ae_v_len(1,nv), vt);
+                    }
+                }
+            }
+            
+            /*
+             * Multiple-shift QR step
+             */
+            for(k=l; k<=i-1; k++)
+            {
+                
+                /*
+                 * The first iteration of this loop determines a reflection G
+                 * from the vector V and applies it from left and right to H,
+                 * thus creating a nonzero bulge below the subdiagonal.
+                 *
+                 * Each subsequent iteration determines a reflection G to
+                 * restore the Hessenberg form in the (K-1)th column, and thus
+                 * chases the bulge one step toward the bottom of the active
+                 * submatrix. NR is the order of G.
+                 */
+                nr = ae_minint(ns+1, i-k+1, _state);
+                if( k>l )
+                {
+                    p1 = k-1;
+                    p2 = k+nr-1;
+                    ae_v_move(&v.ptr.p_double[1], 1, &h->ptr.pp_double[k][p1], h->stride, ae_v_len(1,nr));
+                    touchint(&p2, _state);
+                }
+                generatereflection(&v, nr, &tau, _state);
+                if( k>l )
+                {
+                    h->ptr.pp_double[k][k-1] = v.ptr.p_double[1];
+                    for(ii=k+1; ii<=i; ii++)
+                    {
+                        h->ptr.pp_double[ii][k-1] = (double)(0);
+                    }
+                }
+                v.ptr.p_double[1] = (double)(1);
+                
+                /*
+                 * Apply G from the left to transform the rows of the matrix in
+                 * columns K to I2.
+                 */
+                applyreflectionfromtheleft(h, tau, &v, k, k+nr-1, k, i2, &work, _state);
+                
+                /*
+                 * Apply G from the right to transform the columns of the
+                 * matrix in rows I1 to min(K+NR,I).
+                 */
+                applyreflectionfromtheright(h, tau, &v, i1, ae_minint(k+nr, i, _state), k, k+nr-1, &work, _state);
+                if( wantz )
+                {
+                    
+                    /*
+                     * Accumulate transformations in the matrix Z
+                     */
+                    applyreflectionfromtheright(z, tau, &v, 1, n, k, k+nr-1, &work, _state);
+                }
+            }
+        }
+        
+        /*
+         * Failure to converge in remaining number of iterations
+         */
+        if( failflag )
+        {
+            *info = i;
+            ae_frame_leave(_state);
+            return;
+        }
+        
+        /*
+         * A submatrix of order <= MAXB in rows and columns L to I has split
+         * off. Use the double-shift QR algorithm to handle it.
+         */
+        hsschur_internalauxschur(wantt, wantz, n, l, i, h, wr, wi, 1, n, z, &work, &workv3, &workc1, &works1, info, _state);
+        if( *info>0 )
+        {
+            ae_frame_leave(_state);
+            return;
+        }
+        
+        /*
+         * Decrement number of remaining iterations, and return to start of
+         * the main loop with a new value of I.
+         */
+        itn = itn-its;
+        i = l-1;
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Translation of DLAHQR from LAPACK.
+*************************************************************************/
+static void hsschur_internalauxschur(ae_bool wantt,
+     ae_bool wantz,
+     ae_int_t n,
+     ae_int_t ilo,
+     ae_int_t ihi,
+     /* Real    */ ae_matrix* h,
+     /* Real    */ ae_vector* wr,
+     /* Real    */ ae_vector* wi,
+     ae_int_t iloz,
+     ae_int_t ihiz,
+     /* Real    */ ae_matrix* z,
+     /* Real    */ ae_vector* work,
+     /* Real    */ ae_vector* workv3,
+     /* Real    */ ae_vector* workc1,
+     /* Real    */ ae_vector* works1,
+     ae_int_t* info,
+     ae_state *_state)
+{
+    double safmin;
+    double tst;
+    double ab;
+    double ba;
+    double aa;
+    double bb;
+    double rt1r;
+    double rt1i;
+    double rt2r;
+    double rt2i;
+    double tr;
+    double det;
+    double rtdisc;
+    double h21s;
+    ae_int_t i;
+    ae_int_t i1;
+    ae_int_t i2;
+    ae_int_t itmax;
+    ae_int_t its;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t l;
+    ae_int_t m;
+    ae_int_t nh;
+    ae_int_t nr;
+    ae_int_t nz;
+    double cs;
+    double h11;
+    double h12;
+    double h21;
+    double h22;
+    double s;
+    double smlnum;
+    double sn;
+    double sum;
+    double t1;
+    double t2;
+    double t3;
+    double v2;
+    double v3;
+    ae_bool failflag;
+    double dat1;
+    double dat2;
+    ae_int_t p1;
+    double him1im1;
+    double him1i;
+    double hiim1;
+    double hii;
+    double wrim1;
+    double wri;
+    double wiim1;
+    double wii;
+    double ulp;
+
+    *info = 0;
+
+    *info = 0;
+    dat1 = 0.75;
+    dat2 = -0.4375;
+    
+    /*
+     * Quick return if possible
+     */
+    if( n==0 )
+    {
+        return;
+    }
+    if( ilo==ihi )
+    {
+        wr->ptr.p_double[ilo] = h->ptr.pp_double[ilo][ilo];
+        wi->ptr.p_double[ilo] = (double)(0);
+        return;
+    }
+    
+    /*
+     * ==== clear out the trash ====
+     */
+    for(j=ilo; j<=ihi-3; j++)
+    {
+        h->ptr.pp_double[j+2][j] = (double)(0);
+        h->ptr.pp_double[j+3][j] = (double)(0);
+    }
+    if( ilo<=ihi-2 )
+    {
+        h->ptr.pp_double[ihi][ihi-2] = (double)(0);
+    }
+    nh = ihi-ilo+1;
+    nz = ihiz-iloz+1;
+    
+    /*
+     * Set machine-dependent constants for the stopping criterion.
+     */
+    safmin = ae_minrealnumber;
+    ulp = ae_machineepsilon;
+    smlnum = safmin*(nh/ulp);
+    
+    /*
+     * I1 and I2 are the indices of the first row and last column of H
+     * to which transformations must be applied. If eigenvalues only are
+     * being computed, I1 and I2 are set inside the main loop.
+     */
+    if( wantt )
+    {
+        i1 = 1;
+        i2 = n;
+    }
+    
+    /*
+     * ITMAX is the total number of QR iterations allowed.
+     */
+    itmax = 30*ae_maxint(10, nh, _state);
+    
+    /*
+     * The main loop begins here. I is the loop index and decreases from
+     * IHI to ILO in steps of 1 or 2. Each iteration of the loop works
+     * with the active submatrix in rows and columns L to I.
+     * Eigenvalues I+1 to IHI have already converged. Either L = ILO or
+     * H(L,L-1) is negligible so that the matrix splits.
+     */
+    i = ihi;
+    for(;;)
+    {
+        l = ilo;
+        if( i<ilo )
+        {
+            return;
+        }
+        
+        /*
+         * Perform QR iterations on rows and columns ILO to I until a
+         * submatrix of order 1 or 2 splits off at the bottom because a
+         * subdiagonal element has become negligible.
+         */
+        failflag = ae_true;
+        for(its=0; its<=itmax; its++)
+        {
+            
+            /*
+             * Look for a single small subdiagonal element.
+             */
+            for(k=i; k>=l+1; k--)
+            {
+                if( ae_fp_less_eq(ae_fabs(h->ptr.pp_double[k][k-1], _state),smlnum) )
+                {
+                    break;
+                }
+                tst = ae_fabs(h->ptr.pp_double[k-1][k-1], _state)+ae_fabs(h->ptr.pp_double[k][k], _state);
+                if( ae_fp_eq(tst,(double)(0)) )
+                {
+                    if( k-2>=ilo )
+                    {
+                        tst = tst+ae_fabs(h->ptr.pp_double[k-1][k-2], _state);
+                    }
+                    if( k+1<=ihi )
+                    {
+                        tst = tst+ae_fabs(h->ptr.pp_double[k+1][k], _state);
+                    }
+                }
+                
+                /*
+                 * ==== The following is a conservative small subdiagonal
+                 * .    deflation  criterion due to Ahues & Tisseur (LAWN 122,
+                 * .    1997). It has better mathematical foundation and
+                 * .    improves accuracy in some cases.  ====
+                 */
+                if( ae_fp_less_eq(ae_fabs(h->ptr.pp_double[k][k-1], _state),ulp*tst) )
+                {
+                    ab = ae_maxreal(ae_fabs(h->ptr.pp_double[k][k-1], _state), ae_fabs(h->ptr.pp_double[k-1][k], _state), _state);
+                    ba = ae_minreal(ae_fabs(h->ptr.pp_double[k][k-1], _state), ae_fabs(h->ptr.pp_double[k-1][k], _state), _state);
+                    aa = ae_maxreal(ae_fabs(h->ptr.pp_double[k][k], _state), ae_fabs(h->ptr.pp_double[k-1][k-1]-h->ptr.pp_double[k][k], _state), _state);
+                    bb = ae_minreal(ae_fabs(h->ptr.pp_double[k][k], _state), ae_fabs(h->ptr.pp_double[k-1][k-1]-h->ptr.pp_double[k][k], _state), _state);
+                    s = aa+ab;
+                    if( ae_fp_less_eq(ba*(ab/s),ae_maxreal(smlnum, ulp*(bb*(aa/s)), _state)) )
+                    {
+                        break;
+                    }
+                }
+            }
+            l = k;
+            if( l>ilo )
+            {
+                
+                /*
+                 * H(L,L-1) is negligible
+                 */
+                h->ptr.pp_double[l][l-1] = (double)(0);
+            }
+            
+            /*
+             * Exit from loop if a submatrix of order 1 or 2 has split off.
+             */
+            if( l>=i-1 )
+            {
+                failflag = ae_false;
+                break;
+            }
+            
+            /*
+             * Now the active submatrix is in rows and columns L to I. If
+             * eigenvalues only are being computed, only the active submatrix
+             * need be transformed.
+             */
+            if( !wantt )
+            {
+                i1 = l;
+                i2 = i;
+            }
+            
+            /*
+             * Shifts
+             */
+            if( its==10 )
+            {
+                
+                /*
+                 * Exceptional shift.
+                 */
+                s = ae_fabs(h->ptr.pp_double[l+1][l], _state)+ae_fabs(h->ptr.pp_double[l+2][l+1], _state);
+                h11 = dat1*s+h->ptr.pp_double[l][l];
+                h12 = dat2*s;
+                h21 = s;
+                h22 = h11;
+            }
+            else
+            {
+                if( its==20 )
+                {
+                    
+                    /*
+                     * Exceptional shift.
+                     */
+                    s = ae_fabs(h->ptr.pp_double[i][i-1], _state)+ae_fabs(h->ptr.pp_double[i-1][i-2], _state);
+                    h11 = dat1*s+h->ptr.pp_double[i][i];
+                    h12 = dat2*s;
+                    h21 = s;
+                    h22 = h11;
+                }
+                else
+                {
+                    
+                    /*
+                     * Prepare to use Francis' double shift
+                     * (i.e. 2nd degree generalized Rayleigh quotient)
+                     */
+                    h11 = h->ptr.pp_double[i-1][i-1];
+                    h21 = h->ptr.pp_double[i][i-1];
+                    h12 = h->ptr.pp_double[i-1][i];
+                    h22 = h->ptr.pp_double[i][i];
+                }
+            }
+            s = ae_fabs(h11, _state)+ae_fabs(h12, _state)+ae_fabs(h21, _state)+ae_fabs(h22, _state);
+            if( ae_fp_eq(s,(double)(0)) )
+            {
+                rt1r = (double)(0);
+                rt1i = (double)(0);
+                rt2r = (double)(0);
+                rt2i = (double)(0);
+            }
+            else
+            {
+                h11 = h11/s;
+                h21 = h21/s;
+                h12 = h12/s;
+                h22 = h22/s;
+                tr = (h11+h22)/2;
+                det = (h11-tr)*(h22-tr)-h12*h21;
+                rtdisc = ae_sqrt(ae_fabs(det, _state), _state);
+                if( ae_fp_greater_eq(det,(double)(0)) )
+                {
+                    
+                    /*
+                     * ==== complex conjugate shifts ====
+                     */
+                    rt1r = tr*s;
+                    rt2r = rt1r;
+                    rt1i = rtdisc*s;
+                    rt2i = -rt1i;
+                }
+                else
+                {
+                    
+                    /*
+                     * ==== real shifts (use only one of them)  ====
+                     */
+                    rt1r = tr+rtdisc;
+                    rt2r = tr-rtdisc;
+                    if( ae_fp_less_eq(ae_fabs(rt1r-h22, _state),ae_fabs(rt2r-h22, _state)) )
+                    {
+                        rt1r = rt1r*s;
+                        rt2r = rt1r;
+                    }
+                    else
+                    {
+                        rt2r = rt2r*s;
+                        rt1r = rt2r;
+                    }
+                    rt1i = (double)(0);
+                    rt2i = (double)(0);
+                }
+            }
+            
+            /*
+             * Look for two consecutive small subdiagonal elements.
+             */
+            for(m=i-2; m>=l; m--)
+            {
+                
+                /*
+                 * Determine the effect of starting the double-shift QR
+                 * iteration at row M, and see if this would make H(M,M-1)
+                 * negligible.  (The following uses scaling to avoid
+                 * overflows and most underflows.)
+                 */
+                h21s = h->ptr.pp_double[m+1][m];
+                s = ae_fabs(h->ptr.pp_double[m][m]-rt2r, _state)+ae_fabs(rt2i, _state)+ae_fabs(h21s, _state);
+                h21s = h->ptr.pp_double[m+1][m]/s;
+                workv3->ptr.p_double[1] = h21s*h->ptr.pp_double[m][m+1]+(h->ptr.pp_double[m][m]-rt1r)*((h->ptr.pp_double[m][m]-rt2r)/s)-rt1i*(rt2i/s);
+                workv3->ptr.p_double[2] = h21s*(h->ptr.pp_double[m][m]+h->ptr.pp_double[m+1][m+1]-rt1r-rt2r);
+                workv3->ptr.p_double[3] = h21s*h->ptr.pp_double[m+2][m+1];
+                s = ae_fabs(workv3->ptr.p_double[1], _state)+ae_fabs(workv3->ptr.p_double[2], _state)+ae_fabs(workv3->ptr.p_double[3], _state);
+                workv3->ptr.p_double[1] = workv3->ptr.p_double[1]/s;
+                workv3->ptr.p_double[2] = workv3->ptr.p_double[2]/s;
+                workv3->ptr.p_double[3] = workv3->ptr.p_double[3]/s;
+                if( m==l )
+                {
+                    break;
+                }
+                if( ae_fp_less_eq(ae_fabs(h->ptr.pp_double[m][m-1], _state)*(ae_fabs(workv3->ptr.p_double[2], _state)+ae_fabs(workv3->ptr.p_double[3], _state)),ulp*ae_fabs(workv3->ptr.p_double[1], _state)*(ae_fabs(h->ptr.pp_double[m-1][m-1], _state)+ae_fabs(h->ptr.pp_double[m][m], _state)+ae_fabs(h->ptr.pp_double[m+1][m+1], _state))) )
+                {
+                    break;
+                }
+            }
+            
+            /*
+             * Double-shift QR step
+             */
+            for(k=m; k<=i-1; k++)
+            {
+                
+                /*
+                 * The first iteration of this loop determines a reflection G
+                 * from the vector V and applies it from left and right to H,
+                 * thus creating a nonzero bulge below the subdiagonal.
+                 *
+                 * Each subsequent iteration determines a reflection G to
+                 * restore the Hessenberg form in the (K-1)th column, and thus
+                 * chases the bulge one step toward the bottom of the active
+                 * submatrix. NR is the order of G.
+                 */
+                nr = ae_minint(3, i-k+1, _state);
+                if( k>m )
+                {
+                    for(p1=1; p1<=nr; p1++)
+                    {
+                        workv3->ptr.p_double[p1] = h->ptr.pp_double[k+p1-1][k-1];
+                    }
+                }
+                generatereflection(workv3, nr, &t1, _state);
+                if( k>m )
+                {
+                    h->ptr.pp_double[k][k-1] = workv3->ptr.p_double[1];
+                    h->ptr.pp_double[k+1][k-1] = (double)(0);
+                    if( k<i-1 )
+                    {
+                        h->ptr.pp_double[k+2][k-1] = (double)(0);
+                    }
+                }
+                else
+                {
+                    if( m>l )
+                    {
+                        
+                        /*
+                         * ==== Use the following instead of
+                         * H( K, K-1 ) = -H( K, K-1 ) to
+                         * avoid a bug when v(2) and v(3)
+                         * underflow. ====
+                         */
+                        h->ptr.pp_double[k][k-1] = h->ptr.pp_double[k][k-1]*(1-t1);
+                    }
+                }
+                v2 = workv3->ptr.p_double[2];
+                t2 = t1*v2;
+                if( nr==3 )
+                {
+                    v3 = workv3->ptr.p_double[3];
+                    t3 = t1*v3;
+                    
+                    /*
+                     * Apply G from the left to transform the rows of the matrix
+                     * in columns K to I2.
+                     */
+                    for(j=k; j<=i2; j++)
+                    {
+                        sum = h->ptr.pp_double[k][j]+v2*h->ptr.pp_double[k+1][j]+v3*h->ptr.pp_double[k+2][j];
+                        h->ptr.pp_double[k][j] = h->ptr.pp_double[k][j]-sum*t1;
+                        h->ptr.pp_double[k+1][j] = h->ptr.pp_double[k+1][j]-sum*t2;
+                        h->ptr.pp_double[k+2][j] = h->ptr.pp_double[k+2][j]-sum*t3;
+                    }
+                    
+                    /*
+                     * Apply G from the right to transform the columns of the
+                     * matrix in rows I1 to min(K+3,I).
+                     */
+                    for(j=i1; j<=ae_minint(k+3, i, _state); j++)
+                    {
+                        sum = h->ptr.pp_double[j][k]+v2*h->ptr.pp_double[j][k+1]+v3*h->ptr.pp_double[j][k+2];
+                        h->ptr.pp_double[j][k] = h->ptr.pp_double[j][k]-sum*t1;
+                        h->ptr.pp_double[j][k+1] = h->ptr.pp_double[j][k+1]-sum*t2;
+                        h->ptr.pp_double[j][k+2] = h->ptr.pp_double[j][k+2]-sum*t3;
+                    }
+                    if( wantz )
+                    {
+                        
+                        /*
+                         * Accumulate transformations in the matrix Z
+                         */
+                        for(j=iloz; j<=ihiz; j++)
+                        {
+                            sum = z->ptr.pp_double[j][k]+v2*z->ptr.pp_double[j][k+1]+v3*z->ptr.pp_double[j][k+2];
+                            z->ptr.pp_double[j][k] = z->ptr.pp_double[j][k]-sum*t1;
+                            z->ptr.pp_double[j][k+1] = z->ptr.pp_double[j][k+1]-sum*t2;
+                            z->ptr.pp_double[j][k+2] = z->ptr.pp_double[j][k+2]-sum*t3;
+                        }
+                    }
+                }
+                else
+                {
+                    if( nr==2 )
+                    {
+                        
+                        /*
+                         * Apply G from the left to transform the rows of the matrix
+                         * in columns K to I2.
+                         */
+                        for(j=k; j<=i2; j++)
+                        {
+                            sum = h->ptr.pp_double[k][j]+v2*h->ptr.pp_double[k+1][j];
+                            h->ptr.pp_double[k][j] = h->ptr.pp_double[k][j]-sum*t1;
+                            h->ptr.pp_double[k+1][j] = h->ptr.pp_double[k+1][j]-sum*t2;
+                        }
+                        
+                        /*
+                         * Apply G from the right to transform the columns of the
+                         * matrix in rows I1 to min(K+3,I).
+                         */
+                        for(j=i1; j<=i; j++)
+                        {
+                            sum = h->ptr.pp_double[j][k]+v2*h->ptr.pp_double[j][k+1];
+                            h->ptr.pp_double[j][k] = h->ptr.pp_double[j][k]-sum*t1;
+                            h->ptr.pp_double[j][k+1] = h->ptr.pp_double[j][k+1]-sum*t2;
+                        }
+                        if( wantz )
+                        {
+                            
+                            /*
+                             * Accumulate transformations in the matrix Z
+                             */
+                            for(j=iloz; j<=ihiz; j++)
+                            {
+                                sum = z->ptr.pp_double[j][k]+v2*z->ptr.pp_double[j][k+1];
+                                z->ptr.pp_double[j][k] = z->ptr.pp_double[j][k]-sum*t1;
+                                z->ptr.pp_double[j][k+1] = z->ptr.pp_double[j][k+1]-sum*t2;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        /*
+         * Failure to converge in remaining number of iterations
+         */
+        if( failflag )
+        {
+            *info = i;
+            return;
+        }
+        
+        /*
+         * Convergence
+         */
+        if( l==i )
+        {
+            
+            /*
+             * H(I,I-1) is negligible: one eigenvalue has converged.
+             */
+            wr->ptr.p_double[i] = h->ptr.pp_double[i][i];
+            wi->ptr.p_double[i] = (double)(0);
+        }
+        else
+        {
+            if( l==i-1 )
+            {
+                
+                /*
+                 * H(I-1,I-2) is negligible: a pair of eigenvalues have converged.
+                 *
+                 * Transform the 2-by-2 submatrix to standard Schur form,
+                 * and compute and store the eigenvalues.
+                 */
+                him1im1 = h->ptr.pp_double[i-1][i-1];
+                him1i = h->ptr.pp_double[i-1][i];
+                hiim1 = h->ptr.pp_double[i][i-1];
+                hii = h->ptr.pp_double[i][i];
+                hsschur_aux2x2schur(&him1im1, &him1i, &hiim1, &hii, &wrim1, &wiim1, &wri, &wii, &cs, &sn, _state);
+                wr->ptr.p_double[i-1] = wrim1;
+                wi->ptr.p_double[i-1] = wiim1;
+                wr->ptr.p_double[i] = wri;
+                wi->ptr.p_double[i] = wii;
+                h->ptr.pp_double[i-1][i-1] = him1im1;
+                h->ptr.pp_double[i-1][i] = him1i;
+                h->ptr.pp_double[i][i-1] = hiim1;
+                h->ptr.pp_double[i][i] = hii;
+                if( wantt )
+                {
+                    
+                    /*
+                     * Apply the transformation to the rest of H.
+                     */
+                    if( i2>i )
+                    {
+                        workc1->ptr.p_double[1] = cs;
+                        works1->ptr.p_double[1] = sn;
+                        applyrotationsfromtheleft(ae_true, i-1, i, i+1, i2, workc1, works1, h, work, _state);
+                    }
+                    workc1->ptr.p_double[1] = cs;
+                    works1->ptr.p_double[1] = sn;
+                    applyrotationsfromtheright(ae_true, i1, i-2, i-1, i, workc1, works1, h, work, _state);
+                }
+                if( wantz )
+                {
+                    
+                    /*
+                     * Apply the transformation to Z.
+                     */
+                    workc1->ptr.p_double[1] = cs;
+                    works1->ptr.p_double[1] = sn;
+                    applyrotationsfromtheright(ae_true, iloz, iloz+nz-1, i-1, i, workc1, works1, z, work, _state);
+                }
+            }
+        }
+        
+        /*
+         * return to start of the main loop with new value of I.
+         */
+        i = l-1;
+    }
+}
+
+
+static void hsschur_aux2x2schur(double* a,
+     double* b,
+     double* c,
+     double* d,
+     double* rt1r,
+     double* rt1i,
+     double* rt2r,
+     double* rt2i,
+     double* cs,
+     double* sn,
+     ae_state *_state)
+{
+    double multpl;
+    double aa;
+    double bb;
+    double bcmax;
+    double bcmis;
+    double cc;
+    double cs1;
+    double dd;
+    double eps;
+    double p;
+    double sab;
+    double sac;
+    double scl;
+    double sigma;
+    double sn1;
+    double tau;
+    double temp;
+    double z;
+
+    *rt1r = 0;
+    *rt1i = 0;
+    *rt2r = 0;
+    *rt2i = 0;
+    *cs = 0;
+    *sn = 0;
+
+    multpl = 4.0;
+    eps = ae_machineepsilon;
+    if( ae_fp_eq(*c,(double)(0)) )
+    {
+        *cs = (double)(1);
+        *sn = (double)(0);
+    }
+    else
+    {
+        if( ae_fp_eq(*b,(double)(0)) )
+        {
+            
+            /*
+             * Swap rows and columns
+             */
+            *cs = (double)(0);
+            *sn = (double)(1);
+            temp = *d;
+            *d = *a;
+            *a = temp;
+            *b = -*c;
+            *c = (double)(0);
+        }
+        else
+        {
+            if( ae_fp_eq(*a-(*d),(double)(0))&&hsschur_extschursigntoone(*b, _state)!=hsschur_extschursigntoone(*c, _state) )
+            {
+                *cs = (double)(1);
+                *sn = (double)(0);
+            }
+            else
+            {
+                temp = *a-(*d);
+                p = 0.5*temp;
+                bcmax = ae_maxreal(ae_fabs(*b, _state), ae_fabs(*c, _state), _state);
+                bcmis = ae_minreal(ae_fabs(*b, _state), ae_fabs(*c, _state), _state)*hsschur_extschursigntoone(*b, _state)*hsschur_extschursigntoone(*c, _state);
+                scl = ae_maxreal(ae_fabs(p, _state), bcmax, _state);
+                z = p/scl*p+bcmax/scl*bcmis;
+                
+                /*
+                 * If Z is of the order of the machine accuracy, postpone the
+                 * decision on the nature of eigenvalues
+                 */
+                if( ae_fp_greater_eq(z,multpl*eps) )
+                {
+                    
+                    /*
+                     * Real eigenvalues. Compute A and D.
+                     */
+                    z = p+hsschur_extschursign(ae_sqrt(scl, _state)*ae_sqrt(z, _state), p, _state);
+                    *a = *d+z;
+                    *d = *d-bcmax/z*bcmis;
+                    
+                    /*
+                     * Compute B and the rotation matrix
+                     */
+                    tau = pythag2(*c, z, _state);
+                    *cs = z/tau;
+                    *sn = *c/tau;
+                    *b = *b-(*c);
+                    *c = (double)(0);
+                }
+                else
+                {
+                    
+                    /*
+                     * Complex eigenvalues, or real (almost) equal eigenvalues.
+                     * Make diagonal elements equal.
+                     */
+                    sigma = *b+(*c);
+                    tau = pythag2(sigma, temp, _state);
+                    *cs = ae_sqrt(0.5*(1+ae_fabs(sigma, _state)/tau), _state);
+                    *sn = -p/(tau*(*cs))*hsschur_extschursign((double)(1), sigma, _state);
+                    
+                    /*
+                     * Compute [ AA  BB ] = [ A  B ] [ CS -SN ]
+                     *         [ CC  DD ]   [ C  D ] [ SN  CS ]
+                     */
+                    aa = *a*(*cs)+*b*(*sn);
+                    bb = -*a*(*sn)+*b*(*cs);
+                    cc = *c*(*cs)+*d*(*sn);
+                    dd = -*c*(*sn)+*d*(*cs);
+                    
+                    /*
+                     * Compute [ A  B ] = [ CS  SN ] [ AA  BB ]
+                     *         [ C  D ]   [-SN  CS ] [ CC  DD ]
+                     */
+                    *a = aa*(*cs)+cc*(*sn);
+                    *b = bb*(*cs)+dd*(*sn);
+                    *c = -aa*(*sn)+cc*(*cs);
+                    *d = -bb*(*sn)+dd*(*cs);
+                    temp = 0.5*(*a+(*d));
+                    *a = temp;
+                    *d = temp;
+                    if( ae_fp_neq(*c,(double)(0)) )
+                    {
+                        if( ae_fp_neq(*b,(double)(0)) )
+                        {
+                            if( hsschur_extschursigntoone(*b, _state)==hsschur_extschursigntoone(*c, _state) )
+                            {
+                                
+                                /*
+                                 * Real eigenvalues: reduce to upper triangular form
+                                 */
+                                sab = ae_sqrt(ae_fabs(*b, _state), _state);
+                                sac = ae_sqrt(ae_fabs(*c, _state), _state);
+                                p = hsschur_extschursign(sab*sac, *c, _state);
+                                tau = 1/ae_sqrt(ae_fabs(*b+(*c), _state), _state);
+                                *a = temp+p;
+                                *d = temp-p;
+                                *b = *b-(*c);
+                                *c = (double)(0);
+                                cs1 = sab*tau;
+                                sn1 = sac*tau;
+                                temp = *cs*cs1-*sn*sn1;
+                                *sn = *cs*sn1+*sn*cs1;
+                                *cs = temp;
+                            }
+                        }
+                        else
+                        {
+                            *b = -*c;
+                            *c = (double)(0);
+                            temp = *cs;
+                            *cs = -*sn;
+                            *sn = temp;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /*
+     * Store eigenvalues in (RT1R,RT1I) and (RT2R,RT2I).
+     */
+    *rt1r = *a;
+    *rt2r = *d;
+    if( ae_fp_eq(*c,(double)(0)) )
+    {
+        *rt1i = (double)(0);
+        *rt2i = (double)(0);
+    }
+    else
+    {
+        *rt1i = ae_sqrt(ae_fabs(*b, _state), _state)*ae_sqrt(ae_fabs(*c, _state), _state);
+        *rt2i = -*rt1i;
+    }
+}
+
+
+static double hsschur_extschursign(double a, double b, ae_state *_state)
+{
+    double result;
+
+
+    if( ae_fp_greater_eq(b,(double)(0)) )
+    {
+        result = ae_fabs(a, _state);
+    }
+    else
+    {
+        result = -ae_fabs(a, _state);
+    }
+    return result;
+}
+
+
+static ae_int_t hsschur_extschursigntoone(double b, ae_state *_state)
+{
+    ae_int_t result;
+
+
+    if( ae_fp_greater_eq(b,(double)(0)) )
+    {
+        result = 1;
+    }
+    else
+    {
+        result = -1;
+    }
+    return result;
+}
+
+
+
+
+/*************************************************************************
+Internal tied ranking subroutine.
+
+INPUT PARAMETERS:
+    X       -   array to rank
+    N       -   array size
+    IsCentered- whether ranks are centered or not:
+                * True      -   ranks are centered in such way that  their
+                                sum is zero
+                * False     -   ranks are not centered
+    Buf     -   temporary buffers
+    
+NOTE: when IsCentered is True and all X[] are equal, this  function  fills
+      X by zeros (exact zeros are used, not sum which is only approximately
+      equal to zero).
+*************************************************************************/
+void rankx(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     ae_bool iscentered,
+     apbuffers* buf,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    double tmp;
+    double voffs;
+
+
+    
+    /*
+     * Prepare
+     */
+    if( n<1 )
+    {
+        return;
+    }
+    if( n==1 )
+    {
+        x->ptr.p_double[0] = (double)(0);
+        return;
+    }
+    if( buf->ra1.cnt<n )
+    {
+        ae_vector_set_length(&buf->ra1, n, _state);
+    }
+    if( buf->ia1.cnt<n )
+    {
+        ae_vector_set_length(&buf->ia1, n, _state);
+    }
+    for(i=0; i<=n-1; i++)
+    {
+        buf->ra1.ptr.p_double[i] = x->ptr.p_double[i];
+        buf->ia1.ptr.p_int[i] = i;
+    }
+    tagsortfasti(&buf->ra1, &buf->ia1, &buf->ra2, &buf->ia2, n, _state);
+    
+    /*
+     * Special test for all values being equal
+     */
+    if( ae_fp_eq(buf->ra1.ptr.p_double[0],buf->ra1.ptr.p_double[n-1]) )
+    {
+        if( iscentered )
+        {
+            tmp = 0.0;
+        }
+        else
+        {
+            tmp = (double)(n-1)/(double)2;
+        }
+        for(i=0; i<=n-1; i++)
+        {
+            x->ptr.p_double[i] = tmp;
+        }
+        return;
+    }
+    
+    /*
+     * compute tied ranks
+     */
+    i = 0;
+    while(i<=n-1)
+    {
+        j = i+1;
+        while(j<=n-1)
+        {
+            if( ae_fp_neq(buf->ra1.ptr.p_double[j],buf->ra1.ptr.p_double[i]) )
+            {
+                break;
+            }
+            j = j+1;
+        }
+        for(k=i; k<=j-1; k++)
+        {
+            buf->ra1.ptr.p_double[k] = (double)(i+j-1)/(double)2;
+        }
+        i = j;
+    }
+    
+    /*
+     * back to x
+     */
+    if( iscentered )
+    {
+        voffs = (double)(n-1)/(double)2;
+    }
+    else
+    {
+        voffs = 0.0;
+    }
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[buf->ia1.ptr.p_int[i]] = buf->ra1.ptr.p_double[i]-voffs;
+    }
+}
+
+
+/*************************************************************************
+Internal untied ranking subroutine.
+
+INPUT PARAMETERS:
+    X       -   array to rank
+    N       -   array size
+    Buf     -   temporary buffers
+
+Returns untied ranks (in case of a tie ranks are resolved arbitrarily).
+*************************************************************************/
+void rankxuntied(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     apbuffers* buf,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+
+    
+    /*
+     * Prepare
+     */
+    if( n<1 )
+    {
+        return;
+    }
+    if( n==1 )
+    {
+        x->ptr.p_double[0] = (double)(0);
+        return;
+    }
+    if( buf->ra1.cnt<n )
+    {
+        ae_vector_set_length(&buf->ra1, n, _state);
+    }
+    if( buf->ia1.cnt<n )
+    {
+        ae_vector_set_length(&buf->ia1, n, _state);
+    }
+    for(i=0; i<=n-1; i++)
+    {
+        buf->ra1.ptr.p_double[i] = x->ptr.p_double[i];
+        buf->ia1.ptr.p_int[i] = i;
+    }
+    tagsortfasti(&buf->ra1, &buf->ia1, &buf->ra2, &buf->ia2, n, _state);
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[buf->ia1.ptr.p_int[i]] = (double)(i);
+    }
+}
+
+
+
+
+/*************************************************************************
+Prepares HPC compuations  of  chunked  gradient with HPCChunkedGradient().
+You  have to call this function  before  calling  HPCChunkedGradient() for
+a new set of weights. You have to call it only once, see example below:
+
+HOW TO PROCESS DATASET WITH THIS FUNCTION:
+    Grad:=0
+    HPCPrepareChunkedGradient(Weights, WCount, NTotal, NOut, Buf)
+    foreach chunk-of-dataset do
+        HPCChunkedGradient(...)
+    HPCFinalizeChunkedGradient(Buf, Grad)
+
+*************************************************************************/
+void hpcpreparechunkedgradient(/* Real    */ ae_vector* weights,
+     ae_int_t wcount,
+     ae_int_t ntotal,
+     ae_int_t nin,
+     ae_int_t nout,
+     mlpbuffers* buf,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t batch4size;
+    ae_int_t chunksize;
+
+
+    chunksize = 4;
+    batch4size = 3*chunksize*ntotal+chunksize*(2*nout+1);
+    if( buf->xy.rows<chunksize||buf->xy.cols<nin+nout )
+    {
+        ae_matrix_set_length(&buf->xy, chunksize, nin+nout, _state);
+    }
+    if( buf->xy2.rows<chunksize||buf->xy2.cols<nin+nout )
+    {
+        ae_matrix_set_length(&buf->xy2, chunksize, nin+nout, _state);
+    }
+    if( buf->xyrow.cnt<nin+nout )
+    {
+        ae_vector_set_length(&buf->xyrow, nin+nout, _state);
+    }
+    if( buf->x.cnt<nin )
+    {
+        ae_vector_set_length(&buf->x, nin, _state);
+    }
+    if( buf->y.cnt<nout )
+    {
+        ae_vector_set_length(&buf->y, nout, _state);
+    }
+    if( buf->desiredy.cnt<nout )
+    {
+        ae_vector_set_length(&buf->desiredy, nout, _state);
+    }
+    if( buf->batch4buf.cnt<batch4size )
+    {
+        ae_vector_set_length(&buf->batch4buf, batch4size, _state);
+    }
+    if( buf->hpcbuf.cnt<wcount )
+    {
+        ae_vector_set_length(&buf->hpcbuf, wcount, _state);
+    }
+    if( buf->g.cnt<wcount )
+    {
+        ae_vector_set_length(&buf->g, wcount, _state);
+    }
+    if( !hpccores_hpcpreparechunkedgradientx(weights, wcount, &buf->hpcbuf, _state) )
+    {
+        for(i=0; i<=wcount-1; i++)
+        {
+            buf->hpcbuf.ptr.p_double[i] = 0.0;
+        }
+    }
+    buf->wcount = wcount;
+    buf->ntotal = ntotal;
+    buf->nin = nin;
+    buf->nout = nout;
+    buf->chunksize = chunksize;
+}
+
+
+/*************************************************************************
+Finalizes HPC compuations  of  chunked gradient with HPCChunkedGradient().
+You  have to call this function  after  calling  HPCChunkedGradient()  for
+a new set of weights. You have to call it only once, see example below:
+
+HOW TO PROCESS DATASET WITH THIS FUNCTION:
+    Grad:=0
+    HPCPrepareChunkedGradient(Weights, WCount, NTotal, NOut, Buf)
+    foreach chunk-of-dataset do
+        HPCChunkedGradient(...)
+    HPCFinalizeChunkedGradient(Buf, Grad)
+
+*************************************************************************/
+void hpcfinalizechunkedgradient(mlpbuffers* buf,
+     /* Real    */ ae_vector* grad,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+
+    if( !hpccores_hpcfinalizechunkedgradientx(&buf->hpcbuf, buf->wcount, grad, _state) )
+    {
+        for(i=0; i<=buf->wcount-1; i++)
+        {
+            grad->ptr.p_double[i] = grad->ptr.p_double[i]+buf->hpcbuf.ptr.p_double[i];
+        }
+    }
+}
+
+
+/*************************************************************************
+Fast kernel for chunked gradient.
+
+*************************************************************************/
+ae_bool hpcchunkedgradient(/* Real    */ ae_vector* weights,
+     /* Integer */ ae_vector* structinfo,
+     /* Real    */ ae_vector* columnmeans,
+     /* Real    */ ae_vector* columnsigmas,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t cstart,
+     ae_int_t csize,
+     /* Real    */ ae_vector* batch4buf,
+     /* Real    */ ae_vector* hpcbuf,
+     double* e,
+     ae_bool naturalerrorfunc,
+     ae_state *_state)
+{
+#ifndef ALGLIB_INTERCEPTS_SSE2
+    ae_bool result;
+
+
+    result = ae_false;
+    return result;
+#else
+    return _ialglib_i_hpcchunkedgradient(weights, structinfo, columnmeans, columnsigmas, xy, cstart, csize, batch4buf, hpcbuf, e, naturalerrorfunc);
+#endif
+}
+
+
+/*************************************************************************
+Fast kernel for chunked processing.
+
+*************************************************************************/
+ae_bool hpcchunkedprocess(/* Real    */ ae_vector* weights,
+     /* Integer */ ae_vector* structinfo,
+     /* Real    */ ae_vector* columnmeans,
+     /* Real    */ ae_vector* columnsigmas,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t cstart,
+     ae_int_t csize,
+     /* Real    */ ae_vector* batch4buf,
+     /* Real    */ ae_vector* hpcbuf,
+     ae_state *_state)
+{
+#ifndef ALGLIB_INTERCEPTS_SSE2
+    ae_bool result;
+
+
+    result = ae_false;
+    return result;
+#else
+    return _ialglib_i_hpcchunkedprocess(weights, structinfo, columnmeans, columnsigmas, xy, cstart, csize, batch4buf, hpcbuf);
+#endif
+}
+
+
+/*************************************************************************
+Stub function.
+
+  -- ALGLIB routine --
+     14.06.2013
+     Bochkanov Sergey
+*************************************************************************/
+static ae_bool hpccores_hpcpreparechunkedgradientx(/* Real    */ ae_vector* weights,
+     ae_int_t wcount,
+     /* Real    */ ae_vector* hpcbuf,
+     ae_state *_state)
+{
+#ifndef ALGLIB_INTERCEPTS_SSE2
+    ae_bool result;
+
+
+    result = ae_false;
+    return result;
+#else
+    return _ialglib_i_hpcpreparechunkedgradientx(weights, wcount, hpcbuf);
+#endif
+}
+
+
+/*************************************************************************
+Stub function.
+
+  -- ALGLIB routine --
+     14.06.2013
+     Bochkanov Sergey
+*************************************************************************/
+static ae_bool hpccores_hpcfinalizechunkedgradientx(/* Real    */ ae_vector* buf,
+     ae_int_t wcount,
+     /* Real    */ ae_vector* grad,
+     ae_state *_state)
+{
+#ifndef ALGLIB_INTERCEPTS_SSE2
+    ae_bool result;
+
+
+    result = ae_false;
+    return result;
+#else
+    return _ialglib_i_hpcfinalizechunkedgradientx(buf, wcount, grad);
+#endif
+}
+
+
+void _mlpbuffers_init(void* _p, ae_state *_state)
+{
+    mlpbuffers *p = (mlpbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_init(&p->batch4buf, 0, DT_REAL, _state);
+    ae_vector_init(&p->hpcbuf, 0, DT_REAL, _state);
+    ae_matrix_init(&p->xy, 0, 0, DT_REAL, _state);
+    ae_matrix_init(&p->xy2, 0, 0, DT_REAL, _state);
+    ae_vector_init(&p->xyrow, 0, DT_REAL, _state);
+    ae_vector_init(&p->x, 0, DT_REAL, _state);
+    ae_vector_init(&p->y, 0, DT_REAL, _state);
+    ae_vector_init(&p->desiredy, 0, DT_REAL, _state);
+    ae_vector_init(&p->g, 0, DT_REAL, _state);
+    ae_vector_init(&p->tmp0, 0, DT_REAL, _state);
+}
+
+
+void _mlpbuffers_init_copy(void* _dst, void* _src, ae_state *_state)
+{
+    mlpbuffers *dst = (mlpbuffers*)_dst;
+    mlpbuffers *src = (mlpbuffers*)_src;
+    dst->chunksize = src->chunksize;
+    dst->ntotal = src->ntotal;
+    dst->nin = src->nin;
+    dst->nout = src->nout;
+    dst->wcount = src->wcount;
+    ae_vector_init_copy(&dst->batch4buf, &src->batch4buf, _state);
+    ae_vector_init_copy(&dst->hpcbuf, &src->hpcbuf, _state);
+    ae_matrix_init_copy(&dst->xy, &src->xy, _state);
+    ae_matrix_init_copy(&dst->xy2, &src->xy2, _state);
+    ae_vector_init_copy(&dst->xyrow, &src->xyrow, _state);
+    ae_vector_init_copy(&dst->x, &src->x, _state);
+    ae_vector_init_copy(&dst->y, &src->y, _state);
+    ae_vector_init_copy(&dst->desiredy, &src->desiredy, _state);
+    dst->e = src->e;
+    ae_vector_init_copy(&dst->g, &src->g, _state);
+    ae_vector_init_copy(&dst->tmp0, &src->tmp0, _state);
+}
+
+
+void _mlpbuffers_clear(void* _p)
+{
+    mlpbuffers *p = (mlpbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_clear(&p->batch4buf);
+    ae_vector_clear(&p->hpcbuf);
+    ae_matrix_clear(&p->xy);
+    ae_matrix_clear(&p->xy2);
+    ae_vector_clear(&p->xyrow);
+    ae_vector_clear(&p->x);
+    ae_vector_clear(&p->y);
+    ae_vector_clear(&p->desiredy);
+    ae_vector_clear(&p->g);
+    ae_vector_clear(&p->tmp0);
+}
+
+
+void _mlpbuffers_destroy(void* _p)
+{
+    mlpbuffers *p = (mlpbuffers*)_p;
+    ae_touch_ptr((void*)p);
+    ae_vector_destroy(&p->batch4buf);
+    ae_vector_destroy(&p->hpcbuf);
+    ae_matrix_destroy(&p->xy);
+    ae_matrix_destroy(&p->xy2);
+    ae_vector_destroy(&p->xyrow);
+    ae_vector_destroy(&p->x);
+    ae_vector_destroy(&p->y);
+    ae_vector_destroy(&p->desiredy);
+    ae_vector_destroy(&p->g);
+    ae_vector_destroy(&p->tmp0);
 }
 
 

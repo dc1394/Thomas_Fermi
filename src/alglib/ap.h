@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -25,6 +25,7 @@ http://www.fsf.org/licensing/licenses
 #include <stddef.h>
 #include <string>
 #include <cstring>
+#include <iostream>
 #include <math.h>
 
 #if defined(__CODEGEARC__)
@@ -143,6 +144,7 @@ namespace alglib_impl
 #define AE_USE_CPP_BOOL
 #define AE_USE_CPP_ERROR_HANDLING
 #define AE_USE_CPP_SERIALIZATION
+#include <iostream>
 #endif
 
 /*
@@ -328,6 +330,8 @@ typedef struct ae_dyn_block
     void * volatile ptr;
 } ae_dyn_block;
 
+typedef void(*ae_deallocator)(void*);
+
 /************************************************************************
 frame marker
 ************************************************************************/
@@ -402,8 +406,46 @@ typedef struct ae_state
 } ae_state;
 
 /************************************************************************
-Serializer
+Serializer:
+
+* ae_stream_writer type is a function pointer for stream  writer  method;
+  this pointer is used by X-core for out-of-core serialization  (say,  to
+  serialize ALGLIB structure directly to managed C# stream).
+  
+  This function accepts two parameters: pointer to  ANSI  (7-bit)  string
+  and pointer-sized integer passed to serializer  during  initialization.
+  String being passed is a part of the data stream; aux paramerer may  be
+  arbitrary value intended to be used by actual implementation of  stream
+  writer. String parameter may include spaces and  linefeed  symbols,  it
+  should be written to stream as is.
+  
+  Return value must be zero for success or non-zero for failure.
+  
+* ae_stream_reader type is a function pointer for stream  reader  method;
+  this pointer is used by X-core for out-of-core unserialization (say, to
+  unserialize ALGLIB structure directly from managed C# stream).
+  
+  This function accepts three parameters: pointer-sized integer passed to
+  serializer  during  initialization; number  of  symbols  to  read  from
+  stream; pointer to buffer used to store next  token  read  from  stream
+  (ANSI encoding is used, buffer is large enough to store all symbols and
+  trailing zero symbol).
+  
+  Number of symbols to read is always positive.
+  
+  After being called by X-core, this function must:
+  * skip all space and linefeed characters from the current  position  at
+    the stream and until first non-space non-linefeed character is found
+  * read exactly cnt symbols  from  stream  to  buffer;  check  that  all
+    symbols being read are non-space non-linefeed ones
+  * append trailing zero symbol to buffer
+  * return value must be zero on success, non-zero if  even  one  of  the
+    conditions above fails. When reader returns non-zero value,  contents
+    of buf is not used.
 ************************************************************************/
+typedef char(*ae_stream_writer)(const char *p_string, ae_int_t aux);
+typedef char(*ae_stream_reader)(ae_int_t aux, ae_int_t cnt, char *p_buf);
+
 typedef struct
 {
     ae_int_t mode;
@@ -415,11 +457,13 @@ typedef struct
 #ifdef AE_USE_CPP_SERIALIZATION
     std::string     *out_cppstr;
 #endif
-    char            *out_str;
-    const char      *in_str;
+    char            *out_str; /* pointer to the current position at the output buffer; advanced with each write operation */
+    const char      *in_str;  /* pointer to the current position at the input  buffer; advanced with each read  operation */
+    ae_int_t         stream_aux;
+    ae_stream_writer stream_writer;
+    ae_stream_reader stream_reader;
 } ae_serializer;
 
-typedef void(*ae_deallocator)(void*);
 
 typedef struct ae_vector
 {
@@ -705,9 +749,13 @@ ae_int_t ae_serializer_get_alloc_size(ae_serializer *serializer);
 #ifdef AE_USE_CPP_SERIALIZATION
 void ae_serializer_sstart_str(ae_serializer *serializer, std::string *buf);
 void ae_serializer_ustart_str(ae_serializer *serializer, const std::string *buf);
+void ae_serializer_sstart_stream(ae_serializer *serializer, std::ostream *stream);
+void ae_serializer_ustart_stream(ae_serializer *serializer, const std::istream *stream);
 #endif
 void ae_serializer_sstart_str(ae_serializer *serializer, char *buf);
 void ae_serializer_ustart_str(ae_serializer *serializer, const char *buf);
+void ae_serializer_sstart_stream(ae_serializer *serializer, ae_stream_writer writer, ae_int_t aux);
+void ae_serializer_ustart_stream(ae_serializer *serializer, ae_stream_reader reader, ae_int_t aux);
 
 void ae_serializer_serialize_bool(ae_serializer *serializer, ae_bool v, ae_state *state);
 void ae_serializer_serialize_int(ae_serializer *serializer, ae_int_t v, ae_state *state);
@@ -716,7 +764,7 @@ void ae_serializer_unserialize_bool(ae_serializer *serializer, ae_bool *v, ae_st
 void ae_serializer_unserialize_int(ae_serializer *serializer, ae_int_t *v, ae_state *state);
 void ae_serializer_unserialize_double(ae_serializer *serializer, double *v, ae_state *state);
 
-void ae_serializer_stop(ae_serializer *serializer);
+void ae_serializer_stop(ae_serializer *serializer, ae_state *state);
 
 /************************************************************************
 Service functions
@@ -934,7 +982,7 @@ public:
     ap_error();
     ap_error(const char *s);
     static void make_assertion(bool bClause);
-    static void make_assertion(bool bClause, const char *msg);
+    static void make_assertion(bool bClause, const char *p_msg);
 private:
 };
 
@@ -1361,6 +1409,49 @@ public:
     std::string tostring(int dps) const;
 };
 
+/********************************************************************
+CSV operations: reading CSV file to real matrix.
+
+This function reads CSV  file  and  stores  its  contents  to  double
+precision 2D array. Format of the data file must conform to RFC  4180
+specification, with additional notes:
+* file size should be less than 2GB
+* ASCI encoding, UTF-8 without BOM (in header names) are supported
+* any character (comma/tab/space) may be used as field separator,  as
+  long as it is distinct from one used for decimal point
+* multiple subsequent field separators (say, two  spaces) are treated
+  as MULTIPLE separators, not one big separator
+* both comma and full stop may be used as decimal point. Parser  will
+  automatically determine specific character being used.  Both  fixed
+  and exponential number formats are  allowed.   Thousand  separators
+  are NOT allowed.
+* line may end with \n (Unix style) or \r\n (Windows  style),  parser
+  will automatically adapt to chosen convention
+* escaped fields (ones in double quotes) are not supported
+
+INPUT PARAMETERS:
+    filename        relative/absolute path
+    separator       character used to separate fields.  May  be  ' ',
+                    ',', '\t'. Other separators are possible too.
+    flags           several values combined with bitwise OR:
+                    * alglib::CSV_SKIP_HEADERS -  if present, first row
+                      contains headers  and  will  be  skipped.   Its
+                      contents is used to determine fields count, and
+                      that's all.
+                    If no flags are specified, default value 0x0  (or
+                    alglib::CSV_DEFAULT, which is same) should be used.
+                    
+OUTPUT PARAMETERS:
+    out             2D matrix, CSV file parsed with atof()
+    
+HANDLING OF SPECIAL CASES:
+* file does not exist - alglib::ap_error exception is thrown
+* empty file - empty array is returned (no exception)
+* skip_first_row=true, only one row in file - empty array is returned
+* field contents is not recognized by atof() - field value is replaced
+  by 0.0
+********************************************************************/
+void read_csv(const char *filename, char separator, int flags, alglib::real_2d_array &out);
 
 
 /********************************************************************
@@ -1411,6 +1502,8 @@ extern const double fp_nan;
 extern const double fp_posinf;
 extern const double fp_neginf;
 extern const ae_int_t endianness;
+static const int CSV_DEFAULT = 0x0;
+static const int CSV_SKIP_HEADERS = 0x1;
 
 int sign(double x);
 double randomreal();

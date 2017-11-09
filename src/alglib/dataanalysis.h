@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -22,8 +22,8 @@ http://www.fsf.org/licensing/licenses
 #include "ap.h"
 #include "alglibinternal.h"
 #include "linalg.h"
-#include "statistics.h"
 #include "alglibmisc.h"
+#include "statistics.h"
 #include "specialfunctions.h"
 #include "solvers.h"
 #include "optimization.h"
@@ -43,87 +43,6 @@ typedef struct
     double avgerror;
     double avgrelerror;
 } cvreport;
-typedef struct
-{
-    ae_int_t npoints;
-    ae_int_t nfeatures;
-    ae_int_t disttype;
-    ae_matrix xy;
-    ae_matrix d;
-    ae_int_t ahcalgo;
-    ae_int_t kmeansrestarts;
-    ae_int_t kmeansmaxits;
-} clusterizerstate;
-typedef struct
-{
-    ae_int_t npoints;
-    ae_vector p;
-    ae_matrix z;
-    ae_matrix pz;
-    ae_matrix pm;
-    ae_vector mergedist;
-} ahcreport;
-typedef struct
-{
-    ae_int_t npoints;
-    ae_int_t nfeatures;
-    ae_int_t terminationtype;
-    ae_int_t k;
-    ae_matrix c;
-    ae_vector cidx;
-} kmeansreport;
-typedef struct
-{
-    ae_int_t nvars;
-    ae_int_t nclasses;
-    ae_int_t ntrees;
-    ae_int_t bufsize;
-    ae_vector trees;
-} decisionforest;
-typedef struct
-{
-    double relclserror;
-    double avgce;
-    double rmserror;
-    double avgerror;
-    double avgrelerror;
-    double oobrelclserror;
-    double oobavgce;
-    double oobrmserror;
-    double oobavgerror;
-    double oobavgrelerror;
-} dfreport;
-typedef struct
-{
-    ae_vector treebuf;
-    ae_vector idxbuf;
-    ae_vector tmpbufr;
-    ae_vector tmpbufr2;
-    ae_vector tmpbufi;
-    ae_vector classibuf;
-    ae_vector sortrbuf;
-    ae_vector sortrbuf2;
-    ae_vector sortibuf;
-    ae_vector varpool;
-    ae_vector evsbin;
-    ae_vector evssplits;
-} dfinternalbuffers;
-typedef struct
-{
-    ae_vector w;
-} linearmodel;
-typedef struct
-{
-    ae_matrix c;
-    double rmserror;
-    double avgerror;
-    double avgrelerror;
-    double cvrmserror;
-    double cvavgerror;
-    double cvavgrelerror;
-    ae_int_t ncvdefects;
-    ae_vector cvdefects;
-} lrreport;
 typedef struct
 {
     double relclserror;
@@ -166,6 +85,22 @@ typedef struct
     ae_vector dummyidx;
     ae_shared_pool dummypool;
 } multilayerperceptron;
+typedef struct
+{
+    ae_vector w;
+} linearmodel;
+typedef struct
+{
+    ae_matrix c;
+    double rmserror;
+    double avgerror;
+    double avgrelerror;
+    double cvrmserror;
+    double cvavgerror;
+    double cvavgrelerror;
+    ae_int_t ncvdefects;
+    ae_vector cvdefects;
+} lrreport;
 typedef struct
 {
     ae_vector w;
@@ -326,6 +261,91 @@ typedef struct
     ae_int_t ngrad;
     ae_shared_pool trnpool;
 } mlpparallelizationcv;
+typedef struct
+{
+    ae_matrix ct;
+    ae_matrix ctbest;
+    ae_vector xycbest;
+    ae_vector xycprev;
+    ae_vector d2;
+    ae_vector csizes;
+    apbuffers initbuf;
+    ae_shared_pool updatepool;
+} kmeansbuffers;
+typedef struct
+{
+    ae_int_t npoints;
+    ae_int_t nfeatures;
+    ae_int_t disttype;
+    ae_matrix xy;
+    ae_matrix d;
+    ae_int_t ahcalgo;
+    ae_int_t kmeansrestarts;
+    ae_int_t kmeansmaxits;
+    ae_int_t kmeansinitalgo;
+    ae_bool kmeansdbgnoits;
+    ae_int_t seed;
+    ae_matrix tmpd;
+    apbuffers distbuf;
+    kmeansbuffers kmeanstmp;
+} clusterizerstate;
+typedef struct
+{
+    ae_int_t terminationtype;
+    ae_int_t npoints;
+    ae_vector p;
+    ae_matrix z;
+    ae_matrix pz;
+    ae_matrix pm;
+    ae_vector mergedist;
+} ahcreport;
+typedef struct
+{
+    ae_int_t npoints;
+    ae_int_t nfeatures;
+    ae_int_t terminationtype;
+    ae_int_t iterationscount;
+    double energy;
+    ae_int_t k;
+    ae_matrix c;
+    ae_vector cidx;
+} kmeansreport;
+typedef struct
+{
+    ae_int_t nvars;
+    ae_int_t nclasses;
+    ae_int_t ntrees;
+    ae_int_t bufsize;
+    ae_vector trees;
+} decisionforest;
+typedef struct
+{
+    double relclserror;
+    double avgce;
+    double rmserror;
+    double avgerror;
+    double avgrelerror;
+    double oobrelclserror;
+    double oobavgce;
+    double oobrmserror;
+    double oobavgerror;
+    double oobavgrelerror;
+} dfreport;
+typedef struct
+{
+    ae_vector treebuf;
+    ae_vector idxbuf;
+    ae_vector tmpbufr;
+    ae_vector tmpbufr2;
+    ae_vector tmpbufi;
+    ae_vector classibuf;
+    ae_vector sortrbuf;
+    ae_vector sortrbuf2;
+    ae_vector sortibuf;
+    ae_vector varpool;
+    ae_vector evsbin;
+    ae_vector evssplits;
+} dfinternalbuffers;
 
 }
 
@@ -339,275 +359,75 @@ namespace alglib
 
 
 
-/*************************************************************************
-This structure is a clusterization engine.
-
-You should not try to access its fields directly.
-Use ALGLIB functions in order to work with this object.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-class _clusterizerstate_owner
-{
-public:
-    _clusterizerstate_owner();
-    _clusterizerstate_owner(const _clusterizerstate_owner &rhs);
-    _clusterizerstate_owner& operator=(const _clusterizerstate_owner &rhs);
-    virtual ~_clusterizerstate_owner();
-    alglib_impl::clusterizerstate* c_ptr();
-    alglib_impl::clusterizerstate* c_ptr() const;
-protected:
-    alglib_impl::clusterizerstate *p_struct;
-};
-class clusterizerstate : public _clusterizerstate_owner
-{
-public:
-    clusterizerstate();
-    clusterizerstate(const clusterizerstate &rhs);
-    clusterizerstate& operator=(const clusterizerstate &rhs);
-    virtual ~clusterizerstate();
-
-};
 
 
 /*************************************************************************
-This structure  is used to store results of the agglomerative hierarchical
-clustering (AHC).
+Model's errors:
+    * RelCLSError   -   fraction of misclassified cases.
+    * AvgCE         -   acerage cross-entropy
+    * RMSError      -   root-mean-square error
+    * AvgError      -   average error
+    * AvgRelError   -   average relative error
 
-Following information is returned:
+NOTE 1: RelCLSError/AvgCE are zero on regression problems.
 
-* NPoints contains number of points in the original dataset
-
-* Z contains information about merges performed  (see below).  Z  contains
-  indexes from the original (unsorted) dataset and it can be used when you
-  need to know what points were merged. However, it is not convenient when
-  you want to build a dendrograd (see below).
-
-* if  you  want  to  build  dendrogram, you  can use Z, but it is not good
-  option, because Z contains  indexes from  unsorted  dataset.  Dendrogram
-  built from such dataset is likely to have intersections. So, you have to
-  reorder you points before building dendrogram.
-  Permutation which reorders point is returned in P. Another representation
-  of  merges,  which  is  more  convenient for dendorgram construction, is
-  returned in PM.
-
-* more information on format of Z, P and PM can be found below and in the
-  examples from ALGLIB Reference Manual.
-
-FORMAL DESCRIPTION OF FIELDS:
-    NPoints         number of points
-    Z               array[NPoints-1,2],  contains   indexes   of  clusters
-                    linked in pairs to  form  clustering  tree.  I-th  row
-                    corresponds to I-th merge:
-                    * Z[I,0] - index of the first cluster to merge
-                    * Z[I,1] - index of the second cluster to merge
-                    * Z[I,0]<Z[I,1]
-                    * clusters are  numbered  from 0 to 2*NPoints-2,  with
-                      indexes from 0 to NPoints-1 corresponding to  points
-                      of the original dataset, and indexes from NPoints to
-                      2*NPoints-2  correspond  to  clusters  generated  by
-                      subsequent  merges  (I-th  row  of Z creates cluster
-                      with index NPoints+I).
-
-                    IMPORTANT: indexes in Z[] are indexes in the ORIGINAL,
-                    unsorted dataset. In addition to  Z algorithm  outputs
-                    permutation which rearranges points in such  way  that
-                    subsequent merges are  performed  on  adjacent  points
-                    (such order is needed if you want to build dendrogram).
-                    However,  indexes  in  Z  are  related  to   original,
-                    unrearranged sequence of points.
-
-    P               array[NPoints], permutation which reorders points  for
-                    dendrogram  construction.  P[i] contains  index of the
-                    position  where  we  should  move  I-th  point  of the
-                    original dataset in order to apply merges PZ/PM.
-
-    PZ              same as Z, but for permutation of points given  by  P.
-                    The  only  thing  which  changed  are  indexes  of the
-                    original points; indexes of clusters remained same.
-
-    MergeDist       array[NPoints-1], contains distances between  clusters
-                    being merged (MergeDist[i] correspond to merge  stored
-                    in Z[i,...]).
-
-    PM              array[NPoints-1,6], another representation of  merges,
-                    which is suited for dendrogram construction. It  deals
-                    with rearranged points (permutation P is applied)  and
-                    represents merges in a form which different  from  one
-                    used by Z.
-                    For each I from 0 to NPoints-2, I-th row of PM represents
-                    merge performed on two clusters C0 and C1. Here:
-                    * C0 contains points with indexes PM[I,0]...PM[I,1]
-                    * C1 contains points with indexes PM[I,2]...PM[I,3]
-                    * indexes stored in PM are given for dataset sorted
-                      according to permutation P
-                    * PM[I,1]=PM[I,2]-1 (only adjacent clusters are merged)
-                    * PM[I,0]<=PM[I,1], PM[I,2]<=PM[I,3], i.e. both
-                      clusters contain at least one point
-                    * heights of "subdendrograms" corresponding  to  C0/C1
-                      are stored in PM[I,4]  and  PM[I,5].  Subdendrograms
-                      corresponding   to   single-point   clusters    have
-                      height=0. Dendrogram of the merge result has  height
-                      H=max(H0,H1)+1.
-
-NOTE: there is one-to-one correspondence between merges described by Z and
-      PM. I-th row of Z describes same merge of clusters as I-th row of PM,
-      with "left" cluster from Z corresponding to the "left" one from PM.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
+NOTE 2: on classification problems  RMSError/AvgError/AvgRelError  contain
+        errors in prediction of posterior probabilities
 *************************************************************************/
-class _ahcreport_owner
+class _modelerrors_owner
 {
 public:
-    _ahcreport_owner();
-    _ahcreport_owner(const _ahcreport_owner &rhs);
-    _ahcreport_owner& operator=(const _ahcreport_owner &rhs);
-    virtual ~_ahcreport_owner();
-    alglib_impl::ahcreport* c_ptr();
-    alglib_impl::ahcreport* c_ptr() const;
+    _modelerrors_owner();
+    _modelerrors_owner(const _modelerrors_owner &rhs);
+    _modelerrors_owner& operator=(const _modelerrors_owner &rhs);
+    virtual ~_modelerrors_owner();
+    alglib_impl::modelerrors* c_ptr();
+    alglib_impl::modelerrors* c_ptr() const;
 protected:
-    alglib_impl::ahcreport *p_struct;
+    alglib_impl::modelerrors *p_struct;
 };
-class ahcreport : public _ahcreport_owner
+class modelerrors : public _modelerrors_owner
 {
 public:
-    ahcreport();
-    ahcreport(const ahcreport &rhs);
-    ahcreport& operator=(const ahcreport &rhs);
-    virtual ~ahcreport();
-    ae_int_t &npoints;
-    integer_1d_array p;
-    integer_2d_array z;
-    integer_2d_array pz;
-    integer_2d_array pm;
-    real_1d_array mergedist;
-
-};
-
-
-/*************************************************************************
-This  structure   is  used  to  store  results of the k-means++ clustering
-algorithm.
-
-Following information is always returned:
-* NPoints contains number of points in the original dataset
-* TerminationType contains completion code, negative on failure, positive
-  on success
-* K contains number of clusters
-
-For positive TerminationType we return:
-* NFeatures contains number of variables in the original dataset
-* C, which contains centers found by algorithm
-* CIdx, which maps points of the original dataset to clusters
-
-FORMAL DESCRIPTION OF FIELDS:
-    NPoints         number of points, >=0
-    NFeatures       number of variables, >=1
-    TerminationType completion code:
-                    * -5 if  distance  type  is  anything  different  from
-                         Euclidean metric
-                    * -3 for degenerate dataset: a) less  than  K  distinct
-                         points, b) K=0 for non-empty dataset.
-                    * +1 for successful completion
-    K               number of clusters
-    C               array[K,NFeatures], rows of the array store centers
-    CIdx            array[NPoints], which contains cluster indexes
-
-  -- ALGLIB --
-     Copyright 27.11.2012 by Bochkanov Sergey
-*************************************************************************/
-class _kmeansreport_owner
-{
-public:
-    _kmeansreport_owner();
-    _kmeansreport_owner(const _kmeansreport_owner &rhs);
-    _kmeansreport_owner& operator=(const _kmeansreport_owner &rhs);
-    virtual ~_kmeansreport_owner();
-    alglib_impl::kmeansreport* c_ptr();
-    alglib_impl::kmeansreport* c_ptr() const;
-protected:
-    alglib_impl::kmeansreport *p_struct;
-};
-class kmeansreport : public _kmeansreport_owner
-{
-public:
-    kmeansreport();
-    kmeansreport(const kmeansreport &rhs);
-    kmeansreport& operator=(const kmeansreport &rhs);
-    virtual ~kmeansreport();
-    ae_int_t &npoints;
-    ae_int_t &nfeatures;
-    ae_int_t &terminationtype;
-    ae_int_t &k;
-    real_2d_array c;
-    integer_1d_array cidx;
-
-};
-
-
-
-/*************************************************************************
-
-*************************************************************************/
-class _decisionforest_owner
-{
-public:
-    _decisionforest_owner();
-    _decisionforest_owner(const _decisionforest_owner &rhs);
-    _decisionforest_owner& operator=(const _decisionforest_owner &rhs);
-    virtual ~_decisionforest_owner();
-    alglib_impl::decisionforest* c_ptr();
-    alglib_impl::decisionforest* c_ptr() const;
-protected:
-    alglib_impl::decisionforest *p_struct;
-};
-class decisionforest : public _decisionforest_owner
-{
-public:
-    decisionforest();
-    decisionforest(const decisionforest &rhs);
-    decisionforest& operator=(const decisionforest &rhs);
-    virtual ~decisionforest();
-
-};
-
-
-/*************************************************************************
-
-*************************************************************************/
-class _dfreport_owner
-{
-public:
-    _dfreport_owner();
-    _dfreport_owner(const _dfreport_owner &rhs);
-    _dfreport_owner& operator=(const _dfreport_owner &rhs);
-    virtual ~_dfreport_owner();
-    alglib_impl::dfreport* c_ptr();
-    alglib_impl::dfreport* c_ptr() const;
-protected:
-    alglib_impl::dfreport *p_struct;
-};
-class dfreport : public _dfreport_owner
-{
-public:
-    dfreport();
-    dfreport(const dfreport &rhs);
-    dfreport& operator=(const dfreport &rhs);
-    virtual ~dfreport();
+    modelerrors();
+    modelerrors(const modelerrors &rhs);
+    modelerrors& operator=(const modelerrors &rhs);
+    virtual ~modelerrors();
     double &relclserror;
     double &avgce;
     double &rmserror;
     double &avgerror;
     double &avgrelerror;
-    double &oobrelclserror;
-    double &oobavgce;
-    double &oobrmserror;
-    double &oobavgerror;
-    double &oobavgrelerror;
 
 };
+
+
+/*************************************************************************
+
+*************************************************************************/
+class _multilayerperceptron_owner
+{
+public:
+    _multilayerperceptron_owner();
+    _multilayerperceptron_owner(const _multilayerperceptron_owner &rhs);
+    _multilayerperceptron_owner& operator=(const _multilayerperceptron_owner &rhs);
+    virtual ~_multilayerperceptron_owner();
+    alglib_impl::multilayerperceptron* c_ptr();
+    alglib_impl::multilayerperceptron* c_ptr() const;
+protected:
+    alglib_impl::multilayerperceptron *p_struct;
+};
+class multilayerperceptron : public _multilayerperceptron_owner
+{
+public:
+    multilayerperceptron();
+    multilayerperceptron(const multilayerperceptron &rhs);
+    multilayerperceptron& operator=(const multilayerperceptron &rhs);
+    virtual ~multilayerperceptron();
+
+};
+
+
 
 /*************************************************************************
 
@@ -684,74 +504,6 @@ public:
 };
 
 
-
-
-
-/*************************************************************************
-Model's errors:
-    * RelCLSError   -   fraction of misclassified cases.
-    * AvgCE         -   acerage cross-entropy
-    * RMSError      -   root-mean-square error
-    * AvgError      -   average error
-    * AvgRelError   -   average relative error
-
-NOTE 1: RelCLSError/AvgCE are zero on regression problems.
-
-NOTE 2: on classification problems  RMSError/AvgError/AvgRelError  contain
-        errors in prediction of posterior probabilities
-*************************************************************************/
-class _modelerrors_owner
-{
-public:
-    _modelerrors_owner();
-    _modelerrors_owner(const _modelerrors_owner &rhs);
-    _modelerrors_owner& operator=(const _modelerrors_owner &rhs);
-    virtual ~_modelerrors_owner();
-    alglib_impl::modelerrors* c_ptr();
-    alglib_impl::modelerrors* c_ptr() const;
-protected:
-    alglib_impl::modelerrors *p_struct;
-};
-class modelerrors : public _modelerrors_owner
-{
-public:
-    modelerrors();
-    modelerrors(const modelerrors &rhs);
-    modelerrors& operator=(const modelerrors &rhs);
-    virtual ~modelerrors();
-    double &relclserror;
-    double &avgce;
-    double &rmserror;
-    double &avgerror;
-    double &avgrelerror;
-
-};
-
-
-/*************************************************************************
-
-*************************************************************************/
-class _multilayerperceptron_owner
-{
-public:
-    _multilayerperceptron_owner();
-    _multilayerperceptron_owner(const _multilayerperceptron_owner &rhs);
-    _multilayerperceptron_owner& operator=(const _multilayerperceptron_owner &rhs);
-    virtual ~_multilayerperceptron_owner();
-    alglib_impl::multilayerperceptron* c_ptr();
-    alglib_impl::multilayerperceptron* c_ptr() const;
-protected:
-    alglib_impl::multilayerperceptron *p_struct;
-};
-class multilayerperceptron : public _multilayerperceptron_owner
-{
-public:
-    multilayerperceptron();
-    multilayerperceptron(const multilayerperceptron &rhs);
-    multilayerperceptron& operator=(const multilayerperceptron &rhs);
-    virtual ~multilayerperceptron();
-
-};
 
 /*************************************************************************
 
@@ -1012,6 +764,426 @@ public:
 };
 
 /*************************************************************************
+This structure is a clusterization engine.
+
+You should not try to access its fields directly.
+Use ALGLIB functions in order to work with this object.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+class _clusterizerstate_owner
+{
+public:
+    _clusterizerstate_owner();
+    _clusterizerstate_owner(const _clusterizerstate_owner &rhs);
+    _clusterizerstate_owner& operator=(const _clusterizerstate_owner &rhs);
+    virtual ~_clusterizerstate_owner();
+    alglib_impl::clusterizerstate* c_ptr();
+    alglib_impl::clusterizerstate* c_ptr() const;
+protected:
+    alglib_impl::clusterizerstate *p_struct;
+};
+class clusterizerstate : public _clusterizerstate_owner
+{
+public:
+    clusterizerstate();
+    clusterizerstate(const clusterizerstate &rhs);
+    clusterizerstate& operator=(const clusterizerstate &rhs);
+    virtual ~clusterizerstate();
+
+};
+
+
+/*************************************************************************
+This structure  is used to store results of the agglomerative hierarchical
+clustering (AHC).
+
+Following information is returned:
+
+* TerminationType - completion code:
+  * 1   for successful completion of algorithm
+  * -5  inappropriate combination of  clustering  algorithm  and  distance
+        function was used. As for now, it  is  possible  only when  Ward's
+        method is called for dataset with non-Euclidean distance function.
+  In case negative completion code is returned,  other  fields  of  report
+  structure are invalid and should not be used.
+
+* NPoints contains number of points in the original dataset
+
+* Z contains information about merges performed  (see below).  Z  contains
+  indexes from the original (unsorted) dataset and it can be used when you
+  need to know what points were merged. However, it is not convenient when
+  you want to build a dendrograd (see below).
+
+* if  you  want  to  build  dendrogram, you  can use Z, but it is not good
+  option, because Z contains  indexes from  unsorted  dataset.  Dendrogram
+  built from such dataset is likely to have intersections. So, you have to
+  reorder you points before building dendrogram.
+  Permutation which reorders point is returned in P. Another representation
+  of  merges,  which  is  more  convenient for dendorgram construction, is
+  returned in PM.
+
+* more information on format of Z, P and PM can be found below and in the
+  examples from ALGLIB Reference Manual.
+
+FORMAL DESCRIPTION OF FIELDS:
+    NPoints         number of points
+    Z               array[NPoints-1,2],  contains   indexes   of  clusters
+                    linked in pairs to  form  clustering  tree.  I-th  row
+                    corresponds to I-th merge:
+                    * Z[I,0] - index of the first cluster to merge
+                    * Z[I,1] - index of the second cluster to merge
+                    * Z[I,0]<Z[I,1]
+                    * clusters are  numbered  from 0 to 2*NPoints-2,  with
+                      indexes from 0 to NPoints-1 corresponding to  points
+                      of the original dataset, and indexes from NPoints to
+                      2*NPoints-2  correspond  to  clusters  generated  by
+                      subsequent  merges  (I-th  row  of Z creates cluster
+                      with index NPoints+I).
+
+                    IMPORTANT: indexes in Z[] are indexes in the ORIGINAL,
+                    unsorted dataset. In addition to  Z algorithm  outputs
+                    permutation which rearranges points in such  way  that
+                    subsequent merges are  performed  on  adjacent  points
+                    (such order is needed if you want to build dendrogram).
+                    However,  indexes  in  Z  are  related  to   original,
+                    unrearranged sequence of points.
+
+    P               array[NPoints], permutation which reorders points  for
+                    dendrogram  construction.  P[i] contains  index of the
+                    position  where  we  should  move  I-th  point  of the
+                    original dataset in order to apply merges PZ/PM.
+
+    PZ              same as Z, but for permutation of points given  by  P.
+                    The  only  thing  which  changed  are  indexes  of the
+                    original points; indexes of clusters remained same.
+
+    MergeDist       array[NPoints-1], contains distances between  clusters
+                    being merged (MergeDist[i] correspond to merge  stored
+                    in Z[i,...]):
+                    * CLINK, SLINK and  average  linkage algorithms report
+                      "raw", unmodified distance metric.
+                    * Ward's   method   reports   weighted   intra-cluster
+                      variance, which is equal to ||Ca-Cb||^2 * Sa*Sb/(Sa+Sb).
+                      Here  A  and  B  are  clusters being merged, Ca is a
+                      center of A, Cb is a center of B, Sa is a size of A,
+                      Sb is a size of B.
+
+    PM              array[NPoints-1,6], another representation of  merges,
+                    which is suited for dendrogram construction. It  deals
+                    with rearranged points (permutation P is applied)  and
+                    represents merges in a form which different  from  one
+                    used by Z.
+                    For each I from 0 to NPoints-2, I-th row of PM represents
+                    merge performed on two clusters C0 and C1. Here:
+                    * C0 contains points with indexes PM[I,0]...PM[I,1]
+                    * C1 contains points with indexes PM[I,2]...PM[I,3]
+                    * indexes stored in PM are given for dataset sorted
+                      according to permutation P
+                    * PM[I,1]=PM[I,2]-1 (only adjacent clusters are merged)
+                    * PM[I,0]<=PM[I,1], PM[I,2]<=PM[I,3], i.e. both
+                      clusters contain at least one point
+                    * heights of "subdendrograms" corresponding  to  C0/C1
+                      are stored in PM[I,4]  and  PM[I,5].  Subdendrograms
+                      corresponding   to   single-point   clusters    have
+                      height=0. Dendrogram of the merge result has  height
+                      H=max(H0,H1)+1.
+
+NOTE: there is one-to-one correspondence between merges described by Z and
+      PM. I-th row of Z describes same merge of clusters as I-th row of PM,
+      with "left" cluster from Z corresponding to the "left" one from PM.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+class _ahcreport_owner
+{
+public:
+    _ahcreport_owner();
+    _ahcreport_owner(const _ahcreport_owner &rhs);
+    _ahcreport_owner& operator=(const _ahcreport_owner &rhs);
+    virtual ~_ahcreport_owner();
+    alglib_impl::ahcreport* c_ptr();
+    alglib_impl::ahcreport* c_ptr() const;
+protected:
+    alglib_impl::ahcreport *p_struct;
+};
+class ahcreport : public _ahcreport_owner
+{
+public:
+    ahcreport();
+    ahcreport(const ahcreport &rhs);
+    ahcreport& operator=(const ahcreport &rhs);
+    virtual ~ahcreport();
+    ae_int_t &terminationtype;
+    ae_int_t &npoints;
+    integer_1d_array p;
+    integer_2d_array z;
+    integer_2d_array pz;
+    integer_2d_array pm;
+    real_1d_array mergedist;
+
+};
+
+
+/*************************************************************************
+This  structure   is  used  to  store  results of the  k-means  clustering
+algorithm.
+
+Following information is always returned:
+* NPoints contains number of points in the original dataset
+* TerminationType contains completion code, negative on failure, positive
+  on success
+* K contains number of clusters
+
+For positive TerminationType we return:
+* NFeatures contains number of variables in the original dataset
+* C, which contains centers found by algorithm
+* CIdx, which maps points of the original dataset to clusters
+
+FORMAL DESCRIPTION OF FIELDS:
+    NPoints         number of points, >=0
+    NFeatures       number of variables, >=1
+    TerminationType completion code:
+                    * -5 if  distance  type  is  anything  different  from
+                         Euclidean metric
+                    * -3 for degenerate dataset: a) less  than  K  distinct
+                         points, b) K=0 for non-empty dataset.
+                    * +1 for successful completion
+    K               number of clusters
+    C               array[K,NFeatures], rows of the array store centers
+    CIdx            array[NPoints], which contains cluster indexes
+    IterationsCount actual number of iterations performed by clusterizer.
+                    If algorithm performed more than one random restart,
+                    total number of iterations is returned.
+    Energy          merit function, "energy", sum  of  squared  deviations
+                    from cluster centers
+
+  -- ALGLIB --
+     Copyright 27.11.2012 by Bochkanov Sergey
+*************************************************************************/
+class _kmeansreport_owner
+{
+public:
+    _kmeansreport_owner();
+    _kmeansreport_owner(const _kmeansreport_owner &rhs);
+    _kmeansreport_owner& operator=(const _kmeansreport_owner &rhs);
+    virtual ~_kmeansreport_owner();
+    alglib_impl::kmeansreport* c_ptr();
+    alglib_impl::kmeansreport* c_ptr() const;
+protected:
+    alglib_impl::kmeansreport *p_struct;
+};
+class kmeansreport : public _kmeansreport_owner
+{
+public:
+    kmeansreport();
+    kmeansreport(const kmeansreport &rhs);
+    kmeansreport& operator=(const kmeansreport &rhs);
+    virtual ~kmeansreport();
+    ae_int_t &npoints;
+    ae_int_t &nfeatures;
+    ae_int_t &terminationtype;
+    ae_int_t &iterationscount;
+    double &energy;
+    ae_int_t &k;
+    real_2d_array c;
+    integer_1d_array cidx;
+
+};
+
+/*************************************************************************
+
+*************************************************************************/
+class _decisionforest_owner
+{
+public:
+    _decisionforest_owner();
+    _decisionforest_owner(const _decisionforest_owner &rhs);
+    _decisionforest_owner& operator=(const _decisionforest_owner &rhs);
+    virtual ~_decisionforest_owner();
+    alglib_impl::decisionforest* c_ptr();
+    alglib_impl::decisionforest* c_ptr() const;
+protected:
+    alglib_impl::decisionforest *p_struct;
+};
+class decisionforest : public _decisionforest_owner
+{
+public:
+    decisionforest();
+    decisionforest(const decisionforest &rhs);
+    decisionforest& operator=(const decisionforest &rhs);
+    virtual ~decisionforest();
+
+};
+
+
+/*************************************************************************
+
+*************************************************************************/
+class _dfreport_owner
+{
+public:
+    _dfreport_owner();
+    _dfreport_owner(const _dfreport_owner &rhs);
+    _dfreport_owner& operator=(const _dfreport_owner &rhs);
+    virtual ~_dfreport_owner();
+    alglib_impl::dfreport* c_ptr();
+    alglib_impl::dfreport* c_ptr() const;
+protected:
+    alglib_impl::dfreport *p_struct;
+};
+class dfreport : public _dfreport_owner
+{
+public:
+    dfreport();
+    dfreport(const dfreport &rhs);
+    dfreport& operator=(const dfreport &rhs);
+    virtual ~dfreport();
+    double &relclserror;
+    double &avgce;
+    double &rmserror;
+    double &avgerror;
+    double &avgrelerror;
+    double &oobrelclserror;
+    double &oobavgce;
+    double &oobrmserror;
+    double &oobavgerror;
+    double &oobavgrelerror;
+
+};
+
+/*************************************************************************
+Principal components analysis
+
+This function builds orthogonal basis  where  first  axis  corresponds  to
+direction with maximum variance, second axis  maximizes  variance  in  the
+subspace orthogonal to first axis and so on.
+
+This function builds FULL basis, i.e. returns N vectors  corresponding  to
+ALL directions, no matter how informative. If you need  just a  few  (say,
+10 or 50) of the most important directions, you may find it faster to  use
+one of the reduced versions:
+* pcatruncatedsubspace() - for subspace iteration based method
+
+It should be noted that, unlike LDA, PCA does not use class labels.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * multithreading support
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Multithreading typically gives sublinear (wrt to cores count) speedup,
+  ! because only some parts of the algorithm can be parallelized.
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    X           -   dataset, array[0..NPoints-1,0..NVars-1].
+                    matrix contains ONLY INDEPENDENT VARIABLES.
+    NPoints     -   dataset size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if SVD subroutine haven't converged
+                    * -1, if wrong parameters has been passed (NPoints<0,
+                          NVars<1)
+                    *  1, if task is solved
+    S2          -   array[0..NVars-1]. variance values corresponding
+                    to basis vectors.
+    V           -   array[0..NVars-1,0..NVars-1]
+                    matrix, whose columns store basis vectors.
+
+  -- ALGLIB --
+     Copyright 25.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void pcabuildbasis(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, real_1d_array &s2, real_2d_array &v);
+void smp_pcabuildbasis(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, real_1d_array &s2, real_2d_array &v);
+
+
+/*************************************************************************
+Principal components analysis
+
+This function performs truncated PCA, i.e. returns just a few most important
+directions.
+
+Internally it uses iterative eigensolver which is very efficient when only
+a minor fraction of full basis is required. Thus, if you need full  basis,
+it is better to use pcabuildbasis() function.
+
+It should be noted that, unlike LDA, PCA does not use class labels.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * multithreading support
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! For a situation  when  you  need  just  a  few  eigenvectors  (~1-10),
+  ! multithreading typically gives sublinear (wrt to cores count) speedup.
+  ! For larger  problems  it  may  give  you  nearly  linear  increase  in
+  ! performance.
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    X           -   dataset, array[0..NPoints-1,0..NVars-1].
+                    matrix contains ONLY INDEPENDENT VARIABLES.
+    NPoints     -   dataset size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NNeeded     -   number of requested directions, in [1,NVars] range;
+                    this function is efficient only for NNeeded<<NVars.
+    Eps         -   desired  precision  of  vectors  returned;  underlying
+                    solver will stop iterations as soon as absolute  error
+                    in corresponding singular values  reduces  to  roughly
+                    eps*MAX(lambda[]), with lambda[] being array of  eigen
+                    values.
+                    Zero value means that  algorithm  performs  number  of
+                    iterations  specified  by  maxits  parameter,  without
+                    paying attention to precision.
+    MaxIts      -   number of iterations performed by  subspace  iteration
+                    method. Zero value means that no  limit  on  iteration
+                    count is placed (eps-based stopping condition is used).
+
+
+OUTPUT PARAMETERS:
+    S2          -   array[NNeeded]. Variance values corresponding
+                    to basis vectors.
+    V           -   array[NVars,NNeeded]
+                    matrix, whose columns store basis vectors.
+
+NOTE: passing eps=0 and maxits=0 results in small eps  being  selected  as
+stopping condition. Exact value of automatically selected eps is  version-
+-dependent.
+
+  -- ALGLIB --
+     Copyright 10.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void pcatruncatedsubspace(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nneeded, const double eps, const ae_int_t maxits, real_1d_array &s2, real_2d_array &v);
+void smp_pcatruncatedsubspace(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nneeded, const double eps, const ae_int_t maxits, real_1d_array &s2, real_2d_array &v);
+
+/*************************************************************************
 Optimal binary classification
 
 Algorithms finds optimal (=with minimal cross-entropy) binary partition.
@@ -1068,1106 +1240,6 @@ Note:
 void dsoptimalsplit2fast(real_1d_array &a, integer_1d_array &c, integer_1d_array &tiesbuf, integer_1d_array &cntbuf, real_1d_array &bufr, integer_1d_array &bufi, const ae_int_t n, const ae_int_t nc, const double alpha, ae_int_t &info, double &threshold, double &rms, double &cvrms);
 
 /*************************************************************************
-This function initializes clusterizer object. Newly initialized object  is
-empty, i.e. it does not contain dataset. You should use it as follows:
-1. creation
-2. dataset is added with ClusterizerSetPoints()
-3. additional parameters are set
-3. clusterization is performed with one of the clustering functions
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizercreate(clusterizerstate &s);
-
-
-/*************************************************************************
-This function adds dataset to the clusterizer structure.
-
-This function overrides all previous calls  of  ClusterizerSetPoints()  or
-ClusterizerSetDistances().
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    XY      -   array[NPoints,NFeatures], dataset
-    NPoints -   number of points, >=0
-    NFeatures-  number of features, >=1
-    DistType-   distance function:
-                *  0    Chebyshev distance  (L-inf norm)
-                *  1    city block distance (L1 norm)
-                *  2    Euclidean distance  (L2 norm)
-                * 10    Pearson correlation:
-                        dist(a,b) = 1-corr(a,b)
-                * 11    Absolute Pearson correlation:
-                        dist(a,b) = 1-|corr(a,b)|
-                * 12    Uncentered Pearson correlation (cosine of the angle):
-                        dist(a,b) = a'*b/(|a|*|b|)
-                * 13    Absolute uncentered Pearson correlation
-                        dist(a,b) = |a'*b|/(|a|*|b|)
-                * 20    Spearman rank correlation:
-                        dist(a,b) = 1-rankcorr(a,b)
-                * 21    Absolute Spearman rank correlation
-                        dist(a,b) = 1-|rankcorr(a,b)|
-
-NOTE 1: different distance functions have different performance penalty:
-        * Euclidean or Pearson correlation distances are the fastest ones
-        * Spearman correlation distance function is a bit slower
-        * city block and Chebyshev distances are order of magnitude slower
-
-        The reason behing difference in performance is that correlation-based
-        distance functions are computed using optimized linear algebra kernels,
-        while Chebyshev and city block distance functions are computed using
-        simple nested loops with two branches at each iteration.
-
-NOTE 2: different clustering algorithms have different limitations:
-        * agglomerative hierarchical clustering algorithms may be used with
-          any kind of distance metric
-        * k-means++ clustering algorithm may be used only  with  Euclidean
-          distance function
-        Thus, list of specific clustering algorithms you may  use  depends
-        on distance function you specify when you set your dataset.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetpoints(const clusterizerstate &s, const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype);
-void clusterizersetpoints(const clusterizerstate &s, const real_2d_array &xy, const ae_int_t disttype);
-
-
-/*************************************************************************
-This function adds dataset given by distance  matrix  to  the  clusterizer
-structure. It is important that dataset is not  given  explicitly  -  only
-distance matrix is given.
-
-This function overrides all previous calls  of  ClusterizerSetPoints()  or
-ClusterizerSetDistances().
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    D       -   array[NPoints,NPoints], distance matrix given by its upper
-                or lower triangle (main diagonal is  ignored  because  its
-                entries are expected to be zero).
-    NPoints -   number of points
-    IsUpper -   whether upper or lower triangle of D is given.
-
-NOTE 1: different clustering algorithms have different limitations:
-        * agglomerative hierarchical clustering algorithms may be used with
-          any kind of distance metric, including one  which  is  given  by
-          distance matrix
-        * k-means++ clustering algorithm may be used only  with  Euclidean
-          distance function and explicitly given points - it  can  not  be
-          used with dataset given by distance matrix
-        Thus, if you call this function, you will be unable to use k-means
-        clustering algorithm to process your problem.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetdistances(const clusterizerstate &s, const real_2d_array &d, const ae_int_t npoints, const bool isupper);
-void clusterizersetdistances(const clusterizerstate &s, const real_2d_array &d, const bool isupper);
-
-
-/*************************************************************************
-This function sets agglomerative hierarchical clustering algorithm
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    Algo    -   algorithm type:
-                * 0     complete linkage (default algorithm)
-                * 1     single linkage
-                * 2     unweighted average linkage
-                * 3     weighted average linkage
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetahcalgo(const clusterizerstate &s, const ae_int_t algo);
-
-
-/*************************************************************************
-This  function  sets k-means++ properties : number of restarts and maximum
-number of iterations per one run.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    Restarts-   restarts count, >=1.
-                k-means++ algorithm performs several restarts and  chooses
-                best set of centers (one with minimum squared distance).
-    MaxIts  -   maximum number of k-means iterations performed during  one
-                run. >=0, zero value means that algorithm performs unlimited
-                number of iterations.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizersetkmeanslimits(const clusterizerstate &s, const ae_int_t restarts, const ae_int_t maxits);
-
-
-/*************************************************************************
-This function performs agglomerative hierarchical clustering
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
-  ! distance matrix calculation  and  clustering  itself. Only first phase
-  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
-  ! threading. Thus, acceleration is significant only for  medium or high-
-  ! dimensional problems.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-
-OUTPUT PARAMETERS:
-    Rep     -   clustering results; see description of AHCReport
-                structure for more information.
-
-NOTE 1: hierarchical clustering algorithms require large amounts of memory.
-        In particular, this implementation needs  sizeof(double)*NPoints^2
-        bytes, which are used to store distance matrix. In  case  we  work
-        with user-supplied matrix, this amount is multiplied by 2 (we have
-        to store original matrix and to work with its copy).
-
-        For example, problem with 10000 points  would require 800M of RAM,
-        even when working in a 1-dimensional space.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerrunahc(const clusterizerstate &s, ahcreport &rep);
-void smp_clusterizerrunahc(const clusterizerstate &s, ahcreport &rep);
-
-
-/*************************************************************************
-This function performs clustering by k-means++ algorithm.
-
-You may change algorithm properties like number of restarts or  iterations
-limit by calling ClusterizerSetKMeansLimits() functions.
-
-INPUT PARAMETERS:
-    S       -   clusterizer state, initialized by ClusterizerCreate()
-    K       -   number of clusters, K>=0.
-                K  can  be  zero only when algorithm is called  for  empty
-                dataset,  in   this   case   completion  code  is  set  to
-                success (+1).
-                If  K=0  and  dataset  size  is  non-zero,  we   can   not
-                meaningfully assign points to some center  (there  are  no
-                centers because K=0) and  return  -3  as  completion  code
-                (failure).
-
-OUTPUT PARAMETERS:
-    Rep     -   clustering results; see description of KMeansReport
-                structure for more information.
-
-NOTE 1: k-means  clustering  can  be  performed  only  for  datasets  with
-        Euclidean  distance  function.  Algorithm  will  return   negative
-        completion code in Rep.TerminationType in case dataset  was  added
-        to clusterizer with DistType other than Euclidean (or dataset  was
-        specified by distance matrix instead of explicitly given points).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerrunkmeans(const clusterizerstate &s, const ae_int_t k, kmeansreport &rep);
-
-
-/*************************************************************************
-This function returns distance matrix for dataset
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
-  ! distance matrix calculation  and  clustering  itself. Only first phase
-  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
-  ! threading. Thus, acceleration is significant only for  medium or high-
-  ! dimensional problems.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY      -   array[NPoints,NFeatures], dataset
-    NPoints -   number of points, >=0
-    NFeatures-  number of features, >=1
-    DistType-   distance function:
-                *  0    Chebyshev distance  (L-inf norm)
-                *  1    city block distance (L1 norm)
-                *  2    Euclidean distance  (L2 norm)
-                * 10    Pearson correlation:
-                        dist(a,b) = 1-corr(a,b)
-                * 11    Absolute Pearson correlation:
-                        dist(a,b) = 1-|corr(a,b)|
-                * 12    Uncentered Pearson correlation (cosine of the angle):
-                        dist(a,b) = a'*b/(|a|*|b|)
-                * 13    Absolute uncentered Pearson correlation
-                        dist(a,b) = |a'*b|/(|a|*|b|)
-                * 20    Spearman rank correlation:
-                        dist(a,b) = 1-rankcorr(a,b)
-                * 21    Absolute Spearman rank correlation
-                        dist(a,b) = 1-|rankcorr(a,b)|
-
-OUTPUT PARAMETERS:
-    D       -   array[NPoints,NPoints], distance matrix
-                (full matrix is returned, with lower and upper triangles)
-
-NOTES: different distance functions have different performance penalty:
-       * Euclidean or Pearson correlation distances are the fastest ones
-       * Spearman correlation distance function is a bit slower
-       * city block and Chebyshev distances are order of magnitude slower
-
-       The reason behing difference in performance is that correlation-based
-       distance functions are computed using optimized linear algebra kernels,
-       while Chebyshev and city block distance functions are computed using
-       simple nested loops with two branches at each iteration.
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizergetdistances(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype, real_2d_array &d);
-void smp_clusterizergetdistances(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype, real_2d_array &d);
-
-
-/*************************************************************************
-This function takes as input clusterization report Rep,  desired  clusters
-count K, and builds top K clusters from hierarchical clusterization  tree.
-It returns assignment of points to clusters (array of cluster indexes).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    K       -   desired number of clusters, 1<=K<=NPoints.
-                K can be zero only when NPoints=0.
-
-OUTPUT PARAMETERS:
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizergetkclusters(const ahcreport &rep, const ae_int_t k, integer_1d_array &cidx, integer_1d_array &cz);
-
-
-/*************************************************************************
-This  function  accepts  AHC  report  Rep,  desired  minimum  intercluster
-distance and returns top clusters from  hierarchical  clusterization  tree
-which are separated by distance R or HIGHER.
-
-It returns assignment of points to clusters (array of cluster indexes).
-
-There is one more function with similar name - ClusterizerSeparatedByCorr,
-which returns clusters with intercluster correlation equal to R  or  LOWER
-(note: higher for distance, lower for correlation).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    R       -   desired minimum intercluster distance, R>=0
-
-OUTPUT PARAMETERS:
-    K       -   number of clusters, 1<=K<=NPoints
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerseparatedbydist(const ahcreport &rep, const double r, ae_int_t &k, integer_1d_array &cidx, integer_1d_array &cz);
-
-
-/*************************************************************************
-This  function  accepts  AHC  report  Rep,  desired  maximum  intercluster
-correlation and returns top clusters from hierarchical clusterization tree
-which are separated by correlation R or LOWER.
-
-It returns assignment of points to clusters (array of cluster indexes).
-
-There is one more function with similar name - ClusterizerSeparatedByDist,
-which returns clusters with intercluster distance equal  to  R  or  HIGHER
-(note: higher for distance, lower for correlation).
-
-INPUT PARAMETERS:
-    Rep     -   report from ClusterizerRunAHC() performed on XY
-    R       -   desired maximum intercluster correlation, -1<=R<=+1
-
-OUTPUT PARAMETERS:
-    K       -   number of clusters, 1<=K<=NPoints
-    CIdx    -   array[NPoints], I-th element contains cluster index  (from
-                0 to K-1) for I-th point of the dataset.
-    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
-                returned by this function to indexes used by  Rep.Z.  J-th
-                cluster returned by this function corresponds to  CZ[J]-th
-                cluster stored in Rep.Z/PZ/PM.
-                It is guaranteed that CZ[I]<CZ[I+1].
-
-NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
-      Although  they  were  obtained  by  manipulation with top K nodes of
-      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
-      function does not return information about hierarchy.  Each  of  the
-      clusters stand on its own.
-
-NOTE: Cluster indexes returned by this function  does  not  correspond  to
-      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
-      representation of the dataset (dendrogram), or you work with  "flat"
-      representation returned by this function.  Each  of  representations
-      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
-      while latter uses [0..K-1]), although  it  is  possible  to  perform
-      conversion from one system to another by means of CZ array, returned
-      by this function, which allows you to convert indexes stored in CIdx
-      to the numeration system used by Rep.Z.
-
-NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
-      it will perform many times faster than  for  K=100.  Its  worst-case
-      performance is O(N*K), although in average case  it  perform  better
-      (up to O(N*log(K))).
-
-  -- ALGLIB --
-     Copyright 10.07.2012 by Bochkanov Sergey
-*************************************************************************/
-void clusterizerseparatedbycorr(const ahcreport &rep, const double r, ae_int_t &k, integer_1d_array &cidx, integer_1d_array &cz);
-
-/*************************************************************************
-k-means++ clusterization.
-Backward compatibility function, we recommend to use CLUSTERING subpackage
-as better replacement.
-
-  -- ALGLIB --
-     Copyright 21.03.2009 by Bochkanov Sergey
-*************************************************************************/
-void kmeansgenerate(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t k, const ae_int_t restarts, ae_int_t &info, real_2d_array &c, integer_1d_array &xyc);
-
-/*************************************************************************
-This function serializes data structure to string.
-
-Important properties of s_out:
-* it contains alphanumeric characters, dots, underscores, minus signs
-* these symbols are grouped into words, which are separated by spaces
-  and Windows-style (CR+LF) newlines
-* although  serializer  uses  spaces and CR+LF as separators, you can 
-  replace any separator character by arbitrary combination of spaces,
-  tabs, Windows or Unix newlines. It allows flexible reformatting  of
-  the  string  in  case you want to include it into text or XML file. 
-  But you should not insert separators into the middle of the "words"
-  nor you should change case of letters.
-* s_out can be freely moved between 32-bit and 64-bit systems, little
-  and big endian machines, and so on. You can serialize structure  on
-  32-bit machine and unserialize it on 64-bit one (or vice versa), or
-  serialize  it  on  SPARC  and  unserialize  on  x86.  You  can also 
-  serialize  it  in  C++ version of ALGLIB and unserialize in C# one, 
-  and vice versa.
-*************************************************************************/
-void dfserialize(decisionforest &obj, std::string &s_out);
-
-
-/*************************************************************************
-This function unserializes data structure from string.
-*************************************************************************/
-void dfunserialize(std::string &s_in, decisionforest &obj);
-
-
-/*************************************************************************
-This subroutine builds random decision forest.
-
-INPUT PARAMETERS:
-    XY          -   training set
-    NPoints     -   training set size, NPoints>=1
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   task type:
-                    * NClasses=1 - regression task with one
-                                   dependent variable
-                    * NClasses>1 - classification task with
-                                   NClasses classes.
-    NTrees      -   number of trees in a forest, NTrees>=1.
-                    recommended values: 50-100.
-    R           -   percent of a training set used to build
-                    individual trees. 0<R<=1.
-                    recommended values: 0.1 <= R <= 0.66.
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed
-                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
-                          or R>1).
-                    *  1, if task has been solved
-    DF          -   model built
-    Rep         -   training report, contains error on a training set
-                    and out-of-bag estimates of generalization error.
-
-  -- ALGLIB --
-     Copyright 19.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfbuildrandomdecisionforest(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, const ae_int_t ntrees, const double r, ae_int_t &info, decisionforest &df, dfreport &rep);
-
-
-/*************************************************************************
-This subroutine builds random decision forest.
-This function gives ability to tune number of variables used when choosing
-best split.
-
-INPUT PARAMETERS:
-    XY          -   training set
-    NPoints     -   training set size, NPoints>=1
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   task type:
-                    * NClasses=1 - regression task with one
-                                   dependent variable
-                    * NClasses>1 - classification task with
-                                   NClasses classes.
-    NTrees      -   number of trees in a forest, NTrees>=1.
-                    recommended values: 50-100.
-    NRndVars    -   number of variables used when choosing best split
-    R           -   percent of a training set used to build
-                    individual trees. 0<R<=1.
-                    recommended values: 0.1 <= R <= 0.66.
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed
-                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
-                          or R>1).
-                    *  1, if task has been solved
-    DF          -   model built
-    Rep         -   training report, contains error on a training set
-                    and out-of-bag estimates of generalization error.
-
-  -- ALGLIB --
-     Copyright 19.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfbuildrandomdecisionforestx1(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, const ae_int_t ntrees, const ae_int_t nrndvars, const double r, ae_int_t &info, decisionforest &df, dfreport &rep);
-
-
-/*************************************************************************
-Procesing
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    X       -   input vector,  array[0..NVars-1].
-
-OUTPUT PARAMETERS:
-    Y       -   result. Regression estimate when solving regression  task,
-                vector of posterior probabilities for classification task.
-
-See also DFProcessI.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-void dfprocess(const decisionforest &df, const real_1d_array &x, real_1d_array &y);
-
-
-/*************************************************************************
-'interactive' variant of DFProcess for languages like Python which support
-constructs like "Y = DFProcessI(DF,X)" and interactive mode of interpreter
-
-This function allocates new array on each call,  so  it  is  significantly
-slower than its 'non-interactive' counterpart, but it is  more  convenient
-when you call it from command line.
-
-  -- ALGLIB --
-     Copyright 28.02.2010 by Bochkanov Sergey
-*************************************************************************/
-void dfprocessi(const decisionforest &df, const real_1d_array &x, real_1d_array &y);
-
-
-/*************************************************************************
-Relative classification error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    percent of incorrectly classified cases.
-    Zero if model solves regression task.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfrelclserror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
-
-
-/*************************************************************************
-Average cross-entropy (in bits per element) on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    CrossEntropy/(NPoints*LN(2)).
-    Zero if model solves regression task.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgce(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
-
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    root mean square error.
-    Its meaning for regression task is obvious. As for
-    classification task, RMS error means error when estimating posterior
-    probabilities.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfrmserror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
-
-
-/*************************************************************************
-Average error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    Its meaning for regression task is obvious. As for
-    classification task, it means average error when estimating posterior
-    probabilities.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgerror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
-
-
-/*************************************************************************
-Average relative error on the test set
-
-INPUT PARAMETERS:
-    DF      -   decision forest model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    Its meaning for regression task is obvious. As for
-    classification task, it means average relative error when estimating
-    posterior probability of belonging to the correct class.
-
-  -- ALGLIB --
-     Copyright 16.02.2009 by Bochkanov Sergey
-*************************************************************************/
-double dfavgrelerror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
-
-/*************************************************************************
-Linear regression
-
-Subroutine builds model:
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1] + A(N)
-
-and model found in ALGLIB format, covariation matrix, training set  errors
-(rms,  average,  average  relative)   and  leave-one-out  cross-validation
-estimate of the generalization error. CV  estimate calculated  using  fast
-algorithm with O(NPoints*NVars) complexity.
-
-When  covariation  matrix  is  calculated  standard deviations of function
-values are assumed to be equal to RMS error on the training set.
-
-INPUT PARAMETERS:
-    XY          -   training set, array [0..NPoints-1,0..NVars]:
-                    * NVars columns - independent variables
-                    * last column - dependent variable
-    NPoints     -   training set size, NPoints>NVars+1
-    NVars       -   number of independent variables
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -255, in case of unknown internal error
-                    * -4, if internal SVD subroutine haven't converged
-                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
-                    *  1, if subroutine successfully finished
-    LM          -   linear model in the ALGLIB format. Use subroutines of
-                    this unit to work with the model.
-    AR          -   additional results
-
-
-  -- ALGLIB --
-     Copyright 02.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuild(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar);
-
-
-/*************************************************************************
-Linear regression
-
-Variant of LRBuild which uses vector of standatd deviations (errors in
-function values).
-
-INPUT PARAMETERS:
-    XY          -   training set, array [0..NPoints-1,0..NVars]:
-                    * NVars columns - independent variables
-                    * last column - dependent variable
-    S           -   standard deviations (errors in function values)
-                    array[0..NPoints-1], S[i]>0.
-    NPoints     -   training set size, NPoints>NVars+1
-    NVars       -   number of independent variables
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -255, in case of unknown internal error
-                    * -4, if internal SVD subroutine haven't converged
-                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
-                    * -2, if S[I]<=0
-                    *  1, if subroutine successfully finished
-    LM          -   linear model in the ALGLIB format. Use subroutines of
-                    this unit to work with the model.
-    AR          -   additional results
-
-
-  -- ALGLIB --
-     Copyright 02.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuilds(const real_2d_array &xy, const real_1d_array &s, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar);
-
-
-/*************************************************************************
-Like LRBuildS, but builds model
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
-
-i.e. with zero constant term.
-
-  -- ALGLIB --
-     Copyright 30.10.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuildzs(const real_2d_array &xy, const real_1d_array &s, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar);
-
-
-/*************************************************************************
-Like LRBuild but builds model
-
-    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
-
-i.e. with zero constant term.
-
-  -- ALGLIB --
-     Copyright 30.10.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrbuildz(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar);
-
-
-/*************************************************************************
-Unpacks coefficients of linear model.
-
-INPUT PARAMETERS:
-    LM          -   linear model in ALGLIB format
-
-OUTPUT PARAMETERS:
-    V           -   coefficients, array[0..NVars]
-                    constant term (intercept) is stored in the V[NVars].
-    NVars       -   number of independent variables (one less than number
-                    of coefficients)
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrunpack(const linearmodel &lm, real_1d_array &v, ae_int_t &nvars);
-
-
-/*************************************************************************
-"Packs" coefficients and creates linear model in ALGLIB format (LRUnpack
-reversed).
-
-INPUT PARAMETERS:
-    V           -   coefficients, array[0..NVars]
-    NVars       -   number of independent variables
-
-OUTPUT PAREMETERS:
-    LM          -   linear model.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-void lrpack(const real_1d_array &v, const ae_int_t nvars, linearmodel &lm);
-
-
-/*************************************************************************
-Procesing
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    X       -   input vector,  array[0..NVars-1].
-
-Result:
-    value of linear model regression estimate
-
-  -- ALGLIB --
-     Copyright 03.09.2008 by Bochkanov Sergey
-*************************************************************************/
-double lrprocess(const linearmodel &lm, const real_1d_array &x);
-
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    root mean square error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lrrmserror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints);
-
-
-/*************************************************************************
-Average error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    average error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lravgerror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints);
-
-
-/*************************************************************************
-RMS error on the test set
-
-INPUT PARAMETERS:
-    LM      -   linear model
-    XY      -   test set
-    NPoints -   test set size
-
-RESULT:
-    average relative error.
-
-  -- ALGLIB --
-     Copyright 30.08.2008 by Bochkanov Sergey
-*************************************************************************/
-double lravgrelerror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints);
-
-/*************************************************************************
-Filters: simple moving averages (unsymmetric).
-
-This filter replaces array by results of SMA(K) filter. SMA(K) is defined
-as filter which averages at most K previous points (previous - not points
-AROUND central point) - or less, in case of the first K-1 points.
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
-                    correctly handled). Window width. K=1 corresponds  to
-                    identity transformation (nothing changes).
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed with SMA(K)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm makes only one pass through array and uses running
-        sum  to speed-up calculation of the averages. Additional measures
-        are taken to ensure that running sum on a long sequence  of  zero
-        elements will be correctly reset to zero even in the presence  of
-        round-off error.
-
-NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
-        averages points after the current one. Only X[i], X[i-1], ... are
-        used when calculating new value of X[i]. We should also note that
-        this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filtersma(real_1d_array &x, const ae_int_t n, const ae_int_t k);
-void filtersma(real_1d_array &x, const ae_int_t k);
-
-
-/*************************************************************************
-Filters: exponential moving averages.
-
-This filter replaces array by results of EMA(alpha) filter. EMA(alpha) is
-defined as filter which replaces X[] by S[]:
-    S[0] = X[0]
-    S[t] = alpha*X[t] + (1-alpha)*S[t-1]
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    alpha       -   0<alpha<=1, smoothing parameter.
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed
-                    with EMA(alpha)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-NOTE 3: technical analytis users quite often work  with  EMA  coefficient
-        expressed in DAYS instead of fractions. If you want to  calculate
-        EMA(N), where N is a number of days, you can use alpha=2/(N+1).
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filterema(real_1d_array &x, const ae_int_t n, const double alpha);
-void filterema(real_1d_array &x, const double alpha);
-
-
-/*************************************************************************
-Filters: linear regression moving averages.
-
-This filter replaces array by results of LRMA(K) filter.
-
-LRMA(K) is defined as filter which, for each data  point,  builds  linear
-regression  model  using  K  prevous  points (point itself is included in
-these K points) and calculates value of this linear model at the point in
-question.
-
-INPUT PARAMETERS:
-    X           -   array[N], array to process. It can be larger than N,
-                    in this case only first N points are processed.
-    N           -   points count, N>=0
-    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
-                    correctly handled). Window width. K=1 corresponds  to
-                    identity transformation (nothing changes).
-
-OUTPUT PARAMETERS:
-    X           -   array, whose first N elements were processed with SMA(K)
-
-NOTE 1: this function uses efficient in-place  algorithm  which  does not
-        allocate temporary arrays.
-
-NOTE 2: this algorithm makes only one pass through array and uses running
-        sum  to speed-up calculation of the averages. Additional measures
-        are taken to ensure that running sum on a long sequence  of  zero
-        elements will be correctly reset to zero even in the presence  of
-        round-off error.
-
-NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
-        averages points after the current one. Only X[i], X[i-1], ... are
-        used when calculating new value of X[i]. We should also note that
-        this algorithm uses BOTH previous points and  current  one,  i.e.
-        new value of X[i] depends on BOTH previous point and X[i] itself.
-
-  -- ALGLIB --
-     Copyright 25.10.2011 by Bochkanov Sergey
-*************************************************************************/
-void filterlrma(real_1d_array &x, const ae_int_t n, const ae_int_t k);
-void filterlrma(real_1d_array &x, const ae_int_t k);
-
-/*************************************************************************
-Multiclass Fisher LDA
-
-Subroutine finds coefficients of linear combination which optimally separates
-training set on classes.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two important  improvements   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multithreading support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
-  !
-  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
-  ! includes calculation of products of large matrices.  Again,  for  best
-  ! efficiency problem must be high-dimensional.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY          -   training set, array[0..NPoints-1,0..NVars].
-                    First NVars columns store values of independent
-                    variables, next column stores number of class (from 0
-                    to NClasses-1) which dataset element belongs to. Fractional
-                    values are rounded to nearest integer.
-    NPoints     -   training set size, NPoints>=0
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   number of classes, NClasses>=2
-
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -4, if internal EVD subroutine hasn't converged
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed (NPoints<0,
-                          NVars<1, NClasses<2)
-                    *  1, if task has been solved
-                    *  2, if there was a multicollinearity in training set,
-                          but task has been solved.
-    W           -   linear combination coefficients, array[0..NVars-1]
-
-  -- ALGLIB --
-     Copyright 31.05.2008 by Bochkanov Sergey
-*************************************************************************/
-void fisherlda(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_1d_array &w);
-
-
-/*************************************************************************
-N-dimensional multiclass Fisher LDA
-
-Subroutine finds coefficients of linear combinations which optimally separates
-training set on classes. It returns N-dimensional basis whose vector are sorted
-by quality of training set separation (in descending order).
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two important  improvements   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multithreading support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
-  !
-  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
-  ! includes calculation of products of large matrices.  Again,  for  best
-  ! efficiency problem must be high-dimensional.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS:
-    XY          -   training set, array[0..NPoints-1,0..NVars].
-                    First NVars columns store values of independent
-                    variables, next column stores number of class (from 0
-                    to NClasses-1) which dataset element belongs to. Fractional
-                    values are rounded to nearest integer.
-    NPoints     -   training set size, NPoints>=0
-    NVars       -   number of independent variables, NVars>=1
-    NClasses    -   number of classes, NClasses>=2
-
-
-OUTPUT PARAMETERS:
-    Info        -   return code:
-                    * -4, if internal EVD subroutine hasn't converged
-                    * -2, if there is a point with class number
-                          outside of [0..NClasses-1].
-                    * -1, if incorrect parameters was passed (NPoints<0,
-                          NVars<1, NClasses<2)
-                    *  1, if task has been solved
-                    *  2, if there was a multicollinearity in training set,
-                          but task has been solved.
-    W           -   basis, array[0..NVars-1,0..NVars-1]
-                    columns of matrix stores basis vectors, sorted by
-                    quality of training set separation (in descending order)
-
-  -- ALGLIB --
-     Copyright 31.05.2008 by Bochkanov Sergey
-*************************************************************************/
-void fisherldan(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_2d_array &w);
-void smp_fisherldan(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_2d_array &w);
-
-/*************************************************************************
 This function serializes data structure to string.
 
 Important properties of s_out:
@@ -2193,7 +1265,29 @@ void mlpserialize(multilayerperceptron &obj, std::string &s_out);
 /*************************************************************************
 This function unserializes data structure from string.
 *************************************************************************/
-void mlpunserialize(std::string &s_in, multilayerperceptron &obj);
+void mlpunserialize(const std::string &s_in, multilayerperceptron &obj);
+
+
+
+
+/*************************************************************************
+This function serializes data structure to C++ stream.
+
+Data stream generated by this function is same as  string  representation
+generated  by  string  version  of  serializer - alphanumeric characters,
+dots, underscores, minus signs, which are grouped into words separated by
+spaces and CR+LF.
+
+We recommend you to read comments on string version of serializer to find
+out more about serialization of AlGLIB objects.
+*************************************************************************/
+void mlpserialize(multilayerperceptron &obj, std::ostream &s_out);
+
+
+/*************************************************************************
+This function unserializes data structure from stream.
+*************************************************************************/
+void mlpunserialize(const std::istream &s_in, multilayerperceptron &obj);
 
 
 /*************************************************************************
@@ -4212,6 +3306,443 @@ double mlperrorsparsesubset(const multilayerperceptron &network, const sparsemat
 double smp_mlperrorsparsesubset(const multilayerperceptron &network, const sparsematrix &xy, const ae_int_t setsize, const integer_1d_array &subset, const ae_int_t subsetsize);
 
 /*************************************************************************
+Multiclass Fisher LDA
+
+Subroutine finds coefficients of linear combination which optimally separates
+training set on classes.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two important  improvements   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multithreading support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
+  ! includes calculation of products of large matrices.  Again,  for  best
+  ! efficiency problem must be high-dimensional.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY          -   training set, array[0..NPoints-1,0..NVars].
+                    First NVars columns store values of independent
+                    variables, next column stores number of class (from 0
+                    to NClasses-1) which dataset element belongs to. Fractional
+                    values are rounded to nearest integer.
+    NPoints     -   training set size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   number of classes, NClasses>=2
+
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if internal EVD subroutine hasn't converged
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed (NPoints<0,
+                          NVars<1, NClasses<2)
+                    *  1, if task has been solved
+                    *  2, if there was a multicollinearity in training set,
+                          but task has been solved.
+    W           -   linear combination coefficients, array[0..NVars-1]
+
+  -- ALGLIB --
+     Copyright 31.05.2008 by Bochkanov Sergey
+*************************************************************************/
+void fisherlda(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_1d_array &w);
+
+
+/*************************************************************************
+N-dimensional multiclass Fisher LDA
+
+Subroutine finds coefficients of linear combinations which optimally separates
+training set on classes. It returns N-dimensional basis whose vector are sorted
+by quality of training set separation (in descending order).
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two important  improvements   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multithreading support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! Multithreading is used to  accelerate  initial  phase  of  LDA,  which
+  ! includes calculation of products of large matrices.  Again,  for  best
+  ! efficiency problem must be high-dimensional.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY          -   training set, array[0..NPoints-1,0..NVars].
+                    First NVars columns store values of independent
+                    variables, next column stores number of class (from 0
+                    to NClasses-1) which dataset element belongs to. Fractional
+                    values are rounded to nearest integer.
+    NPoints     -   training set size, NPoints>=0
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   number of classes, NClasses>=2
+
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -4, if internal EVD subroutine hasn't converged
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed (NPoints<0,
+                          NVars<1, NClasses<2)
+                    *  1, if task has been solved
+                    *  2, if there was a multicollinearity in training set,
+                          but task has been solved.
+    W           -   basis, array[0..NVars-1,0..NVars-1]
+                    columns of matrix stores basis vectors, sorted by
+                    quality of training set separation (in descending order)
+
+  -- ALGLIB --
+     Copyright 31.05.2008 by Bochkanov Sergey
+*************************************************************************/
+void fisherldan(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_2d_array &w);
+void smp_fisherldan(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, ae_int_t &info, real_2d_array &w);
+
+/*************************************************************************
+Linear regression
+
+Subroutine builds model:
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1] + A(N)
+
+and model found in ALGLIB format, covariation matrix, training set  errors
+(rms,  average,  average  relative)   and  leave-one-out  cross-validation
+estimate of the generalization error. CV  estimate calculated  using  fast
+algorithm with O(NPoints*NVars) complexity.
+
+When  covariation  matrix  is  calculated  standard deviations of function
+values are assumed to be equal to RMS error on the training set.
+
+INPUT PARAMETERS:
+    XY          -   training set, array [0..NPoints-1,0..NVars]:
+                    * NVars columns - independent variables
+                    * last column - dependent variable
+    NPoints     -   training set size, NPoints>NVars+1
+    NVars       -   number of independent variables
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -255, in case of unknown internal error
+                    * -4, if internal SVD subroutine haven't converged
+                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
+                    *  1, if subroutine successfully finished
+    LM          -   linear model in the ALGLIB format. Use subroutines of
+                    this unit to work with the model.
+    AR          -   additional results
+
+
+  -- ALGLIB --
+     Copyright 02.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuild(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar);
+
+
+/*************************************************************************
+Linear regression
+
+Variant of LRBuild which uses vector of standatd deviations (errors in
+function values).
+
+INPUT PARAMETERS:
+    XY          -   training set, array [0..NPoints-1,0..NVars]:
+                    * NVars columns - independent variables
+                    * last column - dependent variable
+    S           -   standard deviations (errors in function values)
+                    array[0..NPoints-1], S[i]>0.
+    NPoints     -   training set size, NPoints>NVars+1
+    NVars       -   number of independent variables
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -255, in case of unknown internal error
+                    * -4, if internal SVD subroutine haven't converged
+                    * -1, if incorrect parameters was passed (NPoints<NVars+2, NVars<1).
+                    * -2, if S[I]<=0
+                    *  1, if subroutine successfully finished
+    LM          -   linear model in the ALGLIB format. Use subroutines of
+                    this unit to work with the model.
+    AR          -   additional results
+
+
+  -- ALGLIB --
+     Copyright 02.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuilds(const real_2d_array &xy, const real_1d_array &s, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar);
+
+
+/*************************************************************************
+Like LRBuildS, but builds model
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
+
+i.e. with zero constant term.
+
+  -- ALGLIB --
+     Copyright 30.10.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuildzs(const real_2d_array &xy, const real_1d_array &s, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar);
+
+
+/*************************************************************************
+Like LRBuild but builds model
+
+    Y = A(0)*X[0] + ... + A(N-1)*X[N-1]
+
+i.e. with zero constant term.
+
+  -- ALGLIB --
+     Copyright 30.10.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrbuildz(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, linearmodel &lm, lrreport &ar);
+
+
+/*************************************************************************
+Unpacks coefficients of linear model.
+
+INPUT PARAMETERS:
+    LM          -   linear model in ALGLIB format
+
+OUTPUT PARAMETERS:
+    V           -   coefficients, array[0..NVars]
+                    constant term (intercept) is stored in the V[NVars].
+    NVars       -   number of independent variables (one less than number
+                    of coefficients)
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrunpack(const linearmodel &lm, real_1d_array &v, ae_int_t &nvars);
+
+
+/*************************************************************************
+"Packs" coefficients and creates linear model in ALGLIB format (LRUnpack
+reversed).
+
+INPUT PARAMETERS:
+    V           -   coefficients, array[0..NVars]
+    NVars       -   number of independent variables
+
+OUTPUT PAREMETERS:
+    LM          -   linear model.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+void lrpack(const real_1d_array &v, const ae_int_t nvars, linearmodel &lm);
+
+
+/*************************************************************************
+Procesing
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    X       -   input vector,  array[0..NVars-1].
+
+Result:
+    value of linear model regression estimate
+
+  -- ALGLIB --
+     Copyright 03.09.2008 by Bochkanov Sergey
+*************************************************************************/
+double lrprocess(const linearmodel &lm, const real_1d_array &x);
+
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    root mean square error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lrrmserror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints);
+
+
+/*************************************************************************
+Average error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    average error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lravgerror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints);
+
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    LM      -   linear model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    average relative error.
+
+  -- ALGLIB --
+     Copyright 30.08.2008 by Bochkanov Sergey
+*************************************************************************/
+double lravgrelerror(const linearmodel &lm, const real_2d_array &xy, const ae_int_t npoints);
+
+/*************************************************************************
+Filters: simple moving averages (unsymmetric).
+
+This filter replaces array by results of SMA(K) filter. SMA(K) is defined
+as filter which averages at most K previous points (previous - not points
+AROUND central point) - or less, in case of the first K-1 points.
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
+                    correctly handled). Window width. K=1 corresponds  to
+                    identity transformation (nothing changes).
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed with SMA(K)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm makes only one pass through array and uses running
+        sum  to speed-up calculation of the averages. Additional measures
+        are taken to ensure that running sum on a long sequence  of  zero
+        elements will be correctly reset to zero even in the presence  of
+        round-off error.
+
+NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
+        averages points after the current one. Only X[i], X[i-1], ... are
+        used when calculating new value of X[i]. We should also note that
+        this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filtersma(real_1d_array &x, const ae_int_t n, const ae_int_t k);
+void filtersma(real_1d_array &x, const ae_int_t k);
+
+
+/*************************************************************************
+Filters: exponential moving averages.
+
+This filter replaces array by results of EMA(alpha) filter. EMA(alpha) is
+defined as filter which replaces X[] by S[]:
+    S[0] = X[0]
+    S[t] = alpha*X[t] + (1-alpha)*S[t-1]
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    alpha       -   0<alpha<=1, smoothing parameter.
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed
+                    with EMA(alpha)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+NOTE 3: technical analytis users quite often work  with  EMA  coefficient
+        expressed in DAYS instead of fractions. If you want to  calculate
+        EMA(N), where N is a number of days, you can use alpha=2/(N+1).
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filterema(real_1d_array &x, const ae_int_t n, const double alpha);
+void filterema(real_1d_array &x, const double alpha);
+
+
+/*************************************************************************
+Filters: linear regression moving averages.
+
+This filter replaces array by results of LRMA(K) filter.
+
+LRMA(K) is defined as filter which, for each data  point,  builds  linear
+regression  model  using  K  prevous  points (point itself is included in
+these K points) and calculates value of this linear model at the point in
+question.
+
+INPUT PARAMETERS:
+    X           -   array[N], array to process. It can be larger than N,
+                    in this case only first N points are processed.
+    N           -   points count, N>=0
+    K           -   K>=1 (K can be larger than N ,  such  cases  will  be
+                    correctly handled). Window width. K=1 corresponds  to
+                    identity transformation (nothing changes).
+
+OUTPUT PARAMETERS:
+    X           -   array, whose first N elements were processed with SMA(K)
+
+NOTE 1: this function uses efficient in-place  algorithm  which  does not
+        allocate temporary arrays.
+
+NOTE 2: this algorithm makes only one pass through array and uses running
+        sum  to speed-up calculation of the averages. Additional measures
+        are taken to ensure that running sum on a long sequence  of  zero
+        elements will be correctly reset to zero even in the presence  of
+        round-off error.
+
+NOTE 3: this  is  unsymmetric version of the algorithm,  which  does  NOT
+        averages points after the current one. Only X[i], X[i-1], ... are
+        used when calculating new value of X[i]. We should also note that
+        this algorithm uses BOTH previous points and  current  one,  i.e.
+        new value of X[i] depends on BOTH previous point and X[i] itself.
+
+  -- ALGLIB --
+     Copyright 25.10.2011 by Bochkanov Sergey
+*************************************************************************/
+void filterlrma(real_1d_array &x, const ae_int_t n, const ae_int_t k);
+void filterlrma(real_1d_array &x, const ae_int_t k);
+
+/*************************************************************************
 This subroutine trains logit model.
 
 INPUT PARAMETERS:
@@ -5058,7 +4589,29 @@ void mlpeserialize(mlpensemble &obj, std::string &s_out);
 /*************************************************************************
 This function unserializes data structure from string.
 *************************************************************************/
-void mlpeunserialize(std::string &s_in, mlpensemble &obj);
+void mlpeunserialize(const std::string &s_in, mlpensemble &obj);
+
+
+
+
+/*************************************************************************
+This function serializes data structure to C++ stream.
+
+Data stream generated by this function is same as  string  representation
+generated  by  string  version  of  serializer - alphanumeric characters,
+dots, underscores, minus signs, which are grouped into words separated by
+spaces and CR+LF.
+
+We recommend you to read comments on string version of serializer to find
+out more about serialization of AlGLIB objects.
+*************************************************************************/
+void mlpeserialize(mlpensemble &obj, std::ostream &s_out);
+
+
+/*************************************************************************
+This function unserializes data structure from stream.
+*************************************************************************/
+void mlpeunserialize(const std::istream &s_in, mlpensemble &obj);
 
 
 /*************************************************************************
@@ -6155,51 +5708,777 @@ void mlptrainensemblees(const mlptrainer &s, const mlpensemble &ensemble, const 
 void smp_mlptrainensemblees(const mlptrainer &s, const mlpensemble &ensemble, const ae_int_t nrestarts, mlpreport &rep);
 
 /*************************************************************************
-Principal components analysis
+This function initializes clusterizer object. Newly initialized object  is
+empty, i.e. it does not contain dataset. You should use it as follows:
+1. creation
+2. dataset is added with ClusterizerSetPoints()
+3. additional parameters are set
+3. clusterization is performed with one of the clustering functions
 
-Subroutine  builds  orthogonal  basis  where  first  axis  corresponds  to
-direction with maximum variance, second axis maximizes variance in subspace
-orthogonal to first axis and so on.
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizercreate(clusterizerstate &s);
 
-It should be noted that, unlike LDA, PCA does not use class labels.
+
+/*************************************************************************
+This function adds dataset to the clusterizer structure.
+
+This function overrides all previous calls  of  ClusterizerSetPoints()  or
+ClusterizerSetDistances().
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    XY      -   array[NPoints,NFeatures], dataset
+    NPoints -   number of points, >=0
+    NFeatures-  number of features, >=1
+    DistType-   distance function:
+                *  0    Chebyshev distance  (L-inf norm)
+                *  1    city block distance (L1 norm)
+                *  2    Euclidean distance  (L2 norm), non-squared
+                * 10    Pearson correlation:
+                        dist(a,b) = 1-corr(a,b)
+                * 11    Absolute Pearson correlation:
+                        dist(a,b) = 1-|corr(a,b)|
+                * 12    Uncentered Pearson correlation (cosine of the angle):
+                        dist(a,b) = a'*b/(|a|*|b|)
+                * 13    Absolute uncentered Pearson correlation
+                        dist(a,b) = |a'*b|/(|a|*|b|)
+                * 20    Spearman rank correlation:
+                        dist(a,b) = 1-rankcorr(a,b)
+                * 21    Absolute Spearman rank correlation
+                        dist(a,b) = 1-|rankcorr(a,b)|
+
+NOTE 1: different distance functions have different performance penalty:
+        * Euclidean or Pearson correlation distances are the fastest ones
+        * Spearman correlation distance function is a bit slower
+        * city block and Chebyshev distances are order of magnitude slower
+
+        The reason behing difference in performance is that correlation-based
+        distance functions are computed using optimized linear algebra kernels,
+        while Chebyshev and city block distance functions are computed using
+        simple nested loops with two branches at each iteration.
+
+NOTE 2: different clustering algorithms have different limitations:
+        * agglomerative hierarchical clustering algorithms may be used with
+          any kind of distance metric
+        * k-means++ clustering algorithm may be used only  with  Euclidean
+          distance function
+        Thus, list of specific clustering algorithms you may  use  depends
+        on distance function you specify when you set your dataset.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetpoints(const clusterizerstate &s, const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype);
+void clusterizersetpoints(const clusterizerstate &s, const real_2d_array &xy, const ae_int_t disttype);
+
+
+/*************************************************************************
+This function adds dataset given by distance  matrix  to  the  clusterizer
+structure. It is important that dataset is not  given  explicitly  -  only
+distance matrix is given.
+
+This function overrides all previous calls  of  ClusterizerSetPoints()  or
+ClusterizerSetDistances().
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    D       -   array[NPoints,NPoints], distance matrix given by its upper
+                or lower triangle (main diagonal is  ignored  because  its
+                entries are expected to be zero).
+    NPoints -   number of points
+    IsUpper -   whether upper or lower triangle of D is given.
+
+NOTE 1: different clustering algorithms have different limitations:
+        * agglomerative hierarchical clustering algorithms may be used with
+          any kind of distance metric, including one  which  is  given  by
+          distance matrix
+        * k-means++ clustering algorithm may be used only  with  Euclidean
+          distance function and explicitly given points - it  can  not  be
+          used with dataset given by distance matrix
+        Thus, if you call this function, you will be unable to use k-means
+        clustering algorithm to process your problem.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetdistances(const clusterizerstate &s, const real_2d_array &d, const ae_int_t npoints, const bool isupper);
+void clusterizersetdistances(const clusterizerstate &s, const real_2d_array &d, const bool isupper);
+
+
+/*************************************************************************
+This function sets agglomerative hierarchical clustering algorithm
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Algo    -   algorithm type:
+                * 0     complete linkage (default algorithm)
+                * 1     single linkage
+                * 2     unweighted average linkage
+                * 3     weighted average linkage
+                * 4     Ward's method
+
+NOTE: Ward's method works correctly only with Euclidean  distance,  that's
+      why algorithm will return negative termination  code  (failure)  for
+      any other distance type.
+
+      It is possible, however,  to  use  this  method  with  user-supplied
+      distance matrix. It  is  your  responsibility  to pass one which was
+      calculated with Euclidean distance function.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetahcalgo(const clusterizerstate &s, const ae_int_t algo);
+
+
+/*************************************************************************
+This  function  sets k-means properties:  number  of  restarts and maximum
+number of iterations per one run.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Restarts-   restarts count, >=1.
+                k-means++ algorithm performs several restarts and  chooses
+                best set of centers (one with minimum squared distance).
+    MaxIts  -   maximum number of k-means iterations performed during  one
+                run. >=0, zero value means that algorithm performs unlimited
+                number of iterations.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetkmeanslimits(const clusterizerstate &s, const ae_int_t restarts, const ae_int_t maxits);
+
+
+/*************************************************************************
+This function sets k-means  initialization  algorithm.  Several  different
+algorithms can be chosen, including k-means++.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    InitAlgo-   initialization algorithm:
+                * 0  automatic selection ( different  versions  of  ALGLIB
+                     may select different algorithms)
+                * 1  random initialization
+                * 2  k-means++ initialization  (best  quality  of  initial
+                     centers, but long  non-parallelizable  initialization
+                     phase with bad cache locality)
+                * 3  "fast-greedy"  algorithm  with  efficient,  easy   to
+                     parallelize initialization. Quality of initial centers
+                     is  somewhat  worse  than  that  of  k-means++.  This
+                     algorithm is a default one in the current version  of
+                     ALGLIB.
+                *-1  "debug" algorithm which always selects first  K  rows
+                     of dataset; this algorithm is used for debug purposes
+                     only. Do not use it in the industrial code!
+
+  -- ALGLIB --
+     Copyright 21.01.2015 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetkmeansinit(const clusterizerstate &s, const ae_int_t initalgo);
+
+
+/*************************************************************************
+This  function  sets  seed  which  is  used to initialize internal RNG. By
+default, deterministic seed is used - same for each run of clusterizer. If
+you specify non-deterministic  seed  value,  then  some  algorithms  which
+depend on random initialization (in current version: k-means)  may  return
+slightly different results after each run.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    Seed    -   seed:
+                * positive values = use deterministic seed for each run of
+                  algorithms which depend on random initialization
+                * zero or negative values = use non-deterministic seed
+
+  -- ALGLIB --
+     Copyright 08.06.2017 by Bochkanov Sergey
+*************************************************************************/
+void clusterizersetseed(const clusterizerstate &s, const ae_int_t seed);
+
+
+/*************************************************************************
+This function performs agglomerative hierarchical clustering
 
 COMMERCIAL EDITION OF ALGLIB:
 
-  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! Commercial version of ALGLIB includes two  important  improvements  of
   ! this function, which can be used from C++ and C#:
   ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
   !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Best results are achieved  for  high-dimensional  problems
-  ! (NVars is at least 256).
+  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
+  ! distance matrix calculation  and  clustering  itself. Only first phase
+  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
+  ! threading. Thus, acceleration is significant only for  medium or high-
+  ! dimensional problems.
   !
   ! We recommend you to read 'Working with commercial version' section  of
   ! ALGLIB Reference Manual in order to find out how to  use  performance-
   ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
-    X           -   dataset, array[0..NPoints-1,0..NVars-1].
-                    matrix contains ONLY INDEPENDENT VARIABLES.
-    NPoints     -   dataset size, NPoints>=0
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+
+OUTPUT PARAMETERS:
+    Rep     -   clustering results; see description of AHCReport
+                structure for more information.
+
+NOTE 1: hierarchical clustering algorithms require large amounts of memory.
+        In particular, this implementation needs  sizeof(double)*NPoints^2
+        bytes, which are used to store distance matrix. In  case  we  work
+        with user-supplied matrix, this amount is multiplied by 2 (we have
+        to store original matrix and to work with its copy).
+
+        For example, problem with 10000 points  would require 800M of RAM,
+        even when working in a 1-dimensional space.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerrunahc(const clusterizerstate &s, ahcreport &rep);
+void smp_clusterizerrunahc(const clusterizerstate &s, ahcreport &rep);
+
+
+/*************************************************************************
+This function performs clustering by k-means++ algorithm.
+
+You may change algorithm properties by calling:
+* ClusterizerSetKMeansLimits() to change number of restarts or iterations
+* ClusterizerSetKMeansInit() to change initialization algorithm
+
+By  default,  one  restart  and  unlimited number of iterations are  used.
+Initialization algorithm is chosen automatically.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes  two important  improvements  of
+  ! this function:
+  ! * multicore support (can be used from C# and C++)
+  ! * access to high-performance C++ core (actual for C# users)
+  !
+  ! K-means clustering  algorithm has two  phases:  selection  of  initial
+  ! centers  and  clustering  itself.  ALGLIB  parallelizes  both  phases.
+  ! Parallel version is optimized for the following  scenario:  medium  or
+  ! high-dimensional problem (20 or more dimensions) with large number  of
+  ! points and clusters. However, some speed-up can be obtained even  when
+  ! assumptions above are violated.
+  !
+  ! As for native-vs-managed comparison, working with native  core  brings
+  ! 30-40% improvement in speed over pure C# version of ALGLIB.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    S       -   clusterizer state, initialized by ClusterizerCreate()
+    K       -   number of clusters, K>=0.
+                K  can  be  zero only when algorithm is called  for  empty
+                dataset,  in   this   case   completion  code  is  set  to
+                success (+1).
+                If  K=0  and  dataset  size  is  non-zero,  we   can   not
+                meaningfully assign points to some center  (there  are  no
+                centers because K=0) and  return  -3  as  completion  code
+                (failure).
+
+OUTPUT PARAMETERS:
+    Rep     -   clustering results; see description of KMeansReport
+                structure for more information.
+
+NOTE 1: k-means  clustering  can  be  performed  only  for  datasets  with
+        Euclidean  distance  function.  Algorithm  will  return   negative
+        completion code in Rep.TerminationType in case dataset  was  added
+        to clusterizer with DistType other than Euclidean (or dataset  was
+        specified by distance matrix instead of explicitly given points).
+
+NOTE 2: by default, k-means uses non-deterministic seed to initialize  RNG
+        which is used to select initial centers. As  result,  each  run of
+        algorithm may return different values. If you  need  deterministic
+        behavior, use ClusterizerSetSeed() function.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerrunkmeans(const clusterizerstate &s, const ae_int_t k, kmeansreport &rep);
+void smp_clusterizerrunkmeans(const clusterizerstate &s, const ae_int_t k, kmeansreport &rep);
+
+
+/*************************************************************************
+This function returns distance matrix for dataset
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Agglomerative  hierarchical  clustering  algorithm  has  two   phases:
+  ! distance matrix calculation  and  clustering  itself. Only first phase
+  ! (distance matrix calculation) is accelerated by Intel MKL  and  multi-
+  ! threading. Thus, acceleration is significant only for  medium or high-
+  ! dimensional problems.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    XY      -   array[NPoints,NFeatures], dataset
+    NPoints -   number of points, >=0
+    NFeatures-  number of features, >=1
+    DistType-   distance function:
+                *  0    Chebyshev distance  (L-inf norm)
+                *  1    city block distance (L1 norm)
+                *  2    Euclidean distance  (L2 norm, non-squared)
+                * 10    Pearson correlation:
+                        dist(a,b) = 1-corr(a,b)
+                * 11    Absolute Pearson correlation:
+                        dist(a,b) = 1-|corr(a,b)|
+                * 12    Uncentered Pearson correlation (cosine of the angle):
+                        dist(a,b) = a'*b/(|a|*|b|)
+                * 13    Absolute uncentered Pearson correlation
+                        dist(a,b) = |a'*b|/(|a|*|b|)
+                * 20    Spearman rank correlation:
+                        dist(a,b) = 1-rankcorr(a,b)
+                * 21    Absolute Spearman rank correlation
+                        dist(a,b) = 1-|rankcorr(a,b)|
+
+OUTPUT PARAMETERS:
+    D       -   array[NPoints,NPoints], distance matrix
+                (full matrix is returned, with lower and upper triangles)
+
+NOTE:  different distance functions have different performance penalty:
+       * Euclidean or Pearson correlation distances are the fastest ones
+       * Spearman correlation distance function is a bit slower
+       * city block and Chebyshev distances are order of magnitude slower
+
+       The reason behing difference in performance is that correlation-based
+       distance functions are computed using optimized linear algebra kernels,
+       while Chebyshev and city block distance functions are computed using
+       simple nested loops with two branches at each iteration.
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizergetdistances(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype, real_2d_array &d);
+void smp_clusterizergetdistances(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const ae_int_t disttype, real_2d_array &d);
+
+
+/*************************************************************************
+This function takes as input clusterization report Rep,  desired  clusters
+count K, and builds top K clusters from hierarchical clusterization  tree.
+It returns assignment of points to clusters (array of cluster indexes).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    K       -   desired number of clusters, 1<=K<=NPoints.
+                K can be zero only when NPoints=0.
+
+OUTPUT PARAMETERS:
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizergetkclusters(const ahcreport &rep, const ae_int_t k, integer_1d_array &cidx, integer_1d_array &cz);
+
+
+/*************************************************************************
+This  function  accepts  AHC  report  Rep,  desired  minimum  intercluster
+distance and returns top clusters from  hierarchical  clusterization  tree
+which are separated by distance R or HIGHER.
+
+It returns assignment of points to clusters (array of cluster indexes).
+
+There is one more function with similar name - ClusterizerSeparatedByCorr,
+which returns clusters with intercluster correlation equal to R  or  LOWER
+(note: higher for distance, lower for correlation).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    R       -   desired minimum intercluster distance, R>=0
+
+OUTPUT PARAMETERS:
+    K       -   number of clusters, 1<=K<=NPoints
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerseparatedbydist(const ahcreport &rep, const double r, ae_int_t &k, integer_1d_array &cidx, integer_1d_array &cz);
+
+
+/*************************************************************************
+This  function  accepts  AHC  report  Rep,  desired  maximum  intercluster
+correlation and returns top clusters from hierarchical clusterization tree
+which are separated by correlation R or LOWER.
+
+It returns assignment of points to clusters (array of cluster indexes).
+
+There is one more function with similar name - ClusterizerSeparatedByDist,
+which returns clusters with intercluster distance equal  to  R  or  HIGHER
+(note: higher for distance, lower for correlation).
+
+INPUT PARAMETERS:
+    Rep     -   report from ClusterizerRunAHC() performed on XY
+    R       -   desired maximum intercluster correlation, -1<=R<=+1
+
+OUTPUT PARAMETERS:
+    K       -   number of clusters, 1<=K<=NPoints
+    CIdx    -   array[NPoints], I-th element contains cluster index  (from
+                0 to K-1) for I-th point of the dataset.
+    CZ      -   array[K]. This array allows  to  convert  cluster  indexes
+                returned by this function to indexes used by  Rep.Z.  J-th
+                cluster returned by this function corresponds to  CZ[J]-th
+                cluster stored in Rep.Z/PZ/PM.
+                It is guaranteed that CZ[I]<CZ[I+1].
+
+NOTE: K clusters built by this subroutine are assumed to have no hierarchy.
+      Although  they  were  obtained  by  manipulation with top K nodes of
+      dendrogram  (i.e.  hierarchical  decomposition  of  dataset),   this
+      function does not return information about hierarchy.  Each  of  the
+      clusters stand on its own.
+
+NOTE: Cluster indexes returned by this function  does  not  correspond  to
+      indexes returned in Rep.Z/PZ/PM. Either you work  with  hierarchical
+      representation of the dataset (dendrogram), or you work with  "flat"
+      representation returned by this function.  Each  of  representations
+      has its own clusters indexing system (former uses [0, 2*NPoints-2]),
+      while latter uses [0..K-1]), although  it  is  possible  to  perform
+      conversion from one system to another by means of CZ array, returned
+      by this function, which allows you to convert indexes stored in CIdx
+      to the numeration system used by Rep.Z.
+
+NOTE: this subroutine is optimized for moderate values of K. Say, for  K=5
+      it will perform many times faster than  for  K=100.  Its  worst-case
+      performance is O(N*K), although in average case  it  perform  better
+      (up to O(N*log(K))).
+
+  -- ALGLIB --
+     Copyright 10.07.2012 by Bochkanov Sergey
+*************************************************************************/
+void clusterizerseparatedbycorr(const ahcreport &rep, const double r, ae_int_t &k, integer_1d_array &cidx, integer_1d_array &cz);
+
+/*************************************************************************
+This function serializes data structure to string.
+
+Important properties of s_out:
+* it contains alphanumeric characters, dots, underscores, minus signs
+* these symbols are grouped into words, which are separated by spaces
+  and Windows-style (CR+LF) newlines
+* although  serializer  uses  spaces and CR+LF as separators, you can 
+  replace any separator character by arbitrary combination of spaces,
+  tabs, Windows or Unix newlines. It allows flexible reformatting  of
+  the  string  in  case you want to include it into text or XML file. 
+  But you should not insert separators into the middle of the "words"
+  nor you should change case of letters.
+* s_out can be freely moved between 32-bit and 64-bit systems, little
+  and big endian machines, and so on. You can serialize structure  on
+  32-bit machine and unserialize it on 64-bit one (or vice versa), or
+  serialize  it  on  SPARC  and  unserialize  on  x86.  You  can also 
+  serialize  it  in  C++ version of ALGLIB and unserialize in C# one, 
+  and vice versa.
+*************************************************************************/
+void dfserialize(decisionforest &obj, std::string &s_out);
+
+
+/*************************************************************************
+This function unserializes data structure from string.
+*************************************************************************/
+void dfunserialize(const std::string &s_in, decisionforest &obj);
+
+
+
+
+/*************************************************************************
+This function serializes data structure to C++ stream.
+
+Data stream generated by this function is same as  string  representation
+generated  by  string  version  of  serializer - alphanumeric characters,
+dots, underscores, minus signs, which are grouped into words separated by
+spaces and CR+LF.
+
+We recommend you to read comments on string version of serializer to find
+out more about serialization of AlGLIB objects.
+*************************************************************************/
+void dfserialize(decisionforest &obj, std::ostream &s_out);
+
+
+/*************************************************************************
+This function unserializes data structure from stream.
+*************************************************************************/
+void dfunserialize(const std::istream &s_in, decisionforest &obj);
+
+
+/*************************************************************************
+This subroutine builds random decision forest.
+
+INPUT PARAMETERS:
+    XY          -   training set
+    NPoints     -   training set size, NPoints>=1
     NVars       -   number of independent variables, NVars>=1
+    NClasses    -   task type:
+                    * NClasses=1 - regression task with one
+                                   dependent variable
+                    * NClasses>1 - classification task with
+                                   NClasses classes.
+    NTrees      -   number of trees in a forest, NTrees>=1.
+                    recommended values: 50-100.
+    R           -   percent of a training set used to build
+                    individual trees. 0<R<=1.
+                    recommended values: 0.1 <= R <= 0.66.
 
 OUTPUT PARAMETERS:
     Info        -   return code:
-                    * -4, if SVD subroutine haven't converged
-                    * -1, if wrong parameters has been passed (NPoints<0,
-                          NVars<1)
-                    *  1, if task is solved
-    S2          -   array[0..NVars-1]. variance values corresponding
-                    to basis vectors.
-    V           -   array[0..NVars-1,0..NVars-1]
-                    matrix, whose columns store basis vectors.
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed
+                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
+                          or R>1).
+                    *  1, if task has been solved
+    DF          -   model built
+    Rep         -   training report, contains error on a training set
+                    and out-of-bag estimates of generalization error.
 
   -- ALGLIB --
-     Copyright 25.08.2008 by Bochkanov Sergey
+     Copyright 19.02.2009 by Bochkanov Sergey
 *************************************************************************/
-void pcabuildbasis(const real_2d_array &x, const ae_int_t npoints, const ae_int_t nvars, ae_int_t &info, real_1d_array &s2, real_2d_array &v);
+void dfbuildrandomdecisionforest(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, const ae_int_t ntrees, const double r, ae_int_t &info, decisionforest &df, dfreport &rep);
+
+
+/*************************************************************************
+This subroutine builds random decision forest.
+This function gives ability to tune number of variables used when choosing
+best split.
+
+INPUT PARAMETERS:
+    XY          -   training set
+    NPoints     -   training set size, NPoints>=1
+    NVars       -   number of independent variables, NVars>=1
+    NClasses    -   task type:
+                    * NClasses=1 - regression task with one
+                                   dependent variable
+                    * NClasses>1 - classification task with
+                                   NClasses classes.
+    NTrees      -   number of trees in a forest, NTrees>=1.
+                    recommended values: 50-100.
+    NRndVars    -   number of variables used when choosing best split
+    R           -   percent of a training set used to build
+                    individual trees. 0<R<=1.
+                    recommended values: 0.1 <= R <= 0.66.
+
+OUTPUT PARAMETERS:
+    Info        -   return code:
+                    * -2, if there is a point with class number
+                          outside of [0..NClasses-1].
+                    * -1, if incorrect parameters was passed
+                          (NPoints<1, NVars<1, NClasses<1, NTrees<1, R<=0
+                          or R>1).
+                    *  1, if task has been solved
+    DF          -   model built
+    Rep         -   training report, contains error on a training set
+                    and out-of-bag estimates of generalization error.
+
+  -- ALGLIB --
+     Copyright 19.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfbuildrandomdecisionforestx1(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t nclasses, const ae_int_t ntrees, const ae_int_t nrndvars, const double r, ae_int_t &info, decisionforest &df, dfreport &rep);
+
+
+/*************************************************************************
+Procesing
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    X       -   input vector,  array[0..NVars-1].
+
+OUTPUT PARAMETERS:
+    Y       -   result. Regression estimate when solving regression  task,
+                vector of posterior probabilities for classification task.
+
+See also DFProcessI.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+void dfprocess(const decisionforest &df, const real_1d_array &x, real_1d_array &y);
+
+
+/*************************************************************************
+'interactive' variant of DFProcess for languages like Python which support
+constructs like "Y = DFProcessI(DF,X)" and interactive mode of interpreter
+
+This function allocates new array on each call,  so  it  is  significantly
+slower than its 'non-interactive' counterpart, but it is  more  convenient
+when you call it from command line.
+
+  -- ALGLIB --
+     Copyright 28.02.2010 by Bochkanov Sergey
+*************************************************************************/
+void dfprocessi(const decisionforest &df, const real_1d_array &x, real_1d_array &y);
+
+
+/*************************************************************************
+Relative classification error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    percent of incorrectly classified cases.
+    Zero if model solves regression task.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfrelclserror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
+
+
+/*************************************************************************
+Average cross-entropy (in bits per element) on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    CrossEntropy/(NPoints*LN(2)).
+    Zero if model solves regression task.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgce(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
+
+
+/*************************************************************************
+RMS error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    root mean square error.
+    Its meaning for regression task is obvious. As for
+    classification task, RMS error means error when estimating posterior
+    probabilities.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfrmserror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
+
+
+/*************************************************************************
+Average error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    Its meaning for regression task is obvious. As for
+    classification task, it means average error when estimating posterior
+    probabilities.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgerror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
+
+
+/*************************************************************************
+Average relative error on the test set
+
+INPUT PARAMETERS:
+    DF      -   decision forest model
+    XY      -   test set
+    NPoints -   test set size
+
+RESULT:
+    Its meaning for regression task is obvious. As for
+    classification task, it means average relative error when estimating
+    posterior probability of belonging to the correct class.
+
+  -- ALGLIB --
+     Copyright 16.02.2009 by Bochkanov Sergey
+*************************************************************************/
+double dfavgrelerror(const decisionforest &df, const real_2d_array &xy, const ae_int_t npoints);
+
+/*************************************************************************
+k-means++ clusterization.
+Backward compatibility function, we recommend to use CLUSTERING subpackage
+as better replacement.
+
+  -- ALGLIB --
+     Copyright 21.03.2009 by Bochkanov Sergey
+*************************************************************************/
+void kmeansgenerate(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nvars, const ae_int_t k, const ae_int_t restarts, ae_int_t &info, real_2d_array &c, integer_1d_array &xyc);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -6209,6 +6488,36 @@ void pcabuildbasis(const real_2d_array &x, const ae_int_t npoints, const ae_int_
 /////////////////////////////////////////////////////////////////////////
 namespace alglib_impl
 {
+void pcabuildbasis(/* Real    */ ae_matrix* x,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     /* Real    */ ae_vector* s2,
+     /* Real    */ ae_matrix* v,
+     ae_state *_state);
+void _pexec_pcabuildbasis(/* Real    */ ae_matrix* x,
+    ae_int_t npoints,
+    ae_int_t nvars,
+    ae_int_t* info,
+    /* Real    */ ae_vector* s2,
+    /* Real    */ ae_matrix* v, ae_state *_state);
+void pcatruncatedsubspace(/* Real    */ ae_matrix* x,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nneeded,
+     double eps,
+     ae_int_t maxits,
+     /* Real    */ ae_vector* s2,
+     /* Real    */ ae_matrix* v,
+     ae_state *_state);
+void _pexec_pcatruncatedsubspace(/* Real    */ ae_matrix* x,
+    ae_int_t npoints,
+    ae_int_t nvars,
+    ae_int_t nneeded,
+    double eps,
+    ae_int_t maxits,
+    /* Real    */ ae_vector* s2,
+    /* Real    */ ae_matrix* v, ae_state *_state);
 void dserrallocate(ae_int_t nclasses,
      /* Real    */ ae_vector* buf,
      ae_state *_state);
@@ -6299,289 +6608,6 @@ void _cvreport_init(void* _p, ae_state *_state);
 void _cvreport_init_copy(void* _dst, void* _src, ae_state *_state);
 void _cvreport_clear(void* _p);
 void _cvreport_destroy(void* _p);
-void clusterizercreate(clusterizerstate* s, ae_state *_state);
-void clusterizersetpoints(clusterizerstate* s,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nfeatures,
-     ae_int_t disttype,
-     ae_state *_state);
-void clusterizersetdistances(clusterizerstate* s,
-     /* Real    */ ae_matrix* d,
-     ae_int_t npoints,
-     ae_bool isupper,
-     ae_state *_state);
-void clusterizersetahcalgo(clusterizerstate* s,
-     ae_int_t algo,
-     ae_state *_state);
-void clusterizersetkmeanslimits(clusterizerstate* s,
-     ae_int_t restarts,
-     ae_int_t maxits,
-     ae_state *_state);
-void clusterizerrunahc(clusterizerstate* s,
-     ahcreport* rep,
-     ae_state *_state);
-void _pexec_clusterizerrunahc(clusterizerstate* s,
-    ahcreport* rep, ae_state *_state);
-void clusterizerrunkmeans(clusterizerstate* s,
-     ae_int_t k,
-     kmeansreport* rep,
-     ae_state *_state);
-void clusterizergetdistances(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nfeatures,
-     ae_int_t disttype,
-     /* Real    */ ae_matrix* d,
-     ae_state *_state);
-void _pexec_clusterizergetdistances(/* Real    */ ae_matrix* xy,
-    ae_int_t npoints,
-    ae_int_t nfeatures,
-    ae_int_t disttype,
-    /* Real    */ ae_matrix* d, ae_state *_state);
-void clusterizergetkclusters(ahcreport* rep,
-     ae_int_t k,
-     /* Integer */ ae_vector* cidx,
-     /* Integer */ ae_vector* cz,
-     ae_state *_state);
-void clusterizerseparatedbydist(ahcreport* rep,
-     double r,
-     ae_int_t* k,
-     /* Integer */ ae_vector* cidx,
-     /* Integer */ ae_vector* cz,
-     ae_state *_state);
-void clusterizerseparatedbycorr(ahcreport* rep,
-     double r,
-     ae_int_t* k,
-     /* Integer */ ae_vector* cidx,
-     /* Integer */ ae_vector* cz,
-     ae_state *_state);
-void kmeansgenerateinternal(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t k,
-     ae_int_t maxits,
-     ae_int_t restarts,
-     ae_int_t* info,
-     /* Real    */ ae_matrix* ccol,
-     ae_bool needccol,
-     /* Real    */ ae_matrix* crow,
-     ae_bool needcrow,
-     /* Integer */ ae_vector* xyc,
-     ae_state *_state);
-void _clusterizerstate_init(void* _p, ae_state *_state);
-void _clusterizerstate_init_copy(void* _dst, void* _src, ae_state *_state);
-void _clusterizerstate_clear(void* _p);
-void _clusterizerstate_destroy(void* _p);
-void _ahcreport_init(void* _p, ae_state *_state);
-void _ahcreport_init_copy(void* _dst, void* _src, ae_state *_state);
-void _ahcreport_clear(void* _p);
-void _ahcreport_destroy(void* _p);
-void _kmeansreport_init(void* _p, ae_state *_state);
-void _kmeansreport_init_copy(void* _dst, void* _src, ae_state *_state);
-void _kmeansreport_clear(void* _p);
-void _kmeansreport_destroy(void* _p);
-void kmeansgenerate(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t k,
-     ae_int_t restarts,
-     ae_int_t* info,
-     /* Real    */ ae_matrix* c,
-     /* Integer */ ae_vector* xyc,
-     ae_state *_state);
-void dfbuildrandomdecisionforest(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t ntrees,
-     double r,
-     ae_int_t* info,
-     decisionforest* df,
-     dfreport* rep,
-     ae_state *_state);
-void dfbuildrandomdecisionforestx1(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t ntrees,
-     ae_int_t nrndvars,
-     double r,
-     ae_int_t* info,
-     decisionforest* df,
-     dfreport* rep,
-     ae_state *_state);
-void dfbuildinternal(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t ntrees,
-     ae_int_t samplesize,
-     ae_int_t nfeatures,
-     ae_int_t flags,
-     ae_int_t* info,
-     decisionforest* df,
-     dfreport* rep,
-     ae_state *_state);
-void dfprocess(decisionforest* df,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state);
-void dfprocessi(decisionforest* df,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state);
-double dfrelclserror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-double dfavgce(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-double dfrmserror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-double dfavgerror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-double dfavgrelerror(decisionforest* df,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-void dfcopy(decisionforest* df1, decisionforest* df2, ae_state *_state);
-void dfalloc(ae_serializer* s, decisionforest* forest, ae_state *_state);
-void dfserialize(ae_serializer* s,
-     decisionforest* forest,
-     ae_state *_state);
-void dfunserialize(ae_serializer* s,
-     decisionforest* forest,
-     ae_state *_state);
-void _decisionforest_init(void* _p, ae_state *_state);
-void _decisionforest_init_copy(void* _dst, void* _src, ae_state *_state);
-void _decisionforest_clear(void* _p);
-void _decisionforest_destroy(void* _p);
-void _dfreport_init(void* _p, ae_state *_state);
-void _dfreport_init_copy(void* _dst, void* _src, ae_state *_state);
-void _dfreport_clear(void* _p);
-void _dfreport_destroy(void* _p);
-void _dfinternalbuffers_init(void* _p, ae_state *_state);
-void _dfinternalbuffers_init_copy(void* _dst, void* _src, ae_state *_state);
-void _dfinternalbuffers_clear(void* _p);
-void _dfinternalbuffers_destroy(void* _p);
-void lrbuild(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state);
-void lrbuilds(/* Real    */ ae_matrix* xy,
-     /* Real    */ ae_vector* s,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state);
-void lrbuildzs(/* Real    */ ae_matrix* xy,
-     /* Real    */ ae_vector* s,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state);
-void lrbuildz(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t* info,
-     linearmodel* lm,
-     lrreport* ar,
-     ae_state *_state);
-void lrunpack(linearmodel* lm,
-     /* Real    */ ae_vector* v,
-     ae_int_t* nvars,
-     ae_state *_state);
-void lrpack(/* Real    */ ae_vector* v,
-     ae_int_t nvars,
-     linearmodel* lm,
-     ae_state *_state);
-double lrprocess(linearmodel* lm,
-     /* Real    */ ae_vector* x,
-     ae_state *_state);
-double lrrmserror(linearmodel* lm,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-double lravgerror(linearmodel* lm,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-double lravgrelerror(linearmodel* lm,
-     /* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_state *_state);
-void lrcopy(linearmodel* lm1, linearmodel* lm2, ae_state *_state);
-void lrlines(/* Real    */ ae_matrix* xy,
-     /* Real    */ ae_vector* s,
-     ae_int_t n,
-     ae_int_t* info,
-     double* a,
-     double* b,
-     double* vara,
-     double* varb,
-     double* covab,
-     double* corrab,
-     double* p,
-     ae_state *_state);
-void lrline(/* Real    */ ae_matrix* xy,
-     ae_int_t n,
-     ae_int_t* info,
-     double* a,
-     double* b,
-     ae_state *_state);
-void _linearmodel_init(void* _p, ae_state *_state);
-void _linearmodel_init_copy(void* _dst, void* _src, ae_state *_state);
-void _linearmodel_clear(void* _p);
-void _linearmodel_destroy(void* _p);
-void _lrreport_init(void* _p, ae_state *_state);
-void _lrreport_init_copy(void* _dst, void* _src, ae_state *_state);
-void _lrreport_clear(void* _p);
-void _lrreport_destroy(void* _p);
-void filtersma(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     ae_int_t k,
-     ae_state *_state);
-void filterema(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double alpha,
-     ae_state *_state);
-void filterlrma(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     ae_int_t k,
-     ae_state *_state);
-void fisherlda(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t* info,
-     /* Real    */ ae_vector* w,
-     ae_state *_state);
-void fisherldan(/* Real    */ ae_matrix* xy,
-     ae_int_t npoints,
-     ae_int_t nvars,
-     ae_int_t nclasses,
-     ae_int_t* info,
-     /* Real    */ ae_matrix* w,
-     ae_state *_state);
-void _pexec_fisherldan(/* Real    */ ae_matrix* xy,
-    ae_int_t npoints,
-    ae_int_t nvars,
-    ae_int_t nclasses,
-    ae_int_t* info,
-    /* Real    */ ae_matrix* w, ae_state *_state);
 ae_int_t mlpgradsplitcost(ae_state *_state);
 ae_int_t mlpgradsplitsize(ae_state *_state);
 void mlpcreate0(ae_int_t nin,
@@ -7062,6 +7088,118 @@ void _multilayerperceptron_init(void* _p, ae_state *_state);
 void _multilayerperceptron_init_copy(void* _dst, void* _src, ae_state *_state);
 void _multilayerperceptron_clear(void* _p);
 void _multilayerperceptron_destroy(void* _p);
+void fisherlda(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t* info,
+     /* Real    */ ae_vector* w,
+     ae_state *_state);
+void fisherldan(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t* info,
+     /* Real    */ ae_matrix* w,
+     ae_state *_state);
+void _pexec_fisherldan(/* Real    */ ae_matrix* xy,
+    ae_int_t npoints,
+    ae_int_t nvars,
+    ae_int_t nclasses,
+    ae_int_t* info,
+    /* Real    */ ae_matrix* w, ae_state *_state);
+void lrbuild(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state);
+void lrbuilds(/* Real    */ ae_matrix* xy,
+     /* Real    */ ae_vector* s,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state);
+void lrbuildzs(/* Real    */ ae_matrix* xy,
+     /* Real    */ ae_vector* s,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state);
+void lrbuildz(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t* info,
+     linearmodel* lm,
+     lrreport* ar,
+     ae_state *_state);
+void lrunpack(linearmodel* lm,
+     /* Real    */ ae_vector* v,
+     ae_int_t* nvars,
+     ae_state *_state);
+void lrpack(/* Real    */ ae_vector* v,
+     ae_int_t nvars,
+     linearmodel* lm,
+     ae_state *_state);
+double lrprocess(linearmodel* lm,
+     /* Real    */ ae_vector* x,
+     ae_state *_state);
+double lrrmserror(linearmodel* lm,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+double lravgerror(linearmodel* lm,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+double lravgrelerror(linearmodel* lm,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+void lrcopy(linearmodel* lm1, linearmodel* lm2, ae_state *_state);
+void lrlines(/* Real    */ ae_matrix* xy,
+     /* Real    */ ae_vector* s,
+     ae_int_t n,
+     ae_int_t* info,
+     double* a,
+     double* b,
+     double* vara,
+     double* varb,
+     double* covab,
+     double* corrab,
+     double* p,
+     ae_state *_state);
+void lrline(/* Real    */ ae_matrix* xy,
+     ae_int_t n,
+     ae_int_t* info,
+     double* a,
+     double* b,
+     ae_state *_state);
+void _linearmodel_init(void* _p, ae_state *_state);
+void _linearmodel_init_copy(void* _dst, void* _src, ae_state *_state);
+void _linearmodel_clear(void* _p);
+void _linearmodel_destroy(void* _p);
+void _lrreport_init(void* _p, ae_state *_state);
+void _lrreport_init_copy(void* _dst, void* _src, ae_state *_state);
+void _lrreport_clear(void* _p);
+void _lrreport_destroy(void* _p);
+void filtersma(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     ae_int_t k,
+     ae_state *_state);
+void filterema(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     double alpha,
+     ae_state *_state);
+void filterlrma(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     ae_int_t k,
+     ae_state *_state);
 void mnltrainh(/* Real    */ ae_matrix* xy,
      ae_int_t npoints,
      ae_int_t nvars,
@@ -7505,12 +7643,214 @@ void _mlpparallelizationcv_init(void* _p, ae_state *_state);
 void _mlpparallelizationcv_init_copy(void* _dst, void* _src, ae_state *_state);
 void _mlpparallelizationcv_clear(void* _p);
 void _mlpparallelizationcv_destroy(void* _p);
-void pcabuildbasis(/* Real    */ ae_matrix* x,
+void clusterizercreate(clusterizerstate* s, ae_state *_state);
+void clusterizersetpoints(clusterizerstate* s,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nfeatures,
+     ae_int_t disttype,
+     ae_state *_state);
+void clusterizersetdistances(clusterizerstate* s,
+     /* Real    */ ae_matrix* d,
+     ae_int_t npoints,
+     ae_bool isupper,
+     ae_state *_state);
+void clusterizersetahcalgo(clusterizerstate* s,
+     ae_int_t algo,
+     ae_state *_state);
+void clusterizersetkmeanslimits(clusterizerstate* s,
+     ae_int_t restarts,
+     ae_int_t maxits,
+     ae_state *_state);
+void clusterizersetkmeansinit(clusterizerstate* s,
+     ae_int_t initalgo,
+     ae_state *_state);
+void clusterizersetseed(clusterizerstate* s,
+     ae_int_t seed,
+     ae_state *_state);
+void clusterizerrunahc(clusterizerstate* s,
+     ahcreport* rep,
+     ae_state *_state);
+void _pexec_clusterizerrunahc(clusterizerstate* s,
+    ahcreport* rep, ae_state *_state);
+void clusterizerrunkmeans(clusterizerstate* s,
+     ae_int_t k,
+     kmeansreport* rep,
+     ae_state *_state);
+void _pexec_clusterizerrunkmeans(clusterizerstate* s,
+    ae_int_t k,
+    kmeansreport* rep, ae_state *_state);
+void clusterizergetdistances(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nfeatures,
+     ae_int_t disttype,
+     /* Real    */ ae_matrix* d,
+     ae_state *_state);
+void _pexec_clusterizergetdistances(/* Real    */ ae_matrix* xy,
+    ae_int_t npoints,
+    ae_int_t nfeatures,
+    ae_int_t disttype,
+    /* Real    */ ae_matrix* d, ae_state *_state);
+void clusterizergetdistancesbuf(apbuffers* buf,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nfeatures,
+     ae_int_t disttype,
+     /* Real    */ ae_matrix* d,
+     ae_state *_state);
+void clusterizergetkclusters(ahcreport* rep,
+     ae_int_t k,
+     /* Integer */ ae_vector* cidx,
+     /* Integer */ ae_vector* cz,
+     ae_state *_state);
+void clusterizerseparatedbydist(ahcreport* rep,
+     double r,
+     ae_int_t* k,
+     /* Integer */ ae_vector* cidx,
+     /* Integer */ ae_vector* cz,
+     ae_state *_state);
+void clusterizerseparatedbycorr(ahcreport* rep,
+     double r,
+     ae_int_t* k,
+     /* Integer */ ae_vector* cidx,
+     /* Integer */ ae_vector* cz,
+     ae_state *_state);
+void kmeansinitbuf(kmeansbuffers* buf, ae_state *_state);
+void kmeansgenerateinternal(/* Real    */ ae_matrix* xy,
      ae_int_t npoints,
      ae_int_t nvars,
+     ae_int_t k,
+     ae_int_t initalgo,
+     ae_int_t seed,
+     ae_int_t maxits,
+     ae_int_t restarts,
+     ae_bool kmeansdbgnoits,
      ae_int_t* info,
-     /* Real    */ ae_vector* s2,
-     /* Real    */ ae_matrix* v,
+     ae_int_t* iterationscount,
+     /* Real    */ ae_matrix* ccol,
+     ae_bool needccol,
+     /* Real    */ ae_matrix* crow,
+     ae_bool needcrow,
+     /* Integer */ ae_vector* xyc,
+     double* energy,
+     kmeansbuffers* buf,
+     ae_state *_state);
+void kmeansupdatedistances(/* Real    */ ae_matrix* xy,
+     ae_int_t idx0,
+     ae_int_t idx1,
+     ae_int_t nvars,
+     /* Real    */ ae_matrix* ct,
+     ae_int_t cidx0,
+     ae_int_t cidx1,
+     /* Integer */ ae_vector* xyc,
+     /* Real    */ ae_vector* xydist2,
+     ae_shared_pool* bufferpool,
+     ae_state *_state);
+void _kmeansbuffers_init(void* _p, ae_state *_state);
+void _kmeansbuffers_init_copy(void* _dst, void* _src, ae_state *_state);
+void _kmeansbuffers_clear(void* _p);
+void _kmeansbuffers_destroy(void* _p);
+void _clusterizerstate_init(void* _p, ae_state *_state);
+void _clusterizerstate_init_copy(void* _dst, void* _src, ae_state *_state);
+void _clusterizerstate_clear(void* _p);
+void _clusterizerstate_destroy(void* _p);
+void _ahcreport_init(void* _p, ae_state *_state);
+void _ahcreport_init_copy(void* _dst, void* _src, ae_state *_state);
+void _ahcreport_clear(void* _p);
+void _ahcreport_destroy(void* _p);
+void _kmeansreport_init(void* _p, ae_state *_state);
+void _kmeansreport_init_copy(void* _dst, void* _src, ae_state *_state);
+void _kmeansreport_clear(void* _p);
+void _kmeansreport_destroy(void* _p);
+void dfbuildrandomdecisionforest(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t ntrees,
+     double r,
+     ae_int_t* info,
+     decisionforest* df,
+     dfreport* rep,
+     ae_state *_state);
+void dfbuildrandomdecisionforestx1(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t ntrees,
+     ae_int_t nrndvars,
+     double r,
+     ae_int_t* info,
+     decisionforest* df,
+     dfreport* rep,
+     ae_state *_state);
+void dfbuildinternal(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t nclasses,
+     ae_int_t ntrees,
+     ae_int_t samplesize,
+     ae_int_t nfeatures,
+     ae_int_t flags,
+     ae_int_t* info,
+     decisionforest* df,
+     dfreport* rep,
+     ae_state *_state);
+void dfprocess(decisionforest* df,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state);
+void dfprocessi(decisionforest* df,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state);
+double dfrelclserror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+double dfavgce(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+double dfrmserror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+double dfavgerror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+double dfavgrelerror(decisionforest* df,
+     /* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_state *_state);
+void dfcopy(decisionforest* df1, decisionforest* df2, ae_state *_state);
+void dfalloc(ae_serializer* s, decisionforest* forest, ae_state *_state);
+void dfserialize(ae_serializer* s,
+     decisionforest* forest,
+     ae_state *_state);
+void dfunserialize(ae_serializer* s,
+     decisionforest* forest,
+     ae_state *_state);
+void _decisionforest_init(void* _p, ae_state *_state);
+void _decisionforest_init_copy(void* _dst, void* _src, ae_state *_state);
+void _decisionforest_clear(void* _p);
+void _decisionforest_destroy(void* _p);
+void _dfreport_init(void* _p, ae_state *_state);
+void _dfreport_init_copy(void* _dst, void* _src, ae_state *_state);
+void _dfreport_clear(void* _p);
+void _dfreport_destroy(void* _p);
+void _dfinternalbuffers_init(void* _p, ae_state *_state);
+void _dfinternalbuffers_init_copy(void* _dst, void* _src, ae_state *_state);
+void _dfinternalbuffers_clear(void* _p);
+void _dfinternalbuffers_destroy(void* _p);
+void kmeansgenerate(/* Real    */ ae_matrix* xy,
+     ae_int_t npoints,
+     ae_int_t nvars,
+     ae_int_t k,
+     ae_int_t restarts,
+     ae_int_t* info,
+     /* Real    */ ae_matrix* c,
+     /* Integer */ ae_vector* xyc,
      ae_state *_state);
 
 }

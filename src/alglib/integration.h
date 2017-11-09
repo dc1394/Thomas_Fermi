@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -22,6 +22,7 @@ http://www.fsf.org/licensing/licenses
 #include "ap.h"
 #include "alglibinternal.h"
 #include "linalg.h"
+#include "alglibmisc.h"
 #include "specialfunctions.h"
 
 /////////////////////////////////////////////////////////////////////////
@@ -184,12 +185,12 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   –   array[0..N-1], alpha coefficients
-    Beta    –   array[0..N-1], beta coefficients
+    Alpha   -   array[0..N-1], alpha coefficients
+    Beta    -   array[0..N-1], beta coefficients
                 Zero-indexed element is not used and may be arbitrary.
                 Beta[I]>0.
-    Mu0     –   zeroth moment of the weight function.
-    N       –   number of nodes of the quadrature formula, N>=1
+    Mu0     -   zeroth moment of the weight function.
+    N       -   number of nodes of the quadrature formula, N>=1
 
 OUTPUT PARAMETERS:
     Info    -   error code:
@@ -223,14 +224,14 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   –   array[0..N-2], alpha coefficients
-    Beta    –   array[0..N-2], beta coefficients.
+    Alpha   -   array[0..N-2], alpha coefficients
+    Beta    -   array[0..N-2], beta coefficients.
                 Zero-indexed element is not used, may be arbitrary.
                 Beta[I]>0
-    Mu0     –   zeroth moment of the weighting function.
-    A       –   left boundary of the integration interval.
-    B       –   right boundary of the integration interval.
-    N       –   number of nodes of the quadrature formula, N>=3
+    Mu0     -   zeroth moment of the weighting function.
+    A       -   left boundary of the integration interval.
+    B       -   right boundary of the integration interval.
+    N       -   number of nodes of the quadrature formula, N>=3
                 (including the left and right boundary nodes).
 
 OUTPUT PARAMETERS:
@@ -265,13 +266,13 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   –   array[0..N-2], alpha coefficients.
-    Beta    –   array[0..N-1], beta coefficients
+    Alpha   -   array[0..N-2], alpha coefficients.
+    Beta    -   array[0..N-1], beta coefficients
                 Zero-indexed element is not used.
                 Beta[I]>0
-    Mu0     –   zeroth moment of the weighting function.
-    A       –   left boundary of the integration interval.
-    N       –   number of nodes of the quadrature formula, N>=2
+    Mu0     -   zeroth moment of the weighting function.
+    A       -   left boundary of the integration interval.
+    N       -   number of nodes of the quadrature formula, N>=2
                 (including the left boundary node).
 
 OUTPUT PARAMETERS:
@@ -419,12 +420,12 @@ and zero moment Mu0
 
 
 INPUT PARAMETERS:
-    Alpha       –   alpha coefficients, array[0..floor(3*K/2)].
-    Beta        –   beta coefficients,  array[0..ceil(3*K/2)].
+    Alpha       -   alpha coefficients, array[0..floor(3*K/2)].
+    Beta        -   beta coefficients,  array[0..ceil(3*K/2)].
                     Beta[0] is not used and may be arbitrary.
                     Beta[I]>0.
-    Mu0         –   zeroth moment of the weight function.
-    N           –   number of nodes of the Gauss-Kronrod quadrature formula,
+    Mu0         -   zeroth moment of the weight function.
+    N           -   number of nodes of the Gauss-Kronrod quadrature formula,
                     N >= 3,
                     N =  2*K+1.
 

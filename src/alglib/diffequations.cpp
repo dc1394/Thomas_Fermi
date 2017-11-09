@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -534,19 +534,19 @@ ae_bool odesolveriteration(odesolverstate* state, ae_state *_state)
     }
     else
     {
-        n = -983;
-        m = -989;
-        i = -834;
-        j = 900;
-        k = -287;
-        klimit = 364;
+        n = 359;
+        m = -58;
+        i = -919;
+        j = -909;
+        k = 81;
+        klimit = 255;
         gridpoint = ae_false;
-        xc = -338;
-        v = -686;
-        h = 912;
-        h2 = 585;
-        err = 497;
-        maxgrowpow = -271;
+        xc = -788;
+        v = 809;
+        h = 205;
+        h2 = -838;
+        err = 939;
+        maxgrowpow = -526;
     }
     if( state->rstate.stage==0 )
     {

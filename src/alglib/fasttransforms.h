@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -162,6 +162,44 @@ not used) because array size is used to automatically determine FFT length
 *************************************************************************/
 void fftr1dinv(const complex_1d_array &f, const ae_int_t n, real_1d_array &a);
 void fftr1dinv(const complex_1d_array &f, real_1d_array &a);
+
+/*************************************************************************
+1-dimensional Fast Hartley Transform.
+
+Algorithm has O(N*logN) complexity for any N (composite or prime).
+
+INPUT PARAMETERS
+    A   -   array[0..N-1] - real function to be transformed
+    N   -   problem size
+
+OUTPUT PARAMETERS
+    A   -   FHT of a input array, array[0..N-1],
+            A_out[k] = sum(A_in[j]*(cos(2*pi*j*k/N)+sin(2*pi*j*k/N)), j=0..N-1)
+
+
+  -- ALGLIB --
+     Copyright 04.06.2009 by Bochkanov Sergey
+*************************************************************************/
+void fhtr1d(real_1d_array &a, const ae_int_t n);
+
+
+/*************************************************************************
+1-dimensional inverse FHT.
+
+Algorithm has O(N*logN) complexity for any N (composite or prime).
+
+INPUT PARAMETERS
+    A   -   array[0..N-1] - complex array to be transformed
+    N   -   problem size
+
+OUTPUT PARAMETERS
+    A   -   inverse FHT of a input array, array[0..N-1]
+
+
+  -- ALGLIB --
+     Copyright 29.05.2009 by Bochkanov Sergey
+*************************************************************************/
+void fhtr1dinv(real_1d_array &a, const ae_int_t n);
 
 /*************************************************************************
 1-dimensional complex convolution.
@@ -527,44 +565,6 @@ OUTPUT PARAMETERS
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
 void corrr1dcircular(const real_1d_array &signal, const ae_int_t m, const real_1d_array &pattern, const ae_int_t n, real_1d_array &c);
-
-/*************************************************************************
-1-dimensional Fast Hartley Transform.
-
-Algorithm has O(N*logN) complexity for any N (composite or prime).
-
-INPUT PARAMETERS
-    A   -   array[0..N-1] - real function to be transformed
-    N   -   problem size
-
-OUTPUT PARAMETERS
-    A   -   FHT of a input array, array[0..N-1],
-            A_out[k] = sum(A_in[j]*(cos(2*pi*j*k/N)+sin(2*pi*j*k/N)), j=0..N-1)
-
-
-  -- ALGLIB --
-     Copyright 04.06.2009 by Bochkanov Sergey
-*************************************************************************/
-void fhtr1d(real_1d_array &a, const ae_int_t n);
-
-
-/*************************************************************************
-1-dimensional inverse FHT.
-
-Algorithm has O(N*logN) complexity for any N (composite or prime).
-
-INPUT PARAMETERS
-    A   -   array[0..N-1] - complex array to be transformed
-    N   -   problem size
-
-OUTPUT PARAMETERS
-    A   -   inverse FHT of a input array, array[0..N-1]
-
-
-  -- ALGLIB --
-     Copyright 29.05.2009 by Bochkanov Sergey
-*************************************************************************/
-void fhtr1dinv(real_1d_array &a, const ae_int_t n);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -594,6 +594,8 @@ void fftr1dinvinternaleven(/* Real    */ ae_vector* a,
      /* Real    */ ae_vector* buf,
      fasttransformplan* plan,
      ae_state *_state);
+void fhtr1d(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state);
+void fhtr1dinv(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state);
 void convc1d(/* Complex */ ae_vector* a,
      ae_int_t m,
      /* Complex */ ae_vector* b,
@@ -684,8 +686,6 @@ void corrr1dcircular(/* Real    */ ae_vector* signal,
      ae_int_t n,
      /* Real    */ ae_vector* c,
      ae_state *_state);
-void fhtr1d(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state);
-void fhtr1dinv(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state);
 
 }
 #endif

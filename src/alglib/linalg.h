@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -93,6 +93,42 @@ typedef struct
     double repnorm;
     rcommstate rstate;
 } normestimatorstate;
+typedef struct
+{
+    ae_int_t n;
+    ae_int_t k;
+    ae_int_t nwork;
+    ae_int_t maxits;
+    double eps;
+    ae_int_t eigenvectorsneeded;
+    ae_int_t matrixtype;
+    hqrndstate rs;
+    ae_bool running;
+    ae_vector tau;
+    ae_matrix qcur;
+    ae_matrix znew;
+    ae_matrix r;
+    ae_matrix rz;
+    ae_matrix tz;
+    ae_matrix rq;
+    ae_matrix dummy;
+    ae_vector rw;
+    ae_vector tw;
+    ae_vector wcur;
+    ae_vector wprev;
+    ae_vector wrank;
+    apbuffers buf;
+    ae_matrix x;
+    ae_matrix ax;
+    ae_int_t requesttype;
+    ae_int_t requestsize;
+    ae_int_t repiterationscount;
+    rcommstate rstate;
+} eigsubspacestate;
+typedef struct
+{
+    ae_int_t iterationscount;
+} eigsubspacereport;
 
 }
 
@@ -103,18 +139,6 @@ typedef struct
 /////////////////////////////////////////////////////////////////////////
 namespace alglib
 {
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*************************************************************************
 Sparse matrix structure.
@@ -209,6 +233,10 @@ public:
 
 
 
+
+
+
+
 /*************************************************************************
 Matrix inverse report:
 * R1    reciprocal of condition number in 1-norm
@@ -240,6 +268,12 @@ public:
 
 
 
+
+
+
+
+
+
 /*************************************************************************
 This object stores state of the iterative norm estimation algorithm.
 
@@ -268,3002 +302,60 @@ public:
 };
 
 /*************************************************************************
-Cache-oblivous complex "copy-and-transpose"
-
-Input parameters:
-    M   -   number of rows
-    N   -   number of columns
-    A   -   source matrix, MxN submatrix is copied and transposed
-    IA  -   submatrix offset (row index)
-    JA  -   submatrix offset (column index)
-    B   -   destination matrix, must be large enough to store result
-    IB  -   submatrix offset (row index)
-    JB  -   submatrix offset (column index)
-*************************************************************************/
-void cmatrixtranspose(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, complex_2d_array &b, const ae_int_t ib, const ae_int_t jb);
-
-
-/*************************************************************************
-Cache-oblivous real "copy-and-transpose"
-
-Input parameters:
-    M   -   number of rows
-    N   -   number of columns
-    A   -   source matrix, MxN submatrix is copied and transposed
-    IA  -   submatrix offset (row index)
-    JA  -   submatrix offset (column index)
-    B   -   destination matrix, must be large enough to store result
-    IB  -   submatrix offset (row index)
-    JB  -   submatrix offset (column index)
-*************************************************************************/
-void rmatrixtranspose(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const real_2d_array &b, const ae_int_t ib, const ae_int_t jb);
-
-
-/*************************************************************************
-This code enforces symmetricy of the matrix by copying Upper part to lower
-one (or vice versa).
-
-INPUT PARAMETERS:
-    A   -   matrix
-    N   -   number of rows/columns
-    IsUpper - whether we want to copy upper triangle to lower one (True)
-            or vice versa (False).
-*************************************************************************/
-void rmatrixenforcesymmetricity(const real_2d_array &a, const ae_int_t n, const bool isupper);
-
-
-/*************************************************************************
-Copy
-
-Input parameters:
-    M   -   number of rows
-    N   -   number of columns
-    A   -   source matrix, MxN submatrix is copied and transposed
-    IA  -   submatrix offset (row index)
-    JA  -   submatrix offset (column index)
-    B   -   destination matrix, must be large enough to store result
-    IB  -   submatrix offset (row index)
-    JB  -   submatrix offset (column index)
-*************************************************************************/
-void cmatrixcopy(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, complex_2d_array &b, const ae_int_t ib, const ae_int_t jb);
-
-
-/*************************************************************************
-Copy
-
-Input parameters:
-    M   -   number of rows
-    N   -   number of columns
-    A   -   source matrix, MxN submatrix is copied and transposed
-    IA  -   submatrix offset (row index)
-    JA  -   submatrix offset (column index)
-    B   -   destination matrix, must be large enough to store result
-    IB  -   submatrix offset (row index)
-    JB  -   submatrix offset (column index)
-*************************************************************************/
-void rmatrixcopy(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, real_2d_array &b, const ae_int_t ib, const ae_int_t jb);
-
-
-/*************************************************************************
-Rank-1 correction: A := A + u*v'
-
-INPUT PARAMETERS:
-    M   -   number of rows
-    N   -   number of columns
-    A   -   target matrix, MxN submatrix is updated
-    IA  -   submatrix offset (row index)
-    JA  -   submatrix offset (column index)
-    U   -   vector #1
-    IU  -   subvector offset
-    V   -   vector #2
-    IV  -   subvector offset
-*************************************************************************/
-void cmatrixrank1(const ae_int_t m, const ae_int_t n, complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, complex_1d_array &u, const ae_int_t iu, complex_1d_array &v, const ae_int_t iv);
-
-
-/*************************************************************************
-Rank-1 correction: A := A + u*v'
-
-INPUT PARAMETERS:
-    M   -   number of rows
-    N   -   number of columns
-    A   -   target matrix, MxN submatrix is updated
-    IA  -   submatrix offset (row index)
-    JA  -   submatrix offset (column index)
-    U   -   vector #1
-    IU  -   subvector offset
-    V   -   vector #2
-    IV  -   subvector offset
-*************************************************************************/
-void rmatrixrank1(const ae_int_t m, const ae_int_t n, real_2d_array &a, const ae_int_t ia, const ae_int_t ja, real_1d_array &u, const ae_int_t iu, real_1d_array &v, const ae_int_t iv);
-
-
-/*************************************************************************
-Matrix-vector product: y := op(A)*x
-
-INPUT PARAMETERS:
-    M   -   number of rows of op(A)
-            M>=0
-    N   -   number of columns of op(A)
-            N>=0
-    A   -   target matrix
-    IA  -   submatrix offset (row index)
-    JA  -   submatrix offset (column index)
-    OpA -   operation type:
-            * OpA=0     =>  op(A) = A
-            * OpA=1     =>  op(A) = A^T
-            * OpA=2     =>  op(A) = A^H
-    X   -   input vector
-    IX  -   subvector offset
-    IY  -   subvector offset
-    Y   -   preallocated matrix, must be large enough to store result
-
-OUTPUT PARAMETERS:
-    Y   -   vector which stores result
-
-if M=0, then subroutine does nothing.
-if N=0, Y is filled by zeros.
-
-
-  -- ALGLIB routine --
-
-     28.01.2010
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixmv(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t opa, const complex_1d_array &x, const ae_int_t ix, complex_1d_array &y, const ae_int_t iy);
-
-
-/*************************************************************************
-Matrix-vector product: y := op(A)*x
-
-INPUT PARAMETERS:
-    M   -   number of rows of op(A)
-    N   -   number of columns of op(A)
-    A   -   target matrix
-    IA  -   submatrix offset (row index)
-    JA  -   submatrix offset (column index)
-    OpA -   operation type:
-            * OpA=0     =>  op(A) = A
-            * OpA=1     =>  op(A) = A^T
-    X   -   input vector
-    IX  -   subvector offset
-    IY  -   subvector offset
-    Y   -   preallocated matrix, must be large enough to store result
-
-OUTPUT PARAMETERS:
-    Y   -   vector which stores result
-
-if M=0, then subroutine does nothing.
-if N=0, Y is filled by zeros.
-
-
-  -- ALGLIB routine --
-
-     28.01.2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixmv(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t opa, const real_1d_array &x, const ae_int_t ix, real_1d_array &y, const ae_int_t iy);
-
-
-/*************************************************************************
-This subroutine calculates X*op(A^-1) where:
-* X is MxN general matrix
-* A is NxN upper/lower triangular/unitriangular matrix
-* "op" may be identity transformation, transposition, conjugate transposition
-
-Multiplication result replaces X.
-Cache-oblivious algorithm is used.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of  this  function.  Because  starting/stopping  worker  thread always
-  ! involves some overhead, parallelism starts to be  profitable  for  N's
-  ! larger than 128.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS
-    N   -   matrix size, N>=0
-    M   -   matrix size, N>=0
-    A       -   matrix, actial matrix is stored in A[I1:I1+N-1,J1:J1+N-1]
-    I1      -   submatrix offset
-    J1      -   submatrix offset
-    IsUpper -   whether matrix is upper triangular
-    IsUnit  -   whether matrix is unitriangular
-    OpType  -   transformation type:
-                * 0 - no transformation
-                * 1 - transposition
-                * 2 - conjugate transposition
-    X   -   matrix, actial matrix is stored in X[I2:I2+M-1,J2:J2+N-1]
-    I2  -   submatrix offset
-    J2  -   submatrix offset
-
-  -- ALGLIB routine --
-     15.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixrighttrsm(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const complex_2d_array &x, const ae_int_t i2, const ae_int_t j2);
-void smp_cmatrixrighttrsm(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const complex_2d_array &x, const ae_int_t i2, const ae_int_t j2);
-
-
-/*************************************************************************
-This subroutine calculates op(A^-1)*X where:
-* X is MxN general matrix
-* A is MxM upper/lower triangular/unitriangular matrix
-* "op" may be identity transformation, transposition, conjugate transposition
-
-Multiplication result replaces X.
-Cache-oblivious algorithm is used.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of  this  function.  Because  starting/stopping  worker  thread always
-  ! involves some overhead, parallelism starts to be  profitable  for  N's
-  ! larger than 128.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS
-    N   -   matrix size, N>=0
-    M   -   matrix size, N>=0
-    A       -   matrix, actial matrix is stored in A[I1:I1+M-1,J1:J1+M-1]
-    I1      -   submatrix offset
-    J1      -   submatrix offset
-    IsUpper -   whether matrix is upper triangular
-    IsUnit  -   whether matrix is unitriangular
-    OpType  -   transformation type:
-                * 0 - no transformation
-                * 1 - transposition
-                * 2 - conjugate transposition
-    X   -   matrix, actial matrix is stored in X[I2:I2+M-1,J2:J2+N-1]
-    I2  -   submatrix offset
-    J2  -   submatrix offset
-
-  -- ALGLIB routine --
-     15.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixlefttrsm(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const complex_2d_array &x, const ae_int_t i2, const ae_int_t j2);
-void smp_cmatrixlefttrsm(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const complex_2d_array &x, const ae_int_t i2, const ae_int_t j2);
-
-
-/*************************************************************************
-This subroutine calculates X*op(A^-1) where:
-* X is MxN general matrix
-* A is NxN upper/lower triangular/unitriangular matrix
-* "op" may be identity transformation, transposition
-
-Multiplication result replaces X.
-Cache-oblivious algorithm is used.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of  this  function.  Because  starting/stopping  worker  thread always
-  ! involves some overhead, parallelism starts to be  profitable  for  N's
-  ! larger than 128.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS
-    N   -   matrix size, N>=0
-    M   -   matrix size, N>=0
-    A       -   matrix, actial matrix is stored in A[I1:I1+N-1,J1:J1+N-1]
-    I1      -   submatrix offset
-    J1      -   submatrix offset
-    IsUpper -   whether matrix is upper triangular
-    IsUnit  -   whether matrix is unitriangular
-    OpType  -   transformation type:
-                * 0 - no transformation
-                * 1 - transposition
-    X   -   matrix, actial matrix is stored in X[I2:I2+M-1,J2:J2+N-1]
-    I2  -   submatrix offset
-    J2  -   submatrix offset
-
-  -- ALGLIB routine --
-     15.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixrighttrsm(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const real_2d_array &x, const ae_int_t i2, const ae_int_t j2);
-void smp_rmatrixrighttrsm(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const real_2d_array &x, const ae_int_t i2, const ae_int_t j2);
-
-
-/*************************************************************************
-This subroutine calculates op(A^-1)*X where:
-* X is MxN general matrix
-* A is MxM upper/lower triangular/unitriangular matrix
-* "op" may be identity transformation, transposition
-
-Multiplication result replaces X.
-Cache-oblivious algorithm is used.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of  this  function.  Because  starting/stopping  worker  thread always
-  ! involves some overhead, parallelism starts to be  profitable  for  N's
-  ! larger than 128.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS
-    N   -   matrix size, N>=0
-    M   -   matrix size, N>=0
-    A       -   matrix, actial matrix is stored in A[I1:I1+M-1,J1:J1+M-1]
-    I1      -   submatrix offset
-    J1      -   submatrix offset
-    IsUpper -   whether matrix is upper triangular
-    IsUnit  -   whether matrix is unitriangular
-    OpType  -   transformation type:
-                * 0 - no transformation
-                * 1 - transposition
-    X   -   matrix, actial matrix is stored in X[I2:I2+M-1,J2:J2+N-1]
-    I2  -   submatrix offset
-    J2  -   submatrix offset
-
-  -- ALGLIB routine --
-     15.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixlefttrsm(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const real_2d_array &x, const ae_int_t i2, const ae_int_t j2);
-void smp_rmatrixlefttrsm(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const real_2d_array &x, const ae_int_t i2, const ae_int_t j2);
-
-
-/*************************************************************************
-This subroutine calculates  C=alpha*A*A^H+beta*C  or  C=alpha*A^H*A+beta*C
-where:
-* C is NxN Hermitian matrix given by its upper/lower triangle
-* A is NxK matrix when A*A^H is calculated, KxN matrix otherwise
-
-Additional info:
-* cache-oblivious algorithm is used.
-* multiplication result replaces C. If Beta=0, C elements are not used in
-  calculations (not multiplied by zero - just not referenced)
-* if Alpha=0, A is not used (not multiplied by zero - just not referenced)
-* if both Beta and Alpha are zero, C is filled by zeros.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of  this  function.  Because  starting/stopping  worker  thread always
-  ! involves some overhead, parallelism starts to be  profitable  for  N's
-  ! larger than 128.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS
-    N       -   matrix size, N>=0
-    K       -   matrix size, K>=0
-    Alpha   -   coefficient
-    A       -   matrix
-    IA      -   submatrix offset (row index)
-    JA      -   submatrix offset (column index)
-    OpTypeA -   multiplication type:
-                * 0 - A*A^H is calculated
-                * 2 - A^H*A is calculated
-    Beta    -   coefficient
-    C       -   preallocated input/output matrix
-    IC      -   submatrix offset (row index)
-    JC      -   submatrix offset (column index)
-    IsUpper -   whether upper or lower triangle of C is updated;
-                this function updates only one half of C, leaving
-                other half unchanged (not referenced at all).
-
-  -- ALGLIB routine --
-     16.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixherk(const ae_int_t n, const ae_int_t k, const double alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
-void smp_cmatrixherk(const ae_int_t n, const ae_int_t k, const double alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
-
-
-/*************************************************************************
-This subroutine calculates  C=alpha*A*A^T+beta*C  or  C=alpha*A^T*A+beta*C
-where:
-* C is NxN symmetric matrix given by its upper/lower triangle
-* A is NxK matrix when A*A^T is calculated, KxN matrix otherwise
-
-Additional info:
-* cache-oblivious algorithm is used.
-* multiplication result replaces C. If Beta=0, C elements are not used in
-  calculations (not multiplied by zero - just not referenced)
-* if Alpha=0, A is not used (not multiplied by zero - just not referenced)
-* if both Beta and Alpha are zero, C is filled by zeros.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of  this  function.  Because  starting/stopping  worker  thread always
-  ! involves some overhead, parallelism starts to be  profitable  for  N's
-  ! larger than 128.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-INPUT PARAMETERS
-    N       -   matrix size, N>=0
-    K       -   matrix size, K>=0
-    Alpha   -   coefficient
-    A       -   matrix
-    IA      -   submatrix offset (row index)
-    JA      -   submatrix offset (column index)
-    OpTypeA -   multiplication type:
-                * 0 - A*A^T is calculated
-                * 2 - A^T*A is calculated
-    Beta    -   coefficient
-    C       -   preallocated input/output matrix
-    IC      -   submatrix offset (row index)
-    JC      -   submatrix offset (column index)
-    IsUpper -   whether C is upper triangular or lower triangular
-
-  -- ALGLIB routine --
-     16.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixsyrk(const ae_int_t n, const ae_int_t k, const double alpha, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const real_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
-void smp_rmatrixsyrk(const ae_int_t n, const ae_int_t k, const double alpha, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const real_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
-
-
-/*************************************************************************
-This subroutine calculates C = alpha*op1(A)*op2(B) +beta*C where:
-* C is MxN general matrix
-* op1(A) is MxK matrix
-* op2(B) is KxN matrix
-* "op" may be identity transformation, transposition, conjugate transposition
-
-Additional info:
-* cache-oblivious algorithm is used.
-* multiplication result replaces C. If Beta=0, C elements are not used in
-  calculations (not multiplied by zero - just not referenced)
-* if Alpha=0, A is not used (not multiplied by zero - just not referenced)
-* if both Beta and Alpha are zero, C is filled by zeros.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of  this  function.  Because  starting/stopping  worker  thread always
-  ! involves some overhead, parallelism starts to be  profitable  for  N's
-  ! larger than 128.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-IMPORTANT:
-
-This function does NOT preallocate output matrix C, it MUST be preallocated
-by caller prior to calling this function. In case C does not have  enough
-space to store result, exception will be generated.
-
-INPUT PARAMETERS
-    M       -   matrix size, M>0
-    N       -   matrix size, N>0
-    K       -   matrix size, K>0
-    Alpha   -   coefficient
-    A       -   matrix
-    IA      -   submatrix offset
-    JA      -   submatrix offset
-    OpTypeA -   transformation type:
-                * 0 - no transformation
-                * 1 - transposition
-                * 2 - conjugate transposition
-    B       -   matrix
-    IB      -   submatrix offset
-    JB      -   submatrix offset
-    OpTypeB -   transformation type:
-                * 0 - no transformation
-                * 1 - transposition
-                * 2 - conjugate transposition
-    Beta    -   coefficient
-    C       -   matrix (PREALLOCATED, large enough to store result)
-    IC      -   submatrix offset
-    JC      -   submatrix offset
-
-  -- ALGLIB routine --
-     16.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixgemm(const ae_int_t m, const ae_int_t n, const ae_int_t k, const alglib::complex alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const complex_2d_array &b, const ae_int_t ib, const ae_int_t jb, const ae_int_t optypeb, const alglib::complex beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc);
-void smp_cmatrixgemm(const ae_int_t m, const ae_int_t n, const ae_int_t k, const alglib::complex alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const complex_2d_array &b, const ae_int_t ib, const ae_int_t jb, const ae_int_t optypeb, const alglib::complex beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc);
-
-
-/*************************************************************************
-This subroutine calculates C = alpha*op1(A)*op2(B) +beta*C where:
-* C is MxN general matrix
-* op1(A) is MxK matrix
-* op2(B) is KxN matrix
-* "op" may be identity transformation, transposition
-
-Additional info:
-* cache-oblivious algorithm is used.
-* multiplication result replaces C. If Beta=0, C elements are not used in
-  calculations (not multiplied by zero - just not referenced)
-* if Alpha=0, A is not used (not multiplied by zero - just not referenced)
-* if both Beta and Alpha are zero, C is filled by zeros.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of  this  function.  Because  starting/stopping  worker  thread always
-  ! involves some overhead, parallelism starts to be  profitable  for  N's
-  ! larger than 128.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-IMPORTANT:
-
-This function does NOT preallocate output matrix C, it MUST be preallocated
-by caller prior to calling this function. In case C does not have  enough
-space to store result, exception will be generated.
-
-INPUT PARAMETERS
-    M       -   matrix size, M>0
-    N       -   matrix size, N>0
-    K       -   matrix size, K>0
-    Alpha   -   coefficient
-    A       -   matrix
-    IA      -   submatrix offset
-    JA      -   submatrix offset
-    OpTypeA -   transformation type:
-                * 0 - no transformation
-                * 1 - transposition
-    B       -   matrix
-    IB      -   submatrix offset
-    JB      -   submatrix offset
-    OpTypeB -   transformation type:
-                * 0 - no transformation
-                * 1 - transposition
-    Beta    -   coefficient
-    C       -   PREALLOCATED output matrix, large enough to store result
-    IC      -   submatrix offset
-    JC      -   submatrix offset
-
-  -- ALGLIB routine --
-     2009-2013
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixgemm(const ae_int_t m, const ae_int_t n, const ae_int_t k, const double alpha, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const real_2d_array &b, const ae_int_t ib, const ae_int_t jb, const ae_int_t optypeb, const double beta, const real_2d_array &c, const ae_int_t ic, const ae_int_t jc);
-void smp_rmatrixgemm(const ae_int_t m, const ae_int_t n, const ae_int_t k, const double alpha, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const real_2d_array &b, const ae_int_t ib, const ae_int_t jb, const ae_int_t optypeb, const double beta, const real_2d_array &c, const ae_int_t ic, const ae_int_t jc);
-
-
-/*************************************************************************
-This subroutine is an older version of CMatrixHERK(), one with wrong  name
-(it is HErmitian update, not SYmmetric). It  is  left  here  for  backward
-compatibility.
-
-  -- ALGLIB routine --
-     16.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixsyrk(const ae_int_t n, const ae_int_t k, const double alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
-void smp_cmatrixsyrk(const ae_int_t n, const ae_int_t k, const double alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
-
-/*************************************************************************
-QR decomposition of a rectangular matrix of size MxN
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
-  ! problem whose size is at least 128, with best  efficiency achieved for
-  ! N's larger than 512.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of this function. We should note that QP decomposition  is  harder  to
-  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
-  ! many internal synchronization points which can not be avoided. However
-  ! parallelism starts to be profitable starting  from  N=512,   achieving
-  ! near-linear speedup for N=4096 or higher.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A   -   matrix A whose indexes range within [0..M-1, 0..N-1].
-    M   -   number of rows in matrix A.
-    N   -   number of columns in matrix A.
-
-Output parameters:
-    A   -   matrices Q and R in compact form (see below).
-    Tau -   array of scalar factors which are used to form
-            matrix Q. Array whose index ranges within [0.. Min(M-1,N-1)].
-
-Matrix A is represented as A = QR, where Q is an orthogonal matrix of size
-MxM, R - upper triangular (or upper trapezoid) matrix of size M x N.
-
-The elements of matrix R are located on and above the main diagonal of
-matrix A. The elements which are located in Tau array and below the main
-diagonal of matrix A are used to form matrix Q as follows:
-
-Matrix Q is represented as a product of elementary reflections
-
-Q = H(0)*H(2)*...*H(k-1),
-
-where k = min(m,n), and each H(i) is in the form
-
-H(i) = 1 - tau * v * (v^T)
-
-where tau is a scalar stored in Tau[I]; v - real vector,
-so that v(0:i-1) = 0, v(i) = 1, v(i+1:m-1) stored in A(i+1:m-1,i).
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixqr(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tau);
-void smp_rmatrixqr(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tau);
-
-
-/*************************************************************************
-LQ decomposition of a rectangular matrix of size MxN
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
-  ! problem whose size is at least 128, with best  efficiency achieved for
-  ! N's larger than 512.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of this function. We should note that QP decomposition  is  harder  to
-  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
-  ! many internal synchronization points which can not be avoided. However
-  ! parallelism starts to be profitable starting  from  N=512,   achieving
-  ! near-linear speedup for N=4096 or higher.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A   -   matrix A whose indexes range within [0..M-1, 0..N-1].
-    M   -   number of rows in matrix A.
-    N   -   number of columns in matrix A.
-
-Output parameters:
-    A   -   matrices L and Q in compact form (see below)
-    Tau -   array of scalar factors which are used to form
-            matrix Q. Array whose index ranges within [0..Min(M,N)-1].
-
-Matrix A is represented as A = LQ, where Q is an orthogonal matrix of size
-MxM, L - lower triangular (or lower trapezoid) matrix of size M x N.
-
-The elements of matrix L are located on and below  the  main  diagonal  of
-matrix A. The elements which are located in Tau array and above  the  main
-diagonal of matrix A are used to form matrix Q as follows:
-
-Matrix Q is represented as a product of elementary reflections
-
-Q = H(k-1)*H(k-2)*...*H(1)*H(0),
-
-where k = min(m,n), and each H(i) is of the form
-
-H(i) = 1 - tau * v * (v^T)
-
-where tau is a scalar stored in Tau[I]; v - real vector, so that v(0:i-1)=0,
-v(i) = 1, v(i+1:n-1) stored in A(i,i+1:n-1).
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixlq(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tau);
-void smp_rmatrixlq(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tau);
-
-
-/*************************************************************************
-QR decomposition of a rectangular complex matrix of size MxN
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
-  ! problem whose size is at least 128, with best  efficiency achieved for
-  ! N's larger than 512.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of this function. We should note that QP decomposition  is  harder  to
-  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
-  ! many internal synchronization points which can not be avoided. However
-  ! parallelism starts to be profitable starting  from  N=512,   achieving
-  ! near-linear speedup for N=4096 or higher.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A   -   matrix A whose indexes range within [0..M-1, 0..N-1]
-    M   -   number of rows in matrix A.
-    N   -   number of columns in matrix A.
-
-Output parameters:
-    A   -   matrices Q and R in compact form
-    Tau -   array of scalar factors which are used to form matrix Q. Array
-            whose indexes range within [0.. Min(M,N)-1]
-
-Matrix A is represented as A = QR, where Q is an orthogonal matrix of size
-MxM, R - upper triangular (or upper trapezoid) matrix of size MxN.
-
-  -- LAPACK routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-void cmatrixqr(complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_1d_array &tau);
-void smp_cmatrixqr(complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_1d_array &tau);
-
-
-/*************************************************************************
-LQ decomposition of a rectangular complex matrix of size MxN
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
-  ! problem whose size is at least 128, with best  efficiency achieved for
-  ! N's larger than 512.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of this function. We should note that QP decomposition  is  harder  to
-  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
-  ! many internal synchronization points which can not be avoided. However
-  ! parallelism starts to be profitable starting  from  N=512,   achieving
-  ! near-linear speedup for N=4096 or higher.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A   -   matrix A whose indexes range within [0..M-1, 0..N-1]
-    M   -   number of rows in matrix A.
-    N   -   number of columns in matrix A.
-
-Output parameters:
-    A   -   matrices Q and L in compact form
-    Tau -   array of scalar factors which are used to form matrix Q. Array
-            whose indexes range within [0.. Min(M,N)-1]
-
-Matrix A is represented as A = LQ, where Q is an orthogonal matrix of size
-MxM, L - lower triangular (or lower trapezoid) matrix of size MxN.
-
-  -- LAPACK routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-void cmatrixlq(complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_1d_array &tau);
-void smp_cmatrixlq(complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_1d_array &tau);
-
-
-/*************************************************************************
-Partial unpacking of matrix Q from the QR decomposition of a matrix A
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
-  ! problem whose size is at least 128, with best  efficiency achieved for
-  ! N's larger than 512.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of this function. We should note that QP decomposition  is  harder  to
-  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
-  ! many internal synchronization points which can not be avoided. However
-  ! parallelism starts to be profitable starting  from  N=512,   achieving
-  ! near-linear speedup for N=4096 or higher.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   matrices Q and R in compact form.
-                Output of RMatrixQR subroutine.
-    M       -   number of rows in given matrix A. M>=0.
-    N       -   number of columns in given matrix A. N>=0.
-    Tau     -   scalar factors which are used to form Q.
-                Output of the RMatrixQR subroutine.
-    QColumns -  required number of columns of matrix Q. M>=QColumns>=0.
-
-Output parameters:
-    Q       -   first QColumns columns of matrix Q.
-                Array whose indexes range within [0..M-1, 0..QColumns-1].
-                If QColumns=0, the array remains unchanged.
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixqrunpackq(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const real_1d_array &tau, const ae_int_t qcolumns, real_2d_array &q);
-void smp_rmatrixqrunpackq(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const real_1d_array &tau, const ae_int_t qcolumns, real_2d_array &q);
-
-
-/*************************************************************************
-Unpacking of matrix R from the QR decomposition of a matrix A
-
-Input parameters:
-    A       -   matrices Q and R in compact form.
-                Output of RMatrixQR subroutine.
-    M       -   number of rows in given matrix A. M>=0.
-    N       -   number of columns in given matrix A. N>=0.
-
-Output parameters:
-    R       -   matrix R, array[0..M-1, 0..N-1].
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixqrunpackr(const real_2d_array &a, const ae_int_t m, const ae_int_t n, real_2d_array &r);
-
-
-/*************************************************************************
-Partial unpacking of matrix Q from the LQ decomposition of a matrix A
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
-  ! problem whose size is at least 128, with best  efficiency achieved for
-  ! N's larger than 512.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of this function. We should note that QP decomposition  is  harder  to
-  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
-  ! many internal synchronization points which can not be avoided. However
-  ! parallelism starts to be profitable starting  from  N=512,   achieving
-  ! near-linear speedup for N=4096 or higher.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   matrices L and Q in compact form.
-                Output of RMatrixLQ subroutine.
-    M       -   number of rows in given matrix A. M>=0.
-    N       -   number of columns in given matrix A. N>=0.
-    Tau     -   scalar factors which are used to form Q.
-                Output of the RMatrixLQ subroutine.
-    QRows   -   required number of rows in matrix Q. N>=QRows>=0.
-
-Output parameters:
-    Q       -   first QRows rows of matrix Q. Array whose indexes range
-                within [0..QRows-1, 0..N-1]. If QRows=0, the array remains
-                unchanged.
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixlqunpackq(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const real_1d_array &tau, const ae_int_t qrows, real_2d_array &q);
-void smp_rmatrixlqunpackq(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const real_1d_array &tau, const ae_int_t qrows, real_2d_array &q);
-
-
-/*************************************************************************
-Unpacking of matrix L from the LQ decomposition of a matrix A
-
-Input parameters:
-    A       -   matrices Q and L in compact form.
-                Output of RMatrixLQ subroutine.
-    M       -   number of rows in given matrix A. M>=0.
-    N       -   number of columns in given matrix A. N>=0.
-
-Output parameters:
-    L       -   matrix L, array[0..M-1, 0..N-1].
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixlqunpackl(const real_2d_array &a, const ae_int_t m, const ae_int_t n, real_2d_array &l);
-
-
-/*************************************************************************
-Partial unpacking of matrix Q from QR decomposition of a complex matrix A.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
-  ! problem whose size is at least 128, with best  efficiency achieved for
-  ! N's larger than 512.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of this function. We should note that QP decomposition  is  harder  to
-  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
-  ! many internal synchronization points which can not be avoided. However
-  ! parallelism starts to be profitable starting  from  N=512,   achieving
-  ! near-linear speedup for N=4096 or higher.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A           -   matrices Q and R in compact form.
-                    Output of CMatrixQR subroutine .
-    M           -   number of rows in matrix A. M>=0.
-    N           -   number of columns in matrix A. N>=0.
-    Tau         -   scalar factors which are used to form Q.
-                    Output of CMatrixQR subroutine .
-    QColumns    -   required number of columns in matrix Q. M>=QColumns>=0.
-
-Output parameters:
-    Q           -   first QColumns columns of matrix Q.
-                    Array whose index ranges within [0..M-1, 0..QColumns-1].
-                    If QColumns=0, array isn't changed.
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixqrunpackq(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, const complex_1d_array &tau, const ae_int_t qcolumns, complex_2d_array &q);
-void smp_cmatrixqrunpackq(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, const complex_1d_array &tau, const ae_int_t qcolumns, complex_2d_array &q);
-
-
-/*************************************************************************
-Unpacking of matrix R from the QR decomposition of a matrix A
-
-Input parameters:
-    A       -   matrices Q and R in compact form.
-                Output of CMatrixQR subroutine.
-    M       -   number of rows in given matrix A. M>=0.
-    N       -   number of columns in given matrix A. N>=0.
-
-Output parameters:
-    R       -   matrix R, array[0..M-1, 0..N-1].
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixqrunpackr(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_2d_array &r);
-
-
-/*************************************************************************
-Partial unpacking of matrix Q from LQ decomposition of a complex matrix A.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes two  important  improvements  of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  ! * multicore support
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
-  ! * about 2-3x faster than ALGLIB for C++ without MKL
-  ! * about 7-10x faster than "pure C#" edition of ALGLIB
-  ! Difference in performance will be more striking  on  newer  CPU's with
-  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
-  ! problem whose size is at least 128, with best  efficiency achieved for
-  ! N's larger than 512.
-  !
-  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
-  ! of this function. We should note that QP decomposition  is  harder  to
-  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
-  ! many internal synchronization points which can not be avoided. However
-  ! parallelism starts to be profitable starting  from  N=512,   achieving
-  ! near-linear speedup for N=4096 or higher.
-  !
-  ! In order to use multicore features you have to:
-  ! * use commercial version of ALGLIB
-  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
-  !   multicore code will be used (for multicore support)
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A           -   matrices Q and R in compact form.
-                    Output of CMatrixLQ subroutine .
-    M           -   number of rows in matrix A. M>=0.
-    N           -   number of columns in matrix A. N>=0.
-    Tau         -   scalar factors which are used to form Q.
-                    Output of CMatrixLQ subroutine .
-    QRows       -   required number of rows in matrix Q. N>=QColumns>=0.
-
-Output parameters:
-    Q           -   first QRows rows of matrix Q.
-                    Array whose index ranges within [0..QRows-1, 0..N-1].
-                    If QRows=0, array isn't changed.
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixlqunpackq(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, const complex_1d_array &tau, const ae_int_t qrows, complex_2d_array &q);
-void smp_cmatrixlqunpackq(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, const complex_1d_array &tau, const ae_int_t qrows, complex_2d_array &q);
-
-
-/*************************************************************************
-Unpacking of matrix L from the LQ decomposition of a matrix A
-
-Input parameters:
-    A       -   matrices Q and L in compact form.
-                Output of CMatrixLQ subroutine.
-    M       -   number of rows in given matrix A. M>=0.
-    N       -   number of columns in given matrix A. N>=0.
-
-Output parameters:
-    L       -   matrix L, array[0..M-1, 0..N-1].
-
-  -- ALGLIB routine --
-     17.02.2010
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixlqunpackl(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_2d_array &l);
-
-
-/*************************************************************************
-Reduction of a rectangular matrix to  bidiagonal form
-
-The algorithm reduces the rectangular matrix A to  bidiagonal form by
-orthogonal transformations P and Q: A = Q*B*(P^T).
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Multithreaded acceleration is NOT supported for this function  because
-  ! bidiagonal decompostion is inherently sequential in nature.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   source matrix. array[0..M-1, 0..N-1]
-    M       -   number of rows in matrix A.
-    N       -   number of columns in matrix A.
-
-Output parameters:
-    A       -   matrices Q, B, P in compact form (see below).
-    TauQ    -   scalar factors which are used to form matrix Q.
-    TauP    -   scalar factors which are used to form matrix P.
-
-The main diagonal and one of the  secondary  diagonals  of  matrix  A  are
-replaced with bidiagonal  matrix  B.  Other  elements  contain  elementary
-reflections which form MxM matrix Q and NxN matrix P, respectively.
-
-If M>=N, B is the upper  bidiagonal  MxN  matrix  and  is  stored  in  the
-corresponding  elements  of  matrix  A.  Matrix  Q  is  represented  as  a
-product   of   elementary   reflections   Q = H(0)*H(1)*...*H(n-1),  where
-H(i) = 1-tau*v*v'. Here tau is a scalar which is stored  in  TauQ[i],  and
-vector v has the following  structure:  v(0:i-1)=0, v(i)=1, v(i+1:m-1)  is
-stored   in   elements   A(i+1:m-1,i).   Matrix   P  is  as  follows:  P =
-G(0)*G(1)*...*G(n-2), where G(i) = 1 - tau*u*u'. Tau is stored in TauP[i],
-u(0:i)=0, u(i+1)=1, u(i+2:n-1) is stored in elements A(i,i+2:n-1).
-
-If M<N, B is the  lower  bidiagonal  MxN  matrix  and  is  stored  in  the
-corresponding   elements  of  matrix  A.  Q = H(0)*H(1)*...*H(m-2),  where
-H(i) = 1 - tau*v*v', tau is stored in TauQ, v(0:i)=0, v(i+1)=1, v(i+2:m-1)
-is    stored    in   elements   A(i+2:m-1,i).    P = G(0)*G(1)*...*G(m-1),
-G(i) = 1-tau*u*u', tau is stored in  TauP,  u(0:i-1)=0, u(i)=1, u(i+1:n-1)
-is stored in A(i,i+1:n-1).
-
-EXAMPLE:
-
-m=6, n=5 (m > n):               m=5, n=6 (m < n):
-
-(  d   e   u1  u1  u1 )         (  d   u1  u1  u1  u1  u1 )
-(  v1  d   e   u2  u2 )         (  e   d   u2  u2  u2  u2 )
-(  v1  v2  d   e   u3 )         (  v1  e   d   u3  u3  u3 )
-(  v1  v2  v3  d   e  )         (  v1  v2  e   d   u4  u4 )
-(  v1  v2  v3  v4  d  )         (  v1  v2  v3  e   d   u5 )
-(  v1  v2  v3  v4  v5 )
-
-Here vi and ui are vectors which form H(i) and G(i), and d and e -
-are the diagonal and off-diagonal elements of matrix B.
-
-  -- LAPACK routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994.
-     Sergey Bochkanov, ALGLIB project, translation from FORTRAN to
-     pseudocode, 2007-2010.
-*************************************************************************/
-void rmatrixbd(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tauq, real_1d_array &taup);
-
-
-/*************************************************************************
-Unpacking matrix Q which reduces a matrix to bidiagonal form.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    QP          -   matrices Q and P in compact form.
-                    Output of ToBidiagonal subroutine.
-    M           -   number of rows in matrix A.
-    N           -   number of columns in matrix A.
-    TAUQ        -   scalar factors which are used to form Q.
-                    Output of ToBidiagonal subroutine.
-    QColumns    -   required number of columns in matrix Q.
-                    M>=QColumns>=0.
-
-Output parameters:
-    Q           -   first QColumns columns of matrix Q.
-                    Array[0..M-1, 0..QColumns-1]
-                    If QColumns=0, the array is not modified.
-
-  -- ALGLIB --
-     2005-2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixbdunpackq(const real_2d_array &qp, const ae_int_t m, const ae_int_t n, const real_1d_array &tauq, const ae_int_t qcolumns, real_2d_array &q);
-
-
-/*************************************************************************
-Multiplication by matrix Q which reduces matrix A to  bidiagonal form.
-
-The algorithm allows pre- or post-multiply by Q or Q'.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    QP          -   matrices Q and P in compact form.
-                    Output of ToBidiagonal subroutine.
-    M           -   number of rows in matrix A.
-    N           -   number of columns in matrix A.
-    TAUQ        -   scalar factors which are used to form Q.
-                    Output of ToBidiagonal subroutine.
-    Z           -   multiplied matrix.
-                    array[0..ZRows-1,0..ZColumns-1]
-    ZRows       -   number of rows in matrix Z. If FromTheRight=False,
-                    ZRows=M, otherwise ZRows can be arbitrary.
-    ZColumns    -   number of columns in matrix Z. If FromTheRight=True,
-                    ZColumns=M, otherwise ZColumns can be arbitrary.
-    FromTheRight -  pre- or post-multiply.
-    DoTranspose -   multiply by Q or Q'.
-
-Output parameters:
-    Z           -   product of Z and Q.
-                    Array[0..ZRows-1,0..ZColumns-1]
-                    If ZRows=0 or ZColumns=0, the array is not modified.
-
-  -- ALGLIB --
-     2005-2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixbdmultiplybyq(const real_2d_array &qp, const ae_int_t m, const ae_int_t n, const real_1d_array &tauq, real_2d_array &z, const ae_int_t zrows, const ae_int_t zcolumns, const bool fromtheright, const bool dotranspose);
-
-
-/*************************************************************************
-Unpacking matrix P which reduces matrix A to bidiagonal form.
-The subroutine returns transposed matrix P.
-
-Input parameters:
-    QP      -   matrices Q and P in compact form.
-                Output of ToBidiagonal subroutine.
-    M       -   number of rows in matrix A.
-    N       -   number of columns in matrix A.
-    TAUP    -   scalar factors which are used to form P.
-                Output of ToBidiagonal subroutine.
-    PTRows  -   required number of rows of matrix P^T. N >= PTRows >= 0.
-
-Output parameters:
-    PT      -   first PTRows columns of matrix P^T
-                Array[0..PTRows-1, 0..N-1]
-                If PTRows=0, the array is not modified.
-
-  -- ALGLIB --
-     2005-2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixbdunpackpt(const real_2d_array &qp, const ae_int_t m, const ae_int_t n, const real_1d_array &taup, const ae_int_t ptrows, real_2d_array &pt);
-
-
-/*************************************************************************
-Multiplication by matrix P which reduces matrix A to  bidiagonal form.
-
-The algorithm allows pre- or post-multiply by P or P'.
-
-Input parameters:
-    QP          -   matrices Q and P in compact form.
-                    Output of RMatrixBD subroutine.
-    M           -   number of rows in matrix A.
-    N           -   number of columns in matrix A.
-    TAUP        -   scalar factors which are used to form P.
-                    Output of RMatrixBD subroutine.
-    Z           -   multiplied matrix.
-                    Array whose indexes range within [0..ZRows-1,0..ZColumns-1].
-    ZRows       -   number of rows in matrix Z. If FromTheRight=False,
-                    ZRows=N, otherwise ZRows can be arbitrary.
-    ZColumns    -   number of columns in matrix Z. If FromTheRight=True,
-                    ZColumns=N, otherwise ZColumns can be arbitrary.
-    FromTheRight -  pre- or post-multiply.
-    DoTranspose -   multiply by P or P'.
-
-Output parameters:
-    Z - product of Z and P.
-                Array whose indexes range within [0..ZRows-1,0..ZColumns-1].
-                If ZRows=0 or ZColumns=0, the array is not modified.
-
-  -- ALGLIB --
-     2005-2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixbdmultiplybyp(const real_2d_array &qp, const ae_int_t m, const ae_int_t n, const real_1d_array &taup, real_2d_array &z, const ae_int_t zrows, const ae_int_t zcolumns, const bool fromtheright, const bool dotranspose);
-
-
-/*************************************************************************
-Unpacking of the main and secondary diagonals of bidiagonal decomposition
-of matrix A.
-
-Input parameters:
-    B   -   output of RMatrixBD subroutine.
-    M   -   number of rows in matrix B.
-    N   -   number of columns in matrix B.
-
-Output parameters:
-    IsUpper -   True, if the matrix is upper bidiagonal.
-                otherwise IsUpper is False.
-    D       -   the main diagonal.
-                Array whose index ranges within [0..Min(M,N)-1].
-    E       -   the secondary diagonal (upper or lower, depending on
-                the value of IsUpper).
-                Array index ranges within [0..Min(M,N)-1], the last
-                element is not used.
-
-  -- ALGLIB --
-     2005-2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixbdunpackdiagonals(const real_2d_array &b, const ae_int_t m, const ae_int_t n, bool &isupper, real_1d_array &d, real_1d_array &e);
-
-
-/*************************************************************************
-Reduction of a square matrix to  upper Hessenberg form: Q'*A*Q = H,
-where Q is an orthogonal matrix, H - Hessenberg matrix.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   matrix A with elements [0..N-1, 0..N-1]
-    N       -   size of matrix A.
-
-Output parameters:
-    A       -   matrices Q and P in  compact form (see below).
-    Tau     -   array of scalar factors which are used to form matrix Q.
-                Array whose index ranges within [0..N-2]
-
-Matrix H is located on the main diagonal, on the lower secondary  diagonal
-and above the main diagonal of matrix A. The elements which are used to
-form matrix Q are situated in array Tau and below the lower secondary
-diagonal of matrix A as follows:
-
-Matrix Q is represented as a product of elementary reflections
-
-Q = H(0)*H(2)*...*H(n-2),
-
-where each H(i) is given by
-
-H(i) = 1 - tau * v * (v^T)
-
-where tau is a scalar stored in Tau[I]; v - is a real vector,
-so that v(0:i) = 0, v(i+1) = 1, v(i+2:n-1) stored in A(i+2:n-1,i).
-
-  -- LAPACK routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     October 31, 1992
-*************************************************************************/
-void rmatrixhessenberg(real_2d_array &a, const ae_int_t n, real_1d_array &tau);
-
-
-/*************************************************************************
-Unpacking matrix Q which reduces matrix A to upper Hessenberg form
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A   -   output of RMatrixHessenberg subroutine.
-    N   -   size of matrix A.
-    Tau -   scalar factors which are used to form Q.
-            Output of RMatrixHessenberg subroutine.
-
-Output parameters:
-    Q   -   matrix Q.
-            Array whose indexes range within [0..N-1, 0..N-1].
-
-  -- ALGLIB --
-     2005-2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixhessenbergunpackq(const real_2d_array &a, const ae_int_t n, const real_1d_array &tau, real_2d_array &q);
-
-
-/*************************************************************************
-Unpacking matrix H (the result of matrix A reduction to upper Hessenberg form)
-
-Input parameters:
-    A   -   output of RMatrixHessenberg subroutine.
-    N   -   size of matrix A.
-
-Output parameters:
-    H   -   matrix H. Array whose indexes range within [0..N-1, 0..N-1].
-
-  -- ALGLIB --
-     2005-2010
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixhessenbergunpackh(const real_2d_array &a, const ae_int_t n, real_2d_array &h);
-
-
-/*************************************************************************
-Reduction of a symmetric matrix which is given by its higher or lower
-triangular part to a tridiagonal matrix using orthogonal similarity
-transformation: Q'*A*Q=T.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   matrix to be transformed
-                array with elements [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    IsUpper -   storage format. If IsUpper = True, then matrix A is given
-                by its upper triangle, and the lower triangle is not used
-                and not modified by the algorithm, and vice versa
-                if IsUpper = False.
-
-Output parameters:
-    A       -   matrices T and Q in  compact form (see lower)
-    Tau     -   array of factors which are forming matrices H(i)
-                array with elements [0..N-2].
-    D       -   main diagonal of symmetric matrix T.
-                array with elements [0..N-1].
-    E       -   secondary diagonal of symmetric matrix T.
-                array with elements [0..N-2].
-
-
-  If IsUpper=True, the matrix Q is represented as a product of elementary
-  reflectors
-
-     Q = H(n-2) . . . H(2) H(0).
-
-  Each H(i) has the form
-
-     H(i) = I - tau * v * v'
-
-  where tau is a real scalar, and v is a real vector with
-  v(i+1:n-1) = 0, v(i) = 1, v(0:i-1) is stored on exit in
-  A(0:i-1,i+1), and tau in TAU(i).
-
-  If IsUpper=False, the matrix Q is represented as a product of elementary
-  reflectors
-
-     Q = H(0) H(2) . . . H(n-2).
-
-  Each H(i) has the form
-
-     H(i) = I - tau * v * v'
-
-  where tau is a real scalar, and v is a real vector with
-  v(0:i) = 0, v(i+1) = 1, v(i+2:n-1) is stored on exit in A(i+2:n-1,i),
-  and tau in TAU(i).
-
-  The contents of A on exit are illustrated by the following examples
-  with n = 5:
-
-  if UPLO = 'U':                       if UPLO = 'L':
-
-    (  d   e   v1  v2  v3 )              (  d                  )
-    (      d   e   v2  v3 )              (  e   d              )
-    (          d   e   v3 )              (  v0  e   d          )
-    (              d   e  )              (  v0  v1  e   d      )
-    (                  d  )              (  v0  v1  v2  e   d  )
-
-  where d and e denote diagonal and off-diagonal elements of T, and vi
-  denotes an element of the vector defining H(i).
-
-  -- LAPACK routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     October 31, 1992
-*************************************************************************/
-void smatrixtd(real_2d_array &a, const ae_int_t n, const bool isupper, real_1d_array &tau, real_1d_array &d, real_1d_array &e);
-
-
-/*************************************************************************
-Unpacking matrix Q which reduces symmetric matrix to a tridiagonal
-form.
-
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   the result of a SMatrixTD subroutine
-    N       -   size of matrix A.
-    IsUpper -   storage format (a parameter of SMatrixTD subroutine)
-    Tau     -   the result of a SMatrixTD subroutine
-
-Output parameters:
-    Q       -   transformation matrix.
-                array with elements [0..N-1, 0..N-1].
-
-  -- ALGLIB --
-     Copyright 2005-2010 by Bochkanov Sergey
-*************************************************************************/
-void smatrixtdunpackq(const real_2d_array &a, const ae_int_t n, const bool isupper, const real_1d_array &tau, real_2d_array &q);
-
-
-/*************************************************************************
-Reduction of a Hermitian matrix which is given  by  its  higher  or  lower
-triangular part to a real  tridiagonal  matrix  using  unitary  similarity
-transformation: Q'*A*Q = T.
-
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   matrix to be transformed
-                array with elements [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    IsUpper -   storage format. If IsUpper = True, then matrix A is  given
-                by its upper triangle, and the lower triangle is not  used
-                and not modified by the algorithm, and vice versa
-                if IsUpper = False.
-
-Output parameters:
-    A       -   matrices T and Q in  compact form (see lower)
-    Tau     -   array of factors which are forming matrices H(i)
-                array with elements [0..N-2].
-    D       -   main diagonal of real symmetric matrix T.
-                array with elements [0..N-1].
-    E       -   secondary diagonal of real symmetric matrix T.
-                array with elements [0..N-2].
-
-
-  If IsUpper=True, the matrix Q is represented as a product of elementary
-  reflectors
-
-     Q = H(n-2) . . . H(2) H(0).
-
-  Each H(i) has the form
-
-     H(i) = I - tau * v * v'
-
-  where tau is a complex scalar, and v is a complex vector with
-  v(i+1:n-1) = 0, v(i) = 1, v(0:i-1) is stored on exit in
-  A(0:i-1,i+1), and tau in TAU(i).
-
-  If IsUpper=False, the matrix Q is represented as a product of elementary
-  reflectors
-
-     Q = H(0) H(2) . . . H(n-2).
-
-  Each H(i) has the form
-
-     H(i) = I - tau * v * v'
-
-  where tau is a complex scalar, and v is a complex vector with
-  v(0:i) = 0, v(i+1) = 1, v(i+2:n-1) is stored on exit in A(i+2:n-1,i),
-  and tau in TAU(i).
-
-  The contents of A on exit are illustrated by the following examples
-  with n = 5:
-
-  if UPLO = 'U':                       if UPLO = 'L':
-
-    (  d   e   v1  v2  v3 )              (  d                  )
-    (      d   e   v2  v3 )              (  e   d              )
-    (          d   e   v3 )              (  v0  e   d          )
-    (              d   e  )              (  v0  v1  e   d      )
-    (                  d  )              (  v0  v1  v2  e   d  )
-
-where d and e denote diagonal and off-diagonal elements of T, and vi
-denotes an element of the vector defining H(i).
-
-  -- LAPACK routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     October 31, 1992
-*************************************************************************/
-void hmatrixtd(complex_2d_array &a, const ae_int_t n, const bool isupper, complex_1d_array &tau, real_1d_array &d, real_1d_array &e);
-
-
-/*************************************************************************
-Unpacking matrix Q which reduces a Hermitian matrix to a real  tridiagonal
-form.
-
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   the result of a HMatrixTD subroutine
-    N       -   size of matrix A.
-    IsUpper -   storage format (a parameter of HMatrixTD subroutine)
-    Tau     -   the result of a HMatrixTD subroutine
-
-Output parameters:
-    Q       -   transformation matrix.
-                array with elements [0..N-1, 0..N-1].
-
-  -- ALGLIB --
-     Copyright 2005-2010 by Bochkanov Sergey
-*************************************************************************/
-void hmatrixtdunpackq(const complex_2d_array &a, const ae_int_t n, const bool isupper, const complex_1d_array &tau, complex_2d_array &q);
-
-/*************************************************************************
-Singular value decomposition of a bidiagonal matrix (extended algorithm)
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-The algorithm performs the singular value decomposition  of  a  bidiagonal
-matrix B (upper or lower) representing it as B = Q*S*P^T, where Q and  P -
-orthogonal matrices, S - diagonal matrix with non-negative elements on the
-main diagonal, in descending order.
-
-The  algorithm  finds  singular  values.  In  addition,  the algorithm can
-calculate  matrices  Q  and P (more precisely, not the matrices, but their
-product  with  given  matrices U and VT - U*Q and (P^T)*VT)).  Of  course,
-matrices U and VT can be of any type, including identity. Furthermore, the
-algorithm can calculate Q'*C (this product is calculated more  effectively
-than U*Q,  because  this calculation operates with rows instead  of matrix
-columns).
-
-The feature of the algorithm is its ability to find  all  singular  values
-including those which are arbitrarily close to 0  with  relative  accuracy
-close to  machine precision. If the parameter IsFractionalAccuracyRequired
-is set to True, all singular values will have high relative accuracy close
-to machine precision. If the parameter is set to False, only  the  biggest
-singular value will have relative accuracy  close  to  machine  precision.
-The absolute error of other singular values is equal to the absolute error
-of the biggest singular value.
-
-Input parameters:
-    D       -   main diagonal of matrix B.
-                Array whose index ranges within [0..N-1].
-    E       -   superdiagonal (or subdiagonal) of matrix B.
-                Array whose index ranges within [0..N-2].
-    N       -   size of matrix B.
-    IsUpper -   True, if the matrix is upper bidiagonal.
-    IsFractionalAccuracyRequired -
-                THIS PARAMETER IS IGNORED SINCE ALGLIB 3.5.0
-                SINGULAR VALUES ARE ALWAYS SEARCHED WITH HIGH ACCURACY.
-    U       -   matrix to be multiplied by Q.
-                Array whose indexes range within [0..NRU-1, 0..N-1].
-                The matrix can be bigger, in that case only the  submatrix
-                [0..NRU-1, 0..N-1] will be multiplied by Q.
-    NRU     -   number of rows in matrix U.
-    C       -   matrix to be multiplied by Q'.
-                Array whose indexes range within [0..N-1, 0..NCC-1].
-                The matrix can be bigger, in that case only the  submatrix
-                [0..N-1, 0..NCC-1] will be multiplied by Q'.
-    NCC     -   number of columns in matrix C.
-    VT      -   matrix to be multiplied by P^T.
-                Array whose indexes range within [0..N-1, 0..NCVT-1].
-                The matrix can be bigger, in that case only the  submatrix
-                [0..N-1, 0..NCVT-1] will be multiplied by P^T.
-    NCVT    -   number of columns in matrix VT.
-
-Output parameters:
-    D       -   singular values of matrix B in descending order.
-    U       -   if NRU>0, contains matrix U*Q.
-    VT      -   if NCVT>0, contains matrix (P^T)*VT.
-    C       -   if NCC>0, contains matrix Q'*C.
-
-Result:
-    True, if the algorithm has converged.
-    False, if the algorithm hasn't converged (rare case).
-
-NOTE: multiplication U*Q is performed by means of transposition to internal
-      buffer, multiplication and backward transposition. It helps to avoid
-      costly columnwise operations and speed-up algorithm.
-
-Additional information:
-    The type of convergence is controlled by the internal  parameter  TOL.
-    If the parameter is greater than 0, the singular values will have
-    relative accuracy TOL. If TOL<0, the singular values will have
-    absolute accuracy ABS(TOL)*norm(B).
-    By default, |TOL| falls within the range of 10*Epsilon and 100*Epsilon,
-    where Epsilon is the machine precision. It is not  recommended  to  use
-    TOL less than 10*Epsilon since this will  considerably  slow  down  the
-    algorithm and may not lead to error decreasing.
-
-History:
-    * 31 March, 2007.
-        changed MAXITR from 6 to 12.
-
-  -- LAPACK routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     October 31, 1999.
-*************************************************************************/
-bool rmatrixbdsvd(real_1d_array &d, const real_1d_array &e, const ae_int_t n, const bool isupper, const bool isfractionalaccuracyrequired, real_2d_array &u, const ae_int_t nru, real_2d_array &c, const ae_int_t ncc, real_2d_array &vt, const ae_int_t ncvt);
-
-/*************************************************************************
-Singular value decomposition of a rectangular matrix.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is only partially supported (some parts are
-  ! optimized, but most - are not).
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-The algorithm calculates the singular value decomposition of a matrix of
-size MxN: A = U * S * V^T
-
-The algorithm finds the singular values and, optionally, matrices U and V^T.
-The algorithm can find both first min(M,N) columns of matrix U and rows of
-matrix V^T (singular vectors), and matrices U and V^T wholly (of sizes MxM
-and NxN respectively).
-
-Take into account that the subroutine does not return matrix V but V^T.
-
-Input parameters:
-    A           -   matrix to be decomposed.
-                    Array whose indexes range within [0..M-1, 0..N-1].
-    M           -   number of rows in matrix A.
-    N           -   number of columns in matrix A.
-    UNeeded     -   0, 1 or 2. See the description of the parameter U.
-    VTNeeded    -   0, 1 or 2. See the description of the parameter VT.
-    AdditionalMemory -
-                    If the parameter:
-                     * equals 0, the algorithm doesn’t use additional
-                       memory (lower requirements, lower performance).
-                     * equals 1, the algorithm uses additional
-                       memory of size min(M,N)*min(M,N) of real numbers.
-                       It often speeds up the algorithm.
-                     * equals 2, the algorithm uses additional
-                       memory of size M*min(M,N) of real numbers.
-                       It allows to get a maximum performance.
-                    The recommended value of the parameter is 2.
-
-Output parameters:
-    W           -   contains singular values in descending order.
-    U           -   if UNeeded=0, U isn't changed, the left singular vectors
-                    are not calculated.
-                    if Uneeded=1, U contains left singular vectors (first
-                    min(M,N) columns of matrix U). Array whose indexes range
-                    within [0..M-1, 0..Min(M,N)-1].
-                    if UNeeded=2, U contains matrix U wholly. Array whose
-                    indexes range within [0..M-1, 0..M-1].
-    VT          -   if VTNeeded=0, VT isn’t changed, the right singular vectors
-                    are not calculated.
-                    if VTNeeded=1, VT contains right singular vectors (first
-                    min(M,N) rows of matrix V^T). Array whose indexes range
-                    within [0..min(M,N)-1, 0..N-1].
-                    if VTNeeded=2, VT contains matrix V^T wholly. Array whose
-                    indexes range within [0..N-1, 0..N-1].
-
-  -- ALGLIB --
-     Copyright 2005 by Bochkanov Sergey
-*************************************************************************/
-bool rmatrixsvd(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const ae_int_t uneeded, const ae_int_t vtneeded, const ae_int_t additionalmemory, real_1d_array &w, real_2d_array &u, real_2d_array &vt);
-bool smp_rmatrixsvd(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const ae_int_t uneeded, const ae_int_t vtneeded, const ae_int_t additionalmemory, real_1d_array &w, real_2d_array &u, real_2d_array &vt);
-
-/*************************************************************************
-Finding the eigenvalues and eigenvectors of a symmetric matrix
-
-The algorithm finds eigen pairs of a symmetric matrix by reducing it to
-tridiagonal form and using the QL/QR algorithm.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   symmetric matrix which is given by its upper or lower
-                triangular part.
-                Array whose indexes range within [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
-                If ZNeeded is equal to:
-                 * 0, the eigenvectors are not returned;
-                 * 1, the eigenvectors are returned.
-    IsUpper -   storage format.
-
-Output parameters:
-    D       -   eigenvalues in ascending order.
-                Array whose index ranges within [0..N-1].
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z hasn’t changed;
-                 * 1, Z contains the eigenvectors.
-                Array whose indexes range within [0..N-1, 0..N-1].
-                The eigenvectors are stored in the matrix columns.
-
-Result:
-    True, if the algorithm has converged.
-    False, if the algorithm hasn't converged (rare case).
-
-  -- ALGLIB --
-     Copyright 2005-2008 by Bochkanov Sergey
-*************************************************************************/
-bool smatrixevd(const real_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, real_1d_array &d, real_2d_array &z);
-
-
-/*************************************************************************
-Subroutine for finding the eigenvalues (and eigenvectors) of  a  symmetric
-matrix  in  a  given half open interval (A, B] by using  a  bisection  and
-inverse iteration
-
-Input parameters:
-    A       -   symmetric matrix which is given by its upper or lower
-                triangular part. Array [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
-                If ZNeeded is equal to:
-                 * 0, the eigenvectors are not returned;
-                 * 1, the eigenvectors are returned.
-    IsUpperA -  storage format of matrix A.
-    B1, B2 -    half open interval (B1, B2] to search eigenvalues in.
-
-Output parameters:
-    M       -   number of eigenvalues found in a given half-interval (M>=0).
-    W       -   array of the eigenvalues found.
-                Array whose index ranges within [0..M-1].
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z hasn’t changed;
-                 * 1, Z contains eigenvectors.
-                Array whose indexes range within [0..N-1, 0..M-1].
-                The eigenvectors are stored in the matrix columns.
-
-Result:
-    True, if successful. M contains the number of eigenvalues in the given
-    half-interval (could be equal to 0), W contains the eigenvalues,
-    Z contains the eigenvectors (if needed).
-
-    False, if the bisection method subroutine wasn't able to find the
-    eigenvalues in the given interval or if the inverse iteration subroutine
-    wasn't able to find all the corresponding eigenvectors.
-    In that case, the eigenvalues and eigenvectors are not returned,
-    M is equal to 0.
-
-  -- ALGLIB --
-     Copyright 07.01.2006 by Bochkanov Sergey
-*************************************************************************/
-bool smatrixevdr(const real_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, const double b1, const double b2, ae_int_t &m, real_1d_array &w, real_2d_array &z);
-
-
-/*************************************************************************
-Subroutine for finding the eigenvalues and  eigenvectors  of  a  symmetric
-matrix with given indexes by using bisection and inverse iteration methods.
-
-Input parameters:
-    A       -   symmetric matrix which is given by its upper or lower
-                triangular part. Array whose indexes range within [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
-                If ZNeeded is equal to:
-                 * 0, the eigenvectors are not returned;
-                 * 1, the eigenvectors are returned.
-    IsUpperA -  storage format of matrix A.
-    I1, I2 -    index interval for searching (from I1 to I2).
-                0 <= I1 <= I2 <= N-1.
-
-Output parameters:
-    W       -   array of the eigenvalues found.
-                Array whose index ranges within [0..I2-I1].
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z hasn’t changed;
-                 * 1, Z contains eigenvectors.
-                Array whose indexes range within [0..N-1, 0..I2-I1].
-                In that case, the eigenvectors are stored in the matrix columns.
-
-Result:
-    True, if successful. W contains the eigenvalues, Z contains the
-    eigenvectors (if needed).
-
-    False, if the bisection method subroutine wasn't able to find the
-    eigenvalues in the given interval or if the inverse iteration subroutine
-    wasn't able to find all the corresponding eigenvectors.
-    In that case, the eigenvalues and eigenvectors are not returned.
-
-  -- ALGLIB --
-     Copyright 07.01.2006 by Bochkanov Sergey
-*************************************************************************/
-bool smatrixevdi(const real_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, const ae_int_t i1, const ae_int_t i2, real_1d_array &w, real_2d_array &z);
-
-
-/*************************************************************************
-Finding the eigenvalues and eigenvectors of a Hermitian matrix
-
-The algorithm finds eigen pairs of a Hermitian matrix by  reducing  it  to
-real tridiagonal form and using the QL/QR algorithm.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    A       -   Hermitian matrix which is given  by  its  upper  or  lower
-                triangular part.
-                Array whose indexes range within [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    IsUpper -   storage format.
-    ZNeeded -   flag controlling whether the eigenvectors  are  needed  or
-                not. If ZNeeded is equal to:
-                 * 0, the eigenvectors are not returned;
-                 * 1, the eigenvectors are returned.
-
-Output parameters:
-    D       -   eigenvalues in ascending order.
-                Array whose index ranges within [0..N-1].
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z hasn’t changed;
-                 * 1, Z contains the eigenvectors.
-                Array whose indexes range within [0..N-1, 0..N-1].
-                The eigenvectors are stored in the matrix columns.
-
-Result:
-    True, if the algorithm has converged.
-    False, if the algorithm hasn't converged (rare case).
-
-Note:
-    eigenvectors of Hermitian matrix are defined up to  multiplication  by
-    a complex number L, such that |L|=1.
-
-  -- ALGLIB --
-     Copyright 2005, 23 March 2007 by Bochkanov Sergey
-*************************************************************************/
-bool hmatrixevd(const complex_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, real_1d_array &d, complex_2d_array &z);
-
-
-/*************************************************************************
-Subroutine for finding the eigenvalues (and eigenvectors) of  a  Hermitian
-matrix  in  a  given half-interval (A, B] by using a bisection and inverse
-iteration
-
-Input parameters:
-    A       -   Hermitian matrix which is given  by  its  upper  or  lower
-                triangular  part.  Array  whose   indexes   range   within
-                [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    ZNeeded -   flag controlling whether the eigenvectors  are  needed  or
-                not. If ZNeeded is equal to:
-                 * 0, the eigenvectors are not returned;
-                 * 1, the eigenvectors are returned.
-    IsUpperA -  storage format of matrix A.
-    B1, B2 -    half-interval (B1, B2] to search eigenvalues in.
-
-Output parameters:
-    M       -   number of eigenvalues found in a given half-interval, M>=0
-    W       -   array of the eigenvalues found.
-                Array whose index ranges within [0..M-1].
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z hasn’t changed;
-                 * 1, Z contains eigenvectors.
-                Array whose indexes range within [0..N-1, 0..M-1].
-                The eigenvectors are stored in the matrix columns.
-
-Result:
-    True, if successful. M contains the number of eigenvalues in the given
-    half-interval (could be equal to 0), W contains the eigenvalues,
-    Z contains the eigenvectors (if needed).
-
-    False, if the bisection method subroutine  wasn't  able  to  find  the
-    eigenvalues  in  the  given  interval  or  if  the  inverse  iteration
-    subroutine  wasn't  able  to  find all the corresponding eigenvectors.
-    In that case, the eigenvalues and eigenvectors are not returned, M  is
-    equal to 0.
-
-Note:
-    eigen vectors of Hermitian matrix are defined up to multiplication  by
-    a complex number L, such as |L|=1.
-
-  -- ALGLIB --
-     Copyright 07.01.2006, 24.03.2007 by Bochkanov Sergey.
-*************************************************************************/
-bool hmatrixevdr(const complex_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, const double b1, const double b2, ae_int_t &m, real_1d_array &w, complex_2d_array &z);
-
-
-/*************************************************************************
-Subroutine for finding the eigenvalues and  eigenvectors  of  a  Hermitian
-matrix with given indexes by using bisection and inverse iteration methods
-
-Input parameters:
-    A       -   Hermitian matrix which is given  by  its  upper  or  lower
-                triangular part.
-                Array whose indexes range within [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    ZNeeded -   flag controlling whether the eigenvectors  are  needed  or
-                not. If ZNeeded is equal to:
-                 * 0, the eigenvectors are not returned;
-                 * 1, the eigenvectors are returned.
-    IsUpperA -  storage format of matrix A.
-    I1, I2 -    index interval for searching (from I1 to I2).
-                0 <= I1 <= I2 <= N-1.
-
-Output parameters:
-    W       -   array of the eigenvalues found.
-                Array whose index ranges within [0..I2-I1].
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z hasn’t changed;
-                 * 1, Z contains eigenvectors.
-                Array whose indexes range within [0..N-1, 0..I2-I1].
-                In  that  case,  the eigenvectors are stored in the matrix
-                columns.
-
-Result:
-    True, if successful. W contains the eigenvalues, Z contains the
-    eigenvectors (if needed).
-
-    False, if the bisection method subroutine  wasn't  able  to  find  the
-    eigenvalues  in  the  given  interval  or  if  the  inverse  iteration
-    subroutine wasn't able to find  all  the  corresponding  eigenvectors.
-    In that case, the eigenvalues and eigenvectors are not returned.
-
-Note:
-    eigen vectors of Hermitian matrix are defined up to multiplication  by
-    a complex number L, such as |L|=1.
-
-  -- ALGLIB --
-     Copyright 07.01.2006, 24.03.2007 by Bochkanov Sergey.
-*************************************************************************/
-bool hmatrixevdi(const complex_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, const ae_int_t i1, const ae_int_t i2, real_1d_array &w, complex_2d_array &z);
-
-
-/*************************************************************************
-Finding the eigenvalues and eigenvectors of a tridiagonal symmetric matrix
-
-The algorithm finds the eigen pairs of a tridiagonal symmetric matrix by
-using an QL/QR algorithm with implicit shifts.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Generally, commercial ALGLIB is several times faster than  open-source
-  ! generic C edition, and many times faster than open-source C# edition.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-Input parameters:
-    D       -   the main diagonal of a tridiagonal matrix.
-                Array whose index ranges within [0..N-1].
-    E       -   the secondary diagonal of a tridiagonal matrix.
-                Array whose index ranges within [0..N-2].
-    N       -   size of matrix A.
-    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
-                If ZNeeded is equal to:
-                 * 0, the eigenvectors are not needed;
-                 * 1, the eigenvectors of a tridiagonal matrix
-                   are multiplied by the square matrix Z. It is used if the
-                   tridiagonal matrix is obtained by the similarity
-                   transformation of a symmetric matrix;
-                 * 2, the eigenvectors of a tridiagonal matrix replace the
-                   square matrix Z;
-                 * 3, matrix Z contains the first row of the eigenvectors
-                   matrix.
-    Z       -   if ZNeeded=1, Z contains the square matrix by which the
-                eigenvectors are multiplied.
-                Array whose indexes range within [0..N-1, 0..N-1].
-
-Output parameters:
-    D       -   eigenvalues in ascending order.
-                Array whose index ranges within [0..N-1].
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z hasn’t changed;
-                 * 1, Z contains the product of a given matrix (from the left)
-                   and the eigenvectors matrix (from the right);
-                 * 2, Z contains the eigenvectors.
-                 * 3, Z contains the first row of the eigenvectors matrix.
-                If ZNeeded<3, Z is the array whose indexes range within [0..N-1, 0..N-1].
-                In that case, the eigenvectors are stored in the matrix columns.
-                If ZNeeded=3, Z is the array whose indexes range within [0..0, 0..N-1].
-
-Result:
-    True, if the algorithm has converged.
-    False, if the algorithm hasn't converged.
-
-  -- LAPACK routine (version 3.0) --
-     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-     Courant Institute, Argonne National Lab, and Rice University
-     September 30, 1994
-*************************************************************************/
-bool smatrixtdevd(real_1d_array &d, const real_1d_array &e, const ae_int_t n, const ae_int_t zneeded, real_2d_array &z);
-
-
-/*************************************************************************
-Subroutine for finding the tridiagonal matrix eigenvalues/vectors in a
-given half-interval (A, B] by using bisection and inverse iteration.
-
-Input parameters:
-    D       -   the main diagonal of a tridiagonal matrix.
-                Array whose index ranges within [0..N-1].
-    E       -   the secondary diagonal of a tridiagonal matrix.
-                Array whose index ranges within [0..N-2].
-    N       -   size of matrix, N>=0.
-    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
-                If ZNeeded is equal to:
-                 * 0, the eigenvectors are not needed;
-                 * 1, the eigenvectors of a tridiagonal matrix are multiplied
-                   by the square matrix Z. It is used if the tridiagonal
-                   matrix is obtained by the similarity transformation
-                   of a symmetric matrix.
-                 * 2, the eigenvectors of a tridiagonal matrix replace matrix Z.
-    A, B    -   half-interval (A, B] to search eigenvalues in.
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z isn't used and remains unchanged;
-                 * 1, Z contains the square matrix (array whose indexes range
-                   within [0..N-1, 0..N-1]) which reduces the given symmetric
-                   matrix to tridiagonal form;
-                 * 2, Z isn't used (but changed on the exit).
-
-Output parameters:
-    D       -   array of the eigenvalues found.
-                Array whose index ranges within [0..M-1].
-    M       -   number of eigenvalues found in the given half-interval (M>=0).
-    Z       -   if ZNeeded is equal to:
-                 * 0, doesn't contain any information;
-                 * 1, contains the product of a given NxN matrix Z (from the
-                   left) and NxM matrix of the eigenvectors found (from the
-                   right). Array whose indexes range within [0..N-1, 0..M-1].
-                 * 2, contains the matrix of the eigenvectors found.
-                   Array whose indexes range within [0..N-1, 0..M-1].
-
-Result:
-
-    True, if successful. In that case, M contains the number of eigenvalues
-    in the given half-interval (could be equal to 0), D contains the eigenvalues,
-    Z contains the eigenvectors (if needed).
-    It should be noted that the subroutine changes the size of arrays D and Z.
-
-    False, if the bisection method subroutine wasn't able to find the
-    eigenvalues in the given interval or if the inverse iteration subroutine
-    wasn't able to find all the corresponding eigenvectors. In that case,
-    the eigenvalues and eigenvectors are not returned, M is equal to 0.
-
-  -- ALGLIB --
-     Copyright 31.03.2008 by Bochkanov Sergey
-*************************************************************************/
-bool smatrixtdevdr(real_1d_array &d, const real_1d_array &e, const ae_int_t n, const ae_int_t zneeded, const double a, const double b, ae_int_t &m, real_2d_array &z);
-
-
-/*************************************************************************
-Subroutine for finding tridiagonal matrix eigenvalues/vectors with given
-indexes (in ascending order) by using the bisection and inverse iteraion.
-
-Input parameters:
-    D       -   the main diagonal of a tridiagonal matrix.
-                Array whose index ranges within [0..N-1].
-    E       -   the secondary diagonal of a tridiagonal matrix.
-                Array whose index ranges within [0..N-2].
-    N       -   size of matrix. N>=0.
-    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
-                If ZNeeded is equal to:
-                 * 0, the eigenvectors are not needed;
-                 * 1, the eigenvectors of a tridiagonal matrix are multiplied
-                   by the square matrix Z. It is used if the
-                   tridiagonal matrix is obtained by the similarity transformation
-                   of a symmetric matrix.
-                 * 2, the eigenvectors of a tridiagonal matrix replace
-                   matrix Z.
-    I1, I2  -   index interval for searching (from I1 to I2).
-                0 <= I1 <= I2 <= N-1.
-    Z       -   if ZNeeded is equal to:
-                 * 0, Z isn't used and remains unchanged;
-                 * 1, Z contains the square matrix (array whose indexes range within [0..N-1, 0..N-1])
-                   which reduces the given symmetric matrix to  tridiagonal form;
-                 * 2, Z isn't used (but changed on the exit).
-
-Output parameters:
-    D       -   array of the eigenvalues found.
-                Array whose index ranges within [0..I2-I1].
-    Z       -   if ZNeeded is equal to:
-                 * 0, doesn't contain any information;
-                 * 1, contains the product of a given NxN matrix Z (from the left) and
-                   Nx(I2-I1) matrix of the eigenvectors found (from the right).
-                   Array whose indexes range within [0..N-1, 0..I2-I1].
-                 * 2, contains the matrix of the eigenvalues found.
-                   Array whose indexes range within [0..N-1, 0..I2-I1].
-
-
-Result:
-
-    True, if successful. In that case, D contains the eigenvalues,
-    Z contains the eigenvectors (if needed).
-    It should be noted that the subroutine changes the size of arrays D and Z.
-
-    False, if the bisection method subroutine wasn't able to find the eigenvalues
-    in the given interval or if the inverse iteration subroutine wasn't able
-    to find all the corresponding eigenvectors. In that case, the eigenvalues
-    and eigenvectors are not returned.
-
-  -- ALGLIB --
-     Copyright 25.12.2005 by Bochkanov Sergey
-*************************************************************************/
-bool smatrixtdevdi(real_1d_array &d, const real_1d_array &e, const ae_int_t n, const ae_int_t zneeded, const ae_int_t i1, const ae_int_t i2, real_2d_array &z);
-
-
-/*************************************************************************
-Finding eigenvalues and eigenvectors of a general (unsymmetric) matrix
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison. Speed-up provided by MKL for this particular problem (EVD)
-  ! is really high, because  MKL  uses combination of (a) better low-level
-  ! optimizations, and (b) better EVD algorithms.
-  !
-  ! On one particular SSE-capable  machine  for  N=1024,  commercial  MKL-
-  ! -capable ALGLIB was:
-  ! * 7-10 times faster than open source "generic C" version
-  ! * 15-18 times faster than "pure C#" version
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-The algorithm finds eigenvalues and eigenvectors of a general matrix by
-using the QR algorithm with multiple shifts. The algorithm can find
-eigenvalues and both left and right eigenvectors.
-
-The right eigenvector is a vector x such that A*x = w*x, and the left
-eigenvector is a vector y such that y'*A = w*y' (here y' implies a complex
-conjugate transposition of vector y).
-
-Input parameters:
-    A       -   matrix. Array whose indexes range within [0..N-1, 0..N-1].
-    N       -   size of matrix A.
-    VNeeded -   flag controlling whether eigenvectors are needed or not.
-                If VNeeded is equal to:
-                 * 0, eigenvectors are not returned;
-                 * 1, right eigenvectors are returned;
-                 * 2, left eigenvectors are returned;
-                 * 3, both left and right eigenvectors are returned.
-
-Output parameters:
-    WR      -   real parts of eigenvalues.
-                Array whose index ranges within [0..N-1].
-    WR      -   imaginary parts of eigenvalues.
-                Array whose index ranges within [0..N-1].
-    VL, VR  -   arrays of left and right eigenvectors (if they are needed).
-                If WI[i]=0, the respective eigenvalue is a real number,
-                and it corresponds to the column number I of matrices VL/VR.
-                If WI[i]>0, we have a pair of complex conjugate numbers with
-                positive and negative imaginary parts:
-                    the first eigenvalue WR[i] + sqrt(-1)*WI[i];
-                    the second eigenvalue WR[i+1] + sqrt(-1)*WI[i+1];
-                    WI[i]>0
-                    WI[i+1] = -WI[i] < 0
-                In that case, the eigenvector  corresponding to the first
-                eigenvalue is located in i and i+1 columns of matrices
-                VL/VR (the column number i contains the real part, and the
-                column number i+1 contains the imaginary part), and the vector
-                corresponding to the second eigenvalue is a complex conjugate to
-                the first vector.
-                Arrays whose indexes range within [0..N-1, 0..N-1].
-
-Result:
-    True, if the algorithm has converged.
-    False, if the algorithm has not converged.
-
-Note 1:
-    Some users may ask the following question: what if WI[N-1]>0?
-    WI[N] must contain an eigenvalue which is complex conjugate to the
-    N-th eigenvalue, but the array has only size N?
-    The answer is as follows: such a situation cannot occur because the
-    algorithm finds a pairs of eigenvalues, therefore, if WI[i]>0, I is
-    strictly less than N-1.
-
-Note 2:
-    The algorithm performance depends on the value of the internal parameter
-    NS of the InternalSchurDecomposition subroutine which defines the number
-    of shifts in the QR algorithm (similarly to the block width in block-matrix
-    algorithms of linear algebra). If you require maximum performance
-    on your machine, it is recommended to adjust this parameter manually.
-
-
-See also the InternalTREVC subroutine.
-
-The algorithm is based on the LAPACK 3.0 library.
-*************************************************************************/
-bool rmatrixevd(const real_2d_array &a, const ae_int_t n, const ae_int_t vneeded, real_1d_array &wr, real_1d_array &wi, real_2d_array &vl, real_2d_array &vr);
-
-/*************************************************************************
-Generation of a random uniformly distributed (Haar) orthogonal matrix
-
-INPUT PARAMETERS:
-    N   -   matrix size, N>=1
-
-OUTPUT PARAMETERS:
-    A   -   orthogonal NxN matrix, array[0..N-1,0..N-1]
-
-NOTE: this function uses algorithm  described  in  Stewart, G. W.  (1980),
-      "The Efficient Generation of  Random  Orthogonal  Matrices  with  an
-      Application to Condition Estimators".
-
-      Speaking short, to generate an (N+1)x(N+1) orthogonal matrix, it:
-      * takes an NxN one
-      * takes uniformly distributed unit vector of dimension N+1.
-      * constructs a Householder reflection from the vector, then applies
-        it to the smaller matrix (embedded in the larger size with a 1 at
-        the bottom right corner).
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixrndorthogonal(const ae_int_t n, real_2d_array &a);
-
-
-/*************************************************************************
-Generation of random NxN matrix with given condition number and norm2(A)=1
-
-INPUT PARAMETERS:
-    N   -   matrix size
-    C   -   condition number (in 2-norm)
-
-OUTPUT PARAMETERS:
-    A   -   random matrix with norm2(A)=1 and cond(A)=C
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixrndcond(const ae_int_t n, const double c, real_2d_array &a);
-
-
-/*************************************************************************
-Generation of a random Haar distributed orthogonal complex matrix
-
-INPUT PARAMETERS:
-    N   -   matrix size, N>=1
-
-OUTPUT PARAMETERS:
-    A   -   orthogonal NxN matrix, array[0..N-1,0..N-1]
-
-NOTE: this function uses algorithm  described  in  Stewart, G. W.  (1980),
-      "The Efficient Generation of  Random  Orthogonal  Matrices  with  an
-      Application to Condition Estimators".
-
-      Speaking short, to generate an (N+1)x(N+1) orthogonal matrix, it:
-      * takes an NxN one
-      * takes uniformly distributed unit vector of dimension N+1.
-      * constructs a Householder reflection from the vector, then applies
-        it to the smaller matrix (embedded in the larger size with a 1 at
-        the bottom right corner).
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixrndorthogonal(const ae_int_t n, complex_2d_array &a);
-
-
-/*************************************************************************
-Generation of random NxN complex matrix with given condition number C and
-norm2(A)=1
-
-INPUT PARAMETERS:
-    N   -   matrix size
-    C   -   condition number (in 2-norm)
-
-OUTPUT PARAMETERS:
-    A   -   random matrix with norm2(A)=1 and cond(A)=C
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixrndcond(const ae_int_t n, const double c, complex_2d_array &a);
-
-
-/*************************************************************************
-Generation of random NxN symmetric matrix with given condition number  and
-norm2(A)=1
-
-INPUT PARAMETERS:
-    N   -   matrix size
-    C   -   condition number (in 2-norm)
-
-OUTPUT PARAMETERS:
-    A   -   random matrix with norm2(A)=1 and cond(A)=C
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void smatrixrndcond(const ae_int_t n, const double c, real_2d_array &a);
-
-
-/*************************************************************************
-Generation of random NxN symmetric positive definite matrix with given
-condition number and norm2(A)=1
-
-INPUT PARAMETERS:
-    N   -   matrix size
-    C   -   condition number (in 2-norm)
-
-OUTPUT PARAMETERS:
-    A   -   random SPD matrix with norm2(A)=1 and cond(A)=C
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void spdmatrixrndcond(const ae_int_t n, const double c, real_2d_array &a);
-
-
-/*************************************************************************
-Generation of random NxN Hermitian matrix with given condition number  and
-norm2(A)=1
-
-INPUT PARAMETERS:
-    N   -   matrix size
-    C   -   condition number (in 2-norm)
-
-OUTPUT PARAMETERS:
-    A   -   random matrix with norm2(A)=1 and cond(A)=C
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void hmatrixrndcond(const ae_int_t n, const double c, complex_2d_array &a);
-
-
-/*************************************************************************
-Generation of random NxN Hermitian positive definite matrix with given
-condition number and norm2(A)=1
-
-INPUT PARAMETERS:
-    N   -   matrix size
-    C   -   condition number (in 2-norm)
-
-OUTPUT PARAMETERS:
-    A   -   random HPD matrix with norm2(A)=1 and cond(A)=C
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void hpdmatrixrndcond(const ae_int_t n, const double c, complex_2d_array &a);
-
-
-/*************************************************************************
-Multiplication of MxN matrix by NxN random Haar distributed orthogonal matrix
-
-INPUT PARAMETERS:
-    A   -   matrix, array[0..M-1, 0..N-1]
-    M, N-   matrix size
-
-OUTPUT PARAMETERS:
-    A   -   A*Q, where Q is random NxN orthogonal matrix
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixrndorthogonalfromtheright(real_2d_array &a, const ae_int_t m, const ae_int_t n);
-
-
-/*************************************************************************
-Multiplication of MxN matrix by MxM random Haar distributed orthogonal matrix
-
-INPUT PARAMETERS:
-    A   -   matrix, array[0..M-1, 0..N-1]
-    M, N-   matrix size
-
-OUTPUT PARAMETERS:
-    A   -   Q*A, where Q is random MxM orthogonal matrix
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void rmatrixrndorthogonalfromtheleft(real_2d_array &a, const ae_int_t m, const ae_int_t n);
-
-
-/*************************************************************************
-Multiplication of MxN complex matrix by NxN random Haar distributed
-complex orthogonal matrix
-
-INPUT PARAMETERS:
-    A   -   matrix, array[0..M-1, 0..N-1]
-    M, N-   matrix size
-
-OUTPUT PARAMETERS:
-    A   -   A*Q, where Q is random NxN orthogonal matrix
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixrndorthogonalfromtheright(complex_2d_array &a, const ae_int_t m, const ae_int_t n);
-
-
-/*************************************************************************
-Multiplication of MxN complex matrix by MxM random Haar distributed
-complex orthogonal matrix
-
-INPUT PARAMETERS:
-    A   -   matrix, array[0..M-1, 0..N-1]
-    M, N-   matrix size
-
-OUTPUT PARAMETERS:
-    A   -   Q*A, where Q is random MxM orthogonal matrix
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void cmatrixrndorthogonalfromtheleft(complex_2d_array &a, const ae_int_t m, const ae_int_t n);
-
-
-/*************************************************************************
-Symmetric multiplication of NxN matrix by random Haar distributed
-orthogonal  matrix
-
-INPUT PARAMETERS:
-    A   -   matrix, array[0..N-1, 0..N-1]
-    N   -   matrix size
-
-OUTPUT PARAMETERS:
-    A   -   Q'*A*Q, where Q is random NxN orthogonal matrix
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void smatrixrndmultiply(real_2d_array &a, const ae_int_t n);
-
-
-/*************************************************************************
-Hermitian multiplication of NxN matrix by random Haar distributed
-complex orthogonal matrix
-
-INPUT PARAMETERS:
-    A   -   matrix, array[0..N-1, 0..N-1]
-    N   -   matrix size
-
-OUTPUT PARAMETERS:
-    A   -   Q^H*A*Q, where Q is random NxN orthogonal matrix
-
-  -- ALGLIB routine --
-     04.12.2009
-     Bochkanov Sergey
-*************************************************************************/
-void hmatrixrndmultiply(complex_2d_array &a, const ae_int_t n);
+This object stores state of the subspace iteration algorithm.
+
+You should use ALGLIB functions to work with this object.
+*************************************************************************/
+class _eigsubspacestate_owner
+{
+public:
+    _eigsubspacestate_owner();
+    _eigsubspacestate_owner(const _eigsubspacestate_owner &rhs);
+    _eigsubspacestate_owner& operator=(const _eigsubspacestate_owner &rhs);
+    virtual ~_eigsubspacestate_owner();
+    alglib_impl::eigsubspacestate* c_ptr();
+    alglib_impl::eigsubspacestate* c_ptr() const;
+protected:
+    alglib_impl::eigsubspacestate *p_struct;
+};
+class eigsubspacestate : public _eigsubspacestate_owner
+{
+public:
+    eigsubspacestate();
+    eigsubspacestate(const eigsubspacestate &rhs);
+    eigsubspacestate& operator=(const eigsubspacestate &rhs);
+    virtual ~eigsubspacestate();
+
+};
+
+
+/*************************************************************************
+This object stores state of the subspace iteration algorithm.
+
+You should use ALGLIB functions to work with this object.
+*************************************************************************/
+class _eigsubspacereport_owner
+{
+public:
+    _eigsubspacereport_owner();
+    _eigsubspacereport_owner(const _eigsubspacereport_owner &rhs);
+    _eigsubspacereport_owner& operator=(const _eigsubspacereport_owner &rhs);
+    virtual ~_eigsubspacereport_owner();
+    alglib_impl::eigsubspacereport* c_ptr();
+    alglib_impl::eigsubspacereport* c_ptr() const;
+protected:
+    alglib_impl::eigsubspacereport *p_struct;
+};
+class eigsubspacereport : public _eigsubspacereport_owner
+{
+public:
+    eigsubspacereport();
+    eigsubspacereport(const eigsubspacereport &rhs);
+    eigsubspacereport& operator=(const eigsubspacereport &rhs);
+    virtual ~eigsubspacereport();
+    ae_int_t &iterationscount;
+
+};
 
 /*************************************************************************
 This function creates sparse matrix in a Hash-Table format.
@@ -4566,6 +1658,1026 @@ RESULT: number of non-zero elements strictly below main diagonal
 ae_int_t sparsegetlowercount(const sparsematrix &s);
 
 /*************************************************************************
+Generation of a random uniformly distributed (Haar) orthogonal matrix
+
+INPUT PARAMETERS:
+    N   -   matrix size, N>=1
+
+OUTPUT PARAMETERS:
+    A   -   orthogonal NxN matrix, array[0..N-1,0..N-1]
+
+NOTE: this function uses algorithm  described  in  Stewart, G. W.  (1980),
+      "The Efficient Generation of  Random  Orthogonal  Matrices  with  an
+      Application to Condition Estimators".
+
+      Speaking short, to generate an (N+1)x(N+1) orthogonal matrix, it:
+      * takes an NxN one
+      * takes uniformly distributed unit vector of dimension N+1.
+      * constructs a Householder reflection from the vector, then applies
+        it to the smaller matrix (embedded in the larger size with a 1 at
+        the bottom right corner).
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixrndorthogonal(const ae_int_t n, real_2d_array &a);
+
+
+/*************************************************************************
+Generation of random NxN matrix with given condition number and norm2(A)=1
+
+INPUT PARAMETERS:
+    N   -   matrix size
+    C   -   condition number (in 2-norm)
+
+OUTPUT PARAMETERS:
+    A   -   random matrix with norm2(A)=1 and cond(A)=C
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixrndcond(const ae_int_t n, const double c, real_2d_array &a);
+
+
+/*************************************************************************
+Generation of a random Haar distributed orthogonal complex matrix
+
+INPUT PARAMETERS:
+    N   -   matrix size, N>=1
+
+OUTPUT PARAMETERS:
+    A   -   orthogonal NxN matrix, array[0..N-1,0..N-1]
+
+NOTE: this function uses algorithm  described  in  Stewart, G. W.  (1980),
+      "The Efficient Generation of  Random  Orthogonal  Matrices  with  an
+      Application to Condition Estimators".
+
+      Speaking short, to generate an (N+1)x(N+1) orthogonal matrix, it:
+      * takes an NxN one
+      * takes uniformly distributed unit vector of dimension N+1.
+      * constructs a Householder reflection from the vector, then applies
+        it to the smaller matrix (embedded in the larger size with a 1 at
+        the bottom right corner).
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixrndorthogonal(const ae_int_t n, complex_2d_array &a);
+
+
+/*************************************************************************
+Generation of random NxN complex matrix with given condition number C and
+norm2(A)=1
+
+INPUT PARAMETERS:
+    N   -   matrix size
+    C   -   condition number (in 2-norm)
+
+OUTPUT PARAMETERS:
+    A   -   random matrix with norm2(A)=1 and cond(A)=C
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixrndcond(const ae_int_t n, const double c, complex_2d_array &a);
+
+
+/*************************************************************************
+Generation of random NxN symmetric matrix with given condition number  and
+norm2(A)=1
+
+INPUT PARAMETERS:
+    N   -   matrix size
+    C   -   condition number (in 2-norm)
+
+OUTPUT PARAMETERS:
+    A   -   random matrix with norm2(A)=1 and cond(A)=C
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void smatrixrndcond(const ae_int_t n, const double c, real_2d_array &a);
+
+
+/*************************************************************************
+Generation of random NxN symmetric positive definite matrix with given
+condition number and norm2(A)=1
+
+INPUT PARAMETERS:
+    N   -   matrix size
+    C   -   condition number (in 2-norm)
+
+OUTPUT PARAMETERS:
+    A   -   random SPD matrix with norm2(A)=1 and cond(A)=C
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void spdmatrixrndcond(const ae_int_t n, const double c, real_2d_array &a);
+
+
+/*************************************************************************
+Generation of random NxN Hermitian matrix with given condition number  and
+norm2(A)=1
+
+INPUT PARAMETERS:
+    N   -   matrix size
+    C   -   condition number (in 2-norm)
+
+OUTPUT PARAMETERS:
+    A   -   random matrix with norm2(A)=1 and cond(A)=C
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void hmatrixrndcond(const ae_int_t n, const double c, complex_2d_array &a);
+
+
+/*************************************************************************
+Generation of random NxN Hermitian positive definite matrix with given
+condition number and norm2(A)=1
+
+INPUT PARAMETERS:
+    N   -   matrix size
+    C   -   condition number (in 2-norm)
+
+OUTPUT PARAMETERS:
+    A   -   random HPD matrix with norm2(A)=1 and cond(A)=C
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void hpdmatrixrndcond(const ae_int_t n, const double c, complex_2d_array &a);
+
+
+/*************************************************************************
+Multiplication of MxN matrix by NxN random Haar distributed orthogonal matrix
+
+INPUT PARAMETERS:
+    A   -   matrix, array[0..M-1, 0..N-1]
+    M, N-   matrix size
+
+OUTPUT PARAMETERS:
+    A   -   A*Q, where Q is random NxN orthogonal matrix
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixrndorthogonalfromtheright(real_2d_array &a, const ae_int_t m, const ae_int_t n);
+
+
+/*************************************************************************
+Multiplication of MxN matrix by MxM random Haar distributed orthogonal matrix
+
+INPUT PARAMETERS:
+    A   -   matrix, array[0..M-1, 0..N-1]
+    M, N-   matrix size
+
+OUTPUT PARAMETERS:
+    A   -   Q*A, where Q is random MxM orthogonal matrix
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixrndorthogonalfromtheleft(real_2d_array &a, const ae_int_t m, const ae_int_t n);
+
+
+/*************************************************************************
+Multiplication of MxN complex matrix by NxN random Haar distributed
+complex orthogonal matrix
+
+INPUT PARAMETERS:
+    A   -   matrix, array[0..M-1, 0..N-1]
+    M, N-   matrix size
+
+OUTPUT PARAMETERS:
+    A   -   A*Q, where Q is random NxN orthogonal matrix
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixrndorthogonalfromtheright(complex_2d_array &a, const ae_int_t m, const ae_int_t n);
+
+
+/*************************************************************************
+Multiplication of MxN complex matrix by MxM random Haar distributed
+complex orthogonal matrix
+
+INPUT PARAMETERS:
+    A   -   matrix, array[0..M-1, 0..N-1]
+    M, N-   matrix size
+
+OUTPUT PARAMETERS:
+    A   -   Q*A, where Q is random MxM orthogonal matrix
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixrndorthogonalfromtheleft(complex_2d_array &a, const ae_int_t m, const ae_int_t n);
+
+
+/*************************************************************************
+Symmetric multiplication of NxN matrix by random Haar distributed
+orthogonal  matrix
+
+INPUT PARAMETERS:
+    A   -   matrix, array[0..N-1, 0..N-1]
+    N   -   matrix size
+
+OUTPUT PARAMETERS:
+    A   -   Q'*A*Q, where Q is random NxN orthogonal matrix
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void smatrixrndmultiply(real_2d_array &a, const ae_int_t n);
+
+
+/*************************************************************************
+Hermitian multiplication of NxN matrix by random Haar distributed
+complex orthogonal matrix
+
+INPUT PARAMETERS:
+    A   -   matrix, array[0..N-1, 0..N-1]
+    N   -   matrix size
+
+OUTPUT PARAMETERS:
+    A   -   Q^H*A*Q, where Q is random NxN orthogonal matrix
+
+  -- ALGLIB routine --
+     04.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void hmatrixrndmultiply(complex_2d_array &a, const ae_int_t n);
+
+/*************************************************************************
+Cache-oblivous complex "copy-and-transpose"
+
+Input parameters:
+    M   -   number of rows
+    N   -   number of columns
+    A   -   source matrix, MxN submatrix is copied and transposed
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    B   -   destination matrix, must be large enough to store result
+    IB  -   submatrix offset (row index)
+    JB  -   submatrix offset (column index)
+*************************************************************************/
+void cmatrixtranspose(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, complex_2d_array &b, const ae_int_t ib, const ae_int_t jb);
+
+
+/*************************************************************************
+Cache-oblivous real "copy-and-transpose"
+
+Input parameters:
+    M   -   number of rows
+    N   -   number of columns
+    A   -   source matrix, MxN submatrix is copied and transposed
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    B   -   destination matrix, must be large enough to store result
+    IB  -   submatrix offset (row index)
+    JB  -   submatrix offset (column index)
+*************************************************************************/
+void rmatrixtranspose(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const real_2d_array &b, const ae_int_t ib, const ae_int_t jb);
+
+
+/*************************************************************************
+This code enforces symmetricy of the matrix by copying Upper part to lower
+one (or vice versa).
+
+INPUT PARAMETERS:
+    A   -   matrix
+    N   -   number of rows/columns
+    IsUpper - whether we want to copy upper triangle to lower one (True)
+            or vice versa (False).
+*************************************************************************/
+void rmatrixenforcesymmetricity(const real_2d_array &a, const ae_int_t n, const bool isupper);
+
+
+/*************************************************************************
+Copy
+
+Input parameters:
+    M   -   number of rows
+    N   -   number of columns
+    A   -   source matrix, MxN submatrix is copied and transposed
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    B   -   destination matrix, must be large enough to store result
+    IB  -   submatrix offset (row index)
+    JB  -   submatrix offset (column index)
+*************************************************************************/
+void cmatrixcopy(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, complex_2d_array &b, const ae_int_t ib, const ae_int_t jb);
+
+
+/*************************************************************************
+Copy
+
+Input parameters:
+    M   -   number of rows
+    N   -   number of columns
+    A   -   source matrix, MxN submatrix is copied and transposed
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    B   -   destination matrix, must be large enough to store result
+    IB  -   submatrix offset (row index)
+    JB  -   submatrix offset (column index)
+*************************************************************************/
+void rmatrixcopy(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, real_2d_array &b, const ae_int_t ib, const ae_int_t jb);
+
+
+/*************************************************************************
+Rank-1 correction: A := A + u*v'
+
+INPUT PARAMETERS:
+    M   -   number of rows
+    N   -   number of columns
+    A   -   target matrix, MxN submatrix is updated
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    U   -   vector #1
+    IU  -   subvector offset
+    V   -   vector #2
+    IV  -   subvector offset
+*************************************************************************/
+void cmatrixrank1(const ae_int_t m, const ae_int_t n, complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, complex_1d_array &u, const ae_int_t iu, complex_1d_array &v, const ae_int_t iv);
+
+
+/*************************************************************************
+Rank-1 correction: A := A + u*v'
+
+INPUT PARAMETERS:
+    M   -   number of rows
+    N   -   number of columns
+    A   -   target matrix, MxN submatrix is updated
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    U   -   vector #1
+    IU  -   subvector offset
+    V   -   vector #2
+    IV  -   subvector offset
+*************************************************************************/
+void rmatrixrank1(const ae_int_t m, const ae_int_t n, real_2d_array &a, const ae_int_t ia, const ae_int_t ja, real_1d_array &u, const ae_int_t iu, real_1d_array &v, const ae_int_t iv);
+
+
+/*************************************************************************
+Matrix-vector product: y := op(A)*x
+
+INPUT PARAMETERS:
+    M   -   number of rows of op(A)
+            M>=0
+    N   -   number of columns of op(A)
+            N>=0
+    A   -   target matrix
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    OpA -   operation type:
+            * OpA=0     =>  op(A) = A
+            * OpA=1     =>  op(A) = A^T
+            * OpA=2     =>  op(A) = A^H
+    X   -   input vector
+    IX  -   subvector offset
+    IY  -   subvector offset
+    Y   -   preallocated matrix, must be large enough to store result
+
+OUTPUT PARAMETERS:
+    Y   -   vector which stores result
+
+if M=0, then subroutine does nothing.
+if N=0, Y is filled by zeros.
+
+
+  -- ALGLIB routine --
+
+     28.01.2010
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixmv(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t opa, const complex_1d_array &x, const ae_int_t ix, complex_1d_array &y, const ae_int_t iy);
+
+
+/*************************************************************************
+Matrix-vector product: y := op(A)*x
+
+INPUT PARAMETERS:
+    M   -   number of rows of op(A)
+    N   -   number of columns of op(A)
+    A   -   target matrix
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    OpA -   operation type:
+            * OpA=0     =>  op(A) = A
+            * OpA=1     =>  op(A) = A^T
+    X   -   input vector
+    IX  -   subvector offset
+    IY  -   subvector offset
+    Y   -   preallocated matrix, must be large enough to store result
+
+OUTPUT PARAMETERS:
+    Y   -   vector which stores result
+
+if M=0, then subroutine does nothing.
+if N=0, Y is filled by zeros.
+
+
+  -- ALGLIB routine --
+
+     28.01.2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixmv(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t opa, const real_1d_array &x, const ae_int_t ix, real_1d_array &y, const ae_int_t iy);
+
+
+/*************************************************************************
+This subroutine calculates X*op(A^-1) where:
+* X is MxN general matrix
+* A is NxN upper/lower triangular/unitriangular matrix
+* "op" may be identity transformation, transposition, conjugate transposition
+
+Multiplication result replaces X.
+Cache-oblivious algorithm is used.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of  this  function.  Because  starting/stopping  worker  thread always
+  ! involves some overhead, parallelism starts to be  profitable  for  N's
+  ! larger than 128.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    N   -   matrix size, N>=0
+    M   -   matrix size, N>=0
+    A       -   matrix, actial matrix is stored in A[I1:I1+N-1,J1:J1+N-1]
+    I1      -   submatrix offset
+    J1      -   submatrix offset
+    IsUpper -   whether matrix is upper triangular
+    IsUnit  -   whether matrix is unitriangular
+    OpType  -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+                * 2 - conjugate transposition
+    X   -   matrix, actial matrix is stored in X[I2:I2+M-1,J2:J2+N-1]
+    I2  -   submatrix offset
+    J2  -   submatrix offset
+
+  -- ALGLIB routine --
+     15.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixrighttrsm(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const complex_2d_array &x, const ae_int_t i2, const ae_int_t j2);
+void smp_cmatrixrighttrsm(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const complex_2d_array &x, const ae_int_t i2, const ae_int_t j2);
+
+
+/*************************************************************************
+This subroutine calculates op(A^-1)*X where:
+* X is MxN general matrix
+* A is MxM upper/lower triangular/unitriangular matrix
+* "op" may be identity transformation, transposition, conjugate transposition
+
+Multiplication result replaces X.
+Cache-oblivious algorithm is used.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of  this  function.  Because  starting/stopping  worker  thread always
+  ! involves some overhead, parallelism starts to be  profitable  for  N's
+  ! larger than 128.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    N   -   matrix size, N>=0
+    M   -   matrix size, N>=0
+    A       -   matrix, actial matrix is stored in A[I1:I1+M-1,J1:J1+M-1]
+    I1      -   submatrix offset
+    J1      -   submatrix offset
+    IsUpper -   whether matrix is upper triangular
+    IsUnit  -   whether matrix is unitriangular
+    OpType  -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+                * 2 - conjugate transposition
+    X   -   matrix, actial matrix is stored in X[I2:I2+M-1,J2:J2+N-1]
+    I2  -   submatrix offset
+    J2  -   submatrix offset
+
+  -- ALGLIB routine --
+     15.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixlefttrsm(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const complex_2d_array &x, const ae_int_t i2, const ae_int_t j2);
+void smp_cmatrixlefttrsm(const ae_int_t m, const ae_int_t n, const complex_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const complex_2d_array &x, const ae_int_t i2, const ae_int_t j2);
+
+
+/*************************************************************************
+This subroutine calculates X*op(A^-1) where:
+* X is MxN general matrix
+* A is NxN upper/lower triangular/unitriangular matrix
+* "op" may be identity transformation, transposition
+
+Multiplication result replaces X.
+Cache-oblivious algorithm is used.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of  this  function.  Because  starting/stopping  worker  thread always
+  ! involves some overhead, parallelism starts to be  profitable  for  N's
+  ! larger than 128.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    N   -   matrix size, N>=0
+    M   -   matrix size, N>=0
+    A       -   matrix, actial matrix is stored in A[I1:I1+N-1,J1:J1+N-1]
+    I1      -   submatrix offset
+    J1      -   submatrix offset
+    IsUpper -   whether matrix is upper triangular
+    IsUnit  -   whether matrix is unitriangular
+    OpType  -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+    X   -   matrix, actial matrix is stored in X[I2:I2+M-1,J2:J2+N-1]
+    I2  -   submatrix offset
+    J2  -   submatrix offset
+
+  -- ALGLIB routine --
+     15.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixrighttrsm(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const real_2d_array &x, const ae_int_t i2, const ae_int_t j2);
+void smp_rmatrixrighttrsm(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const real_2d_array &x, const ae_int_t i2, const ae_int_t j2);
+
+
+/*************************************************************************
+This subroutine calculates op(A^-1)*X where:
+* X is MxN general matrix
+* A is MxM upper/lower triangular/unitriangular matrix
+* "op" may be identity transformation, transposition
+
+Multiplication result replaces X.
+Cache-oblivious algorithm is used.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of  this  function.  Because  starting/stopping  worker  thread always
+  ! involves some overhead, parallelism starts to be  profitable  for  N's
+  ! larger than 128.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    N   -   matrix size, N>=0
+    M   -   matrix size, N>=0
+    A       -   matrix, actial matrix is stored in A[I1:I1+M-1,J1:J1+M-1]
+    I1      -   submatrix offset
+    J1      -   submatrix offset
+    IsUpper -   whether matrix is upper triangular
+    IsUnit  -   whether matrix is unitriangular
+    OpType  -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+    X   -   matrix, actial matrix is stored in X[I2:I2+M-1,J2:J2+N-1]
+    I2  -   submatrix offset
+    J2  -   submatrix offset
+
+  -- ALGLIB routine --
+     15.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixlefttrsm(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const real_2d_array &x, const ae_int_t i2, const ae_int_t j2);
+void smp_rmatrixlefttrsm(const ae_int_t m, const ae_int_t n, const real_2d_array &a, const ae_int_t i1, const ae_int_t j1, const bool isupper, const bool isunit, const ae_int_t optype, const real_2d_array &x, const ae_int_t i2, const ae_int_t j2);
+
+
+/*************************************************************************
+This subroutine calculates  C=alpha*A*A^H+beta*C  or  C=alpha*A^H*A+beta*C
+where:
+* C is NxN Hermitian matrix given by its upper/lower triangle
+* A is NxK matrix when A*A^H is calculated, KxN matrix otherwise
+
+Additional info:
+* cache-oblivious algorithm is used.
+* multiplication result replaces C. If Beta=0, C elements are not used in
+  calculations (not multiplied by zero - just not referenced)
+* if Alpha=0, A is not used (not multiplied by zero - just not referenced)
+* if both Beta and Alpha are zero, C is filled by zeros.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of  this  function.  Because  starting/stopping  worker  thread always
+  ! involves some overhead, parallelism starts to be  profitable  for  N's
+  ! larger than 128.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    N       -   matrix size, N>=0
+    K       -   matrix size, K>=0
+    Alpha   -   coefficient
+    A       -   matrix
+    IA      -   submatrix offset (row index)
+    JA      -   submatrix offset (column index)
+    OpTypeA -   multiplication type:
+                * 0 - A*A^H is calculated
+                * 2 - A^H*A is calculated
+    Beta    -   coefficient
+    C       -   preallocated input/output matrix
+    IC      -   submatrix offset (row index)
+    JC      -   submatrix offset (column index)
+    IsUpper -   whether upper or lower triangle of C is updated;
+                this function updates only one half of C, leaving
+                other half unchanged (not referenced at all).
+
+  -- ALGLIB routine --
+     16.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixherk(const ae_int_t n, const ae_int_t k, const double alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
+void smp_cmatrixherk(const ae_int_t n, const ae_int_t k, const double alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
+
+
+/*************************************************************************
+This subroutine calculates  C=alpha*A*A^T+beta*C  or  C=alpha*A^T*A+beta*C
+where:
+* C is NxN symmetric matrix given by its upper/lower triangle
+* A is NxK matrix when A*A^T is calculated, KxN matrix otherwise
+
+Additional info:
+* cache-oblivious algorithm is used.
+* multiplication result replaces C. If Beta=0, C elements are not used in
+  calculations (not multiplied by zero - just not referenced)
+* if Alpha=0, A is not used (not multiplied by zero - just not referenced)
+* if both Beta and Alpha are zero, C is filled by zeros.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of  this  function.  Because  starting/stopping  worker  thread always
+  ! involves some overhead, parallelism starts to be  profitable  for  N's
+  ! larger than 128.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    N       -   matrix size, N>=0
+    K       -   matrix size, K>=0
+    Alpha   -   coefficient
+    A       -   matrix
+    IA      -   submatrix offset (row index)
+    JA      -   submatrix offset (column index)
+    OpTypeA -   multiplication type:
+                * 0 - A*A^T is calculated
+                * 2 - A^T*A is calculated
+    Beta    -   coefficient
+    C       -   preallocated input/output matrix
+    IC      -   submatrix offset (row index)
+    JC      -   submatrix offset (column index)
+    IsUpper -   whether C is upper triangular or lower triangular
+
+  -- ALGLIB routine --
+     16.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixsyrk(const ae_int_t n, const ae_int_t k, const double alpha, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const real_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
+void smp_rmatrixsyrk(const ae_int_t n, const ae_int_t k, const double alpha, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const real_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
+
+
+/*************************************************************************
+This subroutine calculates C = alpha*op1(A)*op2(B) +beta*C where:
+* C is MxN general matrix
+* op1(A) is MxK matrix
+* op2(B) is KxN matrix
+* "op" may be identity transformation, transposition, conjugate transposition
+
+Additional info:
+* cache-oblivious algorithm is used.
+* multiplication result replaces C. If Beta=0, C elements are not used in
+  calculations (not multiplied by zero - just not referenced)
+* if Alpha=0, A is not used (not multiplied by zero - just not referenced)
+* if both Beta and Alpha are zero, C is filled by zeros.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of  this  function.  Because  starting/stopping  worker  thread always
+  ! involves some overhead, parallelism starts to be  profitable  for  N's
+  ! larger than 128.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+IMPORTANT:
+
+This function does NOT preallocate output matrix C, it MUST be preallocated
+by caller prior to calling this function. In case C does not have  enough
+space to store result, exception will be generated.
+
+INPUT PARAMETERS
+    M       -   matrix size, M>0
+    N       -   matrix size, N>0
+    K       -   matrix size, K>0
+    Alpha   -   coefficient
+    A       -   matrix
+    IA      -   submatrix offset
+    JA      -   submatrix offset
+    OpTypeA -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+                * 2 - conjugate transposition
+    B       -   matrix
+    IB      -   submatrix offset
+    JB      -   submatrix offset
+    OpTypeB -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+                * 2 - conjugate transposition
+    Beta    -   coefficient
+    C       -   matrix (PREALLOCATED, large enough to store result)
+    IC      -   submatrix offset
+    JC      -   submatrix offset
+
+  -- ALGLIB routine --
+     16.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixgemm(const ae_int_t m, const ae_int_t n, const ae_int_t k, const alglib::complex alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const complex_2d_array &b, const ae_int_t ib, const ae_int_t jb, const ae_int_t optypeb, const alglib::complex beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc);
+void smp_cmatrixgemm(const ae_int_t m, const ae_int_t n, const ae_int_t k, const alglib::complex alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const complex_2d_array &b, const ae_int_t ib, const ae_int_t jb, const ae_int_t optypeb, const alglib::complex beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc);
+
+
+/*************************************************************************
+This subroutine calculates C = alpha*op1(A)*op2(B) +beta*C where:
+* C is MxN general matrix
+* op1(A) is MxK matrix
+* op2(B) is KxN matrix
+* "op" may be identity transformation, transposition
+
+Additional info:
+* cache-oblivious algorithm is used.
+* multiplication result replaces C. If Beta=0, C elements are not used in
+  calculations (not multiplied by zero - just not referenced)
+* if Alpha=0, A is not used (not multiplied by zero - just not referenced)
+* if both Beta and Alpha are zero, C is filled by zeros.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of  this  function.  Because  starting/stopping  worker  thread always
+  ! involves some overhead, parallelism starts to be  profitable  for  N's
+  ! larger than 128.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+IMPORTANT:
+
+This function does NOT preallocate output matrix C, it MUST be preallocated
+by caller prior to calling this function. In case C does not have  enough
+space to store result, exception will be generated.
+
+INPUT PARAMETERS
+    M       -   matrix size, M>0
+    N       -   matrix size, N>0
+    K       -   matrix size, K>0
+    Alpha   -   coefficient
+    A       -   matrix
+    IA      -   submatrix offset
+    JA      -   submatrix offset
+    OpTypeA -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+    B       -   matrix
+    IB      -   submatrix offset
+    JB      -   submatrix offset
+    OpTypeB -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+    Beta    -   coefficient
+    C       -   PREALLOCATED output matrix, large enough to store result
+    IC      -   submatrix offset
+    JC      -   submatrix offset
+
+  -- ALGLIB routine --
+     2009-2013
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixgemm(const ae_int_t m, const ae_int_t n, const ae_int_t k, const double alpha, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const real_2d_array &b, const ae_int_t ib, const ae_int_t jb, const ae_int_t optypeb, const double beta, const real_2d_array &c, const ae_int_t ic, const ae_int_t jc);
+void smp_rmatrixgemm(const ae_int_t m, const ae_int_t n, const ae_int_t k, const double alpha, const real_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const real_2d_array &b, const ae_int_t ib, const ae_int_t jb, const ae_int_t optypeb, const double beta, const real_2d_array &c, const ae_int_t ic, const ae_int_t jc);
+
+
+/*************************************************************************
+This subroutine is an older version of CMatrixHERK(), one with wrong  name
+(it is HErmitian update, not SYmmetric). It  is  left  here  for  backward
+compatibility.
+
+  -- ALGLIB routine --
+     16.12.2009
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixsyrk(const ae_int_t n, const ae_int_t k, const double alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
+void smp_cmatrixsyrk(const ae_int_t n, const ae_int_t k, const double alpha, const complex_2d_array &a, const ae_int_t ia, const ae_int_t ja, const ae_int_t optypea, const double beta, const complex_2d_array &c, const ae_int_t ic, const ae_int_t jc, const bool isupper);
+
+/*************************************************************************
 LU decomposition of a general real matrix with row pivoting
 
 A is represented as A = P*L*U, where:
@@ -5722,7 +3834,7 @@ COMMERCIAL EDITION OF ALGLIB:
 
 Input parameters:
     A       -   Cholesky decomposition of the matrix to be inverted:
-                A=U’*U or A = L*L'.
+                A=U'*U or A = L*L'.
                 Output of  SPDMatrixCholesky subroutine.
     N       -   size of matrix A (optional) :
                 * if given, only principal NxN submatrix is processed  and
@@ -5731,10 +3843,10 @@ Input parameters:
                   matrix size (A must be square matrix)
     IsUpper -   storage type (optional):
                 * if True, symmetric  matrix  A  is  given  by  its  upper
-                  triangle, and the lower triangle isn’t  used/changed  by
+                  triangle, and the lower triangle isn't  used/changed  by
                   function
                 * if False,  symmetric matrix  A  is  given  by  its lower
-                  triangle, and the  upper triangle isn’t used/changed  by
+                  triangle, and the  upper triangle isn't used/changed  by
                   function
                 * if not given, lower half is used.
 
@@ -5800,10 +3912,10 @@ Input parameters:
                   matrix size (A must be square matrix)
     IsUpper -   storage type (optional):
                 * if True, symmetric  matrix  A  is  given  by  its  upper
-                  triangle, and the lower triangle isn’t  used/changed  by
+                  triangle, and the lower triangle isn't  used/changed  by
                   function
                 * if False,  symmetric matrix  A  is  given  by  its lower
-                  triangle, and the  upper triangle isn’t used/changed  by
+                  triangle, and the  upper triangle isn't used/changed  by
                   function
                 * if not given,  both lower and upper  triangles  must  be
                   filled.
@@ -5859,7 +3971,7 @@ COMMERCIAL EDITION OF ALGLIB:
 
 Input parameters:
     A       -   Cholesky decomposition of the matrix to be inverted:
-                A=U’*U or A = L*L'.
+                A=U'*U or A = L*L'.
                 Output of  HPDMatrixCholesky subroutine.
     N       -   size of matrix A (optional) :
                 * if given, only principal NxN submatrix is processed  and
@@ -5868,10 +3980,10 @@ Input parameters:
                   matrix size (A must be square matrix)
     IsUpper -   storage type (optional):
                 * if True, symmetric  matrix  A  is  given  by  its  upper
-                  triangle, and the lower triangle isn’t  used/changed  by
+                  triangle, and the lower triangle isn't  used/changed  by
                   function
                 * if False,  symmetric matrix  A  is  given  by  its lower
-                  triangle, and the  upper triangle isn’t used/changed  by
+                  triangle, and the  upper triangle isn't used/changed  by
                   function
                 * if not given, lower half is used.
 
@@ -5937,10 +4049,10 @@ Input parameters:
                   matrix size (A must be square matrix)
     IsUpper -   storage type (optional):
                 * if True, symmetric  matrix  A  is  given  by  its  upper
-                  triangle, and the lower triangle isn’t  used/changed  by
+                  triangle, and the lower triangle isn't  used/changed  by
                   function
                 * if False,  symmetric matrix  A  is  given  by  its lower
-                  triangle, and the  upper triangle isn’t used/changed  by
+                  triangle, and the  upper triangle isn't used/changed  by
                   function
                 * if not given,  both lower and upper  triangles  must  be
                   filled.
@@ -6119,7 +4231,1415 @@ void smp_cmatrixtrinverse(complex_2d_array &a, const ae_int_t n, const bool isup
 void cmatrixtrinverse(complex_2d_array &a, const bool isupper, ae_int_t &info, matinvreport &rep);
 void smp_cmatrixtrinverse(complex_2d_array &a, const bool isupper, ae_int_t &info, matinvreport &rep);
 
+/*************************************************************************
+QR decomposition of a rectangular matrix of size MxN
 
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that QP decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=512,   achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A   -   matrix A whose indexes range within [0..M-1, 0..N-1].
+    M   -   number of rows in matrix A.
+    N   -   number of columns in matrix A.
+
+Output parameters:
+    A   -   matrices Q and R in compact form (see below).
+    Tau -   array of scalar factors which are used to form
+            matrix Q. Array whose index ranges within [0.. Min(M-1,N-1)].
+
+Matrix A is represented as A = QR, where Q is an orthogonal matrix of size
+MxM, R - upper triangular (or upper trapezoid) matrix of size M x N.
+
+The elements of matrix R are located on and above the main diagonal of
+matrix A. The elements which are located in Tau array and below the main
+diagonal of matrix A are used to form matrix Q as follows:
+
+Matrix Q is represented as a product of elementary reflections
+
+Q = H(0)*H(2)*...*H(k-1),
+
+where k = min(m,n), and each H(i) is in the form
+
+H(i) = 1 - tau * v * (v^T)
+
+where tau is a scalar stored in Tau[I]; v - real vector,
+so that v(0:i-1) = 0, v(i) = 1, v(i+1:m-1) stored in A(i+1:m-1,i).
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixqr(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tau);
+void smp_rmatrixqr(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tau);
+
+
+/*************************************************************************
+LQ decomposition of a rectangular matrix of size MxN
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that QP decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=512,   achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A   -   matrix A whose indexes range within [0..M-1, 0..N-1].
+    M   -   number of rows in matrix A.
+    N   -   number of columns in matrix A.
+
+Output parameters:
+    A   -   matrices L and Q in compact form (see below)
+    Tau -   array of scalar factors which are used to form
+            matrix Q. Array whose index ranges within [0..Min(M,N)-1].
+
+Matrix A is represented as A = LQ, where Q is an orthogonal matrix of size
+MxM, L - lower triangular (or lower trapezoid) matrix of size M x N.
+
+The elements of matrix L are located on and below  the  main  diagonal  of
+matrix A. The elements which are located in Tau array and above  the  main
+diagonal of matrix A are used to form matrix Q as follows:
+
+Matrix Q is represented as a product of elementary reflections
+
+Q = H(k-1)*H(k-2)*...*H(1)*H(0),
+
+where k = min(m,n), and each H(i) is of the form
+
+H(i) = 1 - tau * v * (v^T)
+
+where tau is a scalar stored in Tau[I]; v - real vector, so that v(0:i-1)=0,
+v(i) = 1, v(i+1:n-1) stored in A(i,i+1:n-1).
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixlq(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tau);
+void smp_rmatrixlq(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tau);
+
+
+/*************************************************************************
+QR decomposition of a rectangular complex matrix of size MxN
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that QP decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=512,   achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A   -   matrix A whose indexes range within [0..M-1, 0..N-1]
+    M   -   number of rows in matrix A.
+    N   -   number of columns in matrix A.
+
+Output parameters:
+    A   -   matrices Q and R in compact form
+    Tau -   array of scalar factors which are used to form matrix Q. Array
+            whose indexes range within [0.. Min(M,N)-1]
+
+Matrix A is represented as A = QR, where Q is an orthogonal matrix of size
+MxM, R - upper triangular (or upper trapezoid) matrix of size MxN.
+
+  -- LAPACK routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
+*************************************************************************/
+void cmatrixqr(complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_1d_array &tau);
+void smp_cmatrixqr(complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_1d_array &tau);
+
+
+/*************************************************************************
+LQ decomposition of a rectangular complex matrix of size MxN
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that QP decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=512,   achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A   -   matrix A whose indexes range within [0..M-1, 0..N-1]
+    M   -   number of rows in matrix A.
+    N   -   number of columns in matrix A.
+
+Output parameters:
+    A   -   matrices Q and L in compact form
+    Tau -   array of scalar factors which are used to form matrix Q. Array
+            whose indexes range within [0.. Min(M,N)-1]
+
+Matrix A is represented as A = LQ, where Q is an orthogonal matrix of size
+MxM, L - lower triangular (or lower trapezoid) matrix of size MxN.
+
+  -- LAPACK routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
+*************************************************************************/
+void cmatrixlq(complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_1d_array &tau);
+void smp_cmatrixlq(complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_1d_array &tau);
+
+
+/*************************************************************************
+Partial unpacking of matrix Q from the QR decomposition of a matrix A
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that QP decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=512,   achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   matrices Q and R in compact form.
+                Output of RMatrixQR subroutine.
+    M       -   number of rows in given matrix A. M>=0.
+    N       -   number of columns in given matrix A. N>=0.
+    Tau     -   scalar factors which are used to form Q.
+                Output of the RMatrixQR subroutine.
+    QColumns -  required number of columns of matrix Q. M>=QColumns>=0.
+
+Output parameters:
+    Q       -   first QColumns columns of matrix Q.
+                Array whose indexes range within [0..M-1, 0..QColumns-1].
+                If QColumns=0, the array remains unchanged.
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixqrunpackq(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const real_1d_array &tau, const ae_int_t qcolumns, real_2d_array &q);
+void smp_rmatrixqrunpackq(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const real_1d_array &tau, const ae_int_t qcolumns, real_2d_array &q);
+
+
+/*************************************************************************
+Unpacking of matrix R from the QR decomposition of a matrix A
+
+Input parameters:
+    A       -   matrices Q and R in compact form.
+                Output of RMatrixQR subroutine.
+    M       -   number of rows in given matrix A. M>=0.
+    N       -   number of columns in given matrix A. N>=0.
+
+Output parameters:
+    R       -   matrix R, array[0..M-1, 0..N-1].
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixqrunpackr(const real_2d_array &a, const ae_int_t m, const ae_int_t n, real_2d_array &r);
+
+
+/*************************************************************************
+Partial unpacking of matrix Q from the LQ decomposition of a matrix A
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that QP decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=512,   achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   matrices L and Q in compact form.
+                Output of RMatrixLQ subroutine.
+    M       -   number of rows in given matrix A. M>=0.
+    N       -   number of columns in given matrix A. N>=0.
+    Tau     -   scalar factors which are used to form Q.
+                Output of the RMatrixLQ subroutine.
+    QRows   -   required number of rows in matrix Q. N>=QRows>=0.
+
+Output parameters:
+    Q       -   first QRows rows of matrix Q. Array whose indexes range
+                within [0..QRows-1, 0..N-1]. If QRows=0, the array remains
+                unchanged.
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixlqunpackq(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const real_1d_array &tau, const ae_int_t qrows, real_2d_array &q);
+void smp_rmatrixlqunpackq(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const real_1d_array &tau, const ae_int_t qrows, real_2d_array &q);
+
+
+/*************************************************************************
+Unpacking of matrix L from the LQ decomposition of a matrix A
+
+Input parameters:
+    A       -   matrices Q and L in compact form.
+                Output of RMatrixLQ subroutine.
+    M       -   number of rows in given matrix A. M>=0.
+    N       -   number of columns in given matrix A. N>=0.
+
+Output parameters:
+    L       -   matrix L, array[0..M-1, 0..N-1].
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixlqunpackl(const real_2d_array &a, const ae_int_t m, const ae_int_t n, real_2d_array &l);
+
+
+/*************************************************************************
+Partial unpacking of matrix Q from QR decomposition of a complex matrix A.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that QP decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=512,   achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A           -   matrices Q and R in compact form.
+                    Output of CMatrixQR subroutine .
+    M           -   number of rows in matrix A. M>=0.
+    N           -   number of columns in matrix A. N>=0.
+    Tau         -   scalar factors which are used to form Q.
+                    Output of CMatrixQR subroutine .
+    QColumns    -   required number of columns in matrix Q. M>=QColumns>=0.
+
+Output parameters:
+    Q           -   first QColumns columns of matrix Q.
+                    Array whose index ranges within [0..M-1, 0..QColumns-1].
+                    If QColumns=0, array isn't changed.
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixqrunpackq(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, const complex_1d_array &tau, const ae_int_t qcolumns, complex_2d_array &q);
+void smp_cmatrixqrunpackq(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, const complex_1d_array &tau, const ae_int_t qcolumns, complex_2d_array &q);
+
+
+/*************************************************************************
+Unpacking of matrix R from the QR decomposition of a matrix A
+
+Input parameters:
+    A       -   matrices Q and R in compact form.
+                Output of CMatrixQR subroutine.
+    M       -   number of rows in given matrix A. M>=0.
+    N       -   number of columns in given matrix A. N>=0.
+
+Output parameters:
+    R       -   matrix R, array[0..M-1, 0..N-1].
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixqrunpackr(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_2d_array &r);
+
+
+/*************************************************************************
+Partial unpacking of matrix Q from LQ decomposition of a complex matrix A.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that QP decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=512,   achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A           -   matrices Q and R in compact form.
+                    Output of CMatrixLQ subroutine .
+    M           -   number of rows in matrix A. M>=0.
+    N           -   number of columns in matrix A. N>=0.
+    Tau         -   scalar factors which are used to form Q.
+                    Output of CMatrixLQ subroutine .
+    QRows       -   required number of rows in matrix Q. N>=QColumns>=0.
+
+Output parameters:
+    Q           -   first QRows rows of matrix Q.
+                    Array whose index ranges within [0..QRows-1, 0..N-1].
+                    If QRows=0, array isn't changed.
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixlqunpackq(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, const complex_1d_array &tau, const ae_int_t qrows, complex_2d_array &q);
+void smp_cmatrixlqunpackq(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, const complex_1d_array &tau, const ae_int_t qrows, complex_2d_array &q);
+
+
+/*************************************************************************
+Unpacking of matrix L from the LQ decomposition of a matrix A
+
+Input parameters:
+    A       -   matrices Q and L in compact form.
+                Output of CMatrixLQ subroutine.
+    M       -   number of rows in given matrix A. M>=0.
+    N       -   number of columns in given matrix A. N>=0.
+
+Output parameters:
+    L       -   matrix L, array[0..M-1, 0..N-1].
+
+  -- ALGLIB routine --
+     17.02.2010
+     Bochkanov Sergey
+*************************************************************************/
+void cmatrixlqunpackl(const complex_2d_array &a, const ae_int_t m, const ae_int_t n, complex_2d_array &l);
+
+
+/*************************************************************************
+Reduction of a rectangular matrix to  bidiagonal form
+
+The algorithm reduces the rectangular matrix A to  bidiagonal form by
+orthogonal transformations P and Q: A = Q*B*(P^T).
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Multithreaded acceleration is NOT supported for this function  because
+  ! bidiagonal decompostion is inherently sequential in nature.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   source matrix. array[0..M-1, 0..N-1]
+    M       -   number of rows in matrix A.
+    N       -   number of columns in matrix A.
+
+Output parameters:
+    A       -   matrices Q, B, P in compact form (see below).
+    TauQ    -   scalar factors which are used to form matrix Q.
+    TauP    -   scalar factors which are used to form matrix P.
+
+The main diagonal and one of the  secondary  diagonals  of  matrix  A  are
+replaced with bidiagonal  matrix  B.  Other  elements  contain  elementary
+reflections which form MxM matrix Q and NxN matrix P, respectively.
+
+If M>=N, B is the upper  bidiagonal  MxN  matrix  and  is  stored  in  the
+corresponding  elements  of  matrix  A.  Matrix  Q  is  represented  as  a
+product   of   elementary   reflections   Q = H(0)*H(1)*...*H(n-1),  where
+H(i) = 1-tau*v*v'. Here tau is a scalar which is stored  in  TauQ[i],  and
+vector v has the following  structure:  v(0:i-1)=0, v(i)=1, v(i+1:m-1)  is
+stored   in   elements   A(i+1:m-1,i).   Matrix   P  is  as  follows:  P =
+G(0)*G(1)*...*G(n-2), where G(i) = 1 - tau*u*u'. Tau is stored in TauP[i],
+u(0:i)=0, u(i+1)=1, u(i+2:n-1) is stored in elements A(i,i+2:n-1).
+
+If M<N, B is the  lower  bidiagonal  MxN  matrix  and  is  stored  in  the
+corresponding   elements  of  matrix  A.  Q = H(0)*H(1)*...*H(m-2),  where
+H(i) = 1 - tau*v*v', tau is stored in TauQ, v(0:i)=0, v(i+1)=1, v(i+2:m-1)
+is    stored    in   elements   A(i+2:m-1,i).    P = G(0)*G(1)*...*G(m-1),
+G(i) = 1-tau*u*u', tau is stored in  TauP,  u(0:i-1)=0, u(i)=1, u(i+1:n-1)
+is stored in A(i,i+1:n-1).
+
+EXAMPLE:
+
+m=6, n=5 (m > n):               m=5, n=6 (m < n):
+
+(  d   e   u1  u1  u1 )         (  d   u1  u1  u1  u1  u1 )
+(  v1  d   e   u2  u2 )         (  e   d   u2  u2  u2  u2 )
+(  v1  v2  d   e   u3 )         (  v1  e   d   u3  u3  u3 )
+(  v1  v2  v3  d   e  )         (  v1  v2  e   d   u4  u4 )
+(  v1  v2  v3  v4  d  )         (  v1  v2  v3  e   d   u5 )
+(  v1  v2  v3  v4  v5 )
+
+Here vi and ui are vectors which form H(i) and G(i), and d and e -
+are the diagonal and off-diagonal elements of matrix B.
+
+  -- LAPACK routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994.
+     Sergey Bochkanov, ALGLIB project, translation from FORTRAN to
+     pseudocode, 2007-2010.
+*************************************************************************/
+void rmatrixbd(real_2d_array &a, const ae_int_t m, const ae_int_t n, real_1d_array &tauq, real_1d_array &taup);
+
+
+/*************************************************************************
+Unpacking matrix Q which reduces a matrix to bidiagonal form.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    QP          -   matrices Q and P in compact form.
+                    Output of ToBidiagonal subroutine.
+    M           -   number of rows in matrix A.
+    N           -   number of columns in matrix A.
+    TAUQ        -   scalar factors which are used to form Q.
+                    Output of ToBidiagonal subroutine.
+    QColumns    -   required number of columns in matrix Q.
+                    M>=QColumns>=0.
+
+Output parameters:
+    Q           -   first QColumns columns of matrix Q.
+                    Array[0..M-1, 0..QColumns-1]
+                    If QColumns=0, the array is not modified.
+
+  -- ALGLIB --
+     2005-2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixbdunpackq(const real_2d_array &qp, const ae_int_t m, const ae_int_t n, const real_1d_array &tauq, const ae_int_t qcolumns, real_2d_array &q);
+
+
+/*************************************************************************
+Multiplication by matrix Q which reduces matrix A to  bidiagonal form.
+
+The algorithm allows pre- or post-multiply by Q or Q'.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    QP          -   matrices Q and P in compact form.
+                    Output of ToBidiagonal subroutine.
+    M           -   number of rows in matrix A.
+    N           -   number of columns in matrix A.
+    TAUQ        -   scalar factors which are used to form Q.
+                    Output of ToBidiagonal subroutine.
+    Z           -   multiplied matrix.
+                    array[0..ZRows-1,0..ZColumns-1]
+    ZRows       -   number of rows in matrix Z. If FromTheRight=False,
+                    ZRows=M, otherwise ZRows can be arbitrary.
+    ZColumns    -   number of columns in matrix Z. If FromTheRight=True,
+                    ZColumns=M, otherwise ZColumns can be arbitrary.
+    FromTheRight -  pre- or post-multiply.
+    DoTranspose -   multiply by Q or Q'.
+
+Output parameters:
+    Z           -   product of Z and Q.
+                    Array[0..ZRows-1,0..ZColumns-1]
+                    If ZRows=0 or ZColumns=0, the array is not modified.
+
+  -- ALGLIB --
+     2005-2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixbdmultiplybyq(const real_2d_array &qp, const ae_int_t m, const ae_int_t n, const real_1d_array &tauq, real_2d_array &z, const ae_int_t zrows, const ae_int_t zcolumns, const bool fromtheright, const bool dotranspose);
+
+
+/*************************************************************************
+Unpacking matrix P which reduces matrix A to bidiagonal form.
+The subroutine returns transposed matrix P.
+
+Input parameters:
+    QP      -   matrices Q and P in compact form.
+                Output of ToBidiagonal subroutine.
+    M       -   number of rows in matrix A.
+    N       -   number of columns in matrix A.
+    TAUP    -   scalar factors which are used to form P.
+                Output of ToBidiagonal subroutine.
+    PTRows  -   required number of rows of matrix P^T. N >= PTRows >= 0.
+
+Output parameters:
+    PT      -   first PTRows columns of matrix P^T
+                Array[0..PTRows-1, 0..N-1]
+                If PTRows=0, the array is not modified.
+
+  -- ALGLIB --
+     2005-2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixbdunpackpt(const real_2d_array &qp, const ae_int_t m, const ae_int_t n, const real_1d_array &taup, const ae_int_t ptrows, real_2d_array &pt);
+
+
+/*************************************************************************
+Multiplication by matrix P which reduces matrix A to  bidiagonal form.
+
+The algorithm allows pre- or post-multiply by P or P'.
+
+Input parameters:
+    QP          -   matrices Q and P in compact form.
+                    Output of RMatrixBD subroutine.
+    M           -   number of rows in matrix A.
+    N           -   number of columns in matrix A.
+    TAUP        -   scalar factors which are used to form P.
+                    Output of RMatrixBD subroutine.
+    Z           -   multiplied matrix.
+                    Array whose indexes range within [0..ZRows-1,0..ZColumns-1].
+    ZRows       -   number of rows in matrix Z. If FromTheRight=False,
+                    ZRows=N, otherwise ZRows can be arbitrary.
+    ZColumns    -   number of columns in matrix Z. If FromTheRight=True,
+                    ZColumns=N, otherwise ZColumns can be arbitrary.
+    FromTheRight -  pre- or post-multiply.
+    DoTranspose -   multiply by P or P'.
+
+Output parameters:
+    Z - product of Z and P.
+                Array whose indexes range within [0..ZRows-1,0..ZColumns-1].
+                If ZRows=0 or ZColumns=0, the array is not modified.
+
+  -- ALGLIB --
+     2005-2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixbdmultiplybyp(const real_2d_array &qp, const ae_int_t m, const ae_int_t n, const real_1d_array &taup, real_2d_array &z, const ae_int_t zrows, const ae_int_t zcolumns, const bool fromtheright, const bool dotranspose);
+
+
+/*************************************************************************
+Unpacking of the main and secondary diagonals of bidiagonal decomposition
+of matrix A.
+
+Input parameters:
+    B   -   output of RMatrixBD subroutine.
+    M   -   number of rows in matrix B.
+    N   -   number of columns in matrix B.
+
+Output parameters:
+    IsUpper -   True, if the matrix is upper bidiagonal.
+                otherwise IsUpper is False.
+    D       -   the main diagonal.
+                Array whose index ranges within [0..Min(M,N)-1].
+    E       -   the secondary diagonal (upper or lower, depending on
+                the value of IsUpper).
+                Array index ranges within [0..Min(M,N)-1], the last
+                element is not used.
+
+  -- ALGLIB --
+     2005-2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixbdunpackdiagonals(const real_2d_array &b, const ae_int_t m, const ae_int_t n, bool &isupper, real_1d_array &d, real_1d_array &e);
+
+
+/*************************************************************************
+Reduction of a square matrix to  upper Hessenberg form: Q'*A*Q = H,
+where Q is an orthogonal matrix, H - Hessenberg matrix.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   matrix A with elements [0..N-1, 0..N-1]
+    N       -   size of matrix A.
+
+Output parameters:
+    A       -   matrices Q and P in  compact form (see below).
+    Tau     -   array of scalar factors which are used to form matrix Q.
+                Array whose index ranges within [0..N-2]
+
+Matrix H is located on the main diagonal, on the lower secondary  diagonal
+and above the main diagonal of matrix A. The elements which are used to
+form matrix Q are situated in array Tau and below the lower secondary
+diagonal of matrix A as follows:
+
+Matrix Q is represented as a product of elementary reflections
+
+Q = H(0)*H(2)*...*H(n-2),
+
+where each H(i) is given by
+
+H(i) = 1 - tau * v * (v^T)
+
+where tau is a scalar stored in Tau[I]; v - is a real vector,
+so that v(0:i) = 0, v(i+1) = 1, v(i+2:n-1) stored in A(i+2:n-1,i).
+
+  -- LAPACK routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     October 31, 1992
+*************************************************************************/
+void rmatrixhessenberg(real_2d_array &a, const ae_int_t n, real_1d_array &tau);
+
+
+/*************************************************************************
+Unpacking matrix Q which reduces matrix A to upper Hessenberg form
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A   -   output of RMatrixHessenberg subroutine.
+    N   -   size of matrix A.
+    Tau -   scalar factors which are used to form Q.
+            Output of RMatrixHessenberg subroutine.
+
+Output parameters:
+    Q   -   matrix Q.
+            Array whose indexes range within [0..N-1, 0..N-1].
+
+  -- ALGLIB --
+     2005-2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixhessenbergunpackq(const real_2d_array &a, const ae_int_t n, const real_1d_array &tau, real_2d_array &q);
+
+
+/*************************************************************************
+Unpacking matrix H (the result of matrix A reduction to upper Hessenberg form)
+
+Input parameters:
+    A   -   output of RMatrixHessenberg subroutine.
+    N   -   size of matrix A.
+
+Output parameters:
+    H   -   matrix H. Array whose indexes range within [0..N-1, 0..N-1].
+
+  -- ALGLIB --
+     2005-2010
+     Bochkanov Sergey
+*************************************************************************/
+void rmatrixhessenbergunpackh(const real_2d_array &a, const ae_int_t n, real_2d_array &h);
+
+
+/*************************************************************************
+Reduction of a symmetric matrix which is given by its higher or lower
+triangular part to a tridiagonal matrix using orthogonal similarity
+transformation: Q'*A*Q=T.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   matrix to be transformed
+                array with elements [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    IsUpper -   storage format. If IsUpper = True, then matrix A is given
+                by its upper triangle, and the lower triangle is not used
+                and not modified by the algorithm, and vice versa
+                if IsUpper = False.
+
+Output parameters:
+    A       -   matrices T and Q in  compact form (see lower)
+    Tau     -   array of factors which are forming matrices H(i)
+                array with elements [0..N-2].
+    D       -   main diagonal of symmetric matrix T.
+                array with elements [0..N-1].
+    E       -   secondary diagonal of symmetric matrix T.
+                array with elements [0..N-2].
+
+
+  If IsUpper=True, the matrix Q is represented as a product of elementary
+  reflectors
+
+     Q = H(n-2) . . . H(2) H(0).
+
+  Each H(i) has the form
+
+     H(i) = I - tau * v * v'
+
+  where tau is a real scalar, and v is a real vector with
+  v(i+1:n-1) = 0, v(i) = 1, v(0:i-1) is stored on exit in
+  A(0:i-1,i+1), and tau in TAU(i).
+
+  If IsUpper=False, the matrix Q is represented as a product of elementary
+  reflectors
+
+     Q = H(0) H(2) . . . H(n-2).
+
+  Each H(i) has the form
+
+     H(i) = I - tau * v * v'
+
+  where tau is a real scalar, and v is a real vector with
+  v(0:i) = 0, v(i+1) = 1, v(i+2:n-1) is stored on exit in A(i+2:n-1,i),
+  and tau in TAU(i).
+
+  The contents of A on exit are illustrated by the following examples
+  with n = 5:
+
+  if UPLO = 'U':                       if UPLO = 'L':
+
+    (  d   e   v1  v2  v3 )              (  d                  )
+    (      d   e   v2  v3 )              (  e   d              )
+    (          d   e   v3 )              (  v0  e   d          )
+    (              d   e  )              (  v0  v1  e   d      )
+    (                  d  )              (  v0  v1  v2  e   d  )
+
+  where d and e denote diagonal and off-diagonal elements of T, and vi
+  denotes an element of the vector defining H(i).
+
+  -- LAPACK routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     October 31, 1992
+*************************************************************************/
+void smatrixtd(real_2d_array &a, const ae_int_t n, const bool isupper, real_1d_array &tau, real_1d_array &d, real_1d_array &e);
+
+
+/*************************************************************************
+Unpacking matrix Q which reduces symmetric matrix to a tridiagonal
+form.
+
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   the result of a SMatrixTD subroutine
+    N       -   size of matrix A.
+    IsUpper -   storage format (a parameter of SMatrixTD subroutine)
+    Tau     -   the result of a SMatrixTD subroutine
+
+Output parameters:
+    Q       -   transformation matrix.
+                array with elements [0..N-1, 0..N-1].
+
+  -- ALGLIB --
+     Copyright 2005-2010 by Bochkanov Sergey
+*************************************************************************/
+void smatrixtdunpackq(const real_2d_array &a, const ae_int_t n, const bool isupper, const real_1d_array &tau, real_2d_array &q);
+
+
+/*************************************************************************
+Reduction of a Hermitian matrix which is given  by  its  higher  or  lower
+triangular part to a real  tridiagonal  matrix  using  unitary  similarity
+transformation: Q'*A*Q = T.
+
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   matrix to be transformed
+                array with elements [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    IsUpper -   storage format. If IsUpper = True, then matrix A is  given
+                by its upper triangle, and the lower triangle is not  used
+                and not modified by the algorithm, and vice versa
+                if IsUpper = False.
+
+Output parameters:
+    A       -   matrices T and Q in  compact form (see lower)
+    Tau     -   array of factors which are forming matrices H(i)
+                array with elements [0..N-2].
+    D       -   main diagonal of real symmetric matrix T.
+                array with elements [0..N-1].
+    E       -   secondary diagonal of real symmetric matrix T.
+                array with elements [0..N-2].
+
+
+  If IsUpper=True, the matrix Q is represented as a product of elementary
+  reflectors
+
+     Q = H(n-2) . . . H(2) H(0).
+
+  Each H(i) has the form
+
+     H(i) = I - tau * v * v'
+
+  where tau is a complex scalar, and v is a complex vector with
+  v(i+1:n-1) = 0, v(i) = 1, v(0:i-1) is stored on exit in
+  A(0:i-1,i+1), and tau in TAU(i).
+
+  If IsUpper=False, the matrix Q is represented as a product of elementary
+  reflectors
+
+     Q = H(0) H(2) . . . H(n-2).
+
+  Each H(i) has the form
+
+     H(i) = I - tau * v * v'
+
+  where tau is a complex scalar, and v is a complex vector with
+  v(0:i) = 0, v(i+1) = 1, v(i+2:n-1) is stored on exit in A(i+2:n-1,i),
+  and tau in TAU(i).
+
+  The contents of A on exit are illustrated by the following examples
+  with n = 5:
+
+  if UPLO = 'U':                       if UPLO = 'L':
+
+    (  d   e   v1  v2  v3 )              (  d                  )
+    (      d   e   v2  v3 )              (  e   d              )
+    (          d   e   v3 )              (  v0  e   d          )
+    (              d   e  )              (  v0  v1  e   d      )
+    (                  d  )              (  v0  v1  v2  e   d  )
+
+where d and e denote diagonal and off-diagonal elements of T, and vi
+denotes an element of the vector defining H(i).
+
+  -- LAPACK routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     October 31, 1992
+*************************************************************************/
+void hmatrixtd(complex_2d_array &a, const ae_int_t n, const bool isupper, complex_1d_array &tau, real_1d_array &d, real_1d_array &e);
+
+
+/*************************************************************************
+Unpacking matrix Q which reduces a Hermitian matrix to a real  tridiagonal
+form.
+
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   the result of a HMatrixTD subroutine
+    N       -   size of matrix A.
+    IsUpper -   storage format (a parameter of HMatrixTD subroutine)
+    Tau     -   the result of a HMatrixTD subroutine
+
+Output parameters:
+    Q       -   transformation matrix.
+                array with elements [0..N-1, 0..N-1].
+
+  -- ALGLIB --
+     Copyright 2005-2010 by Bochkanov Sergey
+*************************************************************************/
+void hmatrixtdunpackq(const complex_2d_array &a, const ae_int_t n, const bool isupper, const complex_1d_array &tau, complex_2d_array &q);
+
+
+
+/*************************************************************************
+Singular value decomposition of a bidiagonal matrix (extended algorithm)
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+The algorithm performs the singular value decomposition  of  a  bidiagonal
+matrix B (upper or lower) representing it as B = Q*S*P^T, where Q and  P -
+orthogonal matrices, S - diagonal matrix with non-negative elements on the
+main diagonal, in descending order.
+
+The  algorithm  finds  singular  values.  In  addition,  the algorithm can
+calculate  matrices  Q  and P (more precisely, not the matrices, but their
+product  with  given  matrices U and VT - U*Q and (P^T)*VT)).  Of  course,
+matrices U and VT can be of any type, including identity. Furthermore, the
+algorithm can calculate Q'*C (this product is calculated more  effectively
+than U*Q,  because  this calculation operates with rows instead  of matrix
+columns).
+
+The feature of the algorithm is its ability to find  all  singular  values
+including those which are arbitrarily close to 0  with  relative  accuracy
+close to  machine precision. If the parameter IsFractionalAccuracyRequired
+is set to True, all singular values will have high relative accuracy close
+to machine precision. If the parameter is set to False, only  the  biggest
+singular value will have relative accuracy  close  to  machine  precision.
+The absolute error of other singular values is equal to the absolute error
+of the biggest singular value.
+
+Input parameters:
+    D       -   main diagonal of matrix B.
+                Array whose index ranges within [0..N-1].
+    E       -   superdiagonal (or subdiagonal) of matrix B.
+                Array whose index ranges within [0..N-2].
+    N       -   size of matrix B.
+    IsUpper -   True, if the matrix is upper bidiagonal.
+    IsFractionalAccuracyRequired -
+                THIS PARAMETER IS IGNORED SINCE ALGLIB 3.5.0
+                SINGULAR VALUES ARE ALWAYS SEARCHED WITH HIGH ACCURACY.
+    U       -   matrix to be multiplied by Q.
+                Array whose indexes range within [0..NRU-1, 0..N-1].
+                The matrix can be bigger, in that case only the  submatrix
+                [0..NRU-1, 0..N-1] will be multiplied by Q.
+    NRU     -   number of rows in matrix U.
+    C       -   matrix to be multiplied by Q'.
+                Array whose indexes range within [0..N-1, 0..NCC-1].
+                The matrix can be bigger, in that case only the  submatrix
+                [0..N-1, 0..NCC-1] will be multiplied by Q'.
+    NCC     -   number of columns in matrix C.
+    VT      -   matrix to be multiplied by P^T.
+                Array whose indexes range within [0..N-1, 0..NCVT-1].
+                The matrix can be bigger, in that case only the  submatrix
+                [0..N-1, 0..NCVT-1] will be multiplied by P^T.
+    NCVT    -   number of columns in matrix VT.
+
+Output parameters:
+    D       -   singular values of matrix B in descending order.
+    U       -   if NRU>0, contains matrix U*Q.
+    VT      -   if NCVT>0, contains matrix (P^T)*VT.
+    C       -   if NCC>0, contains matrix Q'*C.
+
+Result:
+    True, if the algorithm has converged.
+    False, if the algorithm hasn't converged (rare case).
+
+NOTE: multiplication U*Q is performed by means of transposition to internal
+      buffer, multiplication and backward transposition. It helps to avoid
+      costly columnwise operations and speed-up algorithm.
+
+Additional information:
+    The type of convergence is controlled by the internal  parameter  TOL.
+    If the parameter is greater than 0, the singular values will have
+    relative accuracy TOL. If TOL<0, the singular values will have
+    absolute accuracy ABS(TOL)*norm(B).
+    By default, |TOL| falls within the range of 10*Epsilon and 100*Epsilon,
+    where Epsilon is the machine precision. It is not  recommended  to  use
+    TOL less than 10*Epsilon since this will  considerably  slow  down  the
+    algorithm and may not lead to error decreasing.
+
+History:
+    * 31 March, 2007.
+        changed MAXITR from 6 to 12.
+
+  -- LAPACK routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     October 31, 1999.
+*************************************************************************/
+bool rmatrixbdsvd(real_1d_array &d, const real_1d_array &e, const ae_int_t n, const bool isupper, const bool isfractionalaccuracyrequired, real_2d_array &u, const ae_int_t nru, real_2d_array &c, const ae_int_t ncc, real_2d_array &vt, const ae_int_t ncvt);
+
+/*************************************************************************
+Singular value decomposition of a rectangular matrix.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is only partially supported (some parts are
+  ! optimized, but most - are not).
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+The algorithm calculates the singular value decomposition of a matrix of
+size MxN: A = U * S * V^T
+
+The algorithm finds the singular values and, optionally, matrices U and V^T.
+The algorithm can find both first min(M,N) columns of matrix U and rows of
+matrix V^T (singular vectors), and matrices U and V^T wholly (of sizes MxM
+and NxN respectively).
+
+Take into account that the subroutine does not return matrix V but V^T.
+
+Input parameters:
+    A           -   matrix to be decomposed.
+                    Array whose indexes range within [0..M-1, 0..N-1].
+    M           -   number of rows in matrix A.
+    N           -   number of columns in matrix A.
+    UNeeded     -   0, 1 or 2. See the description of the parameter U.
+    VTNeeded    -   0, 1 or 2. See the description of the parameter VT.
+    AdditionalMemory -
+                    If the parameter:
+                     * equals 0, the algorithm doesn't use additional
+                       memory (lower requirements, lower performance).
+                     * equals 1, the algorithm uses additional
+                       memory of size min(M,N)*min(M,N) of real numbers.
+                       It often speeds up the algorithm.
+                     * equals 2, the algorithm uses additional
+                       memory of size M*min(M,N) of real numbers.
+                       It allows to get a maximum performance.
+                    The recommended value of the parameter is 2.
+
+Output parameters:
+    W           -   contains singular values in descending order.
+    U           -   if UNeeded=0, U isn't changed, the left singular vectors
+                    are not calculated.
+                    if Uneeded=1, U contains left singular vectors (first
+                    min(M,N) columns of matrix U). Array whose indexes range
+                    within [0..M-1, 0..Min(M,N)-1].
+                    if UNeeded=2, U contains matrix U wholly. Array whose
+                    indexes range within [0..M-1, 0..M-1].
+    VT          -   if VTNeeded=0, VT isn't changed, the right singular vectors
+                    are not calculated.
+                    if VTNeeded=1, VT contains right singular vectors (first
+                    min(M,N) rows of matrix V^T). Array whose indexes range
+                    within [0..min(M,N)-1, 0..N-1].
+                    if VTNeeded=2, VT contains matrix V^T wholly. Array whose
+                    indexes range within [0..N-1, 0..N-1].
+
+  -- ALGLIB --
+     Copyright 2005 by Bochkanov Sergey
+*************************************************************************/
+bool rmatrixsvd(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const ae_int_t uneeded, const ae_int_t vtneeded, const ae_int_t additionalmemory, real_1d_array &w, real_2d_array &u, real_2d_array &vt);
+bool smp_rmatrixsvd(const real_2d_array &a, const ae_int_t m, const ae_int_t n, const ae_int_t uneeded, const ae_int_t vtneeded, const ae_int_t additionalmemory, real_1d_array &w, real_2d_array &u, real_2d_array &vt);
 
 /*************************************************************************
 This procedure initializes matrix norm estimator.
@@ -6208,148 +5728,997 @@ OUTPUT PARAMETERS:
 void normestimatorresults(const normestimatorstate &state, double &nrm);
 
 /*************************************************************************
-Determinant calculation of the matrix given by its LU decomposition.
+This function initializes subspace iteration solver. This solver  is  used
+to solve symmetric real eigenproblems where just a few (top K) eigenvalues
+and corresponding eigenvectors is required.
 
-Input parameters:
-    A       -   LU decomposition of the matrix (output of
-                RMatrixLU subroutine).
-    Pivots  -   table of permutations which were made during
-                the LU decomposition.
-                Output of RMatrixLU subroutine.
-    N       -   (optional) size of matrix A:
-                * if given, only principal NxN submatrix is processed and
-                  overwritten. other elements are unchanged.
-                * if not given, automatically determined from matrix size
-                  (A must be square matrix)
+This solver can be significantly faster than  complete  EVD  decomposition
+in the following case:
+* when only just a small fraction  of  top  eigenpairs  of dense matrix is
+  required. When K approaches N, this solver is slower than complete dense
+  EVD
+* when problem matrix is sparse (and/or is not known explicitly, i.e. only
+  matrix-matrix product can be performed)
 
-Result: matrix determinant.
+USAGE (explicit dense/sparse matrix):
+1. User initializes algorithm state with eigsubspacecreate() call
+2. [optional] User tunes solver parameters by calling eigsubspacesetcond()
+   or other functions
+3. User  calls  eigsubspacesolvedense() or eigsubspacesolvesparse() methods,
+   which take algorithm state and 2D array or alglib.sparsematrix object.
+
+USAGE (out-of-core mode):
+1. User initializes algorithm state with eigsubspacecreate() call
+2. [optional] User tunes solver parameters by calling eigsubspacesetcond()
+   or other functions
+3. User activates out-of-core mode of  the  solver  and  repeatedly  calls
+   communication functions in a loop like below:
+   > alglib.eigsubspaceoocstart(state)
+   > while alglib.eigsubspaceooccontinue(state) do
+   >     alglib.eigsubspaceoocgetrequestinfo(state, out RequestType, out M)
+   >     alglib.eigsubspaceoocgetrequestdata(state, out X)
+   >     [calculate  Y=A*X, with X=R^NxM]
+   >     alglib.eigsubspaceoocsendresult(state, in Y)
+   > alglib.eigsubspaceoocstop(state, out W, out Z, out Report)
+
+
+INPUT PARAMETERS:
+    N       -   problem dimensionality, N>0
+    K       -   number of top eigenvector to calculate, 0<K<=N.
+
+OUTPUT PARAMETERS:
+    State   -   structure which stores algorithm state
 
   -- ALGLIB --
-     Copyright 2005 by Bochkanov Sergey
+     Copyright 16.01.2017 by Bochkanov Sergey
 *************************************************************************/
-double rmatrixludet(const real_2d_array &a, const integer_1d_array &pivots, const ae_int_t n);
-double rmatrixludet(const real_2d_array &a, const integer_1d_array &pivots);
+void eigsubspacecreate(const ae_int_t n, const ae_int_t k, eigsubspacestate &state);
 
 
 /*************************************************************************
-Calculation of the determinant of a general matrix
-
-Input parameters:
-    A       -   matrix, array[0..N-1, 0..N-1]
-    N       -   (optional) size of matrix A:
-                * if given, only principal NxN submatrix is processed and
-                  overwritten. other elements are unchanged.
-                * if not given, automatically determined from matrix size
-                  (A must be square matrix)
-
-Result: determinant of matrix A.
+Buffered version of constructor which aims to reuse  previously  allocated
+memory as much as possible.
 
   -- ALGLIB --
-     Copyright 2005 by Bochkanov Sergey
+     Copyright 16.01.2017 by Bochkanov Sergey
 *************************************************************************/
-double rmatrixdet(const real_2d_array &a, const ae_int_t n);
-double rmatrixdet(const real_2d_array &a);
+void eigsubspacecreatebuf(const ae_int_t n, const ae_int_t k, const eigsubspacestate &state);
 
 
 /*************************************************************************
-Determinant calculation of the matrix given by its LU decomposition.
+This function sets stopping critera for the solver:
+* error in eigenvector/value allowed by solver
+* maximum number of iterations to perform
 
-Input parameters:
-    A       -   LU decomposition of the matrix (output of
-                RMatrixLU subroutine).
-    Pivots  -   table of permutations which were made during
-                the LU decomposition.
-                Output of RMatrixLU subroutine.
-    N       -   (optional) size of matrix A:
-                * if given, only principal NxN submatrix is processed and
-                  overwritten. other elements are unchanged.
-                * if not given, automatically determined from matrix size
-                  (A must be square matrix)
+INPUT PARAMETERS:
+    State       -   solver structure
+    Eps         -   eps>=0,  with non-zero value used to tell solver  that
+                    it can  stop  after  all  eigenvalues  converged  with
+                    error  roughly  proportional  to  eps*MAX(LAMBDA_MAX),
+                    where LAMBDA_MAX is a maximum eigenvalue.
+                    Zero  value  means  that  no  check  for  precision is
+                    performed.
+    MaxIts      -   maxits>=0,  with non-zero value used  to  tell  solver
+                    that it can stop after maxits  steps  (no  matter  how
+                    precise current estimate is)
 
-Result: matrix determinant.
+NOTE: passing  eps=0  and  maxits=0  results  in  automatic  selection  of
+      moderate eps as stopping criteria (1.0E-6 in current implementation,
+      but it may change without notice).
+
+NOTE: very small values of eps are possible (say, 1.0E-12),  although  the
+      larger problem you solve (N and/or K), the  harder  it  is  to  find
+      precise eigenvectors because rounding errors tend to accumulate.
+
+NOTE: passing non-zero eps results in  some performance  penalty,  roughly
+      equal to 2N*(2K)^2 FLOPs per iteration. These additional computations
+      are required in order to estimate current error in  eigenvalues  via
+      Rayleigh-Ritz process.
+      Most of this additional time is  spent  in  construction  of  ~2Kx2K
+      symmetric  subproblem  whose  eigenvalues  are  checked  with  exact
+      eigensolver.
+      This additional time is negligible if you search for eigenvalues  of
+      the large dense matrix, but may become noticeable on  highly  sparse
+      EVD problems, where cost of matrix-matrix product is low.
+      If you set eps to exactly zero,  Rayleigh-Ritz  phase  is completely
+      turned off.
 
   -- ALGLIB --
-     Copyright 2005 by Bochkanov Sergey
+     Copyright 16.01.2017 by Bochkanov Sergey
 *************************************************************************/
-alglib::complex cmatrixludet(const complex_2d_array &a, const integer_1d_array &pivots, const ae_int_t n);
-alglib::complex cmatrixludet(const complex_2d_array &a, const integer_1d_array &pivots);
+void eigsubspacesetcond(const eigsubspacestate &state, const double eps, const ae_int_t maxits);
 
 
 /*************************************************************************
-Calculation of the determinant of a general matrix
+This  function  initiates  out-of-core  mode  of  subspace eigensolver. It
+should be used in conjunction with other out-of-core-related functions  of
+this subspackage in a loop like below:
 
-Input parameters:
-    A       -   matrix, array[0..N-1, 0..N-1]
-    N       -   (optional) size of matrix A:
-                * if given, only principal NxN submatrix is processed and
-                  overwritten. other elements are unchanged.
-                * if not given, automatically determined from matrix size
-                  (A must be square matrix)
+> alglib.eigsubspaceoocstart(state)
+> while alglib.eigsubspaceooccontinue(state) do
+>     alglib.eigsubspaceoocgetrequestinfo(state, out RequestType, out M)
+>     alglib.eigsubspaceoocgetrequestdata(state, out X)
+>     [calculate  Y=A*X, with X=R^NxM]
+>     alglib.eigsubspaceoocsendresult(state, in Y)
+> alglib.eigsubspaceoocstop(state, out W, out Z, out Report)
 
-Result: determinant of matrix A.
+INPUT PARAMETERS:
+    State       -   solver object
+    MType       -   matrix type:
+                    * 0 for real  symmetric  matrix  (solver  assumes that
+                      matrix  being   processed  is  symmetric;  symmetric
+                      direct eigensolver is used for  smaller  subproblems
+                      arising during solution of larger "full" task)
+                    Future versions of ALGLIB may  introduce  support  for
+                    other  matrix   types;   for   now,   only   symmetric
+                    eigenproblems are supported.
+
 
   -- ALGLIB --
-     Copyright 2005 by Bochkanov Sergey
+     Copyright 16.01.2017 by Bochkanov Sergey
 *************************************************************************/
-alglib::complex cmatrixdet(const complex_2d_array &a, const ae_int_t n);
-alglib::complex cmatrixdet(const complex_2d_array &a);
+void eigsubspaceoocstart(const eigsubspacestate &state, const ae_int_t mtype);
 
 
 /*************************************************************************
-Determinant calculation of the matrix given by the Cholesky decomposition.
+This function performs subspace iteration  in  the  out-of-core  mode.  It
+should be used in conjunction with other out-of-core-related functions  of
+this subspackage in a loop like below:
+
+> alglib.eigsubspaceoocstart(state)
+> while alglib.eigsubspaceooccontinue(state) do
+>     alglib.eigsubspaceoocgetrequestinfo(state, out RequestType, out M)
+>     alglib.eigsubspaceoocgetrequestdata(state, out X)
+>     [calculate  Y=A*X, with X=R^NxM]
+>     alglib.eigsubspaceoocsendresult(state, in Y)
+> alglib.eigsubspaceoocstop(state, out W, out Z, out Report)
+
+
+  -- ALGLIB --
+     Copyright 16.01.2017 by Bochkanov Sergey
+*************************************************************************/
+bool eigsubspaceooccontinue(const eigsubspacestate &state);
+
+
+/*************************************************************************
+This function is used to retrieve information  about  out-of-core  request
+sent by solver to user code: request type (current version  of  the solver
+sends only requests for matrix-matrix products) and request size (size  of
+the matrices being multiplied).
+
+This function returns just request metrics; in order  to  get contents  of
+the matrices being multiplied, use eigsubspaceoocgetrequestdata().
+
+It should be used in conjunction with other out-of-core-related  functions
+of this subspackage in a loop like below:
+
+> alglib.eigsubspaceoocstart(state)
+> while alglib.eigsubspaceooccontinue(state) do
+>     alglib.eigsubspaceoocgetrequestinfo(state, out RequestType, out M)
+>     alglib.eigsubspaceoocgetrequestdata(state, out X)
+>     [calculate  Y=A*X, with X=R^NxM]
+>     alglib.eigsubspaceoocsendresult(state, in Y)
+> alglib.eigsubspaceoocstop(state, out W, out Z, out Report)
+
+INPUT PARAMETERS:
+    State           -   solver running in out-of-core mode
+
+OUTPUT PARAMETERS:
+    RequestType     -   type of the request to process:
+                        * 0 - for matrix-matrix product A*X, with A  being
+                          NxN matrix whose eigenvalues/vectors are needed,
+                          and X being NxREQUESTSIZE one which is  returned
+                          by the eigsubspaceoocgetrequestdata().
+    RequestSize     -   size of the X matrix (number of columns),  usually
+                        it is several times larger than number of  vectors
+                        K requested by user.
+
+
+  -- ALGLIB --
+     Copyright 16.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void eigsubspaceoocgetrequestinfo(const eigsubspacestate &state, ae_int_t &requesttype, ae_int_t &requestsize);
+
+
+/*************************************************************************
+This function is used to retrieve information  about  out-of-core  request
+sent by solver to user code: matrix X (array[N,RequestSize) which have  to
+be multiplied by out-of-core matrix A in a product A*X.
+
+This function returns just request data; in order to get size of  the data
+prior to processing requestm, use eigsubspaceoocgetrequestinfo().
+
+It should be used in conjunction with other out-of-core-related  functions
+of this subspackage in a loop like below:
+
+> alglib.eigsubspaceoocstart(state)
+> while alglib.eigsubspaceooccontinue(state) do
+>     alglib.eigsubspaceoocgetrequestinfo(state, out RequestType, out M)
+>     alglib.eigsubspaceoocgetrequestdata(state, out X)
+>     [calculate  Y=A*X, with X=R^NxM]
+>     alglib.eigsubspaceoocsendresult(state, in Y)
+> alglib.eigsubspaceoocstop(state, out W, out Z, out Report)
+
+INPUT PARAMETERS:
+    State           -   solver running in out-of-core mode
+    X               -   possibly  preallocated   storage;  reallocated  if
+                        needed, left unchanged, if large enough  to  store
+                        request data.
+
+OUTPUT PARAMETERS:
+    X               -   array[N,RequestSize] or larger, leading  rectangle
+                        is filled with dense matrix X.
+
+
+  -- ALGLIB --
+     Copyright 16.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void eigsubspaceoocgetrequestdata(const eigsubspacestate &state, real_2d_array &x);
+
+
+/*************************************************************************
+This function is used to send user reply to out-of-core  request  sent  by
+solver. Usually it is product A*X for returned by solver matrix X.
+
+It should be used in conjunction with other out-of-core-related  functions
+of this subspackage in a loop like below:
+
+> alglib.eigsubspaceoocstart(state)
+> while alglib.eigsubspaceooccontinue(state) do
+>     alglib.eigsubspaceoocgetrequestinfo(state, out RequestType, out M)
+>     alglib.eigsubspaceoocgetrequestdata(state, out X)
+>     [calculate  Y=A*X, with X=R^NxM]
+>     alglib.eigsubspaceoocsendresult(state, in Y)
+> alglib.eigsubspaceoocstop(state, out W, out Z, out Report)
+
+INPUT PARAMETERS:
+    State           -   solver running in out-of-core mode
+    AX              -   array[N,RequestSize] or larger, leading  rectangle
+                        is filled with product A*X.
+
+
+  -- ALGLIB --
+     Copyright 16.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void eigsubspaceoocsendresult(const eigsubspacestate &state, const real_2d_array &ax);
+
+
+/*************************************************************************
+This  function  finalizes out-of-core  mode  of  subspace eigensolver.  It
+should be used in conjunction with other out-of-core-related functions  of
+this subspackage in a loop like below:
+
+> alglib.eigsubspaceoocstart(state)
+> while alglib.eigsubspaceooccontinue(state) do
+>     alglib.eigsubspaceoocgetrequestinfo(state, out RequestType, out M)
+>     alglib.eigsubspaceoocgetrequestdata(state, out X)
+>     [calculate  Y=A*X, with X=R^NxM]
+>     alglib.eigsubspaceoocsendresult(state, in Y)
+> alglib.eigsubspaceoocstop(state, out W, out Z, out Report)
+
+INPUT PARAMETERS:
+    State       -   solver state
+
+OUTPUT PARAMETERS:
+    W           -   array[K], depending on solver settings:
+                    * top  K  eigenvalues ordered  by  descending   -   if
+                      eigenvectors are returned in Z
+                    * zeros - if invariant subspace is returned in Z
+    Z           -   array[N,K], depending on solver settings either:
+                    * matrix of eigenvectors found
+                    * orthogonal basis of K-dimensional invariant subspace
+    Rep         -   report with additional parameters
+
+  -- ALGLIB --
+     Copyright 16.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void eigsubspaceoocstop(const eigsubspacestate &state, real_1d_array &w, real_2d_array &z, eigsubspacereport &rep);
+
+
+/*************************************************************************
+This  function runs eigensolver for dense NxN symmetric matrix A, given by
+upper or lower triangle.
+
+This function can not process nonsymmetric matrices.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * multithreading support
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! For a situation  when  you  need  just  a  few  eigenvectors  (~1-10),
+  ! multithreading typically gives sublinear (wrt to cores count) speedup.
+  ! For larger  problems  it  may  give  you  nearly  linear  increase  in
+  ! performance.
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Best results are achieved  for  high-dimensional  problems
+  ! (NVars is at least 256).
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    State       -   solver state
+    A           -   array[N,N], symmetric NxN matrix given by one  of  its
+                    triangles
+    IsUpper     -   whether upper or lower triangle of  A  is  given  (the
+                    other one is not referenced at all).
+
+OUTPUT PARAMETERS:
+    W           -   array[K], top  K  eigenvalues ordered  by   descending
+                    of their absolute values
+    Z           -   array[N,K], matrix of eigenvectors found
+    Rep         -   report with additional parameters
+
+NOTE: internally this function allocates a copy of NxN dense A. You should
+      take it into account when working with very large matrices occupying
+      almost all RAM.
+
+  -- ALGLIB --
+     Copyright 16.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void eigsubspacesolvedenses(const eigsubspacestate &state, const real_2d_array &a, const bool isupper, real_1d_array &w, real_2d_array &z, eigsubspacereport &rep);
+void smp_eigsubspacesolvedenses(const eigsubspacestate &state, const real_2d_array &a, const bool isupper, real_1d_array &w, real_2d_array &z, eigsubspacereport &rep);
+
+
+/*************************************************************************
+This  function runs eigensolver for dense NxN symmetric matrix A, given by
+upper or lower triangle.
+
+This function can not process nonsymmetric matrices.
+
+INPUT PARAMETERS:
+    State       -   solver state
+    A           -   NxN symmetric matrix given by one of its triangles
+    IsUpper     -   whether upper or lower triangle of  A  is  given  (the
+                    other one is not referenced at all).
+
+OUTPUT PARAMETERS:
+    W           -   array[K], top  K  eigenvalues ordered  by   descending
+                    of their absolute values
+    Z           -   array[N,K], matrix of eigenvectors found
+    Rep         -   report with additional parameters
+
+  -- ALGLIB --
+     Copyright 16.01.2017 by Bochkanov Sergey
+*************************************************************************/
+void eigsubspacesolvesparses(const eigsubspacestate &state, const sparsematrix &a, const bool isupper, real_1d_array &w, real_2d_array &z, eigsubspacereport &rep);
+
+
+/*************************************************************************
+Finding the eigenvalues and eigenvectors of a symmetric matrix
+
+The algorithm finds eigen pairs of a symmetric matrix by reducing it to
+tridiagonal form and using the QL/QR algorithm.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 Input parameters:
-    A       -   Cholesky decomposition,
-                output of SMatrixCholesky subroutine.
-    N       -   (optional) size of matrix A:
-                * if given, only principal NxN submatrix is processed and
-                  overwritten. other elements are unchanged.
-                * if not given, automatically determined from matrix size
-                  (A must be square matrix)
+    A       -   symmetric matrix which is given by its upper or lower
+                triangular part.
+                Array whose indexes range within [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
+                If ZNeeded is equal to:
+                 * 0, the eigenvectors are not returned;
+                 * 1, the eigenvectors are returned.
+    IsUpper -   storage format.
 
-As the determinant is equal to the product of squares of diagonal elements,
-it’s not necessary to specify which triangle - lower or upper - the matrix
-is stored in.
+Output parameters:
+    D       -   eigenvalues in ascending order.
+                Array whose index ranges within [0..N-1].
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z hasn't changed;
+                 * 1, Z contains the eigenvectors.
+                Array whose indexes range within [0..N-1, 0..N-1].
+                The eigenvectors are stored in the matrix columns.
 
 Result:
-    matrix determinant.
+    True, if the algorithm has converged.
+    False, if the algorithm hasn't converged (rare case).
 
   -- ALGLIB --
      Copyright 2005-2008 by Bochkanov Sergey
 *************************************************************************/
-double spdmatrixcholeskydet(const real_2d_array &a, const ae_int_t n);
-double spdmatrixcholeskydet(const real_2d_array &a);
+bool smatrixevd(const real_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, real_1d_array &d, real_2d_array &z);
 
 
 /*************************************************************************
-Determinant calculation of the symmetric positive definite matrix.
+Subroutine for finding the eigenvalues (and eigenvectors) of  a  symmetric
+matrix  in  a  given half open interval (A, B] by using  a  bisection  and
+inverse iteration
 
 Input parameters:
-    A       -   matrix. Array with elements [0..N-1, 0..N-1].
-    N       -   (optional) size of matrix A:
-                * if given, only principal NxN submatrix is processed and
-                  overwritten. other elements are unchanged.
-                * if not given, automatically determined from matrix size
-                  (A must be square matrix)
-    IsUpper -   (optional) storage type:
-                * if True, symmetric matrix  A  is  given  by  its  upper
-                  triangle, and the lower triangle isn’t used/changed  by
-                  function
-                * if False, symmetric matrix  A  is  given  by  its lower
-                  triangle, and the upper triangle isn’t used/changed  by
-                  function
-                * if not given, both lower and upper  triangles  must  be
-                  filled.
+    A       -   symmetric matrix which is given by its upper or lower
+                triangular part. Array [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
+                If ZNeeded is equal to:
+                 * 0, the eigenvectors are not returned;
+                 * 1, the eigenvectors are returned.
+    IsUpperA -  storage format of matrix A.
+    B1, B2 -    half open interval (B1, B2] to search eigenvalues in.
+
+Output parameters:
+    M       -   number of eigenvalues found in a given half-interval (M>=0).
+    W       -   array of the eigenvalues found.
+                Array whose index ranges within [0..M-1].
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z hasn't changed;
+                 * 1, Z contains eigenvectors.
+                Array whose indexes range within [0..N-1, 0..M-1].
+                The eigenvectors are stored in the matrix columns.
 
 Result:
-    determinant of matrix A.
-    If matrix A is not positive definite, exception is thrown.
+    True, if successful. M contains the number of eigenvalues in the given
+    half-interval (could be equal to 0), W contains the eigenvalues,
+    Z contains the eigenvectors (if needed).
+
+    False, if the bisection method subroutine wasn't able to find the
+    eigenvalues in the given interval or if the inverse iteration subroutine
+    wasn't able to find all the corresponding eigenvectors.
+    In that case, the eigenvalues and eigenvectors are not returned,
+    M is equal to 0.
 
   -- ALGLIB --
-     Copyright 2005-2008 by Bochkanov Sergey
+     Copyright 07.01.2006 by Bochkanov Sergey
 *************************************************************************/
-double spdmatrixdet(const real_2d_array &a, const ae_int_t n, const bool isupper);
-double spdmatrixdet(const real_2d_array &a);
+bool smatrixevdr(const real_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, const double b1, const double b2, ae_int_t &m, real_1d_array &w, real_2d_array &z);
+
+
+/*************************************************************************
+Subroutine for finding the eigenvalues and  eigenvectors  of  a  symmetric
+matrix with given indexes by using bisection and inverse iteration methods.
+
+Input parameters:
+    A       -   symmetric matrix which is given by its upper or lower
+                triangular part. Array whose indexes range within [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
+                If ZNeeded is equal to:
+                 * 0, the eigenvectors are not returned;
+                 * 1, the eigenvectors are returned.
+    IsUpperA -  storage format of matrix A.
+    I1, I2 -    index interval for searching (from I1 to I2).
+                0 <= I1 <= I2 <= N-1.
+
+Output parameters:
+    W       -   array of the eigenvalues found.
+                Array whose index ranges within [0..I2-I1].
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z hasn't changed;
+                 * 1, Z contains eigenvectors.
+                Array whose indexes range within [0..N-1, 0..I2-I1].
+                In that case, the eigenvectors are stored in the matrix columns.
+
+Result:
+    True, if successful. W contains the eigenvalues, Z contains the
+    eigenvectors (if needed).
+
+    False, if the bisection method subroutine wasn't able to find the
+    eigenvalues in the given interval or if the inverse iteration subroutine
+    wasn't able to find all the corresponding eigenvectors.
+    In that case, the eigenvalues and eigenvectors are not returned.
+
+  -- ALGLIB --
+     Copyright 07.01.2006 by Bochkanov Sergey
+*************************************************************************/
+bool smatrixevdi(const real_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, const ae_int_t i1, const ae_int_t i2, real_1d_array &w, real_2d_array &z);
+
+
+/*************************************************************************
+Finding the eigenvalues and eigenvectors of a Hermitian matrix
+
+The algorithm finds eigen pairs of a Hermitian matrix by  reducing  it  to
+real tridiagonal form and using the QL/QR algorithm.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    A       -   Hermitian matrix which is given  by  its  upper  or  lower
+                triangular part.
+                Array whose indexes range within [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    IsUpper -   storage format.
+    ZNeeded -   flag controlling whether the eigenvectors  are  needed  or
+                not. If ZNeeded is equal to:
+                 * 0, the eigenvectors are not returned;
+                 * 1, the eigenvectors are returned.
+
+Output parameters:
+    D       -   eigenvalues in ascending order.
+                Array whose index ranges within [0..N-1].
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z hasn't changed;
+                 * 1, Z contains the eigenvectors.
+                Array whose indexes range within [0..N-1, 0..N-1].
+                The eigenvectors are stored in the matrix columns.
+
+Result:
+    True, if the algorithm has converged.
+    False, if the algorithm hasn't converged (rare case).
+
+Note:
+    eigenvectors of Hermitian matrix are defined up to  multiplication  by
+    a complex number L, such that |L|=1.
+
+  -- ALGLIB --
+     Copyright 2005, 23 March 2007 by Bochkanov Sergey
+*************************************************************************/
+bool hmatrixevd(const complex_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, real_1d_array &d, complex_2d_array &z);
+
+
+/*************************************************************************
+Subroutine for finding the eigenvalues (and eigenvectors) of  a  Hermitian
+matrix  in  a  given half-interval (A, B] by using a bisection and inverse
+iteration
+
+Input parameters:
+    A       -   Hermitian matrix which is given  by  its  upper  or  lower
+                triangular  part.  Array  whose   indexes   range   within
+                [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    ZNeeded -   flag controlling whether the eigenvectors  are  needed  or
+                not. If ZNeeded is equal to:
+                 * 0, the eigenvectors are not returned;
+                 * 1, the eigenvectors are returned.
+    IsUpperA -  storage format of matrix A.
+    B1, B2 -    half-interval (B1, B2] to search eigenvalues in.
+
+Output parameters:
+    M       -   number of eigenvalues found in a given half-interval, M>=0
+    W       -   array of the eigenvalues found.
+                Array whose index ranges within [0..M-1].
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z hasn't changed;
+                 * 1, Z contains eigenvectors.
+                Array whose indexes range within [0..N-1, 0..M-1].
+                The eigenvectors are stored in the matrix columns.
+
+Result:
+    True, if successful. M contains the number of eigenvalues in the given
+    half-interval (could be equal to 0), W contains the eigenvalues,
+    Z contains the eigenvectors (if needed).
+
+    False, if the bisection method subroutine  wasn't  able  to  find  the
+    eigenvalues  in  the  given  interval  or  if  the  inverse  iteration
+    subroutine  wasn't  able  to  find all the corresponding eigenvectors.
+    In that case, the eigenvalues and eigenvectors are not returned, M  is
+    equal to 0.
+
+Note:
+    eigen vectors of Hermitian matrix are defined up to multiplication  by
+    a complex number L, such as |L|=1.
+
+  -- ALGLIB --
+     Copyright 07.01.2006, 24.03.2007 by Bochkanov Sergey.
+*************************************************************************/
+bool hmatrixevdr(const complex_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, const double b1, const double b2, ae_int_t &m, real_1d_array &w, complex_2d_array &z);
+
+
+/*************************************************************************
+Subroutine for finding the eigenvalues and  eigenvectors  of  a  Hermitian
+matrix with given indexes by using bisection and inverse iteration methods
+
+Input parameters:
+    A       -   Hermitian matrix which is given  by  its  upper  or  lower
+                triangular part.
+                Array whose indexes range within [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    ZNeeded -   flag controlling whether the eigenvectors  are  needed  or
+                not. If ZNeeded is equal to:
+                 * 0, the eigenvectors are not returned;
+                 * 1, the eigenvectors are returned.
+    IsUpperA -  storage format of matrix A.
+    I1, I2 -    index interval for searching (from I1 to I2).
+                0 <= I1 <= I2 <= N-1.
+
+Output parameters:
+    W       -   array of the eigenvalues found.
+                Array whose index ranges within [0..I2-I1].
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z hasn't changed;
+                 * 1, Z contains eigenvectors.
+                Array whose indexes range within [0..N-1, 0..I2-I1].
+                In  that  case,  the eigenvectors are stored in the matrix
+                columns.
+
+Result:
+    True, if successful. W contains the eigenvalues, Z contains the
+    eigenvectors (if needed).
+
+    False, if the bisection method subroutine  wasn't  able  to  find  the
+    eigenvalues  in  the  given  interval  or  if  the  inverse  iteration
+    subroutine wasn't able to find  all  the  corresponding  eigenvectors.
+    In that case, the eigenvalues and eigenvectors are not returned.
+
+Note:
+    eigen vectors of Hermitian matrix are defined up to multiplication  by
+    a complex number L, such as |L|=1.
+
+  -- ALGLIB --
+     Copyright 07.01.2006, 24.03.2007 by Bochkanov Sergey.
+*************************************************************************/
+bool hmatrixevdi(const complex_2d_array &a, const ae_int_t n, const ae_int_t zneeded, const bool isupper, const ae_int_t i1, const ae_int_t i2, real_1d_array &w, complex_2d_array &z);
+
+
+/*************************************************************************
+Finding the eigenvalues and eigenvectors of a tridiagonal symmetric matrix
+
+The algorithm finds the eigen pairs of a tridiagonal symmetric matrix by
+using an QL/QR algorithm with implicit shifts.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Generally, commercial ALGLIB is several times faster than  open-source
+  ! generic C edition, and many times faster than open-source C# edition.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+Input parameters:
+    D       -   the main diagonal of a tridiagonal matrix.
+                Array whose index ranges within [0..N-1].
+    E       -   the secondary diagonal of a tridiagonal matrix.
+                Array whose index ranges within [0..N-2].
+    N       -   size of matrix A.
+    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
+                If ZNeeded is equal to:
+                 * 0, the eigenvectors are not needed;
+                 * 1, the eigenvectors of a tridiagonal matrix
+                   are multiplied by the square matrix Z. It is used if the
+                   tridiagonal matrix is obtained by the similarity
+                   transformation of a symmetric matrix;
+                 * 2, the eigenvectors of a tridiagonal matrix replace the
+                   square matrix Z;
+                 * 3, matrix Z contains the first row of the eigenvectors
+                   matrix.
+    Z       -   if ZNeeded=1, Z contains the square matrix by which the
+                eigenvectors are multiplied.
+                Array whose indexes range within [0..N-1, 0..N-1].
+
+Output parameters:
+    D       -   eigenvalues in ascending order.
+                Array whose index ranges within [0..N-1].
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z hasn't changed;
+                 * 1, Z contains the product of a given matrix (from the left)
+                   and the eigenvectors matrix (from the right);
+                 * 2, Z contains the eigenvectors.
+                 * 3, Z contains the first row of the eigenvectors matrix.
+                If ZNeeded<3, Z is the array whose indexes range within [0..N-1, 0..N-1].
+                In that case, the eigenvectors are stored in the matrix columns.
+                If ZNeeded=3, Z is the array whose indexes range within [0..0, 0..N-1].
+
+Result:
+    True, if the algorithm has converged.
+    False, if the algorithm hasn't converged.
+
+  -- LAPACK routine (version 3.0) --
+     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+     Courant Institute, Argonne National Lab, and Rice University
+     September 30, 1994
+*************************************************************************/
+bool smatrixtdevd(real_1d_array &d, const real_1d_array &e, const ae_int_t n, const ae_int_t zneeded, real_2d_array &z);
+
+
+/*************************************************************************
+Subroutine for finding the tridiagonal matrix eigenvalues/vectors in a
+given half-interval (A, B] by using bisection and inverse iteration.
+
+Input parameters:
+    D       -   the main diagonal of a tridiagonal matrix.
+                Array whose index ranges within [0..N-1].
+    E       -   the secondary diagonal of a tridiagonal matrix.
+                Array whose index ranges within [0..N-2].
+    N       -   size of matrix, N>=0.
+    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
+                If ZNeeded is equal to:
+                 * 0, the eigenvectors are not needed;
+                 * 1, the eigenvectors of a tridiagonal matrix are multiplied
+                   by the square matrix Z. It is used if the tridiagonal
+                   matrix is obtained by the similarity transformation
+                   of a symmetric matrix.
+                 * 2, the eigenvectors of a tridiagonal matrix replace matrix Z.
+    A, B    -   half-interval (A, B] to search eigenvalues in.
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z isn't used and remains unchanged;
+                 * 1, Z contains the square matrix (array whose indexes range
+                   within [0..N-1, 0..N-1]) which reduces the given symmetric
+                   matrix to tridiagonal form;
+                 * 2, Z isn't used (but changed on the exit).
+
+Output parameters:
+    D       -   array of the eigenvalues found.
+                Array whose index ranges within [0..M-1].
+    M       -   number of eigenvalues found in the given half-interval (M>=0).
+    Z       -   if ZNeeded is equal to:
+                 * 0, doesn't contain any information;
+                 * 1, contains the product of a given NxN matrix Z (from the
+                   left) and NxM matrix of the eigenvectors found (from the
+                   right). Array whose indexes range within [0..N-1, 0..M-1].
+                 * 2, contains the matrix of the eigenvectors found.
+                   Array whose indexes range within [0..N-1, 0..M-1].
+
+Result:
+
+    True, if successful. In that case, M contains the number of eigenvalues
+    in the given half-interval (could be equal to 0), D contains the eigenvalues,
+    Z contains the eigenvectors (if needed).
+    It should be noted that the subroutine changes the size of arrays D and Z.
+
+    False, if the bisection method subroutine wasn't able to find the
+    eigenvalues in the given interval or if the inverse iteration subroutine
+    wasn't able to find all the corresponding eigenvectors. In that case,
+    the eigenvalues and eigenvectors are not returned, M is equal to 0.
+
+  -- ALGLIB --
+     Copyright 31.03.2008 by Bochkanov Sergey
+*************************************************************************/
+bool smatrixtdevdr(real_1d_array &d, const real_1d_array &e, const ae_int_t n, const ae_int_t zneeded, const double a, const double b, ae_int_t &m, real_2d_array &z);
+
+
+/*************************************************************************
+Subroutine for finding tridiagonal matrix eigenvalues/vectors with given
+indexes (in ascending order) by using the bisection and inverse iteraion.
+
+Input parameters:
+    D       -   the main diagonal of a tridiagonal matrix.
+                Array whose index ranges within [0..N-1].
+    E       -   the secondary diagonal of a tridiagonal matrix.
+                Array whose index ranges within [0..N-2].
+    N       -   size of matrix. N>=0.
+    ZNeeded -   flag controlling whether the eigenvectors are needed or not.
+                If ZNeeded is equal to:
+                 * 0, the eigenvectors are not needed;
+                 * 1, the eigenvectors of a tridiagonal matrix are multiplied
+                   by the square matrix Z. It is used if the
+                   tridiagonal matrix is obtained by the similarity transformation
+                   of a symmetric matrix.
+                 * 2, the eigenvectors of a tridiagonal matrix replace
+                   matrix Z.
+    I1, I2  -   index interval for searching (from I1 to I2).
+                0 <= I1 <= I2 <= N-1.
+    Z       -   if ZNeeded is equal to:
+                 * 0, Z isn't used and remains unchanged;
+                 * 1, Z contains the square matrix (array whose indexes range within [0..N-1, 0..N-1])
+                   which reduces the given symmetric matrix to  tridiagonal form;
+                 * 2, Z isn't used (but changed on the exit).
+
+Output parameters:
+    D       -   array of the eigenvalues found.
+                Array whose index ranges within [0..I2-I1].
+    Z       -   if ZNeeded is equal to:
+                 * 0, doesn't contain any information;
+                 * 1, contains the product of a given NxN matrix Z (from the left) and
+                   Nx(I2-I1) matrix of the eigenvectors found (from the right).
+                   Array whose indexes range within [0..N-1, 0..I2-I1].
+                 * 2, contains the matrix of the eigenvalues found.
+                   Array whose indexes range within [0..N-1, 0..I2-I1].
+
+
+Result:
+
+    True, if successful. In that case, D contains the eigenvalues,
+    Z contains the eigenvectors (if needed).
+    It should be noted that the subroutine changes the size of arrays D and Z.
+
+    False, if the bisection method subroutine wasn't able to find the eigenvalues
+    in the given interval or if the inverse iteration subroutine wasn't able
+    to find all the corresponding eigenvectors. In that case, the eigenvalues
+    and eigenvectors are not returned.
+
+  -- ALGLIB --
+     Copyright 25.12.2005 by Bochkanov Sergey
+*************************************************************************/
+bool smatrixtdevdi(real_1d_array &d, const real_1d_array &e, const ae_int_t n, const ae_int_t zneeded, const ae_int_t i1, const ae_int_t i2, real_2d_array &z);
+
+
+/*************************************************************************
+Finding eigenvalues and eigenvectors of a general (unsymmetric) matrix
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison. Speed-up provided by MKL for this particular problem (EVD)
+  ! is really high, because  MKL  uses combination of (a) better low-level
+  ! optimizations, and (b) better EVD algorithms.
+  !
+  ! On one particular SSE-capable  machine  for  N=1024,  commercial  MKL-
+  ! -capable ALGLIB was:
+  ! * 7-10 times faster than open source "generic C" version
+  ! * 15-18 times faster than "pure C#" version
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+The algorithm finds eigenvalues and eigenvectors of a general matrix by
+using the QR algorithm with multiple shifts. The algorithm can find
+eigenvalues and both left and right eigenvectors.
+
+The right eigenvector is a vector x such that A*x = w*x, and the left
+eigenvector is a vector y such that y'*A = w*y' (here y' implies a complex
+conjugate transposition of vector y).
+
+Input parameters:
+    A       -   matrix. Array whose indexes range within [0..N-1, 0..N-1].
+    N       -   size of matrix A.
+    VNeeded -   flag controlling whether eigenvectors are needed or not.
+                If VNeeded is equal to:
+                 * 0, eigenvectors are not returned;
+                 * 1, right eigenvectors are returned;
+                 * 2, left eigenvectors are returned;
+                 * 3, both left and right eigenvectors are returned.
+
+Output parameters:
+    WR      -   real parts of eigenvalues.
+                Array whose index ranges within [0..N-1].
+    WR      -   imaginary parts of eigenvalues.
+                Array whose index ranges within [0..N-1].
+    VL, VR  -   arrays of left and right eigenvectors (if they are needed).
+                If WI[i]=0, the respective eigenvalue is a real number,
+                and it corresponds to the column number I of matrices VL/VR.
+                If WI[i]>0, we have a pair of complex conjugate numbers with
+                positive and negative imaginary parts:
+                    the first eigenvalue WR[i] + sqrt(-1)*WI[i];
+                    the second eigenvalue WR[i+1] + sqrt(-1)*WI[i+1];
+                    WI[i]>0
+                    WI[i+1] = -WI[i] < 0
+                In that case, the eigenvector  corresponding to the first
+                eigenvalue is located in i and i+1 columns of matrices
+                VL/VR (the column number i contains the real part, and the
+                column number i+1 contains the imaginary part), and the vector
+                corresponding to the second eigenvalue is a complex conjugate to
+                the first vector.
+                Arrays whose indexes range within [0..N-1, 0..N-1].
+
+Result:
+    True, if the algorithm has converged.
+    False, if the algorithm has not converged.
+
+Note 1:
+    Some users may ask the following question: what if WI[N-1]>0?
+    WI[N] must contain an eigenvalue which is complex conjugate to the
+    N-th eigenvalue, but the array has only size N?
+    The answer is as follows: such a situation cannot occur because the
+    algorithm finds a pairs of eigenvalues, therefore, if WI[i]>0, I is
+    strictly less than N-1.
+
+Note 2:
+    The algorithm performance depends on the value of the internal parameter
+    NS of the InternalSchurDecomposition subroutine which defines the number
+    of shifts in the QR algorithm (similarly to the block width in block-matrix
+    algorithms of linear algebra). If you require maximum performance
+    on your machine, it is recommended to adjust this parameter manually.
+
+
+See also the InternalTREVC subroutine.
+
+The algorithm is based on the LAPACK 3.0 library.
+*************************************************************************/
+bool rmatrixevd(const real_2d_array &a, const ae_int_t n, const ae_int_t vneeded, real_1d_array &wr, real_1d_array &wi, real_2d_array &vl, real_2d_array &vr);
+
+/*************************************************************************
+Subroutine performing the Schur decomposition of a general matrix by using
+the QR algorithm with multiple shifts.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes one  important  improvement   of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Multithreaded acceleration is NOT supported for this function.
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+The source matrix A is represented as S'*A*S = T, where S is an orthogonal
+matrix (Schur vectors), T - upper quasi-triangular matrix (with blocks of
+sizes 1x1 and 2x2 on the main diagonal).
+
+Input parameters:
+    A   -   matrix to be decomposed.
+            Array whose indexes range within [0..N-1, 0..N-1].
+    N   -   size of A, N>=0.
+
+
+Output parameters:
+    A   -   contains matrix T.
+            Array whose indexes range within [0..N-1, 0..N-1].
+    S   -   contains Schur vectors.
+            Array whose indexes range within [0..N-1, 0..N-1].
+
+Note 1:
+    The block structure of matrix T can be easily recognized: since all
+    the elements below the blocks are zeros, the elements a[i+1,i] which
+    are equal to 0 show the block border.
+
+Note 2:
+    The algorithm performance depends on the value of the internal parameter
+    NS of the InternalSchurDecomposition subroutine which defines the number
+    of shifts in the QR algorithm (similarly to the block width in block-matrix
+    algorithms in linear algebra). If you require maximum performance on
+    your machine, it is recommended to adjust this parameter manually.
+
+Result:
+    True,
+        if the algorithm has converged and parameters A and S contain the result.
+    False,
+        if the algorithm has not converged.
+
+Algorithm implemented on the basis of the DHSEQR subroutine (LAPACK 3.0 library).
+*************************************************************************/
+bool rmatrixschur(real_2d_array &a, const ae_int_t n, real_2d_array &s);
 
 /*************************************************************************
 Algorithm for solving the following generalized symmetric positive-definite
@@ -6383,7 +6752,7 @@ Output parameters:
     D           -   eigenvalues in ascending order.
                     Array whose index ranges within [0..N-1].
     Z           -   if ZNeeded is equal to:
-                     * 0, Z hasn’t changed;
+                     * 0, Z hasn't changed;
                      * 1, Z contains eigenvectors.
                     Array whose indexes range within [0..N-1, 0..N-1].
                     The eigenvectors are stored in matrix columns. It should
@@ -6393,7 +6762,7 @@ Output parameters:
 Result:
     True, if the problem was solved successfully.
     False, if the error occurred during the Cholesky decomposition of matrix
-    B (the matrix isn’t positive-definite) or during the work of the iterative
+    B (the matrix isn't positive-definite) or during the work of the iterative
     algorithm for solving the symmetric eigenproblem.
 
 See also the GeneralizedSymmetricDefiniteEVDReduce subroutine.
@@ -6533,7 +6902,7 @@ void rmatrixinvupdatecolumn(real_2d_array &inva, const ae_int_t n, const ae_int_
 /*************************************************************************
 Inverse matrix update by the Sherman-Morrison formula
 
-The algorithm computes the inverse of matrix A+u*v’ by using the given matrix
+The algorithm computes the inverse of matrix A+u*v' by using the given matrix
 A^-1 and the vectors u and v.
 
 Input parameters:
@@ -6554,63 +6923,148 @@ Output parameters:
 void rmatrixinvupdateuv(real_2d_array &inva, const ae_int_t n, const real_1d_array &u, const real_1d_array &v);
 
 /*************************************************************************
-Subroutine performing the Schur decomposition of a general matrix by using
-the QR algorithm with multiple shifts.
-
-COMMERCIAL EDITION OF ALGLIB:
-
-  ! Commercial version of ALGLIB includes one  important  improvement   of
-  ! this function, which can be used from C++ and C#:
-  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
-  !
-  ! Intel MKL gives approximately constant  (with  respect  to  number  of
-  ! worker threads) acceleration factor which depends on CPU  being  used,
-  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
-  ! comparison.
-  !
-  ! Multithreaded acceleration is NOT supported for this function.
-  !
-  ! We recommend you to read 'Working with commercial version' section  of
-  ! ALGLIB Reference Manual in order to find out how to  use  performance-
-  ! related features provided by commercial edition of ALGLIB.
-
-The source matrix A is represented as S'*A*S = T, where S is an orthogonal
-matrix (Schur vectors), T - upper quasi-triangular matrix (with blocks of
-sizes 1x1 and 2x2 on the main diagonal).
+Determinant calculation of the matrix given by its LU decomposition.
 
 Input parameters:
-    A   -   matrix to be decomposed.
-            Array whose indexes range within [0..N-1, 0..N-1].
-    N   -   size of A, N>=0.
+    A       -   LU decomposition of the matrix (output of
+                RMatrixLU subroutine).
+    Pivots  -   table of permutations which were made during
+                the LU decomposition.
+                Output of RMatrixLU subroutine.
+    N       -   (optional) size of matrix A:
+                * if given, only principal NxN submatrix is processed and
+                  overwritten. other elements are unchanged.
+                * if not given, automatically determined from matrix size
+                  (A must be square matrix)
+
+Result: matrix determinant.
+
+  -- ALGLIB --
+     Copyright 2005 by Bochkanov Sergey
+*************************************************************************/
+double rmatrixludet(const real_2d_array &a, const integer_1d_array &pivots, const ae_int_t n);
+double rmatrixludet(const real_2d_array &a, const integer_1d_array &pivots);
 
 
-Output parameters:
-    A   -   contains matrix T.
-            Array whose indexes range within [0..N-1, 0..N-1].
-    S   -   contains Schur vectors.
-            Array whose indexes range within [0..N-1, 0..N-1].
+/*************************************************************************
+Calculation of the determinant of a general matrix
 
-Note 1:
-    The block structure of matrix T can be easily recognized: since all
-    the elements below the blocks are zeros, the elements a[i+1,i] which
-    are equal to 0 show the block border.
+Input parameters:
+    A       -   matrix, array[0..N-1, 0..N-1]
+    N       -   (optional) size of matrix A:
+                * if given, only principal NxN submatrix is processed and
+                  overwritten. other elements are unchanged.
+                * if not given, automatically determined from matrix size
+                  (A must be square matrix)
 
-Note 2:
-    The algorithm performance depends on the value of the internal parameter
-    NS of the InternalSchurDecomposition subroutine which defines the number
-    of shifts in the QR algorithm (similarly to the block width in block-matrix
-    algorithms in linear algebra). If you require maximum performance on
-    your machine, it is recommended to adjust this parameter manually.
+Result: determinant of matrix A.
+
+  -- ALGLIB --
+     Copyright 2005 by Bochkanov Sergey
+*************************************************************************/
+double rmatrixdet(const real_2d_array &a, const ae_int_t n);
+double rmatrixdet(const real_2d_array &a);
+
+
+/*************************************************************************
+Determinant calculation of the matrix given by its LU decomposition.
+
+Input parameters:
+    A       -   LU decomposition of the matrix (output of
+                RMatrixLU subroutine).
+    Pivots  -   table of permutations which were made during
+                the LU decomposition.
+                Output of RMatrixLU subroutine.
+    N       -   (optional) size of matrix A:
+                * if given, only principal NxN submatrix is processed and
+                  overwritten. other elements are unchanged.
+                * if not given, automatically determined from matrix size
+                  (A must be square matrix)
+
+Result: matrix determinant.
+
+  -- ALGLIB --
+     Copyright 2005 by Bochkanov Sergey
+*************************************************************************/
+alglib::complex cmatrixludet(const complex_2d_array &a, const integer_1d_array &pivots, const ae_int_t n);
+alglib::complex cmatrixludet(const complex_2d_array &a, const integer_1d_array &pivots);
+
+
+/*************************************************************************
+Calculation of the determinant of a general matrix
+
+Input parameters:
+    A       -   matrix, array[0..N-1, 0..N-1]
+    N       -   (optional) size of matrix A:
+                * if given, only principal NxN submatrix is processed and
+                  overwritten. other elements are unchanged.
+                * if not given, automatically determined from matrix size
+                  (A must be square matrix)
+
+Result: determinant of matrix A.
+
+  -- ALGLIB --
+     Copyright 2005 by Bochkanov Sergey
+*************************************************************************/
+alglib::complex cmatrixdet(const complex_2d_array &a, const ae_int_t n);
+alglib::complex cmatrixdet(const complex_2d_array &a);
+
+
+/*************************************************************************
+Determinant calculation of the matrix given by the Cholesky decomposition.
+
+Input parameters:
+    A       -   Cholesky decomposition,
+                output of SMatrixCholesky subroutine.
+    N       -   (optional) size of matrix A:
+                * if given, only principal NxN submatrix is processed and
+                  overwritten. other elements are unchanged.
+                * if not given, automatically determined from matrix size
+                  (A must be square matrix)
+
+As the determinant is equal to the product of squares of diagonal elements,
+it's not necessary to specify which triangle - lower or upper - the matrix
+is stored in.
 
 Result:
-    True,
-        if the algorithm has converged and parameters A and S contain the result.
-    False,
-        if the algorithm has not converged.
+    matrix determinant.
 
-Algorithm implemented on the basis of the DHSEQR subroutine (LAPACK 3.0 library).
+  -- ALGLIB --
+     Copyright 2005-2008 by Bochkanov Sergey
 *************************************************************************/
-bool rmatrixschur(real_2d_array &a, const ae_int_t n, real_2d_array &s);
+double spdmatrixcholeskydet(const real_2d_array &a, const ae_int_t n);
+double spdmatrixcholeskydet(const real_2d_array &a);
+
+
+/*************************************************************************
+Determinant calculation of the symmetric positive definite matrix.
+
+Input parameters:
+    A       -   matrix. Array with elements [0..N-1, 0..N-1].
+    N       -   (optional) size of matrix A:
+                * if given, only principal NxN submatrix is processed and
+                  overwritten. other elements are unchanged.
+                * if not given, automatically determined from matrix size
+                  (A must be square matrix)
+    IsUpper -   (optional) storage type:
+                * if True, symmetric matrix  A  is  given  by  its  upper
+                  triangle, and the lower triangle isn't used/changed  by
+                  function
+                * if False, symmetric matrix  A  is  given  by  its lower
+                  triangle, and the upper triangle isn't used/changed  by
+                  function
+                * if not given, both lower and upper  triangles  must  be
+                  filled.
+
+Result:
+    determinant of matrix A.
+    If matrix A is not positive definite, exception is thrown.
+
+  -- ALGLIB --
+     Copyright 2005-2008 by Bochkanov Sergey
+*************************************************************************/
+double spdmatrixdet(const real_2d_array &a, const ae_int_t n, const bool isupper);
+double spdmatrixdet(const real_2d_array &a);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -6620,6 +7074,230 @@ bool rmatrixschur(real_2d_array &a, const ae_int_t n, real_2d_array &s);
 /////////////////////////////////////////////////////////////////////////
 namespace alglib_impl
 {
+void sparsecreate(ae_int_t m,
+     ae_int_t n,
+     ae_int_t k,
+     sparsematrix* s,
+     ae_state *_state);
+void sparsecreatebuf(ae_int_t m,
+     ae_int_t n,
+     ae_int_t k,
+     sparsematrix* s,
+     ae_state *_state);
+void sparsecreatecrs(ae_int_t m,
+     ae_int_t n,
+     /* Integer */ ae_vector* ner,
+     sparsematrix* s,
+     ae_state *_state);
+void sparsecreatecrsbuf(ae_int_t m,
+     ae_int_t n,
+     /* Integer */ ae_vector* ner,
+     sparsematrix* s,
+     ae_state *_state);
+void sparsecreatesks(ae_int_t m,
+     ae_int_t n,
+     /* Integer */ ae_vector* d,
+     /* Integer */ ae_vector* u,
+     sparsematrix* s,
+     ae_state *_state);
+void sparsecreatesksbuf(ae_int_t m,
+     ae_int_t n,
+     /* Integer */ ae_vector* d,
+     /* Integer */ ae_vector* u,
+     sparsematrix* s,
+     ae_state *_state);
+void sparsecopy(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
+void sparsecopybuf(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
+void sparseswap(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
+void sparseadd(sparsematrix* s,
+     ae_int_t i,
+     ae_int_t j,
+     double v,
+     ae_state *_state);
+void sparseset(sparsematrix* s,
+     ae_int_t i,
+     ae_int_t j,
+     double v,
+     ae_state *_state);
+double sparseget(sparsematrix* s,
+     ae_int_t i,
+     ae_int_t j,
+     ae_state *_state);
+double sparsegetdiagonal(sparsematrix* s, ae_int_t i, ae_state *_state);
+void sparsemv(sparsematrix* s,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state);
+void sparsemtv(sparsematrix* s,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state);
+void sparsemv2(sparsematrix* s,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y0,
+     /* Real    */ ae_vector* y1,
+     ae_state *_state);
+void sparsesmv(sparsematrix* s,
+     ae_bool isupper,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state);
+double sparsevsmv(sparsematrix* s,
+     ae_bool isupper,
+     /* Real    */ ae_vector* x,
+     ae_state *_state);
+void sparsemm(sparsematrix* s,
+     /* Real    */ ae_matrix* a,
+     ae_int_t k,
+     /* Real    */ ae_matrix* b,
+     ae_state *_state);
+void sparsemtm(sparsematrix* s,
+     /* Real    */ ae_matrix* a,
+     ae_int_t k,
+     /* Real    */ ae_matrix* b,
+     ae_state *_state);
+void sparsemm2(sparsematrix* s,
+     /* Real    */ ae_matrix* a,
+     ae_int_t k,
+     /* Real    */ ae_matrix* b0,
+     /* Real    */ ae_matrix* b1,
+     ae_state *_state);
+void sparsesmm(sparsematrix* s,
+     ae_bool isupper,
+     /* Real    */ ae_matrix* a,
+     ae_int_t k,
+     /* Real    */ ae_matrix* b,
+     ae_state *_state);
+void sparsetrmv(sparsematrix* s,
+     ae_bool isupper,
+     ae_bool isunit,
+     ae_int_t optype,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state);
+void sparsetrsv(sparsematrix* s,
+     ae_bool isupper,
+     ae_bool isunit,
+     ae_int_t optype,
+     /* Real    */ ae_vector* x,
+     ae_state *_state);
+void sparseresizematrix(sparsematrix* s, ae_state *_state);
+double sparsegetaveragelengthofchain(sparsematrix* s, ae_state *_state);
+ae_bool sparseenumerate(sparsematrix* s,
+     ae_int_t* t0,
+     ae_int_t* t1,
+     ae_int_t* i,
+     ae_int_t* j,
+     double* v,
+     ae_state *_state);
+ae_bool sparserewriteexisting(sparsematrix* s,
+     ae_int_t i,
+     ae_int_t j,
+     double v,
+     ae_state *_state);
+void sparsegetrow(sparsematrix* s,
+     ae_int_t i,
+     /* Real    */ ae_vector* irow,
+     ae_state *_state);
+void sparsegetcompressedrow(sparsematrix* s,
+     ae_int_t i,
+     /* Integer */ ae_vector* colidx,
+     /* Real    */ ae_vector* vals,
+     ae_int_t* nzcnt,
+     ae_state *_state);
+void sparsetransposesks(sparsematrix* s, ae_state *_state);
+void sparseconvertto(sparsematrix* s0, ae_int_t fmt, ae_state *_state);
+void sparsecopytobuf(sparsematrix* s0,
+     ae_int_t fmt,
+     sparsematrix* s1,
+     ae_state *_state);
+void sparseconverttohash(sparsematrix* s, ae_state *_state);
+void sparsecopytohash(sparsematrix* s0,
+     sparsematrix* s1,
+     ae_state *_state);
+void sparsecopytohashbuf(sparsematrix* s0,
+     sparsematrix* s1,
+     ae_state *_state);
+void sparseconverttocrs(sparsematrix* s, ae_state *_state);
+void sparsecopytocrs(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
+void sparsecopytocrsbuf(sparsematrix* s0,
+     sparsematrix* s1,
+     ae_state *_state);
+void sparseconverttosks(sparsematrix* s, ae_state *_state);
+void sparsecopytosks(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
+void sparsecopytosksbuf(sparsematrix* s0,
+     sparsematrix* s1,
+     ae_state *_state);
+void sparsecreatecrsinplace(sparsematrix* s, ae_state *_state);
+ae_int_t sparsegetmatrixtype(sparsematrix* s, ae_state *_state);
+ae_bool sparseishash(sparsematrix* s, ae_state *_state);
+ae_bool sparseiscrs(sparsematrix* s, ae_state *_state);
+ae_bool sparseissks(sparsematrix* s, ae_state *_state);
+void sparsefree(sparsematrix* s, ae_state *_state);
+ae_int_t sparsegetnrows(sparsematrix* s, ae_state *_state);
+ae_int_t sparsegetncols(sparsematrix* s, ae_state *_state);
+ae_int_t sparsegetuppercount(sparsematrix* s, ae_state *_state);
+ae_int_t sparsegetlowercount(sparsematrix* s, ae_state *_state);
+void _sparsematrix_init(void* _p, ae_state *_state);
+void _sparsematrix_init_copy(void* _dst, void* _src, ae_state *_state);
+void _sparsematrix_clear(void* _p);
+void _sparsematrix_destroy(void* _p);
+void _sparsebuffers_init(void* _p, ae_state *_state);
+void _sparsebuffers_init_copy(void* _dst, void* _src, ae_state *_state);
+void _sparsebuffers_clear(void* _p);
+void _sparsebuffers_destroy(void* _p);
+void rmatrixrndorthogonal(ae_int_t n,
+     /* Real    */ ae_matrix* a,
+     ae_state *_state);
+void rmatrixrndcond(ae_int_t n,
+     double c,
+     /* Real    */ ae_matrix* a,
+     ae_state *_state);
+void cmatrixrndorthogonal(ae_int_t n,
+     /* Complex */ ae_matrix* a,
+     ae_state *_state);
+void cmatrixrndcond(ae_int_t n,
+     double c,
+     /* Complex */ ae_matrix* a,
+     ae_state *_state);
+void smatrixrndcond(ae_int_t n,
+     double c,
+     /* Real    */ ae_matrix* a,
+     ae_state *_state);
+void spdmatrixrndcond(ae_int_t n,
+     double c,
+     /* Real    */ ae_matrix* a,
+     ae_state *_state);
+void hmatrixrndcond(ae_int_t n,
+     double c,
+     /* Complex */ ae_matrix* a,
+     ae_state *_state);
+void hpdmatrixrndcond(ae_int_t n,
+     double c,
+     /* Complex */ ae_matrix* a,
+     ae_state *_state);
+void rmatrixrndorthogonalfromtheright(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     ae_state *_state);
+void rmatrixrndorthogonalfromtheleft(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     ae_state *_state);
+void cmatrixrndorthogonalfromtheright(/* Complex */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     ae_state *_state);
+void cmatrixrndorthogonalfromtheleft(/* Complex */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     ae_state *_state);
+void smatrixrndmultiply(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_state *_state);
+void hmatrixrndmultiply(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_state *_state);
 void ablassplitlength(/* Real    */ ae_matrix* a,
      ae_int_t n,
      ae_int_t* n1,
@@ -6949,563 +7627,6 @@ void _pexec_cmatrixsyrk(ae_int_t n,
     ae_int_t ic,
     ae_int_t jc,
     ae_bool isupper, ae_state *_state);
-void rmatrixqr(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* tau,
-     ae_state *_state);
-void _pexec_rmatrixqr(/* Real    */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    /* Real    */ ae_vector* tau, ae_state *_state);
-void rmatrixlq(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* tau,
-     ae_state *_state);
-void _pexec_rmatrixlq(/* Real    */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    /* Real    */ ae_vector* tau, ae_state *_state);
-void cmatrixqr(/* Complex */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Complex */ ae_vector* tau,
-     ae_state *_state);
-void _pexec_cmatrixqr(/* Complex */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    /* Complex */ ae_vector* tau, ae_state *_state);
-void cmatrixlq(/* Complex */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Complex */ ae_vector* tau,
-     ae_state *_state);
-void _pexec_cmatrixlq(/* Complex */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    /* Complex */ ae_vector* tau, ae_state *_state);
-void rmatrixqrunpackq(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* tau,
-     ae_int_t qcolumns,
-     /* Real    */ ae_matrix* q,
-     ae_state *_state);
-void _pexec_rmatrixqrunpackq(/* Real    */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    /* Real    */ ae_vector* tau,
-    ae_int_t qcolumns,
-    /* Real    */ ae_matrix* q, ae_state *_state);
-void rmatrixqrunpackr(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_matrix* r,
-     ae_state *_state);
-void rmatrixlqunpackq(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* tau,
-     ae_int_t qrows,
-     /* Real    */ ae_matrix* q,
-     ae_state *_state);
-void _pexec_rmatrixlqunpackq(/* Real    */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    /* Real    */ ae_vector* tau,
-    ae_int_t qrows,
-    /* Real    */ ae_matrix* q, ae_state *_state);
-void rmatrixlqunpackl(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_matrix* l,
-     ae_state *_state);
-void cmatrixqrunpackq(/* Complex */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Complex */ ae_vector* tau,
-     ae_int_t qcolumns,
-     /* Complex */ ae_matrix* q,
-     ae_state *_state);
-void _pexec_cmatrixqrunpackq(/* Complex */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    /* Complex */ ae_vector* tau,
-    ae_int_t qcolumns,
-    /* Complex */ ae_matrix* q, ae_state *_state);
-void cmatrixqrunpackr(/* Complex */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Complex */ ae_matrix* r,
-     ae_state *_state);
-void cmatrixlqunpackq(/* Complex */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Complex */ ae_vector* tau,
-     ae_int_t qrows,
-     /* Complex */ ae_matrix* q,
-     ae_state *_state);
-void _pexec_cmatrixlqunpackq(/* Complex */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    /* Complex */ ae_vector* tau,
-    ae_int_t qrows,
-    /* Complex */ ae_matrix* q, ae_state *_state);
-void cmatrixlqunpackl(/* Complex */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Complex */ ae_matrix* l,
-     ae_state *_state);
-void rmatrixqrbasecase(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* work,
-     /* Real    */ ae_vector* t,
-     /* Real    */ ae_vector* tau,
-     ae_state *_state);
-void rmatrixlqbasecase(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* work,
-     /* Real    */ ae_vector* t,
-     /* Real    */ ae_vector* tau,
-     ae_state *_state);
-void rmatrixbd(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* tauq,
-     /* Real    */ ae_vector* taup,
-     ae_state *_state);
-void rmatrixbdunpackq(/* Real    */ ae_matrix* qp,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* tauq,
-     ae_int_t qcolumns,
-     /* Real    */ ae_matrix* q,
-     ae_state *_state);
-void rmatrixbdmultiplybyq(/* Real    */ ae_matrix* qp,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* tauq,
-     /* Real    */ ae_matrix* z,
-     ae_int_t zrows,
-     ae_int_t zcolumns,
-     ae_bool fromtheright,
-     ae_bool dotranspose,
-     ae_state *_state);
-void rmatrixbdunpackpt(/* Real    */ ae_matrix* qp,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* taup,
-     ae_int_t ptrows,
-     /* Real    */ ae_matrix* pt,
-     ae_state *_state);
-void rmatrixbdmultiplybyp(/* Real    */ ae_matrix* qp,
-     ae_int_t m,
-     ae_int_t n,
-     /* Real    */ ae_vector* taup,
-     /* Real    */ ae_matrix* z,
-     ae_int_t zrows,
-     ae_int_t zcolumns,
-     ae_bool fromtheright,
-     ae_bool dotranspose,
-     ae_state *_state);
-void rmatrixbdunpackdiagonals(/* Real    */ ae_matrix* b,
-     ae_int_t m,
-     ae_int_t n,
-     ae_bool* isupper,
-     /* Real    */ ae_vector* d,
-     /* Real    */ ae_vector* e,
-     ae_state *_state);
-void rmatrixhessenberg(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     /* Real    */ ae_vector* tau,
-     ae_state *_state);
-void rmatrixhessenbergunpackq(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     /* Real    */ ae_vector* tau,
-     /* Real    */ ae_matrix* q,
-     ae_state *_state);
-void rmatrixhessenbergunpackh(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     /* Real    */ ae_matrix* h,
-     ae_state *_state);
-void smatrixtd(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     ae_bool isupper,
-     /* Real    */ ae_vector* tau,
-     /* Real    */ ae_vector* d,
-     /* Real    */ ae_vector* e,
-     ae_state *_state);
-void smatrixtdunpackq(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     ae_bool isupper,
-     /* Real    */ ae_vector* tau,
-     /* Real    */ ae_matrix* q,
-     ae_state *_state);
-void hmatrixtd(/* Complex */ ae_matrix* a,
-     ae_int_t n,
-     ae_bool isupper,
-     /* Complex */ ae_vector* tau,
-     /* Real    */ ae_vector* d,
-     /* Real    */ ae_vector* e,
-     ae_state *_state);
-void hmatrixtdunpackq(/* Complex */ ae_matrix* a,
-     ae_int_t n,
-     ae_bool isupper,
-     /* Complex */ ae_vector* tau,
-     /* Complex */ ae_matrix* q,
-     ae_state *_state);
-ae_bool rmatrixbdsvd(/* Real    */ ae_vector* d,
-     /* Real    */ ae_vector* e,
-     ae_int_t n,
-     ae_bool isupper,
-     ae_bool isfractionalaccuracyrequired,
-     /* Real    */ ae_matrix* u,
-     ae_int_t nru,
-     /* Real    */ ae_matrix* c,
-     ae_int_t ncc,
-     /* Real    */ ae_matrix* vt,
-     ae_int_t ncvt,
-     ae_state *_state);
-ae_bool bidiagonalsvddecomposition(/* Real    */ ae_vector* d,
-     /* Real    */ ae_vector* e,
-     ae_int_t n,
-     ae_bool isupper,
-     ae_bool isfractionalaccuracyrequired,
-     /* Real    */ ae_matrix* u,
-     ae_int_t nru,
-     /* Real    */ ae_matrix* c,
-     ae_int_t ncc,
-     /* Real    */ ae_matrix* vt,
-     ae_int_t ncvt,
-     ae_state *_state);
-ae_bool rmatrixsvd(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     ae_int_t uneeded,
-     ae_int_t vtneeded,
-     ae_int_t additionalmemory,
-     /* Real    */ ae_vector* w,
-     /* Real    */ ae_matrix* u,
-     /* Real    */ ae_matrix* vt,
-     ae_state *_state);
-ae_bool _pexec_rmatrixsvd(/* Real    */ ae_matrix* a,
-    ae_int_t m,
-    ae_int_t n,
-    ae_int_t uneeded,
-    ae_int_t vtneeded,
-    ae_int_t additionalmemory,
-    /* Real    */ ae_vector* w,
-    /* Real    */ ae_matrix* u,
-    /* Real    */ ae_matrix* vt, ae_state *_state);
-ae_bool smatrixevd(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     ae_int_t zneeded,
-     ae_bool isupper,
-     /* Real    */ ae_vector* d,
-     /* Real    */ ae_matrix* z,
-     ae_state *_state);
-ae_bool smatrixevdr(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     ae_int_t zneeded,
-     ae_bool isupper,
-     double b1,
-     double b2,
-     ae_int_t* m,
-     /* Real    */ ae_vector* w,
-     /* Real    */ ae_matrix* z,
-     ae_state *_state);
-ae_bool smatrixevdi(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     ae_int_t zneeded,
-     ae_bool isupper,
-     ae_int_t i1,
-     ae_int_t i2,
-     /* Real    */ ae_vector* w,
-     /* Real    */ ae_matrix* z,
-     ae_state *_state);
-ae_bool hmatrixevd(/* Complex */ ae_matrix* a,
-     ae_int_t n,
-     ae_int_t zneeded,
-     ae_bool isupper,
-     /* Real    */ ae_vector* d,
-     /* Complex */ ae_matrix* z,
-     ae_state *_state);
-ae_bool hmatrixevdr(/* Complex */ ae_matrix* a,
-     ae_int_t n,
-     ae_int_t zneeded,
-     ae_bool isupper,
-     double b1,
-     double b2,
-     ae_int_t* m,
-     /* Real    */ ae_vector* w,
-     /* Complex */ ae_matrix* z,
-     ae_state *_state);
-ae_bool hmatrixevdi(/* Complex */ ae_matrix* a,
-     ae_int_t n,
-     ae_int_t zneeded,
-     ae_bool isupper,
-     ae_int_t i1,
-     ae_int_t i2,
-     /* Real    */ ae_vector* w,
-     /* Complex */ ae_matrix* z,
-     ae_state *_state);
-ae_bool smatrixtdevd(/* Real    */ ae_vector* d,
-     /* Real    */ ae_vector* e,
-     ae_int_t n,
-     ae_int_t zneeded,
-     /* Real    */ ae_matrix* z,
-     ae_state *_state);
-ae_bool smatrixtdevdr(/* Real    */ ae_vector* d,
-     /* Real    */ ae_vector* e,
-     ae_int_t n,
-     ae_int_t zneeded,
-     double a,
-     double b,
-     ae_int_t* m,
-     /* Real    */ ae_matrix* z,
-     ae_state *_state);
-ae_bool smatrixtdevdi(/* Real    */ ae_vector* d,
-     /* Real    */ ae_vector* e,
-     ae_int_t n,
-     ae_int_t zneeded,
-     ae_int_t i1,
-     ae_int_t i2,
-     /* Real    */ ae_matrix* z,
-     ae_state *_state);
-ae_bool rmatrixevd(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     ae_int_t vneeded,
-     /* Real    */ ae_vector* wr,
-     /* Real    */ ae_vector* wi,
-     /* Real    */ ae_matrix* vl,
-     /* Real    */ ae_matrix* vr,
-     ae_state *_state);
-void rmatrixrndorthogonal(ae_int_t n,
-     /* Real    */ ae_matrix* a,
-     ae_state *_state);
-void rmatrixrndcond(ae_int_t n,
-     double c,
-     /* Real    */ ae_matrix* a,
-     ae_state *_state);
-void cmatrixrndorthogonal(ae_int_t n,
-     /* Complex */ ae_matrix* a,
-     ae_state *_state);
-void cmatrixrndcond(ae_int_t n,
-     double c,
-     /* Complex */ ae_matrix* a,
-     ae_state *_state);
-void smatrixrndcond(ae_int_t n,
-     double c,
-     /* Real    */ ae_matrix* a,
-     ae_state *_state);
-void spdmatrixrndcond(ae_int_t n,
-     double c,
-     /* Real    */ ae_matrix* a,
-     ae_state *_state);
-void hmatrixrndcond(ae_int_t n,
-     double c,
-     /* Complex */ ae_matrix* a,
-     ae_state *_state);
-void hpdmatrixrndcond(ae_int_t n,
-     double c,
-     /* Complex */ ae_matrix* a,
-     ae_state *_state);
-void rmatrixrndorthogonalfromtheright(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     ae_state *_state);
-void rmatrixrndorthogonalfromtheleft(/* Real    */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     ae_state *_state);
-void cmatrixrndorthogonalfromtheright(/* Complex */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     ae_state *_state);
-void cmatrixrndorthogonalfromtheleft(/* Complex */ ae_matrix* a,
-     ae_int_t m,
-     ae_int_t n,
-     ae_state *_state);
-void smatrixrndmultiply(/* Real    */ ae_matrix* a,
-     ae_int_t n,
-     ae_state *_state);
-void hmatrixrndmultiply(/* Complex */ ae_matrix* a,
-     ae_int_t n,
-     ae_state *_state);
-void sparsecreate(ae_int_t m,
-     ae_int_t n,
-     ae_int_t k,
-     sparsematrix* s,
-     ae_state *_state);
-void sparsecreatebuf(ae_int_t m,
-     ae_int_t n,
-     ae_int_t k,
-     sparsematrix* s,
-     ae_state *_state);
-void sparsecreatecrs(ae_int_t m,
-     ae_int_t n,
-     /* Integer */ ae_vector* ner,
-     sparsematrix* s,
-     ae_state *_state);
-void sparsecreatecrsbuf(ae_int_t m,
-     ae_int_t n,
-     /* Integer */ ae_vector* ner,
-     sparsematrix* s,
-     ae_state *_state);
-void sparsecreatesks(ae_int_t m,
-     ae_int_t n,
-     /* Integer */ ae_vector* d,
-     /* Integer */ ae_vector* u,
-     sparsematrix* s,
-     ae_state *_state);
-void sparsecreatesksbuf(ae_int_t m,
-     ae_int_t n,
-     /* Integer */ ae_vector* d,
-     /* Integer */ ae_vector* u,
-     sparsematrix* s,
-     ae_state *_state);
-void sparsecopy(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
-void sparsecopybuf(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
-void sparseswap(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
-void sparseadd(sparsematrix* s,
-     ae_int_t i,
-     ae_int_t j,
-     double v,
-     ae_state *_state);
-void sparseset(sparsematrix* s,
-     ae_int_t i,
-     ae_int_t j,
-     double v,
-     ae_state *_state);
-double sparseget(sparsematrix* s,
-     ae_int_t i,
-     ae_int_t j,
-     ae_state *_state);
-double sparsegetdiagonal(sparsematrix* s, ae_int_t i, ae_state *_state);
-void sparsemv(sparsematrix* s,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state);
-void sparsemtv(sparsematrix* s,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state);
-void sparsemv2(sparsematrix* s,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y0,
-     /* Real    */ ae_vector* y1,
-     ae_state *_state);
-void sparsesmv(sparsematrix* s,
-     ae_bool isupper,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state);
-double sparsevsmv(sparsematrix* s,
-     ae_bool isupper,
-     /* Real    */ ae_vector* x,
-     ae_state *_state);
-void sparsemm(sparsematrix* s,
-     /* Real    */ ae_matrix* a,
-     ae_int_t k,
-     /* Real    */ ae_matrix* b,
-     ae_state *_state);
-void sparsemtm(sparsematrix* s,
-     /* Real    */ ae_matrix* a,
-     ae_int_t k,
-     /* Real    */ ae_matrix* b,
-     ae_state *_state);
-void sparsemm2(sparsematrix* s,
-     /* Real    */ ae_matrix* a,
-     ae_int_t k,
-     /* Real    */ ae_matrix* b0,
-     /* Real    */ ae_matrix* b1,
-     ae_state *_state);
-void sparsesmm(sparsematrix* s,
-     ae_bool isupper,
-     /* Real    */ ae_matrix* a,
-     ae_int_t k,
-     /* Real    */ ae_matrix* b,
-     ae_state *_state);
-void sparsetrmv(sparsematrix* s,
-     ae_bool isupper,
-     ae_bool isunit,
-     ae_int_t optype,
-     /* Real    */ ae_vector* x,
-     /* Real    */ ae_vector* y,
-     ae_state *_state);
-void sparsetrsv(sparsematrix* s,
-     ae_bool isupper,
-     ae_bool isunit,
-     ae_int_t optype,
-     /* Real    */ ae_vector* x,
-     ae_state *_state);
-void sparseresizematrix(sparsematrix* s, ae_state *_state);
-double sparsegetaveragelengthofchain(sparsematrix* s, ae_state *_state);
-ae_bool sparseenumerate(sparsematrix* s,
-     ae_int_t* t0,
-     ae_int_t* t1,
-     ae_int_t* i,
-     ae_int_t* j,
-     double* v,
-     ae_state *_state);
-ae_bool sparserewriteexisting(sparsematrix* s,
-     ae_int_t i,
-     ae_int_t j,
-     double v,
-     ae_state *_state);
-void sparsegetrow(sparsematrix* s,
-     ae_int_t i,
-     /* Real    */ ae_vector* irow,
-     ae_state *_state);
-void sparsegetcompressedrow(sparsematrix* s,
-     ae_int_t i,
-     /* Integer */ ae_vector* colidx,
-     /* Real    */ ae_vector* vals,
-     ae_int_t* nzcnt,
-     ae_state *_state);
-void sparsetransposesks(sparsematrix* s, ae_state *_state);
-void sparseconvertto(sparsematrix* s0, ae_int_t fmt, ae_state *_state);
-void sparsecopytobuf(sparsematrix* s0,
-     ae_int_t fmt,
-     sparsematrix* s1,
-     ae_state *_state);
-void sparseconverttohash(sparsematrix* s, ae_state *_state);
-void sparsecopytohash(sparsematrix* s0,
-     sparsematrix* s1,
-     ae_state *_state);
-void sparsecopytohashbuf(sparsematrix* s0,
-     sparsematrix* s1,
-     ae_state *_state);
-void sparseconverttocrs(sparsematrix* s, ae_state *_state);
-void sparsecopytocrs(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
-void sparsecopytocrsbuf(sparsematrix* s0,
-     sparsematrix* s1,
-     ae_state *_state);
-void sparseconverttosks(sparsematrix* s, ae_state *_state);
-void sparsecopytosks(sparsematrix* s0, sparsematrix* s1, ae_state *_state);
-void sparsecopytosksbuf(sparsematrix* s0,
-     sparsematrix* s1,
-     ae_state *_state);
-ae_int_t sparsegetmatrixtype(sparsematrix* s, ae_state *_state);
-ae_bool sparseishash(sparsematrix* s, ae_state *_state);
-ae_bool sparseiscrs(sparsematrix* s, ae_state *_state);
-ae_bool sparseissks(sparsematrix* s, ae_state *_state);
-void sparsefree(sparsematrix* s, ae_state *_state);
-ae_int_t sparsegetnrows(sparsematrix* s, ae_state *_state);
-ae_int_t sparsegetncols(sparsematrix* s, ae_state *_state);
-ae_int_t sparsegetuppercount(sparsematrix* s, ae_state *_state);
-ae_int_t sparsegetlowercount(sparsematrix* s, ae_state *_state);
-void _sparsematrix_init(void* _p, ae_state *_state);
-void _sparsematrix_init_copy(void* _dst, void* _src, ae_state *_state);
-void _sparsematrix_clear(void* _p);
-void _sparsematrix_destroy(void* _p);
-void _sparsebuffers_init(void* _p, ae_state *_state);
-void _sparsebuffers_init_copy(void* _dst, void* _src, ae_state *_state);
-void _sparsebuffers_clear(void* _p);
-void _sparsebuffers_destroy(void* _p);
 void rmatrixlu(/* Real    */ ae_matrix* a,
      ae_int_t m,
      ae_int_t n,
@@ -7782,6 +7903,214 @@ void _matinvreport_init(void* _p, ae_state *_state);
 void _matinvreport_init_copy(void* _dst, void* _src, ae_state *_state);
 void _matinvreport_clear(void* _p);
 void _matinvreport_destroy(void* _p);
+void rmatrixqr(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* tau,
+     ae_state *_state);
+void _pexec_rmatrixqr(/* Real    */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    /* Real    */ ae_vector* tau, ae_state *_state);
+void rmatrixlq(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* tau,
+     ae_state *_state);
+void _pexec_rmatrixlq(/* Real    */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    /* Real    */ ae_vector* tau, ae_state *_state);
+void cmatrixqr(/* Complex */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Complex */ ae_vector* tau,
+     ae_state *_state);
+void _pexec_cmatrixqr(/* Complex */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    /* Complex */ ae_vector* tau, ae_state *_state);
+void cmatrixlq(/* Complex */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Complex */ ae_vector* tau,
+     ae_state *_state);
+void _pexec_cmatrixlq(/* Complex */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    /* Complex */ ae_vector* tau, ae_state *_state);
+void rmatrixqrunpackq(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* tau,
+     ae_int_t qcolumns,
+     /* Real    */ ae_matrix* q,
+     ae_state *_state);
+void _pexec_rmatrixqrunpackq(/* Real    */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    /* Real    */ ae_vector* tau,
+    ae_int_t qcolumns,
+    /* Real    */ ae_matrix* q, ae_state *_state);
+void rmatrixqrunpackr(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_matrix* r,
+     ae_state *_state);
+void rmatrixlqunpackq(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* tau,
+     ae_int_t qrows,
+     /* Real    */ ae_matrix* q,
+     ae_state *_state);
+void _pexec_rmatrixlqunpackq(/* Real    */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    /* Real    */ ae_vector* tau,
+    ae_int_t qrows,
+    /* Real    */ ae_matrix* q, ae_state *_state);
+void rmatrixlqunpackl(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_matrix* l,
+     ae_state *_state);
+void cmatrixqrunpackq(/* Complex */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Complex */ ae_vector* tau,
+     ae_int_t qcolumns,
+     /* Complex */ ae_matrix* q,
+     ae_state *_state);
+void _pexec_cmatrixqrunpackq(/* Complex */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    /* Complex */ ae_vector* tau,
+    ae_int_t qcolumns,
+    /* Complex */ ae_matrix* q, ae_state *_state);
+void cmatrixqrunpackr(/* Complex */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Complex */ ae_matrix* r,
+     ae_state *_state);
+void cmatrixlqunpackq(/* Complex */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Complex */ ae_vector* tau,
+     ae_int_t qrows,
+     /* Complex */ ae_matrix* q,
+     ae_state *_state);
+void _pexec_cmatrixlqunpackq(/* Complex */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    /* Complex */ ae_vector* tau,
+    ae_int_t qrows,
+    /* Complex */ ae_matrix* q, ae_state *_state);
+void cmatrixlqunpackl(/* Complex */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Complex */ ae_matrix* l,
+     ae_state *_state);
+void rmatrixqrbasecase(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* work,
+     /* Real    */ ae_vector* t,
+     /* Real    */ ae_vector* tau,
+     ae_state *_state);
+void rmatrixlqbasecase(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* work,
+     /* Real    */ ae_vector* t,
+     /* Real    */ ae_vector* tau,
+     ae_state *_state);
+void rmatrixbd(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* tauq,
+     /* Real    */ ae_vector* taup,
+     ae_state *_state);
+void rmatrixbdunpackq(/* Real    */ ae_matrix* qp,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* tauq,
+     ae_int_t qcolumns,
+     /* Real    */ ae_matrix* q,
+     ae_state *_state);
+void rmatrixbdmultiplybyq(/* Real    */ ae_matrix* qp,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* tauq,
+     /* Real    */ ae_matrix* z,
+     ae_int_t zrows,
+     ae_int_t zcolumns,
+     ae_bool fromtheright,
+     ae_bool dotranspose,
+     ae_state *_state);
+void rmatrixbdunpackpt(/* Real    */ ae_matrix* qp,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* taup,
+     ae_int_t ptrows,
+     /* Real    */ ae_matrix* pt,
+     ae_state *_state);
+void rmatrixbdmultiplybyp(/* Real    */ ae_matrix* qp,
+     ae_int_t m,
+     ae_int_t n,
+     /* Real    */ ae_vector* taup,
+     /* Real    */ ae_matrix* z,
+     ae_int_t zrows,
+     ae_int_t zcolumns,
+     ae_bool fromtheright,
+     ae_bool dotranspose,
+     ae_state *_state);
+void rmatrixbdunpackdiagonals(/* Real    */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t n,
+     ae_bool* isupper,
+     /* Real    */ ae_vector* d,
+     /* Real    */ ae_vector* e,
+     ae_state *_state);
+void rmatrixhessenberg(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     /* Real    */ ae_vector* tau,
+     ae_state *_state);
+void rmatrixhessenbergunpackq(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     /* Real    */ ae_vector* tau,
+     /* Real    */ ae_matrix* q,
+     ae_state *_state);
+void rmatrixhessenbergunpackh(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     /* Real    */ ae_matrix* h,
+     ae_state *_state);
+void smatrixtd(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Real    */ ae_vector* tau,
+     /* Real    */ ae_vector* d,
+     /* Real    */ ae_vector* e,
+     ae_state *_state);
+void smatrixtdunpackq(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Real    */ ae_vector* tau,
+     /* Real    */ ae_matrix* q,
+     ae_state *_state);
+void hmatrixtd(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Complex */ ae_vector* tau,
+     /* Real    */ ae_vector* d,
+     /* Real    */ ae_vector* e,
+     ae_state *_state);
+void hmatrixtdunpackq(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Complex */ ae_vector* tau,
+     /* Complex */ ae_matrix* q,
+     ae_state *_state);
 void fblscholeskysolve(/* Real    */ ae_matrix* cha,
      double sqrtscalea,
      ae_int_t n,
@@ -7815,6 +8144,49 @@ void _fblslincgstate_init(void* _p, ae_state *_state);
 void _fblslincgstate_init_copy(void* _dst, void* _src, ae_state *_state);
 void _fblslincgstate_clear(void* _p);
 void _fblslincgstate_destroy(void* _p);
+ae_bool rmatrixbdsvd(/* Real    */ ae_vector* d,
+     /* Real    */ ae_vector* e,
+     ae_int_t n,
+     ae_bool isupper,
+     ae_bool isfractionalaccuracyrequired,
+     /* Real    */ ae_matrix* u,
+     ae_int_t nru,
+     /* Real    */ ae_matrix* c,
+     ae_int_t ncc,
+     /* Real    */ ae_matrix* vt,
+     ae_int_t ncvt,
+     ae_state *_state);
+ae_bool bidiagonalsvddecomposition(/* Real    */ ae_vector* d,
+     /* Real    */ ae_vector* e,
+     ae_int_t n,
+     ae_bool isupper,
+     ae_bool isfractionalaccuracyrequired,
+     /* Real    */ ae_matrix* u,
+     ae_int_t nru,
+     /* Real    */ ae_matrix* c,
+     ae_int_t ncc,
+     /* Real    */ ae_matrix* vt,
+     ae_int_t ncvt,
+     ae_state *_state);
+ae_bool rmatrixsvd(/* Real    */ ae_matrix* a,
+     ae_int_t m,
+     ae_int_t n,
+     ae_int_t uneeded,
+     ae_int_t vtneeded,
+     ae_int_t additionalmemory,
+     /* Real    */ ae_vector* w,
+     /* Real    */ ae_matrix* u,
+     /* Real    */ ae_matrix* vt,
+     ae_state *_state);
+ae_bool _pexec_rmatrixsvd(/* Real    */ ae_matrix* a,
+    ae_int_t m,
+    ae_int_t n,
+    ae_int_t uneeded,
+    ae_int_t vtneeded,
+    ae_int_t additionalmemory,
+    /* Real    */ ae_vector* w,
+    /* Real    */ ae_matrix* u,
+    /* Real    */ ae_matrix* vt, ae_state *_state);
 void normestimatorcreate(ae_int_t m,
      ae_int_t n,
      ae_int_t nstart,
@@ -7837,26 +8209,152 @@ void _normestimatorstate_init(void* _p, ae_state *_state);
 void _normestimatorstate_init_copy(void* _dst, void* _src, ae_state *_state);
 void _normestimatorstate_clear(void* _p);
 void _normestimatorstate_destroy(void* _p);
-double rmatrixludet(/* Real    */ ae_matrix* a,
-     /* Integer */ ae_vector* pivots,
-     ae_int_t n,
+void eigsubspacecreate(ae_int_t n,
+     ae_int_t k,
+     eigsubspacestate* state,
      ae_state *_state);
-double rmatrixdet(/* Real    */ ae_matrix* a,
-     ae_int_t n,
+void eigsubspacecreatebuf(ae_int_t n,
+     ae_int_t k,
+     eigsubspacestate* state,
      ae_state *_state);
-ae_complex cmatrixludet(/* Complex */ ae_matrix* a,
-     /* Integer */ ae_vector* pivots,
-     ae_int_t n,
+void eigsubspacesetcond(eigsubspacestate* state,
+     double eps,
+     ae_int_t maxits,
      ae_state *_state);
-ae_complex cmatrixdet(/* Complex */ ae_matrix* a,
-     ae_int_t n,
+void eigsubspaceoocstart(eigsubspacestate* state,
+     ae_int_t mtype,
      ae_state *_state);
-double spdmatrixcholeskydet(/* Real    */ ae_matrix* a,
-     ae_int_t n,
+ae_bool eigsubspaceooccontinue(eigsubspacestate* state, ae_state *_state);
+void eigsubspaceoocgetrequestinfo(eigsubspacestate* state,
+     ae_int_t* requesttype,
+     ae_int_t* requestsize,
      ae_state *_state);
-double spdmatrixdet(/* Real    */ ae_matrix* a,
-     ae_int_t n,
+void eigsubspaceoocgetrequestdata(eigsubspacestate* state,
+     /* Real    */ ae_matrix* x,
+     ae_state *_state);
+void eigsubspaceoocsendresult(eigsubspacestate* state,
+     /* Real    */ ae_matrix* ax,
+     ae_state *_state);
+void eigsubspaceoocstop(eigsubspacestate* state,
+     /* Real    */ ae_vector* w,
+     /* Real    */ ae_matrix* z,
+     eigsubspacereport* rep,
+     ae_state *_state);
+void eigsubspacesolvedenses(eigsubspacestate* state,
+     /* Real    */ ae_matrix* a,
      ae_bool isupper,
+     /* Real    */ ae_vector* w,
+     /* Real    */ ae_matrix* z,
+     eigsubspacereport* rep,
+     ae_state *_state);
+void _pexec_eigsubspacesolvedenses(eigsubspacestate* state,
+    /* Real    */ ae_matrix* a,
+    ae_bool isupper,
+    /* Real    */ ae_vector* w,
+    /* Real    */ ae_matrix* z,
+    eigsubspacereport* rep, ae_state *_state);
+void eigsubspacesolvesparses(eigsubspacestate* state,
+     sparsematrix* a,
+     ae_bool isupper,
+     /* Real    */ ae_vector* w,
+     /* Real    */ ae_matrix* z,
+     eigsubspacereport* rep,
+     ae_state *_state);
+ae_bool eigsubspaceiteration(eigsubspacestate* state, ae_state *_state);
+ae_bool smatrixevd(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_int_t zneeded,
+     ae_bool isupper,
+     /* Real    */ ae_vector* d,
+     /* Real    */ ae_matrix* z,
+     ae_state *_state);
+ae_bool smatrixevdr(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_int_t zneeded,
+     ae_bool isupper,
+     double b1,
+     double b2,
+     ae_int_t* m,
+     /* Real    */ ae_vector* w,
+     /* Real    */ ae_matrix* z,
+     ae_state *_state);
+ae_bool smatrixevdi(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_int_t zneeded,
+     ae_bool isupper,
+     ae_int_t i1,
+     ae_int_t i2,
+     /* Real    */ ae_vector* w,
+     /* Real    */ ae_matrix* z,
+     ae_state *_state);
+ae_bool hmatrixevd(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_int_t zneeded,
+     ae_bool isupper,
+     /* Real    */ ae_vector* d,
+     /* Complex */ ae_matrix* z,
+     ae_state *_state);
+ae_bool hmatrixevdr(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_int_t zneeded,
+     ae_bool isupper,
+     double b1,
+     double b2,
+     ae_int_t* m,
+     /* Real    */ ae_vector* w,
+     /* Complex */ ae_matrix* z,
+     ae_state *_state);
+ae_bool hmatrixevdi(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_int_t zneeded,
+     ae_bool isupper,
+     ae_int_t i1,
+     ae_int_t i2,
+     /* Real    */ ae_vector* w,
+     /* Complex */ ae_matrix* z,
+     ae_state *_state);
+ae_bool smatrixtdevd(/* Real    */ ae_vector* d,
+     /* Real    */ ae_vector* e,
+     ae_int_t n,
+     ae_int_t zneeded,
+     /* Real    */ ae_matrix* z,
+     ae_state *_state);
+ae_bool smatrixtdevdr(/* Real    */ ae_vector* d,
+     /* Real    */ ae_vector* e,
+     ae_int_t n,
+     ae_int_t zneeded,
+     double a,
+     double b,
+     ae_int_t* m,
+     /* Real    */ ae_matrix* z,
+     ae_state *_state);
+ae_bool smatrixtdevdi(/* Real    */ ae_vector* d,
+     /* Real    */ ae_vector* e,
+     ae_int_t n,
+     ae_int_t zneeded,
+     ae_int_t i1,
+     ae_int_t i2,
+     /* Real    */ ae_matrix* z,
+     ae_state *_state);
+ae_bool rmatrixevd(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_int_t vneeded,
+     /* Real    */ ae_vector* wr,
+     /* Real    */ ae_vector* wi,
+     /* Real    */ ae_matrix* vl,
+     /* Real    */ ae_matrix* vr,
+     ae_state *_state);
+void _eigsubspacestate_init(void* _p, ae_state *_state);
+void _eigsubspacestate_init_copy(void* _dst, void* _src, ae_state *_state);
+void _eigsubspacestate_clear(void* _p);
+void _eigsubspacestate_destroy(void* _p);
+void _eigsubspacereport_init(void* _p, ae_state *_state);
+void _eigsubspacereport_init_copy(void* _dst, void* _src, ae_state *_state);
+void _eigsubspacereport_clear(void* _p);
+void _eigsubspacereport_destroy(void* _p);
+ae_bool rmatrixschur(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     /* Real    */ ae_matrix* s,
      ae_state *_state);
 ae_bool smatrixgevd(/* Real    */ ae_matrix* a,
      ae_int_t n,
@@ -7898,9 +8396,26 @@ void rmatrixinvupdateuv(/* Real    */ ae_matrix* inva,
      /* Real    */ ae_vector* u,
      /* Real    */ ae_vector* v,
      ae_state *_state);
-ae_bool rmatrixschur(/* Real    */ ae_matrix* a,
+double rmatrixludet(/* Real    */ ae_matrix* a,
+     /* Integer */ ae_vector* pivots,
      ae_int_t n,
-     /* Real    */ ae_matrix* s,
+     ae_state *_state);
+double rmatrixdet(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_state *_state);
+ae_complex cmatrixludet(/* Complex */ ae_matrix* a,
+     /* Integer */ ae_vector* pivots,
+     ae_int_t n,
+     ae_state *_state);
+ae_complex cmatrixdet(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_state *_state);
+double spdmatrixcholeskydet(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_state *_state);
+double spdmatrixdet(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
      ae_state *_state);
 
 }

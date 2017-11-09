@@ -10,6 +10,37 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="alglibinternal.cpp" />
+    <ClCompile Include="alglibmisc.cpp" />
+    <ClCompile Include="ap.cpp" />
+    <ClCompile Include="dataanalysis.cpp" />
+    <ClCompile Include="diffequations.cpp" />
+    <ClCompile Include="fasttransforms.cpp" />
+    <ClCompile Include="integration.cpp" />
+    <ClCompile Include="interpolation.cpp" />
+    <ClCompile Include="linalg.cpp" />
+    <ClCompile Include="optimization.cpp" />
+    <ClCompile Include="solvers.cpp" />
+    <ClCompile Include="specialfunctions.cpp" />
+    <ClCompile Include="statistics.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="alglibinternal.h" />
+    <ClInclude Include="alglibmisc.h" />
+    <ClInclude Include="ap.h" />
+    <ClInclude Include="dataanalysis.h" />
+    <ClInclude Include="diffequations.h" />
+    <ClInclude Include="fasttransforms.h" />
+    <ClInclude Include="integration.h" />
+    <ClInclude Include="interpolation.h" />
+    <ClInclude Include="linalg.h" />
+    <ClInclude Include="optimization.h" />
+    <ClInclude Include="solvers.h" />
+    <ClInclude Include="specialfunctions.h" />
+    <ClInclude Include="statistics.h" />
+    <ClInclude Include="stdafx.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A4F6804C-1EF4-4D95-A44C-8AE1C2C0D274}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -19,13 +50,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -59,7 +90,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeedHighLevel</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -68,8 +99,10 @@
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Fast2</FloatingPointModel>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <GenerateAlternateCodePaths>AVX2</GenerateAlternateCodePaths>
+      <UseProcessorExtensions>AVX2</UseProcessorExtensions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -78,40 +111,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="alglibinternal.cpp" />
-    <ClCompile Include="alglibmisc.cpp" />
-    <ClCompile Include="ap.cpp" />
-    <ClCompile Include="dataanalysis.cpp" />
-    <ClCompile Include="diffequations.cpp" />
-    <ClCompile Include="fasttransforms.cpp" />
-    <ClCompile Include="integration.cpp" />
-    <ClCompile Include="interpolation.cpp" />
-    <ClCompile Include="linalg.cpp" />
-    <ClCompile Include="optimization.cpp" />
-    <ClCompile Include="solvers.cpp" />
-    <ClCompile Include="specialfunctions.cpp" />
-    <ClCompile Include="statistics.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="alglibinternal.h" />
-    <ClInclude Include="alglibmisc.h" />
-    <ClInclude Include="ap.h" />
-    <ClInclude Include="dataanalysis.h" />
-    <ClInclude Include="diffequations.h" />
-    <ClInclude Include="fasttransforms.h" />
-    <ClInclude Include="integration.h" />
-    <ClInclude Include="interpolation.h" />
-    <ClInclude Include="linalg.h" />
-    <ClInclude Include="optimization.h" />
-    <ClInclude Include="solvers.h" />
-    <ClInclude Include="specialfunctions.h" />
-    <ClInclude Include="statistics.h" />
-    <ClInclude Include="stdafx.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

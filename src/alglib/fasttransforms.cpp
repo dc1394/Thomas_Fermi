@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -387,6 +387,71 @@ void fftr1dinv(const complex_1d_array &f, real_1d_array &a)
     {
         alglib_impl::fftr1dinv(const_cast<alglib_impl::ae_vector*>(f.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(a.c_ptr()), &_alglib_env_state);
 
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+1-dimensional Fast Hartley Transform.
+
+Algorithm has O(N*logN) complexity for any N (composite or prime).
+
+INPUT PARAMETERS
+    A   -   array[0..N-1] - real function to be transformed
+    N   -   problem size
+
+OUTPUT PARAMETERS
+    A   -   FHT of a input array, array[0..N-1],
+            A_out[k] = sum(A_in[j]*(cos(2*pi*j*k/N)+sin(2*pi*j*k/N)), j=0..N-1)
+
+
+  -- ALGLIB --
+     Copyright 04.06.2009 by Bochkanov Sergey
+*************************************************************************/
+void fhtr1d(real_1d_array &a, const ae_int_t n)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::fhtr1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
+        alglib_impl::ae_state_clear(&_alglib_env_state);
+        return;
+    }
+    catch(alglib_impl::ae_error_type)
+    {
+        throw ap_error(_alglib_env_state.error_msg);
+    }
+}
+
+/*************************************************************************
+1-dimensional inverse FHT.
+
+Algorithm has O(N*logN) complexity for any N (composite or prime).
+
+INPUT PARAMETERS
+    A   -   array[0..N-1] - complex array to be transformed
+    N   -   problem size
+
+OUTPUT PARAMETERS
+    A   -   inverse FHT of a input array, array[0..N-1]
+
+
+  -- ALGLIB --
+     Copyright 29.05.2009 by Bochkanov Sergey
+*************************************************************************/
+void fhtr1dinv(real_1d_array &a, const ae_int_t n)
+{
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    try
+    {
+        alglib_impl::fhtr1dinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
         alglib_impl::ae_state_clear(&_alglib_env_state);
         return;
     }
@@ -918,71 +983,6 @@ void corrr1dcircular(const real_1d_array &signal, const ae_int_t m, const real_1
         throw ap_error(_alglib_env_state.error_msg);
     }
 }
-
-/*************************************************************************
-1-dimensional Fast Hartley Transform.
-
-Algorithm has O(N*logN) complexity for any N (composite or prime).
-
-INPUT PARAMETERS
-    A   -   array[0..N-1] - real function to be transformed
-    N   -   problem size
-
-OUTPUT PARAMETERS
-    A   -   FHT of a input array, array[0..N-1],
-            A_out[k] = sum(A_in[j]*(cos(2*pi*j*k/N)+sin(2*pi*j*k/N)), j=0..N-1)
-
-
-  -- ALGLIB --
-     Copyright 04.06.2009 by Bochkanov Sergey
-*************************************************************************/
-void fhtr1d(real_1d_array &a, const ae_int_t n)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::fhtr1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
-
-/*************************************************************************
-1-dimensional inverse FHT.
-
-Algorithm has O(N*logN) complexity for any N (composite or prime).
-
-INPUT PARAMETERS
-    A   -   array[0..N-1] - complex array to be transformed
-    N   -   problem size
-
-OUTPUT PARAMETERS
-    A   -   inverse FHT of a input array, array[0..N-1]
-
-
-  -- ALGLIB --
-     Copyright 29.05.2009 by Bochkanov Sergey
-*************************************************************************/
-void fhtr1dinv(real_1d_array &a, const ae_int_t n)
-{
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    try
-    {
-        alglib_impl::fhtr1dinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
-        alglib_impl::ae_state_clear(&_alglib_env_state);
-        return;
-    }
-    catch(alglib_impl::ae_error_type)
-    {
-        throw ap_error(_alglib_env_state.error_msg);
-    }
-}
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -1499,6 +1499,103 @@ void fftr1dinvinternaleven(/* Real    */ ae_vector* a,
         a->ptr.p_double[n-i] = t*(x+y);
     }
     a->ptr.p_double[n2] = buf->ptr.p_double[1]/n;
+}
+
+
+
+
+/*************************************************************************
+1-dimensional Fast Hartley Transform.
+
+Algorithm has O(N*logN) complexity for any N (composite or prime).
+
+INPUT PARAMETERS
+    A   -   array[0..N-1] - real function to be transformed
+    N   -   problem size
+    
+OUTPUT PARAMETERS
+    A   -   FHT of a input array, array[0..N-1],
+            A_out[k] = sum(A_in[j]*(cos(2*pi*j*k/N)+sin(2*pi*j*k/N)), j=0..N-1)
+
+
+  -- ALGLIB --
+     Copyright 04.06.2009 by Bochkanov Sergey
+*************************************************************************/
+void fhtr1d(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_int_t i;
+    ae_vector fa;
+
+    ae_frame_make(_state, &_frame_block);
+    ae_vector_init(&fa, 0, DT_COMPLEX, _state);
+
+    ae_assert(n>0, "FHTR1D: incorrect N!", _state);
+    
+    /*
+     * Special case: N=1, FHT is just identity transform.
+     * After this block we assume that N is strictly greater than 1.
+     */
+    if( n==1 )
+    {
+        ae_frame_leave(_state);
+        return;
+    }
+    
+    /*
+     * Reduce FHt to real FFT
+     */
+    fftr1d(a, n, &fa, _state);
+    for(i=0; i<=n-1; i++)
+    {
+        a->ptr.p_double[i] = fa.ptr.p_complex[i].x-fa.ptr.p_complex[i].y;
+    }
+    ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+1-dimensional inverse FHT.
+
+Algorithm has O(N*logN) complexity for any N (composite or prime).
+
+INPUT PARAMETERS
+    A   -   array[0..N-1] - complex array to be transformed
+    N   -   problem size
+
+OUTPUT PARAMETERS
+    A   -   inverse FHT of a input array, array[0..N-1]
+
+
+  -- ALGLIB --
+     Copyright 29.05.2009 by Bochkanov Sergey
+*************************************************************************/
+void fhtr1dinv(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state)
+{
+    ae_int_t i;
+
+
+    ae_assert(n>0, "FHTR1DInv: incorrect N!", _state);
+    
+    /*
+     * Special case: N=1, iFHT is just identity transform.
+     * After this block we assume that N is strictly greater than 1.
+     */
+    if( n==1 )
+    {
+        return;
+    }
+    
+    /*
+     * Inverse FHT can be expressed in terms of the FHT as
+     *
+     *     invfht(x) = fht(x)/N
+     */
+    fhtr1d(a, n, _state);
+    for(i=0; i<=n-1; i++)
+    {
+        a->ptr.p_double[i] = a->ptr.p_double[i]/n;
+    }
 }
 
 
@@ -3450,103 +3547,6 @@ void corrr1dcircular(/* Real    */ ae_vector* signal,
         ae_v_move(&c->ptr.p_double[m-n+1], 1, &b.ptr.p_double[0], 1, ae_v_len(m-n+1,m-1));
     }
     ae_frame_leave(_state);
-}
-
-
-
-
-/*************************************************************************
-1-dimensional Fast Hartley Transform.
-
-Algorithm has O(N*logN) complexity for any N (composite or prime).
-
-INPUT PARAMETERS
-    A   -   array[0..N-1] - real function to be transformed
-    N   -   problem size
-    
-OUTPUT PARAMETERS
-    A   -   FHT of a input array, array[0..N-1],
-            A_out[k] = sum(A_in[j]*(cos(2*pi*j*k/N)+sin(2*pi*j*k/N)), j=0..N-1)
-
-
-  -- ALGLIB --
-     Copyright 04.06.2009 by Bochkanov Sergey
-*************************************************************************/
-void fhtr1d(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_int_t i;
-    ae_vector fa;
-
-    ae_frame_make(_state, &_frame_block);
-    ae_vector_init(&fa, 0, DT_COMPLEX, _state);
-
-    ae_assert(n>0, "FHTR1D: incorrect N!", _state);
-    
-    /*
-     * Special case: N=1, FHT is just identity transform.
-     * After this block we assume that N is strictly greater than 1.
-     */
-    if( n==1 )
-    {
-        ae_frame_leave(_state);
-        return;
-    }
-    
-    /*
-     * Reduce FHt to real FFT
-     */
-    fftr1d(a, n, &fa, _state);
-    for(i=0; i<=n-1; i++)
-    {
-        a->ptr.p_double[i] = fa.ptr.p_complex[i].x-fa.ptr.p_complex[i].y;
-    }
-    ae_frame_leave(_state);
-}
-
-
-/*************************************************************************
-1-dimensional inverse FHT.
-
-Algorithm has O(N*logN) complexity for any N (composite or prime).
-
-INPUT PARAMETERS
-    A   -   array[0..N-1] - complex array to be transformed
-    N   -   problem size
-
-OUTPUT PARAMETERS
-    A   -   inverse FHT of a input array, array[0..N-1]
-
-
-  -- ALGLIB --
-     Copyright 29.05.2009 by Bochkanov Sergey
-*************************************************************************/
-void fhtr1dinv(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state)
-{
-    ae_int_t i;
-
-
-    ae_assert(n>0, "FHTR1DInv: incorrect N!", _state);
-    
-    /*
-     * Special case: N=1, iFHT is just identity transform.
-     * After this block we assume that N is strictly greater than 1.
-     */
-    if( n==1 )
-    {
-        return;
-    }
-    
-    /*
-     * Inverse FHT can be expressed in terms of the FHT as
-     *
-     *     invfht(x) = fht(x)/N
-     */
-    fhtr1d(a, n, _state);
-    for(i=0; i<=n-1; i++)
-    {
-        a->ptr.p_double[i] = a->ptr.p_double[i]/n;
-    }
 }
 
 

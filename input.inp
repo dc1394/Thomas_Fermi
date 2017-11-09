@@ -10,7 +10,7 @@ chemical.number             1
 
 grid.xmin                   1.0E-7          # default = 1.0E-5
 grid.xmax                   100.0           # default = 100.0
-grid.num                    100000          # default = 20000
+grid.num                    20000           # default = 20000
 eps                         1.0E-15         # default = 1.0E-15
 matching.point              12.5            # default = 12.5
 gauss.legendre.integ        5               # default = 5

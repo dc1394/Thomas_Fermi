@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.9.0 (source code generated 2014-12-11)
+ALGLIB 3.12.0 (source code generated 2017-08-22)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -106,6 +106,44 @@ typedef struct
 } linlsqrreport;
 typedef struct
 {
+    double maxerr;
+} polynomialsolverreport;
+typedef struct
+{
+    ae_int_t n;
+    ae_int_t m;
+    double epsf;
+    ae_int_t maxits;
+    ae_bool xrep;
+    double stpmax;
+    ae_vector x;
+    double f;
+    ae_vector fi;
+    ae_matrix j;
+    ae_bool needf;
+    ae_bool needfij;
+    ae_bool xupdated;
+    rcommstate rstate;
+    ae_int_t repiterationscount;
+    ae_int_t repnfunc;
+    ae_int_t repnjac;
+    ae_int_t repterminationtype;
+    ae_vector xbase;
+    double fbase;
+    double fprev;
+    ae_vector candstep;
+    ae_vector rightpart;
+    ae_vector cgbuf;
+} nleqstate;
+typedef struct
+{
+    ae_int_t iterationscount;
+    ae_int_t nfunc;
+    ae_int_t njac;
+    ae_int_t terminationtype;
+} nleqreport;
+typedef struct
+{
     ae_vector rx;
     ae_vector b;
     ae_int_t n;
@@ -150,44 +188,6 @@ typedef struct
     ae_int_t terminationtype;
     double r2;
 } lincgreport;
-typedef struct
-{
-    ae_int_t n;
-    ae_int_t m;
-    double epsf;
-    ae_int_t maxits;
-    ae_bool xrep;
-    double stpmax;
-    ae_vector x;
-    double f;
-    ae_vector fi;
-    ae_matrix j;
-    ae_bool needf;
-    ae_bool needfij;
-    ae_bool xupdated;
-    rcommstate rstate;
-    ae_int_t repiterationscount;
-    ae_int_t repnfunc;
-    ae_int_t repnjac;
-    ae_int_t repterminationtype;
-    ae_vector xbase;
-    double fbase;
-    double fprev;
-    ae_vector candstep;
-    ae_vector rightpart;
-    ae_vector cgbuf;
-} nleqstate;
-typedef struct
-{
-    ae_int_t iterationscount;
-    ae_int_t nfunc;
-    ae_int_t njac;
-    ae_int_t terminationtype;
-} nleqreport;
-typedef struct
-{
-    double maxerr;
-} polynomialsolverreport;
 
 }
 
@@ -313,60 +313,28 @@ public:
 };
 
 /*************************************************************************
-This object stores state of the linear CG method.
-
-You should use ALGLIB functions to work with this object.
-Never try to access its fields directly!
-*************************************************************************/
-class _lincgstate_owner
-{
-public:
-    _lincgstate_owner();
-    _lincgstate_owner(const _lincgstate_owner &rhs);
-    _lincgstate_owner& operator=(const _lincgstate_owner &rhs);
-    virtual ~_lincgstate_owner();
-    alglib_impl::lincgstate* c_ptr();
-    alglib_impl::lincgstate* c_ptr() const;
-protected:
-    alglib_impl::lincgstate *p_struct;
-};
-class lincgstate : public _lincgstate_owner
-{
-public:
-    lincgstate();
-    lincgstate(const lincgstate &rhs);
-    lincgstate& operator=(const lincgstate &rhs);
-    virtual ~lincgstate();
-
-};
-
-
-/*************************************************************************
 
 *************************************************************************/
-class _lincgreport_owner
+class _polynomialsolverreport_owner
 {
 public:
-    _lincgreport_owner();
-    _lincgreport_owner(const _lincgreport_owner &rhs);
-    _lincgreport_owner& operator=(const _lincgreport_owner &rhs);
-    virtual ~_lincgreport_owner();
-    alglib_impl::lincgreport* c_ptr();
-    alglib_impl::lincgreport* c_ptr() const;
+    _polynomialsolverreport_owner();
+    _polynomialsolverreport_owner(const _polynomialsolverreport_owner &rhs);
+    _polynomialsolverreport_owner& operator=(const _polynomialsolverreport_owner &rhs);
+    virtual ~_polynomialsolverreport_owner();
+    alglib_impl::polynomialsolverreport* c_ptr();
+    alglib_impl::polynomialsolverreport* c_ptr() const;
 protected:
-    alglib_impl::lincgreport *p_struct;
+    alglib_impl::polynomialsolverreport *p_struct;
 };
-class lincgreport : public _lincgreport_owner
+class polynomialsolverreport : public _polynomialsolverreport_owner
 {
 public:
-    lincgreport();
-    lincgreport(const lincgreport &rhs);
-    lincgreport& operator=(const lincgreport &rhs);
-    virtual ~lincgreport();
-    ae_int_t &iterationscount;
-    ae_int_t &nmv;
-    ae_int_t &terminationtype;
-    double &r2;
+    polynomialsolverreport();
+    polynomialsolverreport(const polynomialsolverreport &rhs);
+    polynomialsolverreport& operator=(const polynomialsolverreport &rhs);
+    virtual ~polynomialsolverreport();
+    double &maxerr;
 
 };
 
@@ -433,42 +401,89 @@ public:
 };
 
 /*************************************************************************
+This object stores state of the linear CG method.
+
+You should use ALGLIB functions to work with this object.
+Never try to access its fields directly!
+*************************************************************************/
+class _lincgstate_owner
+{
+public:
+    _lincgstate_owner();
+    _lincgstate_owner(const _lincgstate_owner &rhs);
+    _lincgstate_owner& operator=(const _lincgstate_owner &rhs);
+    virtual ~_lincgstate_owner();
+    alglib_impl::lincgstate* c_ptr();
+    alglib_impl::lincgstate* c_ptr() const;
+protected:
+    alglib_impl::lincgstate *p_struct;
+};
+class lincgstate : public _lincgstate_owner
+{
+public:
+    lincgstate();
+    lincgstate(const lincgstate &rhs);
+    lincgstate& operator=(const lincgstate &rhs);
+    virtual ~lincgstate();
+
+};
+
+
+/*************************************************************************
 
 *************************************************************************/
-class _polynomialsolverreport_owner
+class _lincgreport_owner
 {
 public:
-    _polynomialsolverreport_owner();
-    _polynomialsolverreport_owner(const _polynomialsolverreport_owner &rhs);
-    _polynomialsolverreport_owner& operator=(const _polynomialsolverreport_owner &rhs);
-    virtual ~_polynomialsolverreport_owner();
-    alglib_impl::polynomialsolverreport* c_ptr();
-    alglib_impl::polynomialsolverreport* c_ptr() const;
+    _lincgreport_owner();
+    _lincgreport_owner(const _lincgreport_owner &rhs);
+    _lincgreport_owner& operator=(const _lincgreport_owner &rhs);
+    virtual ~_lincgreport_owner();
+    alglib_impl::lincgreport* c_ptr();
+    alglib_impl::lincgreport* c_ptr() const;
 protected:
-    alglib_impl::polynomialsolverreport *p_struct;
+    alglib_impl::lincgreport *p_struct;
 };
-class polynomialsolverreport : public _polynomialsolverreport_owner
+class lincgreport : public _lincgreport_owner
 {
 public:
-    polynomialsolverreport();
-    polynomialsolverreport(const polynomialsolverreport &rhs);
-    polynomialsolverreport& operator=(const polynomialsolverreport &rhs);
-    virtual ~polynomialsolverreport();
-    double &maxerr;
+    lincgreport();
+    lincgreport(const lincgreport &rhs);
+    lincgreport& operator=(const lincgreport &rhs);
+    virtual ~lincgreport();
+    ae_int_t &iterationscount;
+    ae_int_t &nmv;
+    ae_int_t &terminationtype;
+    double &r2;
 
 };
 
 /*************************************************************************
-Dense solver.
-
-This  subroutine  solves  a  system  A*x=b,  where A is NxN non-denegerate
-real matrix, x and b are vectors.
+Dense solver for A*x=b with N*N real matrix A and N*1 real vectorx  x  and
+b. This is "slow-but-feature rich" version of the  linear  solver.  Faster
+version is RMatrixSolveFast() function.
 
 Algorithm features:
 * automatic detection of degenerate cases
 * condition number estimation
 * iterative refinement
 * O(N^3) complexity
+
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear  system
+           ! and  performs  iterative   refinement,   which   results   in
+           ! significant performance penalty  when  compared  with  "fast"
+           ! version  which  just  performs  LU  decomposition  and  calls
+           ! triangular solver.
+           !
+           ! This  performance  penalty  is  especially  visible  in   the
+           ! multithreaded mode, because both condition number  estimation
+           ! and   iterative    refinement   are   inherently   sequential
+           ! calculations. It also very significant on small matrices.
+           !
+           ! Thus, if you need high performance and if you are pretty sure
+           ! that your system is well conditioned, we  strongly  recommend
+           ! you to use faster solver, RMatrixSolveFast() function.
 
 COMMERCIAL EDITION OF ALGLIB:
 
@@ -513,23 +528,16 @@ INPUT PARAMETERS
 
 OUTPUT PARAMETERS
     Info    -   return code:
-                * -3    A is singular, or VERY close to singular.
-                        X is filled by zeros in such cases.
+                * -3    matrix is very badly conditioned or exactly singular.
                 * -1    N<=0 was passed
                 *  1    task is solved (but matrix A may be ill-conditioned,
                         check R1/RInf parameters for condition numbers).
-    Rep     -   solver report, see below for more info
-    X       -   array[0..N-1], it contains:
-                * solution of A*x=b if A is non-singular (well-conditioned
-                  or ill-conditioned, but not very close to singular)
-                * zeros,  if  A  is  singular  or  VERY  close to singular
-                  (in this case Info=-3).
-
-SOLVER REPORT
-
-Subroutine sets following fields of the Rep structure:
-* R1        reciprocal of condition number: 1/cond(A), 1-norm.
-* RInf      reciprocal of condition number: 1/cond(A), inf-norm.
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -541,14 +549,105 @@ void smp_rmatrixsolve(const real_2d_array &a, const ae_int_t n, const real_1d_ar
 /*************************************************************************
 Dense solver.
 
+This  subroutine  solves  a  system  A*x=b,  where A is NxN non-denegerate
+real matrix, x  and  b  are  vectors.  This is a "fast" version of  linear
+solver which does NOT provide  any  additional  functions  like  condition
+number estimation or iterative refinement.
+
+Algorithm features:
+* efficient algorithm O(N^3) complexity
+* no performance overhead from additional functionality
+
+If you need condition number estimation or iterative refinement, use  more
+feature-rich version - RMatrixSolve().
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that LU decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=1024,  achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    A       -   array[0..N-1,0..N-1], system matrix
+    N       -   size of A
+    B       -   array[0..N-1], right part
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    matrix is exactly singular (ill conditioned matrices
+                        are not recognized).
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N]:
+                * info>0    =>  overwritten by solution
+                * info=-3   =>  filled by zeros
+
+  -- ALGLIB --
+     Copyright 16.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void rmatrixsolvefast(const real_2d_array &a, const ae_int_t n, const real_1d_array &b, ae_int_t &info);
+void smp_rmatrixsolvefast(const real_2d_array &a, const ae_int_t n, const real_1d_array &b, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver.
+
 Similar to RMatrixSolve() but solves task with multiple right parts (where
-b and x are NxM matrices).
+b and x are NxM matrices). This is  "slow-but-robust"  version  of  linear
+solver with additional functionality  like  condition  number  estimation.
+There also exists faster version - RMatrixSolveMFast().
 
 Algorithm features:
 * automatic detection of degenerate cases
 * condition number estimation
 * optional iterative refinement
 * O(N^3+M*N^2) complexity
+
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear  system
+           ! and  performs  iterative   refinement,   which   results   in
+           ! significant performance penalty  when  compared  with  "fast"
+           ! version  which  just  performs  LU  decomposition  and  calls
+           ! triangular solver.
+           !
+           ! This  performance  penalty  is  especially  visible  in   the
+           ! multithreaded mode, because both condition number  estimation
+           ! and   iterative    refinement   are   inherently   sequential
+           ! calculations. It also very significant on small matrices.
+           !
+           ! Thus, if you need high performance and if you are pretty sure
+           ! that your system is well conditioned, we  strongly  recommend
+           ! you to use faster solver, RMatrixSolveMFast() function.
 
 COMMERCIAL EDITION OF ALGLIB:
 
@@ -598,9 +697,19 @@ INPUT PARAMETERS
                   More performance, less precision.
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    A is ill conditioned or singular.
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
+
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -612,8 +721,91 @@ void smp_rmatrixsolvem(const real_2d_array &a, const ae_int_t n, const real_2d_a
 /*************************************************************************
 Dense solver.
 
-This  subroutine  solves  a  system  A*X=B,  where A is NxN non-denegerate
-real matrix given by its LU decomposition, X and B are NxM real matrices.
+Similar to RMatrixSolve() but solves task with multiple right parts (where
+b and x are NxM matrices). This is "fast" version of linear  solver  which
+does NOT offer additional functions like condition  number  estimation  or
+iterative refinement.
+
+Algorithm features:
+* O(N^3+M*N^2) complexity
+* no additional functionality, highest performance
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that LU decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=1024,  achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    A       -   array[0..N-1,0..N-1], system matrix
+    N       -   size of A
+    B       -   array[0..N-1,0..M-1], right part
+    M       -   right part size
+    RFS     -   iterative refinement switch:
+                * True - refinement is used.
+                  Less performance, more precision.
+                * False - refinement is not used.
+                  More performance, less precision.
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    matrix is exactly singular (ill conditioned matrices
+                        are not recognized).
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    B       -   array[N]:
+                * info>0    =>  overwritten by solution
+                * info=-3   =>  filled by zeros
+
+
+  -- ALGLIB --
+     Copyright 27.01.2010 by Bochkanov Sergey
+*************************************************************************/
+void rmatrixsolvemfast(const real_2d_array &a, const ae_int_t n, const real_2d_array &b, const ae_int_t m, ae_int_t &info);
+void smp_rmatrixsolvemfast(const real_2d_array &a, const ae_int_t n, const real_2d_array &b, const ae_int_t m, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver.
+
+This  subroutine  solves  a  system  A*x=b,  where A is NxN non-denegerate
+real matrix given by its LU decomposition, x and b are real vectors.  This
+is "slow-but-robust" version of the linear LU-based solver. Faster version
+is RMatrixLUSolveFast() function.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -624,16 +816,39 @@ No iterative refinement  is provided because exact form of original matrix
 is not known to subroutine. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which results in 10-15x  performance  penalty  when  compared
+           ! with "fast" version which just calls triangular solver.
+           !
+           ! This performance penalty is insignificant  when compared with
+           ! cost of large LU decomposition.  However,  if you  call  this
+           ! function many times for the same  left  side,  this  overhead
+           ! BECOMES significant. It  also  becomes significant for small-
+           ! scale problems.
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! RMatrixLUSolveFast() function.
+
 INPUT PARAMETERS
-    LUA     -   array[0..N-1,0..N-1], LU decomposition, RMatrixLU result
-    P       -   array[0..N-1], pivots array, RMatrixLU result
+    LUA     -   array[N,N], LU decomposition, RMatrixLU result
+    P       -   array[N], pivots array, RMatrixLU result
     N       -   size of A
-    B       -   array[0..N-1], right part
+    B       -   array[N], right part
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
+
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -644,8 +859,46 @@ void rmatrixlusolve(const real_2d_array &lua, const integer_1d_array &p, const a
 /*************************************************************************
 Dense solver.
 
-Similar to RMatrixLUSolve() but solves task with multiple right parts
-(where b and x are NxM matrices).
+This  subroutine  solves  a  system  A*x=b,  where A is NxN non-denegerate
+real matrix given by its LU decomposition, x and b are real vectors.  This
+is "fast-without-any-checks" version of the linear LU-based solver. Slower
+but more robust version is RMatrixLUSolve() function.
+
+Algorithm features:
+* O(N^2) complexity
+* fast algorithm without ANY additional checks, just triangular solver
+
+INPUT PARAMETERS
+    LUA     -   array[0..N-1,0..N-1], LU decomposition, RMatrixLU result
+    P       -   array[0..N-1], pivots array, RMatrixLU result
+    N       -   size of A
+    B       -   array[0..N-1], right part
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    matrix is exactly singular (ill conditioned matrices
+                        are not recognized).
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N]:
+                * info>0    =>  overwritten by solution
+                * info=-3   =>  filled by zeros
+
+  -- ALGLIB --
+     Copyright 18.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void rmatrixlusolvefast(const real_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const real_1d_array &b, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver.
+
+Similar to RMatrixLUSolve() but solves  task  with  multiple  right  parts
+(where b and x are NxM matrices). This  is  "robust-but-slow"  version  of
+LU-based solver which performs additional  checks  for  non-degeneracy  of
+inputs (condition number estimation). If you need  best  performance,  use
+"fast-without-any-checks" version, RMatrixLUSolveMFast().
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -656,22 +909,152 @@ No iterative refinement  is provided because exact form of original matrix
 is not known to subroutine. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which  results  in  significant  performance   penalty   when
+           ! compared with "fast"  version  which  just  calls  triangular
+           ! solver.
+           !
+           ! This performance penalty is especially apparent when you  use
+           ! ALGLIB parallel capabilities (condition number estimation  is
+           ! inherently  sequential).  It   also   becomes significant for
+           ! small-scale problems.
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! RMatrixLUSolveMFast() function.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. Triangular solver is relatively easy to parallelize.
+  ! However, parallelization will be efficient  only for  large number  of
+  ! right parts M.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
 INPUT PARAMETERS
+    LUA     -   array[N,N], LU decomposition, RMatrixLU result
+    P       -   array[N], pivots array, RMatrixLU result
+    N       -   size of A
+    B       -   array[0..N-1,0..M-1], right part
+    M       -   right part size
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N,M], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
+
+
+  -- ALGLIB --
+     Copyright 27.01.2010 by Bochkanov Sergey
+*************************************************************************/
+void rmatrixlusolvem(const real_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const real_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, real_2d_array &x);
+void smp_rmatrixlusolvem(const real_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const real_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, real_2d_array &x);
+
+
+/*************************************************************************
+Dense solver.
+
+Similar to RMatrixLUSolve() but solves  task  with  multiple  right parts,
+where b and x are NxM matrices.  This is "fast-without-any-checks" version
+of LU-based solver. It does not estimate  condition number  of  a  system,
+so it is extremely fast. If you need better detection  of  near-degenerate
+cases, use RMatrixLUSolveM() function.
+
+Algorithm features:
+* O(M*N^2) complexity
+* fast algorithm without ANY additional checks, just triangular solver
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. Triangular solver is relatively easy to parallelize.
+  ! However, parallelization will be efficient  only for  large number  of
+  ! right parts M.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
     LUA     -   array[0..N-1,0..N-1], LU decomposition, RMatrixLU result
     P       -   array[0..N-1], pivots array, RMatrixLU result
     N       -   size of A
     B       -   array[0..N-1,0..M-1], right part
     M       -   right part size
 
-OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+OUTPUT PARAMETERS:
+    Info    -   return code:
+                * -3    matrix is exactly singular (ill conditioned matrices
+                        are not recognized).
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N,M]:
+                * info>0    =>  overwritten by solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
-     Copyright 27.01.2010 by Bochkanov Sergey
+     Copyright 18.03.2015 by Bochkanov Sergey
 *************************************************************************/
-void rmatrixlusolvem(const real_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const real_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, real_2d_array &x);
+void rmatrixlusolvemfast(const real_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const real_2d_array &b, const ae_int_t m, ae_int_t &info);
+void smp_rmatrixlusolvemfast(const real_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const real_2d_array &b, const ae_int_t m, ae_int_t &info);
 
 
 /*************************************************************************
@@ -695,9 +1078,17 @@ INPUT PARAMETERS
     B       -   array[0..N-1], right part
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolveM
-    Rep     -   same as in RMatrixSolveM
-    X       -   same as in RMatrixSolveM
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -726,9 +1117,17 @@ INPUT PARAMETERS
     M       -   right part size
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolveM
-    Rep     -   same as in RMatrixSolveM
-    X       -   same as in RMatrixSolveM
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N,M], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -737,13 +1136,32 @@ void rmatrixmixedsolvem(const real_2d_array &a, const real_2d_array &lua, const 
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixSolveM(), but for complex matrices.
+Complex dense solver for A*X=B with N*N  complex  matrix  A,  N*M  complex
+matrices  X  and  B.  "Slow-but-feature-rich"   version   which   provides
+additional functions, at the cost of slower  performance.  Faster  version
+may be invoked with CMatrixSolveMFast() function.
 
 Algorithm features:
 * automatic detection of degenerate cases
 * condition number estimation
 * iterative refinement
 * O(N^3+M*N^2) complexity
+
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear  system
+           ! and  performs  iterative   refinement,   which   results   in
+           ! significant performance penalty  when  compared  with  "fast"
+           ! version  which  just  performs  LU  decomposition  and  calls
+           ! triangular solver.
+           !
+           ! This  performance  penalty  is  especially  visible  in   the
+           ! multithreaded mode, because both condition number  estimation
+           ! and   iterative    refinement   are   inherently   sequential
+           ! calculations.
+           !
+           ! Thus, if you need high performance and if you are pretty sure
+           ! that your system is well conditioned, we  strongly  recommend
+           ! you to use faster solver, CMatrixSolveMFast() function.
 
 COMMERCIAL EDITION OF ALGLIB:
 
@@ -793,9 +1211,18 @@ INPUT PARAMETERS
                   More performance, less precision.
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N,M], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -805,13 +1232,99 @@ void smp_cmatrixsolvem(const complex_2d_array &a, const ae_int_t n, const comple
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixSolve(), but for complex matrices.
+Complex dense solver for A*X=B with N*N  complex  matrix  A,  N*M  complex
+matrices  X  and  B.  "Fast-but-lightweight" version which  provides  just
+triangular solver - and no additional functions like iterative  refinement
+or condition number estimation.
+
+Algorithm features:
+* O(N^3+M*N^2) complexity
+* no additional time consuming functions
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that LU decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=1024,  achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    A       -   array[0..N-1,0..N-1], system matrix
+    N       -   size of A
+    B       -   array[0..N-1,0..M-1], right part
+    M       -   right part size
+
+OUTPUT PARAMETERS:
+    Info    -   return code:
+                * -3    matrix is exactly singular (ill conditioned matrices
+                        are not recognized).
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N,M]:
+                * info>0    =>  overwritten by solution
+                * info=-3   =>  filled by zeros
+
+  -- ALGLIB --
+     Copyright 16.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void cmatrixsolvemfast(const complex_2d_array &a, const ae_int_t n, const complex_2d_array &b, const ae_int_t m, ae_int_t &info);
+void smp_cmatrixsolvemfast(const complex_2d_array &a, const ae_int_t n, const complex_2d_array &b, const ae_int_t m, ae_int_t &info);
+
+
+/*************************************************************************
+Complex dense solver for A*x=B with N*N complex matrix A and  N*1  complex
+vectors x and b. "Slow-but-feature-rich" version of the solver.
 
 Algorithm features:
 * automatic detection of degenerate cases
 * condition number estimation
 * iterative refinement
 * O(N^3) complexity
+
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear  system
+           ! and  performs  iterative   refinement,   which   results   in
+           ! significant performance penalty  when  compared  with  "fast"
+           ! version  which  just  performs  LU  decomposition  and  calls
+           ! triangular solver.
+           !
+           ! This  performance  penalty  is  especially  visible  in   the
+           ! multithreaded mode, because both condition number  estimation
+           ! and   iterative    refinement   are   inherently   sequential
+           ! calculations.
+           !
+           ! Thus, if you need high performance and if you are pretty sure
+           ! that your system is well conditioned, we  strongly  recommend
+           ! you to use faster solver, CMatrixSolveFast() function.
 
 COMMERCIAL EDITION OF ALGLIB:
 
@@ -855,9 +1368,17 @@ INPUT PARAMETERS
     B       -   array[0..N-1], right part
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -867,7 +1388,75 @@ void smp_cmatrixsolve(const complex_2d_array &a, const ae_int_t n, const complex
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixLUSolveM(), but for complex matrices.
+Complex dense solver for A*x=B with N*N complex matrix A and  N*1  complex
+vectors x and b. "Fast-but-lightweight" version of the solver.
+
+Algorithm features:
+* O(N^3) complexity
+* no additional time consuming features, just triangular solver
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that LU decomposition  is  harder  to
+  ! parallelize than, say, matrix-matrix  product  -  this  algorithm  has
+  ! many internal synchronization points which can not be avoided. However
+  ! parallelism starts to be profitable starting  from  N=1024,  achieving
+  ! near-linear speedup for N=4096 or higher.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS:
+    A       -   array[0..N-1,0..N-1], system matrix
+    N       -   size of A
+    B       -   array[0..N-1], right part
+
+OUTPUT PARAMETERS:
+    Info    -   return code:
+                * -3    matrix is exactly singular (ill conditioned matrices
+                        are not recognized).
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N]:
+                * info>0    =>  overwritten by solution
+                * info=-3   =>  filled by zeros
+
+  -- ALGLIB --
+     Copyright 27.01.2010 by Bochkanov Sergey
+*************************************************************************/
+void cmatrixsolvefast(const complex_2d_array &a, const ae_int_t n, const complex_1d_array &b, ae_int_t &info);
+void smp_cmatrixsolvefast(const complex_2d_array &a, const ae_int_t n, const complex_1d_array &b, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver for A*X=B with N*N complex A given by its  LU  decomposition,
+and N*M matrices X and B (multiple right sides).   "Slow-but-feature-rich"
+version of the solver.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -878,6 +1467,54 @@ No iterative refinement  is provided because exact form of original matrix
 is not known to subroutine. Use CMatrixSolve or CMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which  results  in  significant  performance   penalty   when
+           ! compared with "fast"  version  which  just  calls  triangular
+           ! solver.
+           !
+           ! This performance penalty is especially apparent when you  use
+           ! ALGLIB parallel capabilities (condition number estimation  is
+           ! inherently  sequential).  It   also   becomes significant for
+           ! small-scale problems.
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! CMatrixLUSolveMFast() function.
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. Triangular solver is relatively easy to parallelize.
+  ! However, parallelization will be efficient  only for  large number  of
+  ! right parts M.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
 INPUT PARAMETERS
     LUA     -   array[0..N-1,0..N-1], LU decomposition, RMatrixLU result
     P       -   array[0..N-1], pivots array, RMatrixLU result
@@ -886,18 +1523,99 @@ INPUT PARAMETERS
     M       -   right part size
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N,M], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
 *************************************************************************/
 void cmatrixlusolvem(const complex_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const complex_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, complex_2d_array &x);
+void smp_cmatrixlusolvem(const complex_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const complex_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, complex_2d_array &x);
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixLUSolve(), but for complex matrices.
+Dense solver for A*X=B with N*N complex A given by its  LU  decomposition,
+and N*M matrices X and B (multiple  right  sides).  "Fast-but-lightweight"
+version of the solver.
+
+Algorithm features:
+* O(M*N^2) complexity
+* no additional time-consuming features
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. Triangular solver is relatively easy to parallelize.
+  ! However, parallelization will be efficient  only for  large number  of
+  ! right parts M.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    LUA     -   array[0..N-1,0..N-1], LU decomposition, RMatrixLU result
+    P       -   array[0..N-1], pivots array, RMatrixLU result
+    N       -   size of A
+    B       -   array[0..N-1,0..M-1], right part
+    M       -   right part size
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    matrix is exactly singular (ill conditioned matrices
+                        are not recognized).
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N,M]:
+                * info>0    =>  overwritten by solution
+                * info=-3   =>  filled by zeros
+
+
+  -- ALGLIB --
+     Copyright 27.01.2010 by Bochkanov Sergey
+*************************************************************************/
+void cmatrixlusolvemfast(const complex_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const complex_2d_array &b, const ae_int_t m, ae_int_t &info);
+void smp_cmatrixlusolvemfast(const complex_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const complex_2d_array &b, const ae_int_t m, ae_int_t &info);
+
+
+/*************************************************************************
+Complex dense linear solver for A*x=b with complex N*N A  given  by its LU
+decomposition and N*1 vectors x and b. This is  "slow-but-robust"  version
+of  the  complex  linear  solver  with  additional  features   which   add
+significant performance overhead. Faster version  is  CMatrixLUSolveFast()
+function.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -908,6 +1626,20 @@ No iterative refinement is provided because exact form of original matrix
 is not known to subroutine. Use CMatrixSolve or CMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which results in 10-15x  performance  penalty  when  compared
+           ! with "fast" version which just calls triangular solver.
+           !
+           ! This performance penalty is insignificant  when compared with
+           ! cost of large LU decomposition.  However,  if you  call  this
+           ! function many times for the same  left  side,  this  overhead
+           ! BECOMES significant. It  also  becomes significant for small-
+           ! scale problems.
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! CMatrixLUSolveFast() function.
+
 INPUT PARAMETERS
     LUA     -   array[0..N-1,0..N-1], LU decomposition, CMatrixLU result
     P       -   array[0..N-1], pivots array, CMatrixLU result
@@ -915,14 +1647,60 @@ INPUT PARAMETERS
     B       -   array[0..N-1], right part
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
 *************************************************************************/
 void cmatrixlusolve(const complex_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const complex_1d_array &b, ae_int_t &info, densesolverreport &rep, complex_1d_array &x);
+
+
+/*************************************************************************
+Complex dense linear solver for A*x=b with N*N complex A given by  its  LU
+decomposition and N*1 vectors x and b. This is  fast  lightweight  version
+of solver, which is significantly faster than CMatrixLUSolve(),  but  does
+not provide additional information (like condition numbers).
+
+Algorithm features:
+* O(N^2) complexity
+* no additional time-consuming features, just triangular solver
+
+INPUT PARAMETERS
+    LUA     -   array[0..N-1,0..N-1], LU decomposition, CMatrixLU result
+    P       -   array[0..N-1], pivots array, CMatrixLU result
+    N       -   size of A
+    B       -   array[0..N-1], right part
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    matrix is exactly singular (ill conditioned matrices
+                        are not recognized).
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N]:
+                * info>0    =>  overwritten by solution
+                * info=-3   =>  filled by zeros
+
+NOTE: unlike  CMatrixLUSolve(),  this   function   does   NOT   check  for
+      near-degeneracy of input matrix. It  checks  for  EXACT  degeneracy,
+      because this check is easy to do. However,  very  badly  conditioned
+      matrices may went unnoticed.
+
+
+  -- ALGLIB --
+     Copyright 27.01.2010 by Bochkanov Sergey
+*************************************************************************/
+void cmatrixlusolvefast(const complex_2d_array &lua, const integer_1d_array &p, const ae_int_t n, const complex_1d_array &b, ae_int_t &info);
 
 
 /*************************************************************************
@@ -943,9 +1721,17 @@ INPUT PARAMETERS
     M       -   right part size
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolveM
-    Rep     -   same as in RMatrixSolveM
-    X       -   same as in RMatrixSolveM
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N,M], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -970,9 +1756,17 @@ INPUT PARAMETERS
     B       -   array[0..N-1], right part
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolveM
-    Rep     -   same as in RMatrixSolveM
-    X       -   same as in RMatrixSolveM
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or exactly singular.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -981,8 +1775,8 @@ void cmatrixmixedsolve(const complex_2d_array &a, const complex_2d_array &lua, c
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixSolveM(), but for symmetric positive definite
-matrices.
+Dense solver for A*X=B with N*N symmetric positive definite matrix A,  and
+N*M vectors X and B. It is "slow-but-feature-rich" version of the solver.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -994,6 +1788,21 @@ No iterative refinement is provided because such partial representation of
 matrix does not allow efficient calculation of extra-precise  matrix-vector
 products for large matrices. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
+
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which  results  in  significant   performance   penalty  when
+           ! compared with "fast" version  which  just  performs  Cholesky
+           ! decomposition and calls triangular solver.
+           !
+           ! This  performance  penalty  is  especially  visible  in   the
+           ! multithreaded mode, because both condition number  estimation
+           ! and   iterative    refinement   are   inherently   sequential
+           ! calculations.
+           !
+           ! Thus, if you need high performance and if you are pretty sure
+           ! that your system is well conditioned, we  strongly  recommend
+           ! you to use faster solver, SPDMatrixSolveMFast() function.
 
 COMMERCIAL EDITION OF ALGLIB:
 
@@ -1038,10 +1847,17 @@ INPUT PARAMETERS
     M       -   right part size
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve.
-                Returns -3 for non-SPD matrices.
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or non-SPD.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N,M], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -1051,7 +1867,76 @@ void smp_spdmatrixsolvem(const real_2d_array &a, const ae_int_t n, const bool is
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixSolve(), but for SPD matrices.
+Dense solver for A*X=B with N*N symmetric positive definite matrix A,  and
+N*M vectors X and B. It is "fast-but-lightweight" version of the solver.
+
+Algorithm features:
+* O(N^3+M*N^2) complexity
+* matrix is represented by its upper or lower triangle
+* no additional time consuming features
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that Cholesky decomposition is harder
+  ! to parallelize than, say, matrix-matrix product - this  algorithm  has
+  ! several synchronization points which  can  not  be  avoided.  However,
+  ! parallelism starts to be profitable starting from N=500.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    A       -   array[0..N-1,0..N-1], system matrix
+    N       -   size of A
+    IsUpper -   what half of A is provided
+    B       -   array[0..N-1,0..M-1], right part
+    M       -   right part size
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    A is is exactly singular
+                * -1    N<=0 was passed
+                *  1    task was solved
+    B       -   array[N,M], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
+
+  -- ALGLIB --
+     Copyright 17.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void spdmatrixsolvemfast(const real_2d_array &a, const ae_int_t n, const bool isupper, const real_2d_array &b, const ae_int_t m, ae_int_t &info);
+void smp_spdmatrixsolvemfast(const real_2d_array &a, const ae_int_t n, const bool isupper, const real_2d_array &b, const ae_int_t m, ae_int_t &info);
+
+
+/*************************************************************************
+Dense linear solver for A*x=b with N*N real  symmetric  positive  definite
+matrix A,  N*1 vectors x and b.  "Slow-but-feature-rich"  version  of  the
+solver.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -1064,6 +1949,21 @@ matrix does not allow efficient calculation of extra-precise  matrix-vector
 products for large matrices. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which  results  in  significant   performance   penalty  when
+           ! compared with "fast" version  which  just  performs  Cholesky
+           ! decomposition and calls triangular solver.
+           !
+           ! This  performance  penalty  is  especially  visible  in   the
+           ! multithreaded mode, because both condition number  estimation
+           ! and   iterative    refinement   are   inherently   sequential
+           ! calculations.
+           !
+           ! Thus, if you need high performance and if you are pretty sure
+           ! that your system is well conditioned, we  strongly  recommend
+           ! you to use faster solver, SPDMatrixSolveFast() function.
+
 COMMERCIAL EDITION OF ALGLIB:
 
   ! Commercial version of ALGLIB includes two  important  improvements  of
@@ -1106,10 +2006,17 @@ INPUT PARAMETERS
     B       -   array[0..N-1], right part
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-                Returns -3 for non-SPD matrices.
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    matrix is very badly conditioned or non-SPD.
+                * -1    N<=0 was passed
+                *  1    task is solved (but matrix A may be ill-conditioned,
+                        check R1/RInf parameters for condition numbers).
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -1119,8 +2026,77 @@ void smp_spdmatrixsolve(const real_2d_array &a, const ae_int_t n, const bool isu
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixLUSolveM(), but for SPD matrices  represented
-by their Cholesky decomposition.
+Dense linear solver for A*x=b with N*N real  symmetric  positive  definite
+matrix A,  N*1 vectors x and  b.  "Fast-but-lightweight"  version  of  the
+solver.
+
+Algorithm features:
+* O(N^3) complexity
+* matrix is represented by its upper or lower triangle
+* no additional time consuming features like condition number estimation
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that Cholesky decomposition is harder
+  ! to parallelize than, say, matrix-matrix product - this  algorithm  has
+  ! several synchronization points which  can  not  be  avoided.  However,
+  ! parallelism starts to be profitable starting from N=500.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    A       -   array[0..N-1,0..N-1], system matrix
+    N       -   size of A
+    IsUpper -   what half of A is provided
+    B       -   array[0..N-1], right part
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    A is is exactly singular or non-SPD
+                * -1    N<=0 was passed
+                *  1    task was solved
+    B       -   array[N], it contains:
+                * info>0    =>  solution
+                * info=-3   =>  filled by zeros
+
+  -- ALGLIB --
+     Copyright 17.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void spdmatrixsolvefast(const real_2d_array &a, const ae_int_t n, const bool isupper, const real_1d_array &b, ae_int_t &info);
+void smp_spdmatrixsolvefast(const real_2d_array &a, const ae_int_t n, const bool isupper, const real_1d_array &b, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver for A*X=B with N*N symmetric positive definite matrix A given
+by its Cholesky decomposition, and N*M vectors X and B. It  is  "slow-but-
+feature-rich" version of the solver which estimates  condition  number  of
+the system.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -1133,6 +2109,22 @@ matrix does not allow efficient calculation of extra-precise  matrix-vector
 products for large matrices. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which  results  in  significant  performance   penalty   when
+           ! compared with "fast"  version  which  just  calls  triangular
+           ! solver. Amount of  overhead  introduced  depends  on  M  (the
+           ! larger - the more efficient).
+           !
+           ! This performance penalty is insignificant  when compared with
+           ! cost of large LU decomposition.  However,  if you  call  this
+           ! function many times for the same  left  side,  this  overhead
+           ! BECOMES significant. It  also  becomes significant for small-
+           ! scale problems (N<50).
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! SPDMatrixCholeskySolveMFast() function.
+
 INPUT PARAMETERS
     CHA     -   array[0..N-1,0..N-1], Cholesky decomposition,
                 SPDMatrixCholesky result
@@ -1142,19 +2134,66 @@ INPUT PARAMETERS
     M       -   right part size
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    A is is exactly singular or badly conditioned
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task was solved
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N]:
+                * for info>0 contains solution
+                * for info=-3 filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
 *************************************************************************/
 void spdmatrixcholeskysolvem(const real_2d_array &cha, const ae_int_t n, const bool isupper, const real_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, real_2d_array &x);
+void smp_spdmatrixcholeskysolvem(const real_2d_array &cha, const ae_int_t n, const bool isupper, const real_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, real_2d_array &x);
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixLUSolve(), but for  SPD matrices  represented
-by their Cholesky decomposition.
+Dense solver for A*X=B with N*N symmetric positive definite matrix A given
+by its Cholesky decomposition, and N*M vectors X and B. It  is  "fast-but-
+lightweight" version of  the  solver  which  just  solves  linear  system,
+without any additional functions.
+
+Algorithm features:
+* O(M*N^2) complexity
+* matrix is represented by its upper or lower triangle
+* no additional functionality
+
+INPUT PARAMETERS
+    CHA     -   array[N,N], Cholesky decomposition,
+                SPDMatrixCholesky result
+    N       -   size of CHA
+    IsUpper -   what half of CHA is provided
+    B       -   array[N,M], right part
+    M       -   right part size
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    A is is exactly singular or badly conditioned
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task was solved
+    B       -   array[N]:
+                * for info>0 overwritten by solution
+                * for info=-3 filled by zeros
+
+  -- ALGLIB --
+     Copyright 18.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void spdmatrixcholeskysolvemfast(const real_2d_array &cha, const ae_int_t n, const bool isupper, const real_2d_array &b, const ae_int_t m, ae_int_t &info);
+void smp_spdmatrixcholeskysolvemfast(const real_2d_array &cha, const ae_int_t n, const bool isupper, const real_2d_array &b, const ae_int_t m, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver for A*x=b with N*N symmetric positive definite matrix A given
+by its Cholesky decomposition, and N*1 real vectors x and b. This is "slow-
+but-feature-rich"  version  of  the  solver  which,  in  addition  to  the
+solution, performs condition number estimation.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -1167,17 +2206,39 @@ matrix does not allow efficient calculation of extra-precise  matrix-vector
 products for large matrices. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which results in 10-15x  performance  penalty  when  compared
+           ! with "fast" version which just calls triangular solver.
+           !
+           ! This performance penalty is insignificant  when compared with
+           ! cost of large LU decomposition.  However,  if you  call  this
+           ! function many times for the same  left  side,  this  overhead
+           ! BECOMES significant. It  also  becomes significant for small-
+           ! scale problems (N<50).
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! SPDMatrixCholeskySolveFast() function.
+
 INPUT PARAMETERS
-    CHA     -   array[0..N-1,0..N-1], Cholesky decomposition,
+    CHA     -   array[N,N], Cholesky decomposition,
                 SPDMatrixCholesky result
     N       -   size of A
     IsUpper -   what half of CHA is provided
-    B       -   array[0..N-1], right part
+    B       -   array[N], right part
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    A is is exactly singular or ill conditioned
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N]:
+                * for info>0  - solution
+                * for info=-3 - filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
@@ -1186,8 +2247,42 @@ void spdmatrixcholeskysolve(const real_2d_array &cha, const ae_int_t n, const bo
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixSolveM(), but for Hermitian positive definite
-matrices.
+Dense solver for A*x=b with N*N symmetric positive definite matrix A given
+by its Cholesky decomposition, and N*1 real vectors x and b. This is "fast-
+but-lightweight" version of the solver.
+
+Algorithm features:
+* O(N^2) complexity
+* matrix is represented by its upper or lower triangle
+* no additional features
+
+INPUT PARAMETERS
+    CHA     -   array[N,N], Cholesky decomposition,
+                SPDMatrixCholesky result
+    N       -   size of A
+    IsUpper -   what half of CHA is provided
+    B       -   array[N], right part
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    A is is exactly singular or ill conditioned
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N]:
+                * for info>0  - overwritten by solution
+                * for info=-3 - filled by zeros
+
+  -- ALGLIB --
+     Copyright 27.01.2010 by Bochkanov Sergey
+*************************************************************************/
+void spdmatrixcholeskysolvefast(const real_2d_array &cha, const ae_int_t n, const bool isupper, const real_1d_array &b, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver for A*X=B, with N*N Hermitian positive definite matrix A  and
+N*M  complex  matrices  X  and  B.  "Slow-but-feature-rich" version of the
+solver.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -1199,6 +2294,20 @@ No iterative refinement is provided because such partial representation of
 matrix does not allow efficient calculation of extra-precise  matrix-vector
 products for large matrices. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
+
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which  results  in  significant  performance   penalty   when
+           ! compared with "fast"  version  which  just  calls  triangular
+           ! solver.
+           !
+           ! This performance penalty is especially apparent when you  use
+           ! ALGLIB parallel capabilities (condition number estimation  is
+           ! inherently  sequential).  It   also   becomes significant for
+           ! small-scale problems (N<100).
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! HPDMatrixSolveMFast() function.
 
 COMMERCIAL EDITION OF ALGLIB:
 
@@ -1256,8 +2365,77 @@ void smp_hpdmatrixsolvem(const complex_2d_array &a, const ae_int_t n, const bool
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixSolve(),  but for Hermitian positive definite
-matrices.
+Dense solver for A*X=B, with N*N Hermitian positive definite matrix A  and
+N*M complex matrices X and B. "Fast-but-lightweight" version of the solver.
+
+Algorithm features:
+* O(N^3+M*N^2) complexity
+* matrix is represented by its upper or lower triangle
+* no additional time consuming features like condition number estimation
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that Cholesky decomposition is harder
+  ! to parallelize than, say, matrix-matrix product - this  algorithm  has
+  ! several synchronization points which  can  not  be  avoided.  However,
+  ! parallelism starts to be profitable starting from N=500.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    A       -   array[0..N-1,0..N-1], system matrix
+    N       -   size of A
+    IsUpper -   what half of A is provided
+    B       -   array[0..N-1,0..M-1], right part
+    M       -   right part size
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    A is is exactly  singular or is not positive definite.
+                        B is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[0..N-1]:
+                * overwritten by solution
+                * zeros, if problem was not solved
+
+  -- ALGLIB --
+     Copyright 17.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void hpdmatrixsolvemfast(const complex_2d_array &a, const ae_int_t n, const bool isupper, const complex_2d_array &b, const ae_int_t m, ae_int_t &info);
+void smp_hpdmatrixsolvemfast(const complex_2d_array &a, const ae_int_t n, const bool isupper, const complex_2d_array &b, const ae_int_t m, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver for A*x=b, with N*N Hermitian positive definite matrix A, and
+N*1 complex vectors  x  and  b.  "Slow-but-feature-rich"  version  of  the
+solver.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -1269,6 +2447,21 @@ No iterative refinement is provided because such partial representation of
 matrix does not allow efficient calculation of extra-precise  matrix-vector
 products for large matrices. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
+
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which  results  in  significant   performance   penalty  when
+           ! compared with "fast" version  which  just  performs  Cholesky
+           ! decomposition and calls triangular solver.
+           !
+           ! This  performance  penalty  is  especially  visible  in   the
+           ! multithreaded mode, because both condition number  estimation
+           ! and   iterative    refinement   are   inherently   sequential
+           ! calculations.
+           !
+           ! Thus, if you need high performance and if you are pretty sure
+           ! that your system is well conditioned, we  strongly  recommend
+           ! you to use faster solver, HPDMatrixSolveFast() function.
 
 COMMERCIAL EDITION OF ALGLIB:
 
@@ -1325,8 +2518,79 @@ void smp_hpdmatrixsolve(const complex_2d_array &a, const ae_int_t n, const bool 
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixLUSolveM(), but for HPD matrices  represented
-by their Cholesky decomposition.
+Dense solver for A*x=b, with N*N Hermitian positive definite matrix A, and
+N*1 complex vectors  x  and  b.  "Fast-but-lightweight"  version  of   the
+solver without additional functions.
+
+Algorithm features:
+* O(N^3) complexity
+* matrix is represented by its upper or lower triangle
+* no additional time consuming functions
+
+COMMERCIAL EDITION OF ALGLIB:
+
+  ! Commercial version of ALGLIB includes two  important  improvements  of
+  ! this function, which can be used from C++ and C#:
+  ! * Intel MKL support (lightweight Intel MKL is shipped with ALGLIB)
+  ! * multicore support
+  !
+  ! Intel MKL gives approximately constant  (with  respect  to  number  of
+  ! worker threads) acceleration factor which depends on CPU  being  used,
+  ! problem  size  and  "baseline"  ALGLIB  edition  which  is  used   for
+  ! comparison.
+  !
+  ! Say, on SSE2-capable CPU with N=1024, HPC ALGLIB will be:
+  ! * about 2-3x faster than ALGLIB for C++ without MKL
+  ! * about 7-10x faster than "pure C#" edition of ALGLIB
+  ! Difference in performance will be more striking  on  newer  CPU's with
+  ! support for newer SIMD instructions. Generally,  MKL  accelerates  any
+  ! problem whose size is at least 128, with best  efficiency achieved for
+  ! N's larger than 512.
+  !
+  ! Commercial edition of ALGLIB also supports multithreaded  acceleration
+  ! of this function. We should note that Cholesky decomposition is harder
+  ! to parallelize than, say, matrix-matrix product - this  algorithm  has
+  ! several synchronization points which  can  not  be  avoided.  However,
+  ! parallelism starts to be profitable starting from N=500.
+  !
+  ! In order to use multicore features you have to:
+  ! * use commercial version of ALGLIB
+  ! * call  this  function  with  "smp_"  prefix,  which  indicates  that
+  !   multicore code will be used (for multicore support)
+  !
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
+
+INPUT PARAMETERS
+    A       -   array[0..N-1,0..N-1], system matrix
+    N       -   size of A
+    IsUpper -   what half of A is provided
+    B       -   array[0..N-1], right part
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    A is is exactly singular or not positive definite
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task was solved
+    B       -   array[0..N-1]:
+                * overwritten by solution
+                * zeros, if A is exactly singular (diagonal of its LU
+                  decomposition has exact zeros).
+
+  -- ALGLIB --
+     Copyright 17.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void hpdmatrixsolvefast(const complex_2d_array &a, const ae_int_t n, const bool isupper, const complex_1d_array &b, ae_int_t &info);
+void smp_hpdmatrixsolvefast(const complex_2d_array &a, const ae_int_t n, const bool isupper, const complex_1d_array &b, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver for A*X=B with N*N Hermitian positive definite matrix A given
+by its Cholesky decomposition and N*M complex matrices X  and  B.  This is
+"slow-but-feature-rich" version of the solver which, in  addition  to  the
+solution, estimates condition number of the system.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -1339,28 +2603,91 @@ matrix does not allow efficient calculation of extra-precise  matrix-vector
 products for large matrices. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which  results  in  significant  performance   penalty   when
+           ! compared with "fast"  version  which  just  calls  triangular
+           ! solver. Amount of  overhead  introduced  depends  on  M  (the
+           ! larger - the more efficient).
+           !
+           ! This performance penalty is insignificant  when compared with
+           ! cost of large Cholesky decomposition.  However,  if  you call
+           ! this  function  many  times  for  the same  left  side,  this
+           ! overhead BECOMES significant. It  also   becomes  significant
+           ! for small-scale problems (N<50).
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! HPDMatrixCholeskySolveMFast() function.
+
+
 INPUT PARAMETERS
-    CHA     -   array[0..N-1,0..N-1], Cholesky decomposition,
+    CHA     -   array[N,N], Cholesky decomposition,
                 HPDMatrixCholesky result
     N       -   size of CHA
     IsUpper -   what half of CHA is provided
-    B       -   array[0..N-1,0..M-1], right part
+    B       -   array[N,M], right part
     M       -   right part size
 
-OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+OUTPUT PARAMETERS:
+    Info    -   return code:
+                * -3    A is singular, or VERY close to singular.
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task was solved
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N]:
+                * for info>0 contains solution
+                * for info=-3 filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
 *************************************************************************/
 void hpdmatrixcholeskysolvem(const complex_2d_array &cha, const ae_int_t n, const bool isupper, const complex_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, complex_2d_array &x);
+void smp_hpdmatrixcholeskysolvem(const complex_2d_array &cha, const ae_int_t n, const bool isupper, const complex_2d_array &b, const ae_int_t m, ae_int_t &info, densesolverreport &rep, complex_2d_array &x);
 
 
 /*************************************************************************
-Dense solver. Same as RMatrixLUSolve(), but for  HPD matrices  represented
-by their Cholesky decomposition.
+Dense solver for A*X=B with N*N Hermitian positive definite matrix A given
+by its Cholesky decomposition and N*M complex matrices X  and  B.  This is
+"fast-but-lightweight" version of the solver.
+
+Algorithm features:
+* O(M*N^2) complexity
+* matrix is represented by its upper or lower triangle
+* no additional time-consuming features
+
+INPUT PARAMETERS
+    CHA     -   array[N,N], Cholesky decomposition,
+                HPDMatrixCholesky result
+    N       -   size of CHA
+    IsUpper -   what half of CHA is provided
+    B       -   array[N,M], right part
+    M       -   right part size
+
+OUTPUT PARAMETERS:
+    Info    -   return code:
+                * -3    A is singular, or VERY close to singular.
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task was solved
+    B       -   array[N]:
+                * for info>0 overwritten by solution
+                * for info=-3 filled by zeros
+
+  -- ALGLIB --
+     Copyright 18.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void hpdmatrixcholeskysolvemfast(const complex_2d_array &cha, const ae_int_t n, const bool isupper, const complex_2d_array &b, const ae_int_t m, ae_int_t &info);
+void smp_hpdmatrixcholeskysolvemfast(const complex_2d_array &cha, const ae_int_t n, const bool isupper, const complex_2d_array &b, const ae_int_t m, ae_int_t &info);
+
+
+/*************************************************************************
+Dense solver for A*x=b with N*N Hermitian positive definite matrix A given
+by its Cholesky decomposition, and N*1 complex vectors x and  b.  This  is
+"slow-but-feature-rich" version of the solver  which  estimates  condition
+number of the system.
 
 Algorithm features:
 * automatic detection of degenerate cases
@@ -1373,6 +2700,20 @@ matrix does not allow efficient calculation of extra-precise  matrix-vector
 products for large matrices. Use RMatrixSolve or RMatrixMixedSolve  if  you
 need iterative refinement.
 
+IMPORTANT: ! this function is NOT the most efficient linear solver provided
+           ! by ALGLIB. It estimates condition  number  of  linear system,
+           ! which results in 10-15x  performance  penalty  when  compared
+           ! with "fast" version which just calls triangular solver.
+           !
+           ! This performance penalty is insignificant  when compared with
+           ! cost of large LU decomposition.  However,  if you  call  this
+           ! function many times for the same  left  side,  this  overhead
+           ! BECOMES significant. It  also  becomes significant for small-
+           ! scale problems (N<50).
+           !
+           ! In such cases we strongly recommend you to use faster solver,
+           ! HPDMatrixCholeskySolveFast() function.
+
 INPUT PARAMETERS
     CHA     -   array[0..N-1,0..N-1], Cholesky decomposition,
                 SPDMatrixCholesky result
@@ -1381,14 +2722,55 @@ INPUT PARAMETERS
     B       -   array[0..N-1], right part
 
 OUTPUT PARAMETERS
-    Info    -   same as in RMatrixSolve
-    Rep     -   same as in RMatrixSolve
-    X       -   same as in RMatrixSolve
+    Info    -   return code:
+                * -3    A is is exactly singular or ill conditioned
+                        X is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved
+    Rep     -   additional report, following fields are set:
+                * rep.r1    condition number in 1-norm
+                * rep.rinf  condition number in inf-norm
+    X       -   array[N]:
+                * for info>0  - solution
+                * for info=-3 - filled by zeros
 
   -- ALGLIB --
      Copyright 27.01.2010 by Bochkanov Sergey
 *************************************************************************/
 void hpdmatrixcholeskysolve(const complex_2d_array &cha, const ae_int_t n, const bool isupper, const complex_1d_array &b, ae_int_t &info, densesolverreport &rep, complex_1d_array &x);
+
+
+/*************************************************************************
+Dense solver for A*x=b with N*N Hermitian positive definite matrix A given
+by its Cholesky decomposition, and N*1 complex vectors x and  b.  This  is
+"fast-but-lightweight" version of the solver.
+
+Algorithm features:
+* O(N^2) complexity
+* matrix is represented by its upper or lower triangle
+* no additional time-consuming features
+
+INPUT PARAMETERS
+    CHA     -   array[0..N-1,0..N-1], Cholesky decomposition,
+                SPDMatrixCholesky result
+    N       -   size of A
+    IsUpper -   what half of CHA is provided
+    B       -   array[0..N-1], right part
+
+OUTPUT PARAMETERS
+    Info    -   return code:
+                * -3    A is is exactly singular or ill conditioned
+                        B is filled by zeros in such cases.
+                * -1    N<=0 was passed
+                *  1    task is solved
+    B       -   array[N]:
+                * for info>0  - overwritten by solution
+                * for info=-3 - filled by zeros
+
+  -- ALGLIB --
+     Copyright 18.03.2015 by Bochkanov Sergey
+*************************************************************************/
+void hpdmatrixcholeskysolvefast(const complex_2d_array &cha, const ae_int_t n, const bool isupper, const complex_1d_array &b, ae_int_t &info);
 
 
 /*************************************************************************
@@ -1623,205 +3005,46 @@ provided to MinCGOptimize().
 void linlsqrsetxrep(const linlsqrstate &state, const bool needxrep);
 
 /*************************************************************************
-This function initializes linear CG Solver. This solver is used  to  solve
-symmetric positive definite problems. If you want  to  solve  nonsymmetric
-(or non-positive definite) problem you may use LinLSQR solver provided  by
-ALGLIB.
+Polynomial root finding.
 
-USAGE:
-1. User initializes algorithm state with LinCGCreate() call
-2. User tunes solver parameters with  LinCGSetCond() and other functions
-3. Optionally, user sets starting point with LinCGSetStartingPoint()
-4. User  calls LinCGSolveSparse() function which takes algorithm state and
-   SparseMatrix object.
-5. User calls LinCGResults() to get solution
-6. Optionally, user may call LinCGSolveSparse()  again  to  solve  another
-   problem  with different matrix and/or right part without reinitializing
-   LinCGState structure.
+This function returns all roots of the polynomial
+    P(x) = a0 + a1*x + a2*x^2 + ... + an*x^n
+Both real and complex roots are returned (see below).
 
 INPUT PARAMETERS:
-    N       -   problem dimension, N>0
+    A       -   array[N+1], polynomial coefficients:
+                * A[0] is constant term
+                * A[N] is a coefficient of X^N
+    N       -   polynomial degree
 
 OUTPUT PARAMETERS:
-    State   -   structure which stores algorithm state
+    X       -   array of complex roots:
+                * for isolated real root, X[I] is strictly real: IMAGE(X[I])=0
+                * complex roots are always returned in pairs - roots occupy
+                  positions I and I+1, with:
+                  * X[I+1]=Conj(X[I])
+                  * IMAGE(X[I]) > 0
+                  * IMAGE(X[I+1]) = -IMAGE(X[I]) < 0
+                * multiple real roots may have non-zero imaginary part due
+                  to roundoff errors. There is no reliable way to distinguish
+                  real root of multiplicity 2 from two  complex  roots  in
+                  the presence of roundoff errors.
+    Rep     -   report, additional information, following fields are set:
+                * Rep.MaxErr - max( |P(xi)| )  for  i=0..N-1.  This  field
+                  allows to quickly estimate "quality" of the roots  being
+                  returned.
+
+NOTE:   this function uses companion matrix method to find roots. In  case
+        internal EVD  solver  fails  do  find  eigenvalues,  exception  is
+        generated.
+
+NOTE:   roots are not "polished" and  no  matrix  balancing  is  performed
+        for them.
 
   -- ALGLIB --
-     Copyright 14.11.2011 by Bochkanov Sergey
+     Copyright 24.02.2014 by Bochkanov Sergey
 *************************************************************************/
-void lincgcreate(const ae_int_t n, lincgstate &state);
-
-
-/*************************************************************************
-This function sets starting point.
-By default, zero starting point is used.
-
-INPUT PARAMETERS:
-    X       -   starting point, array[N]
-
-OUTPUT PARAMETERS:
-    State   -   structure which stores algorithm state
-
-  -- ALGLIB --
-     Copyright 14.11.2011 by Bochkanov Sergey
-*************************************************************************/
-void lincgsetstartingpoint(const lincgstate &state, const real_1d_array &x);
-
-
-/*************************************************************************
-This  function  changes  preconditioning  settings  of  LinCGSolveSparse()
-function. By default, SolveSparse() uses diagonal preconditioner,  but  if
-you want to use solver without preconditioning, you can call this function
-which forces solver to use unit matrix for preconditioning.
-
-INPUT PARAMETERS:
-    State   -   structure which stores algorithm state
-
-  -- ALGLIB --
-     Copyright 19.11.2012 by Bochkanov Sergey
-*************************************************************************/
-void lincgsetprecunit(const lincgstate &state);
-
-
-/*************************************************************************
-This  function  changes  preconditioning  settings  of  LinCGSolveSparse()
-function.  LinCGSolveSparse() will use diagonal of the  system  matrix  as
-preconditioner. This preconditioning mode is active by default.
-
-INPUT PARAMETERS:
-    State   -   structure which stores algorithm state
-
-  -- ALGLIB --
-     Copyright 19.11.2012 by Bochkanov Sergey
-*************************************************************************/
-void lincgsetprecdiag(const lincgstate &state);
-
-
-/*************************************************************************
-This function sets stopping criteria.
-
-INPUT PARAMETERS:
-    EpsF    -   algorithm will be stopped if norm of residual is less than
-                EpsF*||b||.
-    MaxIts  -   algorithm will be stopped if number of iterations is  more
-                than MaxIts.
-
-OUTPUT PARAMETERS:
-    State   -   structure which stores algorithm state
-
-NOTES:
-If  both  EpsF  and  MaxIts  are  zero then small EpsF will be set to small
-value.
-
-  -- ALGLIB --
-     Copyright 14.11.2011 by Bochkanov Sergey
-*************************************************************************/
-void lincgsetcond(const lincgstate &state, const double epsf, const ae_int_t maxits);
-
-
-/*************************************************************************
-Procedure for solution of A*x=b with sparse A.
-
-INPUT PARAMETERS:
-    State   -   algorithm state
-    A       -   sparse matrix in the CRS format (you MUST contvert  it  to
-                CRS format by calling SparseConvertToCRS() function).
-    IsUpper -   whether upper or lower triangle of A is used:
-                * IsUpper=True  => only upper triangle is used and lower
-                                   triangle is not referenced at all
-                * IsUpper=False => only lower triangle is used and upper
-                                   triangle is not referenced at all
-    B       -   right part, array[N]
-
-RESULT:
-    This function returns no result.
-    You can get solution by calling LinCGResults()
-
-NOTE: this function uses lightweight preconditioning -  multiplication  by
-      inverse of diag(A). If you want, you can turn preconditioning off by
-      calling LinCGSetPrecUnit(). However, preconditioning cost is low and
-      preconditioner  is  very  important  for  solution  of  badly scaled
-      problems.
-
-  -- ALGLIB --
-     Copyright 14.11.2011 by Bochkanov Sergey
-*************************************************************************/
-void lincgsolvesparse(const lincgstate &state, const sparsematrix &a, const bool isupper, const real_1d_array &b);
-
-
-/*************************************************************************
-CG-solver: results.
-
-This function must be called after LinCGSolve
-
-INPUT PARAMETERS:
-    State   -   algorithm state
-
-OUTPUT PARAMETERS:
-    X       -   array[N], solution
-    Rep     -   optimization report:
-                * Rep.TerminationType completetion code:
-                    * -5    input matrix is either not positive definite,
-                            too large or too small
-                    * -4    overflow/underflow during solution
-                            (ill conditioned problem)
-                    *  1    ||residual||<=EpsF*||b||
-                    *  5    MaxIts steps was taken
-                    *  7    rounding errors prevent further progress,
-                            best point found is returned
-                * Rep.IterationsCount contains iterations count
-                * NMV countains number of matrix-vector calculations
-
-  -- ALGLIB --
-     Copyright 14.11.2011 by Bochkanov Sergey
-*************************************************************************/
-void lincgresults(const lincgstate &state, real_1d_array &x, lincgreport &rep);
-
-
-/*************************************************************************
-This function sets restart frequency. By default, algorithm  is  restarted
-after N subsequent iterations.
-
-  -- ALGLIB --
-     Copyright 14.11.2011 by Bochkanov Sergey
-*************************************************************************/
-void lincgsetrestartfreq(const lincgstate &state, const ae_int_t srf);
-
-
-/*************************************************************************
-This function sets frequency of residual recalculations.
-
-Algorithm updates residual r_k using iterative formula,  but  recalculates
-it from scratch after each 10 iterations. It is done to avoid accumulation
-of numerical errors and to stop algorithm when r_k starts to grow.
-
-Such low update frequence (1/10) gives very  little  overhead,  but  makes
-algorithm a bit more robust against numerical errors. However, you may
-change it
-
-INPUT PARAMETERS:
-    Freq    -   desired update frequency, Freq>=0.
-                Zero value means that no updates will be done.
-
-  -- ALGLIB --
-     Copyright 14.11.2011 by Bochkanov Sergey
-*************************************************************************/
-void lincgsetrupdatefreq(const lincgstate &state, const ae_int_t freq);
-
-
-/*************************************************************************
-This function turns on/off reporting.
-
-INPUT PARAMETERS:
-    State   -   structure which stores algorithm state
-    NeedXRep-   whether iteration reports are needed or not
-
-If NeedXRep is True, algorithm will call rep() callback function if  it is
-provided to MinCGOptimize().
-
-  -- ALGLIB --
-     Copyright 14.11.2011 by Bochkanov Sergey
-*************************************************************************/
-void lincgsetxrep(const lincgstate &state, const bool needxrep);
+void polynomialsolve(const real_1d_array &a, const ae_int_t n, complex_1d_array &x, polynomialsolverreport &rep);
 
 /*************************************************************************
                 LEVENBERG-MARQUARDT-LIKE NONLINEAR SOLVER
@@ -2051,46 +3274,205 @@ INPUT PARAMETERS:
 void nleqrestartfrom(const nleqstate &state, const real_1d_array &x);
 
 /*************************************************************************
-Polynomial root finding.
+This function initializes linear CG Solver. This solver is used  to  solve
+symmetric positive definite problems. If you want  to  solve  nonsymmetric
+(or non-positive definite) problem you may use LinLSQR solver provided  by
+ALGLIB.
 
-This function returns all roots of the polynomial
-    P(x) = a0 + a1*x + a2*x^2 + ... + an*x^n
-Both real and complex roots are returned (see below).
+USAGE:
+1. User initializes algorithm state with LinCGCreate() call
+2. User tunes solver parameters with  LinCGSetCond() and other functions
+3. Optionally, user sets starting point with LinCGSetStartingPoint()
+4. User  calls LinCGSolveSparse() function which takes algorithm state and
+   SparseMatrix object.
+5. User calls LinCGResults() to get solution
+6. Optionally, user may call LinCGSolveSparse()  again  to  solve  another
+   problem  with different matrix and/or right part without reinitializing
+   LinCGState structure.
 
 INPUT PARAMETERS:
-    A       -   array[N+1], polynomial coefficients:
-                * A[0] is constant term
-                * A[N] is a coefficient of X^N
-    N       -   polynomial degree
+    N       -   problem dimension, N>0
 
 OUTPUT PARAMETERS:
-    X       -   array of complex roots:
-                * for isolated real root, X[I] is strictly real: IMAGE(X[I])=0
-                * complex roots are always returned in pairs - roots occupy
-                  positions I and I+1, with:
-                  * X[I+1]=Conj(X[I])
-                  * IMAGE(X[I]) > 0
-                  * IMAGE(X[I+1]) = -IMAGE(X[I]) < 0
-                * multiple real roots may have non-zero imaginary part due
-                  to roundoff errors. There is no reliable way to distinguish
-                  real root of multiplicity 2 from two  complex  roots  in
-                  the presence of roundoff errors.
-    Rep     -   report, additional information, following fields are set:
-                * Rep.MaxErr - max( |P(xi)| )  for  i=0..N-1.  This  field
-                  allows to quickly estimate "quality" of the roots  being
-                  returned.
-
-NOTE:   this function uses companion matrix method to find roots. In  case
-        internal EVD  solver  fails  do  find  eigenvalues,  exception  is
-        generated.
-
-NOTE:   roots are not "polished" and  no  matrix  balancing  is  performed
-        for them.
+    State   -   structure which stores algorithm state
 
   -- ALGLIB --
-     Copyright 24.02.2014 by Bochkanov Sergey
+     Copyright 14.11.2011 by Bochkanov Sergey
 *************************************************************************/
-void polynomialsolve(const real_1d_array &a, const ae_int_t n, complex_1d_array &x, polynomialsolverreport &rep);
+void lincgcreate(const ae_int_t n, lincgstate &state);
+
+
+/*************************************************************************
+This function sets starting point.
+By default, zero starting point is used.
+
+INPUT PARAMETERS:
+    X       -   starting point, array[N]
+
+OUTPUT PARAMETERS:
+    State   -   structure which stores algorithm state
+
+  -- ALGLIB --
+     Copyright 14.11.2011 by Bochkanov Sergey
+*************************************************************************/
+void lincgsetstartingpoint(const lincgstate &state, const real_1d_array &x);
+
+
+/*************************************************************************
+This  function  changes  preconditioning  settings  of  LinCGSolveSparse()
+function. By default, SolveSparse() uses diagonal preconditioner,  but  if
+you want to use solver without preconditioning, you can call this function
+which forces solver to use unit matrix for preconditioning.
+
+INPUT PARAMETERS:
+    State   -   structure which stores algorithm state
+
+  -- ALGLIB --
+     Copyright 19.11.2012 by Bochkanov Sergey
+*************************************************************************/
+void lincgsetprecunit(const lincgstate &state);
+
+
+/*************************************************************************
+This  function  changes  preconditioning  settings  of  LinCGSolveSparse()
+function.  LinCGSolveSparse() will use diagonal of the  system  matrix  as
+preconditioner. This preconditioning mode is active by default.
+
+INPUT PARAMETERS:
+    State   -   structure which stores algorithm state
+
+  -- ALGLIB --
+     Copyright 19.11.2012 by Bochkanov Sergey
+*************************************************************************/
+void lincgsetprecdiag(const lincgstate &state);
+
+
+/*************************************************************************
+This function sets stopping criteria.
+
+INPUT PARAMETERS:
+    EpsF    -   algorithm will be stopped if norm of residual is less than
+                EpsF*||b||.
+    MaxIts  -   algorithm will be stopped if number of iterations is  more
+                than MaxIts.
+
+OUTPUT PARAMETERS:
+    State   -   structure which stores algorithm state
+
+NOTES:
+If  both  EpsF  and  MaxIts  are  zero then small EpsF will be set to small
+value.
+
+  -- ALGLIB --
+     Copyright 14.11.2011 by Bochkanov Sergey
+*************************************************************************/
+void lincgsetcond(const lincgstate &state, const double epsf, const ae_int_t maxits);
+
+
+/*************************************************************************
+Procedure for solution of A*x=b with sparse A.
+
+INPUT PARAMETERS:
+    State   -   algorithm state
+    A       -   sparse matrix in the CRS format (you MUST contvert  it  to
+                CRS format by calling SparseConvertToCRS() function).
+    IsUpper -   whether upper or lower triangle of A is used:
+                * IsUpper=True  => only upper triangle is used and lower
+                                   triangle is not referenced at all
+                * IsUpper=False => only lower triangle is used and upper
+                                   triangle is not referenced at all
+    B       -   right part, array[N]
+
+RESULT:
+    This function returns no result.
+    You can get solution by calling LinCGResults()
+
+NOTE: this function uses lightweight preconditioning -  multiplication  by
+      inverse of diag(A). If you want, you can turn preconditioning off by
+      calling LinCGSetPrecUnit(). However, preconditioning cost is low and
+      preconditioner  is  very  important  for  solution  of  badly scaled
+      problems.
+
+  -- ALGLIB --
+     Copyright 14.11.2011 by Bochkanov Sergey
+*************************************************************************/
+void lincgsolvesparse(const lincgstate &state, const sparsematrix &a, const bool isupper, const real_1d_array &b);
+
+
+/*************************************************************************
+CG-solver: results.
+
+This function must be called after LinCGSolve
+
+INPUT PARAMETERS:
+    State   -   algorithm state
+
+OUTPUT PARAMETERS:
+    X       -   array[N], solution
+    Rep     -   optimization report:
+                * Rep.TerminationType completetion code:
+                    * -5    input matrix is either not positive definite,
+                            too large or too small
+                    * -4    overflow/underflow during solution
+                            (ill conditioned problem)
+                    *  1    ||residual||<=EpsF*||b||
+                    *  5    MaxIts steps was taken
+                    *  7    rounding errors prevent further progress,
+                            best point found is returned
+                * Rep.IterationsCount contains iterations count
+                * NMV countains number of matrix-vector calculations
+
+  -- ALGLIB --
+     Copyright 14.11.2011 by Bochkanov Sergey
+*************************************************************************/
+void lincgresults(const lincgstate &state, real_1d_array &x, lincgreport &rep);
+
+
+/*************************************************************************
+This function sets restart frequency. By default, algorithm  is  restarted
+after N subsequent iterations.
+
+  -- ALGLIB --
+     Copyright 14.11.2011 by Bochkanov Sergey
+*************************************************************************/
+void lincgsetrestartfreq(const lincgstate &state, const ae_int_t srf);
+
+
+/*************************************************************************
+This function sets frequency of residual recalculations.
+
+Algorithm updates residual r_k using iterative formula,  but  recalculates
+it from scratch after each 10 iterations. It is done to avoid accumulation
+of numerical errors and to stop algorithm when r_k starts to grow.
+
+Such low update frequence (1/10) gives very  little  overhead,  but  makes
+algorithm a bit more robust against numerical errors. However, you may
+change it
+
+INPUT PARAMETERS:
+    Freq    -   desired update frequency, Freq>=0.
+                Zero value means that no updates will be done.
+
+  -- ALGLIB --
+     Copyright 14.11.2011 by Bochkanov Sergey
+*************************************************************************/
+void lincgsetrupdatefreq(const lincgstate &state, const ae_int_t freq);
+
+
+/*************************************************************************
+This function turns on/off reporting.
+
+INPUT PARAMETERS:
+    State   -   structure which stores algorithm state
+    NeedXRep-   whether iteration reports are needed or not
+
+If NeedXRep is True, algorithm will call rep() callback function if  it is
+provided to MinCGOptimize().
+
+  -- ALGLIB --
+     Copyright 14.11.2011 by Bochkanov Sergey
+*************************************************************************/
+void lincgsetxrep(const lincgstate &state, const bool needxrep);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -2113,6 +3495,15 @@ void _pexec_rmatrixsolve(/* Real    */ ae_matrix* a,
     ae_int_t* info,
     densesolverreport* rep,
     /* Real    */ ae_vector* x, ae_state *_state);
+void rmatrixsolvefast(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     /* Real    */ ae_vector* b,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_rmatrixsolvefast(/* Real    */ ae_matrix* a,
+    ae_int_t n,
+    /* Real    */ ae_vector* b,
+    ae_int_t* info, ae_state *_state);
 void rmatrixsolvem(/* Real    */ ae_matrix* a,
      ae_int_t n,
      /* Real    */ ae_matrix* b,
@@ -2130,6 +3521,17 @@ void _pexec_rmatrixsolvem(/* Real    */ ae_matrix* a,
     ae_int_t* info,
     densesolverreport* rep,
     /* Real    */ ae_matrix* x, ae_state *_state);
+void rmatrixsolvemfast(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     /* Real    */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_rmatrixsolvemfast(/* Real    */ ae_matrix* a,
+    ae_int_t n,
+    /* Real    */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info, ae_state *_state);
 void rmatrixlusolve(/* Real    */ ae_matrix* lua,
      /* Integer */ ae_vector* p,
      ae_int_t n,
@@ -2137,6 +3539,12 @@ void rmatrixlusolve(/* Real    */ ae_matrix* lua,
      ae_int_t* info,
      densesolverreport* rep,
      /* Real    */ ae_vector* x,
+     ae_state *_state);
+void rmatrixlusolvefast(/* Real    */ ae_matrix* lua,
+     /* Integer */ ae_vector* p,
+     ae_int_t n,
+     /* Real    */ ae_vector* b,
+     ae_int_t* info,
      ae_state *_state);
 void rmatrixlusolvem(/* Real    */ ae_matrix* lua,
      /* Integer */ ae_vector* p,
@@ -2147,6 +3555,27 @@ void rmatrixlusolvem(/* Real    */ ae_matrix* lua,
      densesolverreport* rep,
      /* Real    */ ae_matrix* x,
      ae_state *_state);
+void _pexec_rmatrixlusolvem(/* Real    */ ae_matrix* lua,
+    /* Integer */ ae_vector* p,
+    ae_int_t n,
+    /* Real    */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info,
+    densesolverreport* rep,
+    /* Real    */ ae_matrix* x, ae_state *_state);
+void rmatrixlusolvemfast(/* Real    */ ae_matrix* lua,
+     /* Integer */ ae_vector* p,
+     ae_int_t n,
+     /* Real    */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_rmatrixlusolvemfast(/* Real    */ ae_matrix* lua,
+    /* Integer */ ae_vector* p,
+    ae_int_t n,
+    /* Real    */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info, ae_state *_state);
 void rmatrixmixedsolve(/* Real    */ ae_matrix* a,
      /* Real    */ ae_matrix* lua,
      /* Integer */ ae_vector* p,
@@ -2183,6 +3612,17 @@ void _pexec_cmatrixsolvem(/* Complex */ ae_matrix* a,
     ae_int_t* info,
     densesolverreport* rep,
     /* Complex */ ae_matrix* x, ae_state *_state);
+void cmatrixsolvemfast(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     /* Complex */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_cmatrixsolvemfast(/* Complex */ ae_matrix* a,
+    ae_int_t n,
+    /* Complex */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info, ae_state *_state);
 void cmatrixsolve(/* Complex */ ae_matrix* a,
      ae_int_t n,
      /* Complex */ ae_vector* b,
@@ -2196,6 +3636,15 @@ void _pexec_cmatrixsolve(/* Complex */ ae_matrix* a,
     ae_int_t* info,
     densesolverreport* rep,
     /* Complex */ ae_vector* x, ae_state *_state);
+void cmatrixsolvefast(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     /* Complex */ ae_vector* b,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_cmatrixsolvefast(/* Complex */ ae_matrix* a,
+    ae_int_t n,
+    /* Complex */ ae_vector* b,
+    ae_int_t* info, ae_state *_state);
 void cmatrixlusolvem(/* Complex */ ae_matrix* lua,
      /* Integer */ ae_vector* p,
      ae_int_t n,
@@ -2205,6 +3654,27 @@ void cmatrixlusolvem(/* Complex */ ae_matrix* lua,
      densesolverreport* rep,
      /* Complex */ ae_matrix* x,
      ae_state *_state);
+void _pexec_cmatrixlusolvem(/* Complex */ ae_matrix* lua,
+    /* Integer */ ae_vector* p,
+    ae_int_t n,
+    /* Complex */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info,
+    densesolverreport* rep,
+    /* Complex */ ae_matrix* x, ae_state *_state);
+void cmatrixlusolvemfast(/* Complex */ ae_matrix* lua,
+     /* Integer */ ae_vector* p,
+     ae_int_t n,
+     /* Complex */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_cmatrixlusolvemfast(/* Complex */ ae_matrix* lua,
+    /* Integer */ ae_vector* p,
+    ae_int_t n,
+    /* Complex */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info, ae_state *_state);
 void cmatrixlusolve(/* Complex */ ae_matrix* lua,
      /* Integer */ ae_vector* p,
      ae_int_t n,
@@ -2212,6 +3682,12 @@ void cmatrixlusolve(/* Complex */ ae_matrix* lua,
      ae_int_t* info,
      densesolverreport* rep,
      /* Complex */ ae_vector* x,
+     ae_state *_state);
+void cmatrixlusolvefast(/* Complex */ ae_matrix* lua,
+     /* Integer */ ae_vector* p,
+     ae_int_t n,
+     /* Complex */ ae_vector* b,
+     ae_int_t* info,
      ae_state *_state);
 void cmatrixmixedsolvem(/* Complex */ ae_matrix* a,
      /* Complex */ ae_matrix* lua,
@@ -2249,6 +3725,19 @@ void _pexec_spdmatrixsolvem(/* Real    */ ae_matrix* a,
     ae_int_t* info,
     densesolverreport* rep,
     /* Real    */ ae_matrix* x, ae_state *_state);
+void spdmatrixsolvemfast(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Real    */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_spdmatrixsolvemfast(/* Real    */ ae_matrix* a,
+    ae_int_t n,
+    ae_bool isupper,
+    /* Real    */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info, ae_state *_state);
 void spdmatrixsolve(/* Real    */ ae_matrix* a,
      ae_int_t n,
      ae_bool isupper,
@@ -2264,6 +3753,17 @@ void _pexec_spdmatrixsolve(/* Real    */ ae_matrix* a,
     ae_int_t* info,
     densesolverreport* rep,
     /* Real    */ ae_vector* x, ae_state *_state);
+void spdmatrixsolvefast(/* Real    */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Real    */ ae_vector* b,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_spdmatrixsolvefast(/* Real    */ ae_matrix* a,
+    ae_int_t n,
+    ae_bool isupper,
+    /* Real    */ ae_vector* b,
+    ae_int_t* info, ae_state *_state);
 void spdmatrixcholeskysolvem(/* Real    */ ae_matrix* cha,
      ae_int_t n,
      ae_bool isupper,
@@ -2273,6 +3773,27 @@ void spdmatrixcholeskysolvem(/* Real    */ ae_matrix* cha,
      densesolverreport* rep,
      /* Real    */ ae_matrix* x,
      ae_state *_state);
+void _pexec_spdmatrixcholeskysolvem(/* Real    */ ae_matrix* cha,
+    ae_int_t n,
+    ae_bool isupper,
+    /* Real    */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info,
+    densesolverreport* rep,
+    /* Real    */ ae_matrix* x, ae_state *_state);
+void spdmatrixcholeskysolvemfast(/* Real    */ ae_matrix* cha,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Real    */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_spdmatrixcholeskysolvemfast(/* Real    */ ae_matrix* cha,
+    ae_int_t n,
+    ae_bool isupper,
+    /* Real    */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info, ae_state *_state);
 void spdmatrixcholeskysolve(/* Real    */ ae_matrix* cha,
      ae_int_t n,
      ae_bool isupper,
@@ -2280,6 +3801,12 @@ void spdmatrixcholeskysolve(/* Real    */ ae_matrix* cha,
      ae_int_t* info,
      densesolverreport* rep,
      /* Real    */ ae_vector* x,
+     ae_state *_state);
+void spdmatrixcholeskysolvefast(/* Real    */ ae_matrix* cha,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Real    */ ae_vector* b,
+     ae_int_t* info,
      ae_state *_state);
 void hpdmatrixsolvem(/* Complex */ ae_matrix* a,
      ae_int_t n,
@@ -2298,6 +3825,19 @@ void _pexec_hpdmatrixsolvem(/* Complex */ ae_matrix* a,
     ae_int_t* info,
     densesolverreport* rep,
     /* Complex */ ae_matrix* x, ae_state *_state);
+void hpdmatrixsolvemfast(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Complex */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_hpdmatrixsolvemfast(/* Complex */ ae_matrix* a,
+    ae_int_t n,
+    ae_bool isupper,
+    /* Complex */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info, ae_state *_state);
 void hpdmatrixsolve(/* Complex */ ae_matrix* a,
      ae_int_t n,
      ae_bool isupper,
@@ -2313,6 +3853,17 @@ void _pexec_hpdmatrixsolve(/* Complex */ ae_matrix* a,
     ae_int_t* info,
     densesolverreport* rep,
     /* Complex */ ae_vector* x, ae_state *_state);
+void hpdmatrixsolvefast(/* Complex */ ae_matrix* a,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Complex */ ae_vector* b,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_hpdmatrixsolvefast(/* Complex */ ae_matrix* a,
+    ae_int_t n,
+    ae_bool isupper,
+    /* Complex */ ae_vector* b,
+    ae_int_t* info, ae_state *_state);
 void hpdmatrixcholeskysolvem(/* Complex */ ae_matrix* cha,
      ae_int_t n,
      ae_bool isupper,
@@ -2322,6 +3873,27 @@ void hpdmatrixcholeskysolvem(/* Complex */ ae_matrix* cha,
      densesolverreport* rep,
      /* Complex */ ae_matrix* x,
      ae_state *_state);
+void _pexec_hpdmatrixcholeskysolvem(/* Complex */ ae_matrix* cha,
+    ae_int_t n,
+    ae_bool isupper,
+    /* Complex */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info,
+    densesolverreport* rep,
+    /* Complex */ ae_matrix* x, ae_state *_state);
+void hpdmatrixcholeskysolvemfast(/* Complex */ ae_matrix* cha,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Complex */ ae_matrix* b,
+     ae_int_t m,
+     ae_int_t* info,
+     ae_state *_state);
+void _pexec_hpdmatrixcholeskysolvemfast(/* Complex */ ae_matrix* cha,
+    ae_int_t n,
+    ae_bool isupper,
+    /* Complex */ ae_matrix* b,
+    ae_int_t m,
+    ae_int_t* info, ae_state *_state);
 void hpdmatrixcholeskysolve(/* Complex */ ae_matrix* cha,
      ae_int_t n,
      ae_bool isupper,
@@ -2329,6 +3901,12 @@ void hpdmatrixcholeskysolve(/* Complex */ ae_matrix* cha,
      ae_int_t* info,
      densesolverreport* rep,
      /* Complex */ ae_vector* x,
+     ae_state *_state);
+void hpdmatrixcholeskysolvefast(/* Complex */ ae_matrix* cha,
+     ae_int_t n,
+     ae_bool isupper,
+     /* Complex */ ae_vector* b,
+     ae_int_t* info,
      ae_state *_state);
 void rmatrixsolvels(/* Real    */ ae_matrix* a,
      ae_int_t nrows,
@@ -2393,6 +3971,46 @@ void _linlsqrreport_init(void* _p, ae_state *_state);
 void _linlsqrreport_init_copy(void* _dst, void* _src, ae_state *_state);
 void _linlsqrreport_clear(void* _p);
 void _linlsqrreport_destroy(void* _p);
+void polynomialsolve(/* Real    */ ae_vector* a,
+     ae_int_t n,
+     /* Complex */ ae_vector* x,
+     polynomialsolverreport* rep,
+     ae_state *_state);
+void _polynomialsolverreport_init(void* _p, ae_state *_state);
+void _polynomialsolverreport_init_copy(void* _dst, void* _src, ae_state *_state);
+void _polynomialsolverreport_clear(void* _p);
+void _polynomialsolverreport_destroy(void* _p);
+void nleqcreatelm(ae_int_t n,
+     ae_int_t m,
+     /* Real    */ ae_vector* x,
+     nleqstate* state,
+     ae_state *_state);
+void nleqsetcond(nleqstate* state,
+     double epsf,
+     ae_int_t maxits,
+     ae_state *_state);
+void nleqsetxrep(nleqstate* state, ae_bool needxrep, ae_state *_state);
+void nleqsetstpmax(nleqstate* state, double stpmax, ae_state *_state);
+ae_bool nleqiteration(nleqstate* state, ae_state *_state);
+void nleqresults(nleqstate* state,
+     /* Real    */ ae_vector* x,
+     nleqreport* rep,
+     ae_state *_state);
+void nleqresultsbuf(nleqstate* state,
+     /* Real    */ ae_vector* x,
+     nleqreport* rep,
+     ae_state *_state);
+void nleqrestartfrom(nleqstate* state,
+     /* Real    */ ae_vector* x,
+     ae_state *_state);
+void _nleqstate_init(void* _p, ae_state *_state);
+void _nleqstate_init_copy(void* _dst, void* _src, ae_state *_state);
+void _nleqstate_clear(void* _p);
+void _nleqstate_destroy(void* _p);
+void _nleqreport_init(void* _p, ae_state *_state);
+void _nleqreport_init_copy(void* _dst, void* _src, ae_state *_state);
+void _nleqreport_clear(void* _p);
+void _nleqreport_destroy(void* _p);
 void lincgcreate(ae_int_t n, lincgstate* state, ae_state *_state);
 void lincgsetstartingpoint(lincgstate* state,
      /* Real    */ ae_vector* x,
@@ -2432,46 +4050,6 @@ void _lincgreport_init(void* _p, ae_state *_state);
 void _lincgreport_init_copy(void* _dst, void* _src, ae_state *_state);
 void _lincgreport_clear(void* _p);
 void _lincgreport_destroy(void* _p);
-void nleqcreatelm(ae_int_t n,
-     ae_int_t m,
-     /* Real    */ ae_vector* x,
-     nleqstate* state,
-     ae_state *_state);
-void nleqsetcond(nleqstate* state,
-     double epsf,
-     ae_int_t maxits,
-     ae_state *_state);
-void nleqsetxrep(nleqstate* state, ae_bool needxrep, ae_state *_state);
-void nleqsetstpmax(nleqstate* state, double stpmax, ae_state *_state);
-ae_bool nleqiteration(nleqstate* state, ae_state *_state);
-void nleqresults(nleqstate* state,
-     /* Real    */ ae_vector* x,
-     nleqreport* rep,
-     ae_state *_state);
-void nleqresultsbuf(nleqstate* state,
-     /* Real    */ ae_vector* x,
-     nleqreport* rep,
-     ae_state *_state);
-void nleqrestartfrom(nleqstate* state,
-     /* Real    */ ae_vector* x,
-     ae_state *_state);
-void _nleqstate_init(void* _p, ae_state *_state);
-void _nleqstate_init_copy(void* _dst, void* _src, ae_state *_state);
-void _nleqstate_clear(void* _p);
-void _nleqstate_destroy(void* _p);
-void _nleqreport_init(void* _p, ae_state *_state);
-void _nleqreport_init_copy(void* _dst, void* _src, ae_state *_state);
-void _nleqreport_clear(void* _p);
-void _nleqreport_destroy(void* _p);
-void polynomialsolve(/* Real    */ ae_vector* a,
-     ae_int_t n,
-     /* Complex */ ae_vector* x,
-     polynomialsolverreport* rep,
-     ae_state *_state);
-void _polynomialsolverreport_init(void* _p, ae_state *_state);
-void _polynomialsolverreport_init_copy(void* _dst, void* _src, ae_state *_state);
-void _polynomialsolverreport_clear(void* _p);
-void _polynomialsolverreport_destroy(void* _p);
 
 }
 #endif
