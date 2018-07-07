@@ -6,12 +6,12 @@
 */
 
 #include "checkpoint.h"
-#include <iostream>         // for std::cout
-#include <optional>			// for std::optional
-#include <system_error>     // for std::system_category
-#include <boost/assert.hpp>	// for boost::assert
-#include <boost/cast.hpp>   // for boost::numeric_cast
-#include <boost/format.hpp> // for boost::format
+#include <iostream>             // for std::cout
+#include <system_error>         // for std::system_category
+#include <boost/assert.hpp>	    // for boost::assert
+#include <boost/cast.hpp>       // for boost::numeric_cast
+#include <boost/format.hpp>     // for boost::format
+#include <boost/optional.hpp>   // for boost::optional
 
 #ifdef _WIN32
     #include <Windows.h>        // for GetCurrentProcess
@@ -31,10 +31,6 @@ namespace checkpoint {
 	{
 	}
 
-    CheckPoint::~CheckPoint()
-    {
-    }
-
     void CheckPoint::checkpoint(char const * action, std::int32_t line)
 	{
 		BOOST_ASSERT(cfp->cur < static_cast<std::int32_t>(CheckPoint::CheckPointFastImpl::N));
@@ -52,17 +48,17 @@ namespace checkpoint {
 	{
         using namespace std::chrono;
 
-        std::optional<high_resolution_clock::time_point> prevreal(std::nullopt);
+        boost::optional<high_resolution_clock::time_point> prevreal(boost::none);
 
         auto itr = cfp->points.begin();
 		for (auto i = 0; i < cfp->cur; ++i, ++itr) {
 			if (prevreal) {
-				auto const realtime(duration_cast<duration<double, std::milli>>(itr->realtime - *prevreal));
+				auto const realtime(duration_cast< duration<double, std::milli> >(itr->realtime - *prevreal));
 				std::cout << itr->action
                           << boost::format(" elapsed time = %.4f (msec)\n") % realtime.count();
 			}
 
-            prevreal = std::make_optional<high_resolution_clock::time_point>(itr->realtime);
+            prevreal = boost::optional<high_resolution_clock::time_point>(itr->realtime);
 		}
 	}
 
@@ -70,7 +66,7 @@ namespace checkpoint {
     {
         using namespace std::chrono;
 
-        auto const realtime = duration_cast<duration<double, std::milli>>(
+        auto const realtime = duration_cast< duration<double, std::milli> >(
             cfp->points[cfp->cur - 1].realtime - cfp->points[0].realtime);
 
         std::cout << boost::format("Total elapsed time = %.4f (msec)") % realtime.count() << std::endl;

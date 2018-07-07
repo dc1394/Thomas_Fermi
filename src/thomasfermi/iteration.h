@@ -16,7 +16,7 @@
 #include "mixing/simplemixing.h"
 #include "shoot/shootfunc.h"
 #include "utility/property.h"
-#include <optional>					// for std::optional
+#include <boost/optional.hpp>       // for boost::optional
 
 namespace thomasfermi {
     namespace femall {
@@ -43,7 +43,7 @@ namespace thomasfermi {
             */
             ~Iteration()
             {
-                ple_ = std::nullopt;
+                ple_ = boost::none;
             }
 
             // #region コンストラクタ・デストラクタ
@@ -147,7 +147,7 @@ namespace thomasfermi {
             /*!
                 連立一次方程式のソルバーオブジェクト
             */
-            std::optional<Linear_equations> ple_;
+            boost::optional<Linear_equations> ple_;
 
             //! A private member variable.
             /*!

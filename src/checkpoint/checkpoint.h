@@ -76,7 +76,7 @@ namespace checkpoint {
             /*!
                 チェックポイントの数
             */
-            static std::size_t const N = 30;
+            static auto constexpr N = 30U;
 
             //! A public member variable.
             /*!
@@ -119,8 +119,9 @@ namespace checkpoint {
 
         //! A destructor.
         /*!
+            デフォルトデストラクタ
         */
-        ~CheckPoint();
+        ~CheckPoint() = default;
 
         // #endregion コンストラクタ・デストラクタ
 
@@ -156,10 +157,11 @@ namespace checkpoint {
         /*!
             チェックポイントの状態へのスマートポインタ
         */
-        const std::unique_ptr<CheckPointFastImpl, fastpimpl_deleter<CheckPointFastImpl>> cfp;
+        std::unique_ptr< CheckPointFastImpl, fastpimpl_deleter<CheckPointFastImpl> > const cfp;
 
         // #endregion メンバ変数
 
+    public:
         // #region 禁止されたコンストラクタ・メンバ関数
 
         //! A private copy constructor (deleted).

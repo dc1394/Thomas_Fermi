@@ -42,7 +42,7 @@ namespace thomasfermi {
     /*!
         マッチングポイント（xmin〜xmaxまでの間でなければならない）のデフォルト値
     */
-    static auto constexpr MATCH_POINT_DEFAULT = 12.5;
+    static auto constexpr MATCH_POINT_DEFAULT = 7.5;
         
     //! A global variable (constant expression).
     /*!
@@ -54,13 +54,13 @@ namespace thomasfermi {
     /*!
         ITERATIONの最大ループ回数のデフォルト値
     */
-    static auto constexpr ITERATION_MAXITER_DEFAULT = 10000U;
+    static auto constexpr ITERATION_MAXITER_DEFAULT = 1000U;
 
     //! A global variable (constant expression).
     /*!
         電子密度を合成するときの重みのデフォルト値
     */
-    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.1;
+    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.13;
 
     //! A global variable (constant expression).
     /*!
