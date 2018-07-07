@@ -108,16 +108,6 @@ namespace thomasfermi {
             //! A private member variable (constant expression).
             /*!
             */
-            static auto constexpr ITERATION_REDUCTION = 0.15;
-            
-            //! A private member variable (constant expression).
-            /*!
-            */
-            static auto constexpr ITERATION_THRESHOLD = 1.0;
-
-            //! A private member variable (constant expression).
-            /*!
-            */
             static auto constexpr N_BC_GIVEN = 2U;
             
             //! A private member variable.
@@ -192,6 +182,7 @@ namespace thomasfermi {
                         
             // #region 禁止されたコンストラクタ・メンバ関数
 
+        public:
             //! A private constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
@@ -224,7 +215,10 @@ namespace thomasfermi {
         \return 対象の値の二乗
     */
     constexpr inline T sqr(T x) noexcept
-    { return x * x; }
+    {
+        return x * x;
+    }
 }
 
 #endif  // _ITERATION_H_
+
