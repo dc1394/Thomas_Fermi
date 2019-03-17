@@ -81,7 +81,7 @@ namespace thomasfermi {
 				\param r 原点からの距離（原子単位）
 				\return 厳密な電子密度
 			*/
-			double exactrho(double r) const noexcept;
+			double exactrho(double r) const;
 
 			//! A private member function (const).
 			/*!
@@ -89,14 +89,14 @@ namespace thomasfermi {
 				\param r 原点からの距離（原子単位）
 				\return 厳密な電子密度の関数（4πr ** 2で割っている）
 			*/
-			double exactrhoTilde(double r) const noexcept;
+			double exactrhoTilde(double r) const;
 			
             //! A private member function (const).
             /*!
                 原子のエネルギーを求める
                 \return 原子のエネルギーを求める
             */
-            double makeEnergy() const noexcept;
+            double makeEnergy() const;
 
             //! A private member function (const).
             /*!
@@ -104,7 +104,7 @@ namespace thomasfermi {
                 \param x xの値
                 \return ρ(x)の値
             */
-            double rho(double x) const noexcept;
+            double rho(double x) const;
 
             //! A private member function (const).
             /*!
@@ -112,7 +112,7 @@ namespace thomasfermi {
                 \param x xの値
                 \return ρ~(x)の値
             */
-            double rhoTilde(double x) const noexcept;
+            double rhoTilde(double x) const;
 
             //! A private member function.
             /*!
@@ -196,30 +196,30 @@ namespace thomasfermi {
             */
             std::shared_ptr<femall::Beta> const pbeta_;
 
-            //! A private variable (constant).
-            /*!
-                x方向のメッシュが格納された動的配列のサイズ
-            */
-            std::size_t const size_;
-
-			//! A private variable (constant).
-			/*!
-				ファイル出力するときのループの最大数
-			*/
-			std::int32_t const max_;
-
-			//! A private variable.
+            //! A private variable.
 			/*!
 				規格化のための定数
 				s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
 			*/
 			double s_;
-
+            
+            //! A private variable (constant).
+            /*!
+                x方向のメッシュが格納された動的配列のサイズ
+            */
+            std::size_t const size_;
+            
+			//! A private variable (constant).
+			/*!
+				ファイル出力するときのループの最大数
+			*/
+			std::int32_t const max_;
+			
             //! A private member variable.
             /*!
                 原点に近いxにおけるyの微分値
             */
-            double const v1_;
+            double const y_prime_0_;
 			            
             // #endregion メンバ変数
 

@@ -28,7 +28,7 @@ namespace thomasfermi {
             pbeta_(std::get<0>(pt)),
             size_(xvec_.size()),
 			max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
-            v1_(std::get<2>(pt))
+            y_prime_0_(std::get<2>(pt))
         {
             auto const func = myfunctional::make_functional(
                 [this](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
@@ -55,27 +55,27 @@ namespace thomasfermi {
 
 		// #region privateメンバ関数
 		
-		double MakeRhoEnergy::exactrho(double r) const noexcept
+		double MakeRhoEnergy::exactrho(double r) const
 		{
 			return 4.0 * r * r * std::pow(Z_, 3) * std::exp(-2.0 * Z_ * r);
 		}
 
-		double MakeRhoEnergy::exactrhoTilde(double r) const noexcept
+		double MakeRhoEnergy::exactrhoTilde(double r) const
 		{
 			return 4.0 * std::pow(Z_, 3) * std::exp(-2.0 * Z_ * r);
 		}
 
-        double MakeRhoEnergy::makeEnergy() const noexcept
+        double MakeRhoEnergy::makeEnergy() const
         {
-            return 3.0 / 7.0 * alpha_ * std::pow(Z_, 7.0 / 3.0) * v1_;
+            return 3.0 / 7.0 * alpha_ * std::pow(Z_, 7.0 / 3.0) * y_prime_0_;
         }
 
-        double MakeRhoEnergy::rho(double x) const noexcept
+        double MakeRhoEnergy::rho(double x) const
         {
 			return s_ * b_ * std::pow(1.0 / alpha_, 2) * std::sqrt(x) * y(x) * std::sqrt(y(x));
         }
 
-		double MakeRhoEnergy::rhoTilde(double x) const noexcept
+		double MakeRhoEnergy::rhoTilde(double x) const
 		{
 			return s_ * b_ * (y(x) / x) * std::sqrt(y(x) / x);
 		}
@@ -111,7 +111,7 @@ namespace thomasfermi {
 
         double MakeRhoEnergy::y(double x) const
         {
-			return std::pow(x * pbeta_->operator()<femall::Element::First>(x)* pbeta_->operator()<femall::Element::First>(x), 1.0 / 3.0);
+			return std::pow(x * pbeta_->operator()<femall::Element::First>(x) * pbeta_->operator()<femall::Element::First>(x), 1.0 / 3.0);
         }
 
         // #endregion privateメンバ関数

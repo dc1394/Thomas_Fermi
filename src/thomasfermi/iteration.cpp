@@ -12,7 +12,6 @@
 #include "soelement.h"
 #include <iostream>                             // for std::cout
 #include <stdexcept>                            // for std::runtime_error
-#include <utility>							    // for std::in_place
 #include <boost/assert.hpp>                     // for BOOST_ASSERT
 #include <boost/cast.hpp>                       // for boost::numeric_cast
 #include <boost/format.hpp>                     // for boost::format
@@ -51,13 +50,13 @@ namespace thomasfermi {
                 l2.make_v2(pdata_->xmax_));
             
             auto const usecilk = std::get<1>(arg);
-            auto const xyvtuple(s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_));
-            y1_ = std::get<1>(xyvtuple)[0];
-            y2_ = std::get<1>(xyvtuple).back();
+            auto const [xtmp, ytmp] = s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_);
+
+            x_ = xtmp;
+            y_ = FEM::dmklvector(ytmp.cbegin(), ytmp.cend());
+            y1_ = ytmp[0];
+            y2_ = ytmp.back();
             
-            x_ = std::get<0>(xyvtuple);
-            y_ = FEM::dmklvector(std::get<1>(xyvtuple).cbegin(), std::get<1>(xyvtuple).cend());
-            v1_ = std::get<2>(xyvtuple);
             pmix_->Yold = y_;
 
             pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
@@ -107,7 +106,8 @@ namespace thomasfermi {
 
         Iteration::result_type Iteration::makeresult()
         {
-            return std::forward_as_tuple(std::move(pbeta_), std::move(x_), v1_);
+            auto const y_prime_0 = (y_[1] - y_[0]) / (x_[1] - x_[0]);
+            return std::forward_as_tuple(std::move(pbeta_), std::move(x_), y_prime_0);
         }
 
         // #endregion publicメンバ関数
@@ -151,3 +151,4 @@ namespace thomasfermi {
         // #endregion privateメンバ関数
     }
 }
+
