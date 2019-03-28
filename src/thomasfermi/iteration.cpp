@@ -1,7 +1,7 @@
 ﻿/*! \file iteration.cpp
     \brief 微分方程式を反復法で解くクラスの実装
 
-    Copyright ©  2015 @dc1394 All Rights Reserved.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 

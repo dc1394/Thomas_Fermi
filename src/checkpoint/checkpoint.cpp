@@ -1,7 +1,7 @@
 ﻿/*! \file checkpoint.cpp
     \brief 時間計測のためのクラスの実装
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
 	This software is released under the BSD 2-Clause License.
 */
 

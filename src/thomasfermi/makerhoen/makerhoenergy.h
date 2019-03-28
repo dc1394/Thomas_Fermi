@@ -18,18 +18,6 @@
 #include <tuple>                            // for std::tuple
 
 namespace thomasfermi {
-	//! A lambda expression.
-	/*!
-		ファイルをクローズするときに使うラムダ式
-		\param fp ファイルポインタ
-	*/
-	auto const fcloser = [](FILE * fp)
-	{
-		if (fp) {
-			std::fclose(fp);
-		}
-	};
-	
 	namespace makerhoen {
         //! A class.
         /*!
@@ -81,7 +69,7 @@ namespace thomasfermi {
 				\param r 原点からの距離（原子単位）
 				\return 厳密な電子密度
 			*/
-			double exactrho(double r) const;
+			double exactrho(double r) const noexcept;
 
 			//! A private member function (const).
 			/*!
@@ -89,14 +77,14 @@ namespace thomasfermi {
 				\param r 原点からの距離（原子単位）
 				\return 厳密な電子密度の関数（4πr ** 2で割っている）
 			*/
-			double exactrhoTilde(double r) const;
+			double exactrhoTilde(double r) const noexcept;
 			
             //! A private member function (const).
             /*!
                 原子のエネルギーを求める
                 \return 原子のエネルギーを求める
             */
-            double makeEnergy() const;
+            double makeenergy() const noexcept;
 
             //! A private member function (const).
             /*!
@@ -104,7 +92,7 @@ namespace thomasfermi {
                 \param x xの値
                 \return ρ(x)の値
             */
-            double rho(double x) const;
+            double rho(double x) const noexcept;
 
             //! A private member function (const).
             /*!
@@ -112,7 +100,7 @@ namespace thomasfermi {
                 \param x xの値
                 \return ρ~(x)の値
             */
-            double rhoTilde(double x) const;
+            double rhoTilde(double x) const noexcept;
 
             //! A private member function.
             /*!
@@ -182,7 +170,7 @@ namespace thomasfermi {
 			/*!
 				ファイルポインタ
 			*/
-			std::unique_ptr<FILE, decltype(fcloser)> fp_;
+			std::unique_ptr<FILE, decltype(&std::fclose)> fp_;
 
 			//! A private variable (constant).
 			/*!

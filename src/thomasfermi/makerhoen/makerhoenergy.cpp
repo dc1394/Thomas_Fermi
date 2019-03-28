@@ -1,7 +1,7 @@
 ﻿/*! \file makerhoenergy.cpp
     \brief β(x)から電子密度とエネルギーを計算してファイルに記録するクラスの実装
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
+    Copyright © 2014 @dc1394 All Rights Reserved.
 	This software is released under the BSD 2-Clause License.
 */
 
@@ -23,7 +23,7 @@ namespace thomasfermi {
 			b_(32.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 3)) * Z_ * Z_),
 			xvec_(std::get<1>(pt)),
 			dx_(xvec_[2] - xvec_[1]),
-            fp_(nullptr, fcloser),
+            fp_(nullptr, std::fclose),
 			gl_(n),
             pbeta_(std::get<0>(pt)),
             size_(xvec_.size()),
@@ -45,7 +45,7 @@ namespace thomasfermi {
 
 		void MakeRhoEnergy::saveresult()
 		{
-			std::cout << boost::format("Energy = %.15f (Hartree)\n") % makeEnergy();
+			std::cout << boost::format("Energy = %.15f (Hartree)\n") % makeenergy();
 			saverho("rho.csv");
 			saverhoTilde("rhoTilde.csv");
 			savey("y.csv");
@@ -55,27 +55,27 @@ namespace thomasfermi {
 
 		// #region privateメンバ関数
 		
-		double MakeRhoEnergy::exactrho(double r) const
+		double MakeRhoEnergy::exactrho(double r) const noexcept
 		{
 			return 4.0 * r * r * std::pow(Z_, 3) * std::exp(-2.0 * Z_ * r);
 		}
 
-		double MakeRhoEnergy::exactrhoTilde(double r) const
+		double MakeRhoEnergy::exactrhoTilde(double r) const noexcept
 		{
 			return 4.0 * std::pow(Z_, 3) * std::exp(-2.0 * Z_ * r);
 		}
 
-        double MakeRhoEnergy::makeEnergy() const
+        double MakeRhoEnergy::makeenergy() const noexcept
         {
             return 3.0 / 7.0 * alpha_ * std::pow(Z_, 7.0 / 3.0) * y_prime_0_;
         }
 
-        double MakeRhoEnergy::rho(double x) const
+        double MakeRhoEnergy::rho(double x) const noexcept
         {
 			return s_ * b_ * std::pow(1.0 / alpha_, 2) * std::sqrt(x) * y(x) * std::sqrt(y(x));
         }
 
-		double MakeRhoEnergy::rhoTilde(double x) const
+		double MakeRhoEnergy::rhoTilde(double x) const noexcept
 		{
 			return s_ * b_ * (y(x) / x) * std::sqrt(y(x) / x);
 		}
@@ -104,7 +104,7 @@ namespace thomasfermi {
         {
 			fp_.reset(std::fopen(filename.c_str(), "w"));
 
-			for (auto x : xvec_) {
+			for (auto const x : xvec_) {
 				std::fprintf(fp_.get(), "%.15f, %.15f\n", x, y(x));
 			}
         }
