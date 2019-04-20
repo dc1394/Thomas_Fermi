@@ -54,14 +54,6 @@ namespace gausslegendre {
         */
         double qgauss(myfunctional::Functional<FUNCTYPE> const & func, double x1, double x2) const;
 
-    private:
-        //! A private member function.
-        /*!
-            AVX命令が使用可能かどうかをチェックする
-            \return AVX命令が使用可能ならtrue、使用不可能ならfalse
-        */
-        bool availableAVX() const;
-
         // #endregion メンバ関数
 
 		// #region プロパティ
@@ -83,6 +75,7 @@ namespace gausslegendre {
 
         // #region メンバ変数
 
+    private:
         //! A private member variable (constant).
         /*!
             Gauss-Legendreの分点数
@@ -97,7 +90,7 @@ namespace gausslegendre {
 
         //! A private member variable.
         /*!
-            Gauss-Legendreの節（alignmentが揃っている）
+            Gauss-Legendreの節
         */
         std::vector<double> x_;
         
@@ -105,13 +98,14 @@ namespace gausslegendre {
 
         // #region 禁止されたコンストラクタ・メンバ関数
 
-        //! A private constructor (deleted).
+    public:
+        //! A default constructor (deleted).
         /*!
             デフォルトコンストラクタ（禁止）
         */
         Gauss_Legendre() = delete;
 
-        //! A private copy constructor (deleted).
+        //! A default copy constructor (deleted).
         /*!
             コピーコンストラクタ（禁止）
         */
@@ -120,10 +114,10 @@ namespace gausslegendre {
         //! A private member function (deleted).
         /*!
             operator=()の宣言（禁止）
-            \param コピー元のオブジェクト（未使用）
+            \param dummy コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
-		Gauss_Legendre & operator=(Gauss_Legendre const &) = delete;
+		Gauss_Legendre & operator=(Gauss_Legendre const & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
 	};
@@ -148,3 +142,4 @@ namespace gausslegendre {
 }
 
 #endif  // _GAUSS_LEGENDRE_H_
+
