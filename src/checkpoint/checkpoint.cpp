@@ -1,17 +1,17 @@
 ﻿/*! \file checkpoint.cpp
     \brief 時間計測のためのクラスの実装
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
 	This software is released under the BSD 2-Clause License.
 */
 
 #include "checkpoint.h"
-#include <iostream>         // for std::cout
-#include <optional>			// for std::optional
-#include <system_error>     // for std::system_category
-#include <boost/assert.hpp>	// for boost::assert
-#include <boost/cast.hpp>   // for boost::numeric_cast
-#include <boost/format.hpp> // for boost::format
+#include <iostream>             // for std::cout
+#include <optional>             // for std::nullopt, std::optional
+#include <system_error>         // for std::system_category
+#include <boost/assert.hpp>	    // for boost::assert
+#include <boost/cast.hpp>       // for boost::numeric_cast
+#include <boost/format.hpp>     // for boost::format
 
 #ifdef _WIN32
     #include <Windows.h>        // for GetCurrentProcess
@@ -30,10 +30,6 @@ namespace checkpoint {
                 FastArenaObject<sizeof(CheckPoint::CheckPointFastImpl)>::operator new(0)))
 	{
 	}
-
-    CheckPoint::~CheckPoint()
-    {
-    }
 
     void CheckPoint::checkpoint(char const * action, std::int32_t line)
 	{
@@ -57,12 +53,12 @@ namespace checkpoint {
         auto itr = cfp->points.begin();
 		for (auto i = 0; i < cfp->cur; ++i, ++itr) {
 			if (prevreal) {
-				auto const realtime(duration_cast<duration<double, std::milli>>(itr->realtime - *prevreal));
+				auto const realtime(duration_cast< duration<double, std::milli> >(itr->realtime - *prevreal));
 				std::cout << itr->action
                           << boost::format(" elapsed time = %.4f (msec)\n") % realtime.count();
 			}
 
-            prevreal = std::make_optional<high_resolution_clock::time_point>(itr->realtime);
+            prevreal = std::make_optional(itr->realtime);
 		}
 	}
 
@@ -70,7 +66,7 @@ namespace checkpoint {
     {
         using namespace std::chrono;
 
-        auto const realtime = duration_cast<duration<double, std::milli>>(
+        auto const realtime = duration_cast< duration<double, std::milli> >(
             cfp->points[cfp->cur - 1].realtime - cfp->points[0].realtime);
 
         std::cout << boost::format("Total elapsed time = %.4f (msec)") % realtime.count() << std::endl;
@@ -110,3 +106,4 @@ namespace checkpoint {
 
     // #endregion 非メンバ関数
 }
+

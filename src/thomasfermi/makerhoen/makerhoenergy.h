@@ -18,18 +18,6 @@
 #include <tuple>                            // for std::tuple
 
 namespace thomasfermi {
-	//! A lambda expression.
-	/*!
-		ファイルをクローズするときに使うラムダ式
-		\param fp ファイルポインタ
-	*/
-	auto const fcloser = [](FILE * fp)
-	{
-		if (fp) {
-			std::fclose(fp);
-		}
-	};
-	
 	namespace makerhoen {
         //! A class.
         /*!
@@ -96,7 +84,7 @@ namespace thomasfermi {
                 原子のエネルギーを求める
                 \return 原子のエネルギーを求める
             */
-            double makeEnergy() const noexcept;
+            double makeenergy() const noexcept;
 
             //! A private member function (const).
             /*!
@@ -182,7 +170,7 @@ namespace thomasfermi {
 			/*!
 				ファイルポインタ
 			*/
-			std::unique_ptr<FILE, decltype(fcloser)> fp_;
+			std::unique_ptr<FILE, decltype(&std::fclose)> fp_;
 
 			//! A private variable (constant).
 			/*!
@@ -196,30 +184,30 @@ namespace thomasfermi {
             */
             std::shared_ptr<femall::Beta> const pbeta_;
 
-            //! A private variable (constant).
-            /*!
-                x方向のメッシュが格納された動的配列のサイズ
-            */
-            std::size_t const size_;
-
-			//! A private variable (constant).
-			/*!
-				ファイル出力するときのループの最大数
-			*/
-			std::int32_t const max_;
-
-			//! A private variable.
+            //! A private variable.
 			/*!
 				規格化のための定数
 				s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
 			*/
 			double s_;
-
+            
+            //! A private variable (constant).
+            /*!
+                x方向のメッシュが格納された動的配列のサイズ
+            */
+            std::size_t const size_;
+            
+			//! A private variable (constant).
+			/*!
+				ファイル出力するときのループの最大数
+			*/
+			std::int32_t const max_;
+			
             //! A private member variable.
             /*!
                 原点に近いxにおけるyの微分値
             */
-            double const v1_;
+            double const y_prime_0_;
 			            
             // #endregion メンバ変数
 

@@ -27,7 +27,7 @@ namespace thomasfermi {
 
             femall::FEM::dmklvector newy(size);
 
-            for (auto i = 0U; i < size; i++) {
+			for (auto i = 0U; i < size; i++) {
                 newy[i] = yold_[i] + pdata_->iteration_mixing_weight_ * (y[i] - yold_[i]);
             }
             

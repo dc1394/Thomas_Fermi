@@ -8,6 +8,7 @@
 #include "shootf.h"
 #include <cmath>						// for std::fabs
 #include <iterator>						// for std::advance, std::distance
+#include <utility>                      // for std::make_pair
 #include <boost/assert.hpp>				// for BOOST_ASSERT
 #include <boost/cast.hpp>				// for boost::numeric_cast
 #include <boost/numeric/odeint.hpp>		// for boost::numeric::odeint
@@ -202,7 +203,7 @@ namespace thomasfermi {
 
 			BOOST_ASSERT(xp.size() == yp.size());
 
-			return std::forward_as_tuple(std::move(xp), std::move(yp), v1_);
+			return std::make_pair(std::move(xp), std::move(yp));
 		}
 	}
 }

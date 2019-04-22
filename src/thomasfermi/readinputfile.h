@@ -1,8 +1,20 @@
 ﻿/*! \file readinputfile.h
     \brief インプットファイルの読み込みを行うクラスの宣言
+    Copyright © 2019 @dc1394 All Rights Reserved.
 
-    Copyright ©  2015 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
+    
 */
 
 #ifndef _READINPUTFILE_H_
@@ -15,7 +27,7 @@
 #include "utility/property.h"
 #include <fstream>                  // for std::ifstream
 #include <memory>                   // for std::shared_ptr
-#include <optional>					// for std::optional
+#include <optional>                 // for std::optional
 #include <vector>                   // for std::vector
 #include <boost/lexical_cast.hpp>   // for boost::lexical_cast
 
@@ -51,7 +63,6 @@ namespace thomasfermi {
         
         // #region メンバ関数
 
-    public:
         //! A public member function.
         /*!
             ファイルを読み込む
@@ -82,7 +93,7 @@ namespace thomasfermi {
             \param article 解析対象の文字列
             \return 関数が成功したかどうかと、トークンのstd::pair
         */
-        std::pair<std::int32_t, std::optional<ReadInputFile::strvec>> getToken(ci_string const & article);
+        std::pair< std::int32_t, std::optional<ReadInputFile::strvec> > getToken(ci_string const & article);
 
         //! A private member function.
         /*!
@@ -98,7 +109,7 @@ namespace thomasfermi {
             \return 読みこんだ文字列データ
         */
         std::optional<ci_string> readData(ci_string const & article);
-        
+
         //! A private member function.
         /*!
             データを読み込む
@@ -106,7 +117,7 @@ namespace thomasfermi {
             \param def デフォルトの文字列
             \return 読みこんだ文字列
         */
-        std::optional<ci_string> readData(ci_string const & article, ci_string const & def);
+        boost::optional<ci_string> readData(ci_string const & article, ci_string const & def);
 
         template <typename T>
         //! A private member function (template function).
@@ -117,12 +128,12 @@ namespace thomasfermi {
             \return 読みこんだ文字列
         */
         std::optional<T> readData(ci_string const & article, T const & default_value);
-        
+
         //! A private member function.
         /*!
             データを読み込む
             \param article 解析対象の文字列
-            \return 読みこんだ文字列（読み込みに失敗したならstd::nullopt）
+            \return 読みこんだ文字列（読み込みに失敗したならboost::none）
         */
         std::optional<ci_string> readDataAuto(ci_string const & article);
 
@@ -158,7 +169,7 @@ namespace thomasfermi {
             \param value 読み込んだ値
             \return 読み込みが成功したかどうか
         */
-        bool readValueAuto(ci_string const & article, std::optional<T> & value);
+        bool readValueAuto(ci_string const & article, boost::optional<T> & value);
 
         // #endregion メンバ関数
 
@@ -176,17 +187,18 @@ namespace thomasfermi {
 
         // #region メンバ変数
 
+    private:
         //! A private member variable (constant expression).
         /*!
             バッファサイズ
         */
-        static std::streamsize constexpr BUFSIZE = 1024;
+        static std::streamsize constexpr BUFSIZE = 1024U;
 
         //! A private member variable (constant).
         /*!
             「chemical.number」の文字列
         */
-        static const ci_string CHEMICAL_NUMBER;
+        static ci_string const CHEMICAL_NUMBER;
 
         //! A private member variable.
         /*!
@@ -210,26 +222,27 @@ namespace thomasfermi {
         
         // #region 禁止されたコンストラクタ・メンバ関数
 
-    private:
-        //! A private constructor (deleted).
+    public:
+        //! A default constructor (deleted).
         /*!
             デフォルトコンストラクタ（禁止）
         */
         ReadInputFile() = delete;
 
-        //! A private copy constructor (deleted).
+        //! A copy constructor (deleted).
         /*!
             コピーコンストラクタ（禁止）
+            \param dummy コピー元のオブジェクト（未使用）
         */
         ReadInputFile(ReadInputFile const &) = delete;
 
         //! A private member function (deleted).
         /*!
             operator=()の宣言（禁止）
-            \param コピー元のオブジェクト（未使用）
+            \param dummy コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
-        ReadInputFile & operator=(ReadInputFile const &) = delete;
+        ReadInputFile & operator=(ReadInputFile const & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
     };
@@ -242,7 +255,7 @@ namespace thomasfermi {
             switch (ret.first)
             {
             case -1:
-                return std::nullopt;
+                return boost::none;
                 break;
 
             case 0:
@@ -261,7 +274,7 @@ namespace thomasfermi {
                 case 2:
                     if (*(++itr) == "DEFAULT") {
                         // デフォルト値を返す
-                        return std::make_optional<T>(default_value);
+                        return boost::optional<T>(default_value);
                     }
                     else {
                         try {
@@ -269,7 +282,7 @@ namespace thomasfermi {
                         }
                         catch (boost::bad_lexical_cast const &) {
                             errorMessage(lineindex_ - 1, article, *itr);
-                            return std::nullopt;
+                            return boost::none;
                         }
                     }
 
@@ -310,7 +323,8 @@ namespace thomasfermi {
     template <typename T>
     void ReadInputFile::readValue(ci_string const & article, T const & default_value, T & value)
     {
-        if (auto const p = readData(article, default_value)) {
+        auto const p = readData(article, default_value);
+        if (p) {
             value = *p;
         }
         else {
@@ -319,7 +333,7 @@ namespace thomasfermi {
     }
 
     template <typename T>
-    bool ReadInputFile::readValueAuto(ci_string const & article, std::optional<T> & value)
+    bool ReadInputFile::readValueAuto(ci_string const & article, boost::optional<T> & value)
     {
         if (auto const val = readDataAuto(article)) {
             if (!val->empty()) {
@@ -329,7 +343,7 @@ namespace thomasfermi {
                     if (idx != val->length()) {
                         throw std::invalid_argument("");
                     }
-                    value = std::make_optional<double>(v);
+                    value = boost::optional<double>(v);
                 }
                 catch (std::invalid_argument const &) {
                     errorMessage(lineindex_ - 1, article, *val);
@@ -337,7 +351,7 @@ namespace thomasfermi {
                 }
             }
             else {
-                value = std::nullopt;
+                value = boost::none;
             }
         }
         else {

@@ -8,7 +8,7 @@ PROG = thomasfermi
 #
 VPATH = src/alglib src/checkpoint src/thomasfermi src/thomasfermi/gausslegendre \
 		src/thomasfermi/makerhoen src/thomasfermi/mixing src/thomasfermi/myfunctional \
-		src/thomasfermi/shoot src/tho
+		src/thomasfermi/shoot
 
 #
 # コンパイル対象のソースファイル群（カレントディレクトリ以下の*.cppファイル）
@@ -38,14 +38,15 @@ CXX = icpc
 #
 # C++コンパイラに与える、（最適化等の）オプション
 #
-CXXFLAGS = -Wextra -O3 -std=c++17 -xCORE-AVX512 -ip -no-prec-div -DMKL_ILP64 -pipe -I/home/dc1394/openblas/include 
+CXXFLAGS = -Wall -Wextra -std=c++17 -xHOST -O3 -ipo -no-prec-div -pipe -I${MKLROOT}/include 
 
 #
 # リンク対象に含めるライブラリの指定
 #
-LDFLAGS = -L/home/dc1394/oss/boost_1_65_1/stage/icc/lib -L/home/dc1394/openblas/lib \
-          -lboost_program_options -ldl -lgsl -lgslcblas -lifcore -liomp5 -lm -lopenblas \
-		  -lpthread -lcilkrts
+LDFLAGS = -L/home/dc1394/oss/boost_1_69_0/stage/icc/lib \
+          -lboost_program_options \
+		  -L${MKLROOT}/lib/intel64 \
+		  -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lgsl -ldl
 #
 # makeの動作
 #

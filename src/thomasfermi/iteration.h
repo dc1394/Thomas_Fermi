@@ -1,8 +1,19 @@
 ﻿/*! \file iteration.h
     \brief 微分方程式を反復法で解くクラスの宣言
+    Copyright © 2019 @dc1394 All Rights Reserved.
 
-    Copyright ©  2015 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef _ITERATION_H_
@@ -16,11 +27,7 @@
 #include "mixing/simplemixing.h"
 #include "shoot/shootfunc.h"
 #include "utility/property.h"
-#ifndef __INTEL_COMPILER
-	#include <optional>					// for std::optional
-#else
-	#include <boost/optional.hpp>
-#endif
+#include <optional>                 // for std::nullopt, std::optional
 
 namespace thomasfermi {
     namespace femall {
@@ -47,15 +54,11 @@ namespace thomasfermi {
             */
             ~Iteration()
             {
-#ifndef __INTEL_COMPILER
                 ple_ = std::nullopt;
-#else
-				ple_ = boost::none;
-#endif
             }
 
             // #region コンストラクタ・デストラクタ
-            
+
             // #region publicメンバ関数
 
             //! A public member function.
@@ -116,16 +119,6 @@ namespace thomasfermi {
             //! A private member variable (constant expression).
             /*!
             */
-            static auto constexpr ITERATION_REDUCTION = 0.15;
-            
-            //! A private member variable (constant expression).
-            /*!
-            */
-            static auto constexpr ITERATION_THRESHOLD = 1.0;
-
-            //! A private member variable (constant expression).
-            /*!
-            */
             static auto constexpr N_BC_GIVEN = 2U;
             
             //! A private member variable.
@@ -169,12 +162,6 @@ namespace thomasfermi {
 
             //! A private member variable.
             /*!
-                原点に近いxにおけるyの微分値
-            */
-            double v1_;
-
-            //! A private member variable.
-            /*!
             */
             FEM::dvector v_bc_nonzero_;
 
@@ -192,11 +179,13 @@ namespace thomasfermi {
 
             //! A private member variable.
             /*!
+                yの境界条件（原点に近い方）
             */
             double y1_;
 
             //! A private member variable.
             /*!
+                yの境界条件（原点から遠い方）
             */
             double y2_;
 
@@ -204,6 +193,7 @@ namespace thomasfermi {
                         
             // #region 禁止されたコンストラクタ・メンバ関数
 
+        public:
             //! A private constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
@@ -236,7 +226,10 @@ namespace thomasfermi {
         \return 対象の値の二乗
     */
     constexpr inline T sqr(T x) noexcept
-    { return x * x; }
+    {
+        return x * x;
+    }
 }
 
 #endif  // _ITERATION_H_
+

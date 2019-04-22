@@ -27,13 +27,8 @@ namespace gausslegendre {
             x,
             w);
 
-        switch (info) {
-        case 1:
-            break;
-
-        default:
+        if (info != 1) {
             throw std::runtime_error("alglib::gqgenerategausslegendreが失敗");
-            break;
         }
 
         x_.assign(x.getcontent(), x.getcontent() + x.length());

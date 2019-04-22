@@ -13,7 +13,7 @@
 #include "load2.h"
 #include "../myfunctional/functional.h"
 #include <functional>					// for std::function
-#include <tuple>						// for std::tuple
+#include <utility>						// for std::pair
 #include <vector>						// for std::vector
 
 namespace thomasfermi {
@@ -32,7 +32,7 @@ namespace thomasfermi {
 			using loadfunctype = std::function<shootfunc::state_type(double, double)>;
 
         public:
-			using result_type = std::tuple<dvector, dvector, double>;
+			using result_type = std::pair<dvector, dvector>;
 
         private:
 			using scorefunctype = std::function<Eigen::VectorXd(shootfunc::state_type const &)>;
@@ -73,7 +73,7 @@ namespace thomasfermi {
             // #endregion コンストラクタ・デストラクタ
 
         private:
-            // #region メンバ関数
+            // #region privateメンバ関数
 
             //! A private member function (const).
             /*!
@@ -86,6 +86,10 @@ namespace thomasfermi {
             */
 			shootf::result_type createResult(dvector const & res1, dvector const & res2, double x1, double xf) const;
 
+            // #endregion privateメンバ関数
+
+            // #region publicメンバ関数
+            
         public:
             //! A public member function (const).
             /*!
@@ -98,7 +102,7 @@ namespace thomasfermi {
             */
 			shootf::result_type operator()(bool usecilk, double x1, double x2, double xf);
 
-            // #endregion メンバ関数
+            // #endregion publicメンバ関数
 
         private:
             // #region メンバ変数
@@ -163,7 +167,6 @@ namespace thomasfermi {
             */
             double v2_;
 
-        private:
             // #region 禁止されたコンストラクタ・メンバ関数
 
             //! A private constructor (deleted).

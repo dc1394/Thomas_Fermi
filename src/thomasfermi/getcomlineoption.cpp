@@ -29,8 +29,8 @@ namespace thomasfermi {
         opt.add_options()
             ("help,h", "ヘルプを表示")
             ("inputfile,I", value<std::string>()->default_value(GetComLineOption::DEFINPNAME), "インプットファイル名")
-            ("cilk,C", value<bool>()->implicit_value(true),
-             "Cilkを使用して並列計算を行うかどうか（デフォルトはCilk Plusを使用する）");
+            ("cilk,C", value<bool>()->implicit_value(false),
+             "Cilkを使用して並列計算を行うかどうか（デフォルトはCilk Plusを使用しない）");
 
         // 引数の書式に従って実際に指定されたコマンドライン引数を解析
         variables_map vm;
