@@ -1,8 +1,19 @@
 ﻿/*! \file simplemixing.h
 	\brief 一次混合法でyの合成を行うクラスの宣言
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
 
-    Copyright ©  2015 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef _SIMPLEMIXING_H_
@@ -16,7 +27,7 @@
 
 namespace thomasfermi {
 	namespace mixing {
-        class SimpleMixing {
+        class SimpleMixing final {
             // #region コンストラクタ・デストラクタ
 
         public:
@@ -29,9 +40,9 @@ namespace thomasfermi {
 
             //! A destructor.
             /*!
-                デストラクタ
+                デフォルトデストラクタ
             */
-            virtual ~SimpleMixing() = default;
+            ~SimpleMixing() = default;
 
             // #endregion コンストラクタ・デストラクタ
 
@@ -60,47 +71,44 @@ namespace thomasfermi {
 
             // #region privateメンバ変数
 
-        protected:
+        private:
             //!  A private member variable.
             /*!
                 前回のループのyの値
             */
             femall::FEM::dmklvector yold_;
 
-            // #endregion privateメンバ変数
-
-            // #region protectedメンバ変数
-
-        protected:
             //!  A protected member variable.
             /*!
                 データオブジェクト
             */
             std::shared_ptr<Data> pdata_;
 
-            // #endregion protectedメンバ変数
+            // #endregion privateメンバ変数
 
             // #region 禁止されたコンストラクタ・メンバ関数
 
-            //! A private constructor (deleted).
+        public:
+            //! A default constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
             */
             SimpleMixing() = delete;
 
-            //! A private copy constructor (deleted).
+            //! A copy constructor (deleted).
             /*!
-            コピーコンストラクタ（禁止）
+                コピーコンストラクタ（禁止）
+                \param dummy コピー元のオブジェクト（未使用）
             */
             SimpleMixing(const SimpleMixing &) = delete;
 
             //! A private member function (deleted).
             /*!
-            operator=()の宣言（禁止）
-            \param コピー元のオブジェクト（未使用）
-            \return コピー元のオブジェクト
+                operator=()の宣言（禁止）
+                \param dummy コピー元のオブジェクト（未使用）
+                \return コピー元のオブジェクト
             */
-            SimpleMixing & operator=(const SimpleMixing &) = delete;
+            SimpleMixing & operator=(const SimpleMixing & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
@@ -108,3 +116,4 @@ namespace thomasfermi {
 }
 
 #endif	// _SIMPLEMIXING_H_
+

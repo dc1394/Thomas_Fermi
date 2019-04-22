@@ -1,6 +1,6 @@
 ﻿/*! \file readinputfile.h
     \brief インプットファイルの読み込みを行うクラスの宣言
-    Copyright © 2019 @dc1394 All Rights Reserved.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the Free
@@ -14,7 +14,6 @@
 
     You should have received a copy of the GNU General Public License along
     with this program. If not, see <http://www.gnu.org/licenses/>.
-    
 */
 
 #ifndef _READINPUTFILE_H_
@@ -117,7 +116,7 @@ namespace thomasfermi {
             \param def デフォルトの文字列
             \return 読みこんだ文字列
         */
-        boost::optional<ci_string> readData(ci_string const & article, ci_string const & def);
+        std::optional<ci_string> readData(ci_string const & article, ci_string const & def);
 
         template <typename T>
         //! A private member function (template function).
@@ -169,7 +168,7 @@ namespace thomasfermi {
             \param value 読み込んだ値
             \return 読み込みが成功したかどうか
         */
-        bool readValueAuto(ci_string const & article, boost::optional<T> & value);
+        bool readValueAuto(ci_string const & article, std::optional<T> & value);
 
         // #endregion メンバ関数
 
@@ -255,7 +254,7 @@ namespace thomasfermi {
             switch (ret.first)
             {
             case -1:
-                return boost::none;
+                return std::nullopt;
                 break;
 
             case 0:
@@ -274,7 +273,7 @@ namespace thomasfermi {
                 case 2:
                     if (*(++itr) == "DEFAULT") {
                         // デフォルト値を返す
-                        return boost::optional<T>(default_value);
+                        return std::make_optional<T>(default_value);
                     }
                     else {
                         try {
@@ -282,7 +281,7 @@ namespace thomasfermi {
                         }
                         catch (boost::bad_lexical_cast const &) {
                             errorMessage(lineindex_ - 1, article, *itr);
-                            return boost::none;
+                            return std::nullopt;
                         }
                     }
 
@@ -333,7 +332,7 @@ namespace thomasfermi {
     }
 
     template <typename T>
-    bool ReadInputFile::readValueAuto(ci_string const & article, boost::optional<T> & value)
+    bool ReadInputFile::readValueAuto(ci_string const & article, std::optional<T> & value)
     {
         if (auto const val = readDataAuto(article)) {
             if (!val->empty()) {
@@ -343,7 +342,7 @@ namespace thomasfermi {
                     if (idx != val->length()) {
                         throw std::invalid_argument("");
                     }
-                    value = boost::optional<double>(v);
+                    value = std::make_optional<double>(v);
                 }
                 catch (std::invalid_argument const &) {
                     errorMessage(lineindex_ - 1, article, *val);
@@ -351,7 +350,7 @@ namespace thomasfermi {
                 }
             }
             else {
-                value = boost::none;
+                value = std::nullopt;
             }
         }
         else {
@@ -363,3 +362,4 @@ namespace thomasfermi {
 }
 
 #endif  // _READINPUTFILE_H_
+

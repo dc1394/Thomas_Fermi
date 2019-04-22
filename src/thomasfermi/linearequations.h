@@ -1,8 +1,19 @@
 ﻿/*! \file linearequations.h
     \brief 連立方程式を解くクラスの宣言
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
+    
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
 
-    Copyright ©  2015 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef _LENEAREQUATIONS_H_
@@ -24,9 +35,9 @@ namespace thomasfermi {
         class Linear_equations final {
             // #region 型エイリアス
 
-            using dvector = std::vector < double, mkl_allocator<double> > ;
+            using dvector = std::vector< double, mkl_allocator<double> > ;
 
-            using sivector = std::vector < std::size_t >;
+            using sivector = std::vector<std::size_t>;
 
             // #endregion 型エイリアス
 
@@ -128,26 +139,27 @@ namespace thomasfermi {
             
             // #region 禁止されたコンストラクタ・メンバ関数
 
-            //! A private constructor (deleted).
+        public:
+            //! A default constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
             */
             Linear_equations() = delete;
 
-            //! A private copy constructor (deleted).
+            //! A copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
-                \param コピー元のオブジェクト（未使用）
+                \param dummy コピー元のオブジェクト（未使用）
             */
-            Linear_equations(Linear_equations const &) = delete;
+            Linear_equations(Linear_equations const & dummy) = delete;
 
             //! A private member function (deleted).
             /*!
                 operator=()の宣言（禁止）
-                \param コピー元のオブジェクト（未使用）
+                \param dummy コピー元のオブジェクト（未使用）
                 \return コピー元のオブジェクト
             */
-            Linear_equations & operator=(Linear_equations const &) = delete;
+            Linear_equations & operator=(Linear_equations const & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
@@ -155,3 +167,4 @@ namespace thomasfermi {
 }
 
 #endif  // _LENEAREQUATIONS_H_
+

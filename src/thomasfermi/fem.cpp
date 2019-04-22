@@ -1,9 +1,20 @@
 ﻿/*! \file fem.h
     \brief 有限要素法のクラスの実装
-
-    Copyright ©  2015 @dc1394 All Rights Reserved.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
     (but this is originally adapted by 渡辺浩志 for stiff5.c from http://www.sml.k.u-tokyo.ac.jp/members/nabe/FEM/FEM.pdf )
-    This software is released under the BSD 2-Clause License.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "fem.h"
@@ -139,3 +150,4 @@ namespace thomasfermi {
         // #endregion privateメンバ関数
     }
 }
+

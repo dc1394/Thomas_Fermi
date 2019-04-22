@@ -1,8 +1,19 @@
 ﻿/*! \file readinputfile.cpp
     \brief インプットファイルの読み込みを行うクラスの実装
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
 
-    Copyright ©  2015 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.    
 */
 
 #include "readinputfile.h"
@@ -100,7 +111,7 @@ namespace thomasfermi {
         std::cerr << line << "行目, 未知のトークン:" << s2.c_str() << std::endl;
     }
 
-    std::pair<std::int32_t, boost::optional<ReadInputFile::strvec>> ReadInputFile::getToken(ci_string const & article)
+    std::pair<std::int32_t, std::optional<ReadInputFile::strvec>> ReadInputFile::getToken(ci_string const & article)
     {
         std::array<char, BUFSIZE> buf;
         ifs_.getline(buf.data(), BUFSIZE);
@@ -109,7 +120,7 @@ namespace thomasfermi {
         // もし一文字も読めなかったら
         if (!ifs_.gcount()) {
             errorMessage(article);
-            return std::make_pair(-1, boost::none);
+            return std::make_pair(-1, std::nullopt);
         }
 
         // 読み込んだ行が空、あるいはコメント行でないなら
@@ -123,7 +134,7 @@ namespace thomasfermi {
             
             auto const len = std::distance(tok.begin(), tok.end());
             if (!len) {
-                return std::make_pair(1, boost::none);
+                return std::make_pair(1, std::nullopt);
             }
 
             strvec tokens(len);
@@ -136,13 +147,13 @@ namespace thomasfermi {
 
             if (*itr != article) {
                 errorMessage(lineindex_, article, *itr);
-                return std::make_pair(-1, boost::none);
+                return std::make_pair(-1, std::nullopt);
             }
 
-            return std::make_pair(0, boost::optional<strvec>(std::move(tokens)));
+            return std::make_pair(0, std::make_optional<strvec>(std::move(tokens)));
         }
         else {
-            return std::make_pair(1, boost::none);
+            return std::make_pair(1, std::nullopt);
         }
     }
 
@@ -159,7 +170,7 @@ namespace thomasfermi {
         }
     }
 
-    boost::optional<ci_string> ReadInputFile::readData(ci_string const & article)
+    std::optional<ci_string> ReadInputFile::readData(ci_string const & article)
     {
         for (; true; lineindex_++) {
             auto const ret(getToken(article));
@@ -167,7 +178,7 @@ namespace thomasfermi {
             switch (std::get<0>(ret))
             {
             case -1:
-                return boost::none;
+                return std::nullopt;
                 break;
 
             case 0:
@@ -177,7 +188,7 @@ namespace thomasfermi {
                 // 読み込んだトークンの数がもし2個以外だったら
                 if (tokens.size() != 2 || tokens[1].empty()) {
                     std::cerr << "インプットファイル" << lineindex_ << "行目の、[" << article.c_str() << "]の行が正しくありません" << std::endl;
-                    return boost::none;
+                    return std::nullopt;
                 }
 
                 ++lineindex_;
@@ -193,7 +204,7 @@ namespace thomasfermi {
         }
     }
 
-    boost::optional<ci_string> ReadInputFile::readData(ci_string const & article, ci_string const & def)
+    std::optional<ci_string> ReadInputFile::readData(ci_string const & article, ci_string const & def)
     {
         // グリッドを読み込む
         for (; true; lineindex_++) {
@@ -202,7 +213,7 @@ namespace thomasfermi {
             switch (std::get<0>(ret))
             {
             case -1:
-                return boost::none;
+                return std::nullopt;
                 break;
 
             case 0:
@@ -232,7 +243,7 @@ namespace thomasfermi {
                         }
                         else if ((*(++itr))[0] != '#') {
                             errorMessage(lineindex_ - 1, article, *itr);
-                            return boost::none;
+                            return std::nullopt;
                         }
 
                         return val;
@@ -251,7 +262,7 @@ namespace thomasfermi {
         }
     }
 
-    boost::optional<ci_string> ReadInputFile::readDataAuto(ci_string const & article)
+    std::optional<ci_string> ReadInputFile::readDataAuto(ci_string const & article)
     {
         for (; true; lineindex_++) {
             auto const ret(getToken(article));
@@ -259,7 +270,7 @@ namespace thomasfermi {
             switch (std::get<0>(ret))
             {
             case -1:
-                return boost::none;
+                return std::nullopt;
                 break;
 
             case 0:
@@ -271,12 +282,12 @@ namespace thomasfermi {
                 // 読み込んだトークンの数をはかる
                 switch (tokens.size()) {
                 case 1:
-                    return boost::none;
+                    return std::nullopt;
                     break;
 
                 case 2:
                     return (*itr == "DEFAULT" || *itr == "AUTO") ?
-                        boost::optional<ci_string>() : boost::optional<ci_string>(*itr);
+                        std::make_optional<ci_string>() : std::make_optional<ci_string>(*itr);
                     break;
 
                 default:
@@ -285,15 +296,15 @@ namespace thomasfermi {
 
                         if (val == "DEFAULT" || val == "AUTO" || val[0] == '#') {
                             // デフォルト値を返す
-                            return boost::optional<ci_string>();
+                            return std::make_optional<ci_string>();
                         } else if ((*(++itr))[0] != '#') {
                             errorMessage(lineindex_ - 1, article, *itr);
 
                             // エラー
-                            return boost::none;
+                            return std::nullopt;
                         }
 
-                        return boost::optional<ci_string>(std::move(val));
+                        return std::make_optional<ci_string>(std::move(val));
                     }
                 }
             }
@@ -332,3 +343,4 @@ namespace thomasfermi {
     
     // #endregion privateメンバ関数
 }
+

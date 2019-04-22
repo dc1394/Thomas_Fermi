@@ -1,8 +1,19 @@
 ﻿/*! \file beta.h
     \brief β(x)を計算するクラスの宣言
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
+   
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef _BETA_H_
@@ -89,22 +100,24 @@ namespace thomasfermi {
 
             // #region 禁止されたコンストラクタ・メンバ関数
 
-            //! A private constructor (deleted).
+        public:
+            //! A default constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
             */
             Beta() = delete;
 
-            //! A private copy constructor (deleted).
+            //! A copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
+                \param dummy コピー元のオブジェクト（未使用）
             */
-            Beta(Beta const &) = delete;
+            Beta(Beta const & dummy) = delete;
 
             //! A private member function (deleted).
             /*!
                 operator=()の宣言（禁止）
-                \param コピー元のオブジェクト（未使用）
+                \param dummy コピー元のオブジェクト（未使用）
                 \return コピー元のオブジェクト
             */
             Beta & operator=(Beta const &) = delete;
@@ -224,3 +237,4 @@ namespace thomasfermi {
 }
 
 #endif  // _BETA_H_
+

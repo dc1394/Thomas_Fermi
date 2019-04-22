@@ -1,7 +1,19 @@
 ﻿/*! \file data.h
     \brief インプットファイルの各種データの構造体の宣言
-    Copyright ©  2015 @dc1394 All Rights Reserved.
-    This software is released under the BSD 2-Clause License.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef _DATA_H_
@@ -10,8 +22,8 @@
 #pragma once
 
 #include "ci_string.h"
-#include <array>                // for std::array
-#include <cstdint>              // for std::uint32_t, std::uint8_t
+#include <array>        // for std::array
+#include <cstdint>      // for std::uint32_t, std::uint8_t
 
 namespace thomasfermi {
     //! A global variable (constant expression).
@@ -42,7 +54,7 @@ namespace thomasfermi {
     /*!
         マッチングポイント（xmin〜xmaxまでの間でなければならない）のデフォルト値
     */
-    static auto constexpr MATCH_POINT_DEFAULT = 7.5;
+    static auto constexpr MATCH_POINT_DEFAULT = 11.0;
         
     //! A global variable (constant expression).
     /*!
@@ -60,7 +72,7 @@ namespace thomasfermi {
     /*!
         電子密度を合成するときの重みのデフォルト値
     */
-    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.13;
+    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.1;
 
     //! A global variable (constant expression).
     /*!
@@ -72,7 +84,7 @@ namespace thomasfermi {
     /*!
         微分方程式を解くときのメッシュの最小値のデフォルト値
     */
-    static auto constexpr XMIN_DEFAULT = 1.0E-5;
+    static auto constexpr XMIN_DEFAULT = 1.0E-4;
 
     //! A struct.
     /*!

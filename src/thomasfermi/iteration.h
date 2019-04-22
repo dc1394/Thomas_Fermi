@@ -1,6 +1,6 @@
 ﻿/*! \file iteration.h
     \brief 微分方程式を反復法で解くクラスの宣言
-    Copyright © 2019 @dc1394 All Rights Reserved.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the Free
@@ -148,11 +148,7 @@ namespace thomasfermi {
 			/*!
 				連立一次方程式のソルバーオブジェクト
 			*/
-#ifndef __INTEL_COMPILER
             std::optional<Linear_equations> ple_;
-#else
-			boost::optional<Linear_equations> ple_;
-#endif
 
             //! A private member variable.
             /*!
@@ -203,16 +199,17 @@ namespace thomasfermi {
             //! A private copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
+                \param dummy コピー元のオブジェクト（未使用）
             */
-            Iteration(const Iteration &) = delete;
+            Iteration(Iteration & dummy) = delete;
 
             //! A private member function (deleted).
             /*!
                 operator=()の宣言（禁止）
-                \param コピー元のオブジェクト（未使用）
+                \param dummy コピー元のオブジェクト（未使用）
                 \return コピー元のオブジェクト
             */
-            Iteration & operator=(const Iteration &) = delete;
+            Iteration & operator=(Iteration const & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };

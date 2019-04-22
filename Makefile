@@ -6,7 +6,7 @@ PROG = thomasfermi
 #
 # ソースコードが存在する相対パス
 #
-VPATH = src/alglib src/checkpoint src/thomasfermi src/thomasfermi/gausslegendre \
+VPATH = src/alglib/src src/checkpoint src/thomasfermi src/thomasfermi/gausslegendre \
 		src/thomasfermi/makerhoen src/thomasfermi/mixing src/thomasfermi/myfunctional \
 		src/thomasfermi/shoot
 
