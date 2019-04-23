@@ -38,7 +38,7 @@ namespace thomasfermi {
             */
             SimpleMixing(std::shared_ptr<Data> const & pdata);
 
-            //! A destructor.
+            //! A default destructor.
             /*!
                 デフォルトデストラクタ
             */
@@ -54,7 +54,7 @@ namespace thomasfermi {
                 \param newy 合成前のy
                 \return 合成後のy
             */
-            femall::FEM::dmklvector operator()(femall::FEM::dmklvector const & y);
+            std::vector<double> operator()(std::vector<double> const & y);
 
             // #endregion メンバ関数
 
@@ -65,7 +65,7 @@ namespace thomasfermi {
             /*!
                 前回のループのyの値の可変長配列へのプロパティ
             */
-            utility::Property<femall::FEM::dmklvector const &> Yold;
+            utility::Property<std::vector<double> const &> Yold;
 
             // #endregion プロパティ
 
@@ -76,7 +76,7 @@ namespace thomasfermi {
             /*!
                 前回のループのyの値
             */
-            femall::FEM::dmklvector yold_;
+            std::vector<double> yold_;
 
             //!  A protected member variable.
             /*!
@@ -100,15 +100,15 @@ namespace thomasfermi {
                 コピーコンストラクタ（禁止）
                 \param dummy コピー元のオブジェクト（未使用）
             */
-            SimpleMixing(const SimpleMixing &) = delete;
+            SimpleMixing(SimpleMixing const & dummy) = delete;
 
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
                 \param dummy コピー元のオブジェクト（未使用）
                 \return コピー元のオブジェクト
             */
-            SimpleMixing & operator=(const SimpleMixing & dummy) = delete;
+            SimpleMixing & operator=(SimpleMixing const & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
@@ -116,4 +116,3 @@ namespace thomasfermi {
 }
 
 #endif	// _SIMPLEMIXING_H_
-

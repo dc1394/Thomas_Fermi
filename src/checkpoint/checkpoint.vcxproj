@@ -14,18 +14,19 @@
     <ProjectGuid>{A02303AC-FAEE-4716-B496-8412E467DD66}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>checkpoint</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -53,6 +54,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -74,11 +76,10 @@
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <FlushDenormalResultsToZero>true</FlushDenormalResultsToZero>
       <LoopUnrolling>3</LoopUnrolling>
-      <Optimization>MaxSpeedHighLevel</Optimization>
+      <Optimization>Full</Optimization>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <GenerateAlternateCodePaths>AVX2</GenerateAlternateCodePaths>
       <UseProcessorExtensions>AVX2</UseProcessorExtensions>
-      <AdditionalOptions>/Qstd=c++17 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

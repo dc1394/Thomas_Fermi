@@ -41,9 +41,9 @@ namespace thomasfermi {
                 \param nint
                 \param usecilk Cilkを使用するかどうか
             */
-            SOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk);
+            SOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk);
 
-            //! A destructor.
+            //! A default destructor.
             /*!
                 デストラクタ
             */
@@ -65,7 +65,7 @@ namespace thomasfermi {
                 βの状態をリセットする
                 \param beta 対象のβ
             */
-            void reset(dvector const & beta) override;
+            void reset(std::vector<double> const & beta) override;
 
             // #endregion publicメンバ関数
 
@@ -92,7 +92,7 @@ namespace thomasfermi {
                 \param r rの値
                 \return dn/dr
             */
-            dvector getdndr(double r) const;
+            std::vector<double> getdndr(double r) const;
 
             //! A private member function (constant).
             /*!
@@ -100,7 +100,7 @@ namespace thomasfermi {
                 \param ielem 要素
                 \return c
             */
-            dvector getc(std::size_t ielem) const override;
+            std::vector<double> getc(std::size_t ielem) const override;
 
             // #endregion メンバ関数
 
@@ -110,7 +110,7 @@ namespace thomasfermi {
             /*!
                 連立方程式Ax = Bの行列Aの三番目の要素
             */
-            FEM::dmklvector a2_;
+            std::vector<double> a2_;
 
             //! A private member variable.
             /*!
@@ -170,7 +170,7 @@ namespace thomasfermi {
             */
             SOElement(SOElement const & dummy) = delete;
 
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
                 \param dummy コピー元のオブジェクト（未使用）

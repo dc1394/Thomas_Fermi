@@ -24,7 +24,7 @@
 #endif
 
 namespace thomasfermi {
-    void goexit()
+    void goexit() noexcept
     {
 #if defined(_WIN32) || defined(_WIN64)
         std::cout << "終了するには何かキーを押してください..." << std::endl;

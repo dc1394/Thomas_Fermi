@@ -23,9 +23,9 @@
 
 #include "../myfunctional/functional.h"
 #include "../utility/property.h"
-#include <array>                            // for std::array
-#include <cstdint>                          // for std::int32_t
-#include <vector>                           // for std::vector
+#include <cstdint>                      // for std::int32_t
+#include <functional>                   // for std::function
+#include <vector>                       // for std::vector
 
 namespace gausslegendre {
     //! A class.
@@ -44,7 +44,7 @@ namespace gausslegendre {
         */
         explicit Gauss_Legendre(std::int32_t n);
 
-		//! A destructor.
+		//! A default destructor.
 		/*!
 			デフォルトデストラクタ
 		*/
@@ -64,6 +64,16 @@ namespace gausslegendre {
             \return 積分値
         */
         double qgauss(myfunctional::Functional<FUNCTYPE> const & func, double x1, double x2) const;
+
+        //! A public member function (template function).
+        /*!
+            Gauss-Legendre積分を実行する
+            \param func 被積分関数
+            \param x1 積分の下端
+            \param x2 積分の上端
+            \return 積分値
+        */
+        double qgauss(std::function<double(double)> const & func, double x1, double x2) const;
 
         // #endregion メンバ関数
 
@@ -123,7 +133,7 @@ namespace gausslegendre {
         */
 		Gauss_Legendre(Gauss_Legendre const & dummy) = delete;
 
-        //! A private member function (deleted).
+        //! A public member function (deleted).
         /*!
             operator=()の宣言（禁止）
             \param dummy コピー元のオブジェクト（未使用）
@@ -154,4 +164,3 @@ namespace gausslegendre {
 }
 
 #endif  // _GAUSS_LEGENDRE_H_
-

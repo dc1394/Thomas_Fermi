@@ -1,8 +1,19 @@
 ﻿/*! \file checkpoint.h
     \brief 時間計測のためのクラスの宣言
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef _CHECKPOINT_H_
@@ -56,13 +67,13 @@ namespace checkpoint {
 	    struct CheckPointFastImpl {
             // #region コンストラクタ・デストラクタ
 
-            //! A constructor.
+            //! A default constructor.
             /*!
-                唯一のコンストラクタ
+                デフォルトコンストラクタかつ唯一のコンストラクタ
             */
             CheckPointFastImpl() : cur(0) {}
 
-            //! A destructor.
+            //! A default destructor.
             /*!
                 デフォルトデストラクタ
             */
@@ -93,7 +104,6 @@ namespace checkpoint {
             // #endregion メンバ変数
 	    };
 
-
         // #endregion クラスの前方宣言
 
         // #region クラス内クラスの宣言と実装
@@ -111,13 +121,13 @@ namespace checkpoint {
     public:
         // #region コンストラクタ・デストラクタ
 
-        //! A constructor.
+        //! A default constructor.
         /*!
             デフォルトコンストラクタかつ唯一のコンストラクタ
         */
         CheckPoint();
 
-        //! A destructor.
+        //! A default destructor.
         /*!
             デフォルトデストラクタ
         */
@@ -164,19 +174,20 @@ namespace checkpoint {
     public:
         // #region 禁止されたコンストラクタ・メンバ関数
 
-        //! A private copy constructor (deleted).
+        //! A copy constructor (deleted).
         /*!
             コピーコンストラクタ（禁止）
+            \param dummy コピー元のオブジェクト
         */
-		CheckPoint(CheckPoint const &) = delete;
+		CheckPoint(CheckPoint const & dummy) = delete;
 
         //! operator=() (deleted).
         /*!
             operator=()の宣言（禁止）
-            \param コピー元のオブジェクト
+            \param dummy コピー元のオブジェクト
             \return コピー元のオブジェクト
         */
-		CheckPoint & operator=(CheckPoint const &) = delete;
+		CheckPoint & operator=(CheckPoint const & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
 	};
@@ -193,3 +204,4 @@ namespace checkpoint {
 }
 
 #endif  // _CHECKPOINT_H_
+

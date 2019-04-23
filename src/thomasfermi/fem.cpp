@@ -22,13 +22,13 @@
 #include <utility>							// for std::move
 #include <boost/range/algorithm/fill.hpp>	// for boost::fill
 #include <boost/assert.hpp>					// for BOOST_ASSERT
-#include <cilk/cilk.h>						// for cilik_for
+#include <omp.h>
 
 namespace thomasfermi {
     namespace femall {
         // #region コンストラクタ
 
-        FEM::FEM(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk) :
+        FEM::FEM(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk) :
             B([this] { return std::cref(b_); }, nullptr),
             Nnode([this] { return nnode_; }, nullptr),
             Ntnoel([this] { return ntnoel_; }, nullptr),
@@ -51,7 +51,7 @@ namespace thomasfermi {
 
         // #region publicメンバ関数
 
-        void FEM::reset(dvector const & beta)
+        void FEM::reset(std::vector<double> const & beta)
         {
             pbeta_.reset();
             pbeta_ = std::make_shared<Beta>(coords_, beta);
@@ -66,7 +66,9 @@ namespace thomasfermi {
             }
 
             if (usecilk_) {
-                cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
+                auto const nelem = static_cast<std::int32_t>(nelem_);
+#pragma omp parallel for
+                for (auto ielem = 0; ielem < nelem; ielem++) {
                     amerge(ielem);
                     createb(ielem);
                 }
@@ -82,7 +84,9 @@ namespace thomasfermi {
         void FEM::stiff2()
         {
             if (usecilk_) {
-                cilk_for (auto ielem = 0U; ielem < nelem_; ielem++) {
+                auto const nelem = static_cast<std::int32_t>(nelem_);
+#pragma omp parallel for
+                for (auto ielem = 0; ielem < nelem; ielem++) {
                     createb(ielem);
                 }
             }
@@ -117,7 +121,7 @@ namespace thomasfermi {
             auto const detjac = ajacob;
             auto const ajainv = 1.0 / ajacob;
 
-            dvector dndx(ntnoel_);
+            std::vector<double> dndx(ntnoel_);
             for (auto i = 0U; i < ntnoel_; i++) {
                 dndx[i] = dndr[i] * ajainv;
             }

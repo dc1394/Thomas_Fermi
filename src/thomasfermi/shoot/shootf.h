@@ -1,12 +1,23 @@
 ﻿/*! \file shootf.h
     \brief 狙い撃ち法により、y(x)を求めるクラスの宣言
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
+	
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.    
 */
 
 #ifndef _SHOOTF_H_
-#define _SHOOTF_H
+#define _SHOOTF_H_
 
 #pragma once
 
@@ -25,14 +36,10 @@ namespace thomasfermi {
         class shootf final {
             // #region 型エイリアス
 
-        public:
-            using dvector = std::vector<double>;
-
-        private:
 			using loadfunctype = std::function<shootfunc::state_type(double, double)>;
 
         public:
-			using result_type = std::pair<dvector, dvector>;
+			using result_type = std::pair<std::vector<double>, std::vector<double>>;
 
         private:
 			using scorefunctype = std::function<Eigen::VectorXd(shootfunc::state_type const &)>;
@@ -64,7 +71,7 @@ namespace thomasfermi {
                    double v1,
                    double v2);
 
-            //! A destructor.
+            //! A default destructor.
             /*!
 				デフォルトデストラクタ
             */
@@ -84,7 +91,7 @@ namespace thomasfermi {
                 \param xf 適合点に近いxの値
                 \return xのメッシュとそれに対応したyの値のtuple
             */
-			shootf::result_type createResult(dvector const & res1, dvector const & res2, double x1, double xf) const;
+			shootf::result_type createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const;
 
             // #endregion privateメンバ関数
 
@@ -169,25 +176,27 @@ namespace thomasfermi {
 
             // #region 禁止されたコンストラクタ・メンバ関数
 
-            //! A private constructor (deleted).
+        public:
+            //! A default constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
             */
             shootf() = delete;
 
-            //! A private copy constructor (deleted).
+            //! A copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
+                \param dummy コピー元のオブジェクト
             */
-            shootf(shootf const &) = delete;
+            shootf(shootf const & dummy) = delete;
 
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
-                \param コピー元のオブジェクト
+                \param dummy コピー元のオブジェクト
                 \return コピー元のオブジェクト
             */
-            shootf & operator=(shootf const &) = delete;
+            shootf & operator=(shootf const & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
@@ -195,3 +204,4 @@ namespace thomasfermi {
 }
 
 #endif  // _SHOOTF_H_
+

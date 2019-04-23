@@ -8,11 +8,11 @@ chemical.number             1
 # Parameters for solving 1D-differential equations
 #
 
-grid.xmin                   1.0E-7          # default = 1.0E-5
-grid.xmax                   200.0           # default = 100.0
+grid.xmin                   1.0E-5          # default = 1.0E-4
+grid.xmax                   100.0           # default = 100.0
 grid.num                    100000          # default = 20000
 eps                         1.0E-15         # default = 1.0E-15
-matching.point              15.0            # default = 12.5
+matching.point              11.0            # default = 11.0
 gauss.legendre.integ        5               # default = 5
 gauss.legendre.integ.norm   1000            # default = 1000
 
@@ -20,6 +20,6 @@ gauss.legendre.integ.norm   1000            # default = 1000
 # Iteration
 #
 
-iteration.maxIter           10000           # default = 10000
-iteration.Mixing.Weight     0.001           # default = 0.05
-iteration.criterion         5.0E-14         # default = 1.0E-13
+iteration.maxIter           10000           # default = 1000
+iteration.Mixing.Weight     0.02            # default = 0.1
+iteration.criterion         1.0E-13         # default = 1.0E-13

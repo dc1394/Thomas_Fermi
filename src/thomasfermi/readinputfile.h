@@ -52,7 +52,7 @@ namespace thomasfermi {
         */
         explicit ReadInputFile(std::pair<std::string, bool> const & arg);
 
-        //! A destructor.
+        //! A default destructor.
         /*!
             デフォルトデストラクタ
         */
@@ -235,7 +235,7 @@ namespace thomasfermi {
         */
         ReadInputFile(ReadInputFile const &) = delete;
 
-        //! A private member function (deleted).
+        //! A public member function (deleted).
         /*!
             operator=()の宣言（禁止）
             \param dummy コピー元のオブジェクト（未使用）

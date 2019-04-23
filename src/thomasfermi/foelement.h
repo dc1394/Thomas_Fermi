@@ -41,11 +41,11 @@ namespace thomasfermi {
                 \param nint
                 \param usecilk Cilkを使用するかどうか
             */
-            FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk);
+            FOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk);
 
-            //! A destructor.
+            //! A default destructor.
             /*!
-                デストラクタ
+                デフォルトデストラクタ
             */
             ~FOElement() override = default;
 
@@ -65,7 +65,7 @@ namespace thomasfermi {
                 βの状態をリセットする
                 \param beta 対象のβ
             */
-            void reset(dvector const & beta) override;
+            void reset(std::vector<double> const & beta) override;
 
             // #endregion publicメンバ関数
 
@@ -91,7 +91,7 @@ namespace thomasfermi {
                 dn/drを返す関数
                 \return dn/dr
             */
-            dvector getdndr() const;
+            std::vector<double> getdndr() const;
 
             //! A private member function (constant - override).
             /*!
@@ -99,7 +99,7 @@ namespace thomasfermi {
                 \param ielem 要素
                 \return c
             */
-            dvector getc(std::size_t ielem) const override;
+            std::vector<double> getc(std::size_t ielem) const override;
 
             // #endregion メンバ関数
 
@@ -151,7 +151,7 @@ namespace thomasfermi {
             */
             FOElement(FOElement const & dummy) = delete;
             
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
                 \param dummy コピー元のオブジェクト（未使用）

@@ -1,9 +1,21 @@
 ﻿/*! \file shootfunc.h
     \brief y(x)の初期関数y0(x)の、原点に近い点xにおける関数値および微分値と、
            適合点xfにおける関数値および微分値を求めるクラスの実装
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
+	
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
+    
 */
 
 #include "shootfunc.h"
@@ -29,10 +41,11 @@ namespace thomasfermi {
 			return Eigen::VectorXd::Map(y.data(), y.size());
 		}
 
-		void shootfunc::rhs(const shootfunc::state_type & y, shootfunc::state_type & dydx, const double x)
+		void shootfunc::rhs(shootfunc::state_type const & y, shootfunc::state_type & dydx, double const x)
 		{
 			dydx[0] = y[1];
 			dydx[1] = y[0] * std::sqrt(y[0] / x);
 		}
 	}
 }
+

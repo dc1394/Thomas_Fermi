@@ -24,9 +24,9 @@ namespace thomasfermi {
     namespace femall {
         // #region コンストラクタ
 
-        FOElement::FOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk) :
+        FOElement::FOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk) :
             FEM(std::move(beta), coords, nint, usecilk),
-            func_([this](double x) { return pbeta_->operator() < Element::First > (x); }),
+            func_([this](double x) { return pbeta_->operator()<Element::First>(x); }),
             fun1_([this](double r, double xl, std::size_t ielem)
             { return -N1_(r) * func_(N1_(r) * coords_[lnods_[ielem][0]] + N2_(r) * coords_[lnods_[ielem][1]]) * xl * 0.5; }),
             fun2_([this](double r, double xl, std::size_t ielem)
@@ -55,10 +55,10 @@ namespace thomasfermi {
         
         FEM::resulttuple FOElement::createresult() const
         {
-            return std::forward_as_tuple(a0_, a1_, FEM::dmklvector(), b_);
+            return std::forward_as_tuple(a0_, a1_, std::vector<double>(), b_);
         }
 
-        void FOElement::reset(dvector const & beta)
+        void FOElement::reset(std::vector<double> const & beta)
         {
             FEM::reset(beta);
             func_ = [this](double x) { return pbeta_->operator()<Element::First>(x); };
@@ -86,10 +86,10 @@ namespace thomasfermi {
             }
         }
 
-        FEM::dvector FOElement::getc(std::size_t ielem) const
+        std::vector<double> FOElement::getc(std::size_t ielem) const
         {
             auto const xl = coords_[lnods_[ielem][1]] - coords_[lnods_[ielem][0]];
-            dvector c(ntnoel_);
+            std::vector<double> c(ntnoel_);
 
             c[0] = gl_.qgauss(
                 myfunctional::make_functional([this, xl, ielem](double r){ return fun1_(r, xl, ielem); }),
@@ -104,9 +104,9 @@ namespace thomasfermi {
             return c;
         }
 
-        FEM::dvector FOElement::getdndr() const
+        std::vector<double> FOElement::getdndr() const
         {
-            dvector dndr(ntnoel_);
+            std::vector<double> dndr(ntnoel_);
             dndr[0] = - 0.5;
             dndr[1] = 0.5;
 
