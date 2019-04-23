@@ -36,14 +36,10 @@ namespace thomasfermi {
         class shootf final {
             // #region 型エイリアス
 
-        public:
-            using dvector = std::vector<double>;
-
-        private:
 			using loadfunctype = std::function<shootfunc::state_type(double, double)>;
 
         public:
-			using result_type = std::pair<dvector, dvector>;
+			using result_type = std::pair<std::vector<double>, std::vector<double>>;
 
         private:
 			using scorefunctype = std::function<Eigen::VectorXd(shootfunc::state_type const &)>;
@@ -95,7 +91,7 @@ namespace thomasfermi {
                 \param xf 適合点に近いxの値
                 \return xのメッシュとそれに対応したyの値のtuple
             */
-			shootf::result_type createResult(dvector const & res1, dvector const & res2, double x1, double xf) const;
+			shootf::result_type createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const;
 
             // #endregion privateメンバ関数
 
@@ -194,7 +190,7 @@ namespace thomasfermi {
             */
             shootf(shootf const & dummy) = delete;
 
-            //! A member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
                 \param dummy コピー元のオブジェクト

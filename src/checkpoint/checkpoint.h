@@ -174,7 +174,7 @@ namespace checkpoint {
     public:
         // #region 禁止されたコンストラクタ・メンバ関数
 
-        //! A private copy constructor (deleted).
+        //! A copy constructor (deleted).
         /*!
             コピーコンストラクタ（禁止）
             \param dummy コピー元のオブジェクト

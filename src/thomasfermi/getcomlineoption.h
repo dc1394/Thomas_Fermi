@@ -40,7 +40,7 @@ namespace thomasfermi {
         */
         GetComLineOption() = default;
 
-        //! A destructor.
+        //! A default destructor.
         /*!
             デフォルトデストラクタ
         */
@@ -85,9 +85,9 @@ namespace thomasfermi {
 
         //!  A private member variable.
         /*!
-            Cilk Plusを使用するかどうか    
+            OpenMPを使用するかどうか    
         */
-        bool usecilk_ = false;
+        bool useomp_ = false;
 
         // #endregion メンバ変数
 
@@ -101,7 +101,7 @@ namespace thomasfermi {
         */
         GetComLineOption(GetComLineOption const & dummy) = delete;
 
-        //! A private member function (deleted).
+        //! A public member function (deleted).
         /*!
             operator=()の宣言（禁止）
             \param dummy コピー元のオブジェクト（未使用）
@@ -114,4 +114,3 @@ namespace thomasfermi {
 }
 
 #endif  // _GETCOMLINEOPTION_H_
-

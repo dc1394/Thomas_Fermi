@@ -22,16 +22,14 @@
 #include <stdexcept>            // for std::logic_error, std::invalid_argument
 #include <boost/cast.hpp>       // for boost::numeric_cast
 #include <boost/format.hpp>     // for boost::format
-#include <mkl.h>                // for LAPACKE_dptsv
 
 ///* C++の複素数型を使う */
-//#define LAPACK_COMPLEX_CPP
-///* 関数のシンボル名は小文字 */
-//#define LAPACK_NAME_PATTERN_LC
-//#include "lapacke_config.h"
-//#include "lapacke.h"
-//
-//#pragma comment(lib, "liblapacke.lib")
+#define LAPACK_COMPLEX_CPP
+/* 関数のシンボル名は小文字 */
+#define LAPACK_NAME_PATTERN_LC
+#include "lapacke_config.h"
+#include "lapacke.h"
+
 
 namespace thomasfermi {
     namespace femall {
@@ -82,7 +80,7 @@ namespace thomasfermi {
         }
 
         template <>
-        Linear_equations::dvector Linear_equations::LEsolver<Element::First>()
+        std::vector<double> Linear_equations::LEsolver<Element::First>()
         {
             auto const n = boost::numeric_cast<lapack_int>(n_);
             auto const info = LAPACKE_dptsv(
@@ -107,7 +105,7 @@ namespace thomasfermi {
         }
 
         template <>
-        FEM::dmklvector Linear_equations::LEsolver<Element::Second>()
+        std::vector<double> Linear_equations::LEsolver<Element::Second>()
         {
             auto const n = boost::numeric_cast<lapack_int>(n_);
 
@@ -122,7 +120,7 @@ namespace thomasfermi {
 
             // 係数行列の帯の外を省略して詰め込んだ2次元配列
             // ピボッティングありのLU分解を行うために(KD + 1)× N必要
-            FEM::dmklvector ab(nb * n);
+            std::vector<double> ab(nb * n);
 
             for (auto i = 0; i < n; i++) {
                 for (auto j = i; j <= i + 2; j++) {
@@ -139,15 +137,15 @@ namespace thomasfermi {
             }
 
             auto const info = LAPACKE_dpbsv(
-                LAPACK_COL_MAJOR,               // 行優先か列優先か
-                'U',                            // 上三角要素を使う場合
-                n,                              // 線形方程式の数（行列Aの次数）
-                kd,                             // 係数行列の帯の中にある対角線より上の部分の個数
-                nrhs,                           // 行列{B}の列数。通常通り1
-                ab.data(),                      // 係数行列(input)，コレスキー分解の結果(output)
-                nb,                             // 配列ABの1次元目の大きさ（=KD+1） 
-                b_.data(),                      // 方程式の右辺(input)，方程式の解(output)
-                n);                             // 行列Bの1次元目の大きさ（=N）
+                LAPACK_COL_MAJOR,           // 行優先か列優先か
+                'U',                    // 上三角要素を使う場合
+                n,                          // 線形方程式の数（行列Aの次数）
+                kd,                         // 係数行列の帯の中にある対角線より上の部分の個数
+                nrhs,                       // 行列{B}の列数。通常通り1
+                ab.data(),               // 係数行列(input)，コレスキー分解の結果(output)
+                nb,                     // 配列ABの1次元目の大きさ（=KD+1） 
+                b_.data(),                // 方程式の右辺(input)，方程式の解(output)
+                n);                     // 行列Bの1次元目の大きさ（=N）
 
             if (info > 0) {
                 throw std::logic_error("U is singular");
@@ -161,7 +159,7 @@ namespace thomasfermi {
             return b_;
         }
 
-        void Linear_equations::reset(Linear_equations::dvector const & b)
+        void Linear_equations::reset(std::vector<double> const & b)
         {
             a0_ = a0back_;
             a1_ = a1back_;
@@ -179,10 +177,10 @@ namespace thomasfermi {
         void Linear_equations::bound<Element::Second>(std::size_t n_bc_given, sivector const & i_bc_given, std::size_t n_bc_nonzero, sivector const & i_bc_nonzero, std::vector<double> const & v_bc_nonzero);
 
         template <>
-        Linear_equations::dvector Linear_equations::LEsolver<Element::First>();
+        std::vector<double> Linear_equations::LEsolver<Element::First>();
 
         template <>
-        Linear_equations::dvector Linear_equations::LEsolver<Element::Second>();
+        std::vector<double> Linear_equations::LEsolver<Element::Second>();
 
         // #endregion templateメンバ関数の実体化
     }

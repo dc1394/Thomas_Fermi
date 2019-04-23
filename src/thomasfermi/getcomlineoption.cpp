@@ -40,8 +40,8 @@ namespace thomasfermi {
         opt.add_options()
             ("help,h", "ヘルプを表示")
             ("inputfile,I", value<std::string>()->default_value(GetComLineOption::DEFINPNAME), "インプットファイル名")
-            ("cilk,C", value<bool>()->implicit_value(false),
-             "Cilkを使用して並列計算を行うかどうか（デフォルトはCilk Plusを使用しない）");
+            ("omp,O", value<bool>()->implicit_value(false),
+             "OpenMPを使用して並列計算を行うかどうか（デフォルトはOpenMPを使用しない）");
 
         // 引数の書式に従って実際に指定されたコマンドライン引数を解析
         variables_map vm;
@@ -67,9 +67,9 @@ namespace thomasfermi {
             inpname_ = vm["inputfile"].as<std::string>();
         }
 
-        // Cilk Plus指定がある場合
-        if (vm.count("cilk")) {
-            usecilk_ = vm["cilk"].as<bool>();
+        // OpenMP指定がある場合
+        if (vm.count("omp")) {
+            useomp_ = vm["omp"].as<bool>();
         }
 
         return 0;
@@ -77,7 +77,7 @@ namespace thomasfermi {
     
     std::pair<std::string, bool> GetComLineOption::getpairdata() const
     {
-        return std::make_pair(inpname_, usecilk_);
+        return std::make_pair(inpname_, useomp_);
     }
 
     // #endregion publicメンバ関数

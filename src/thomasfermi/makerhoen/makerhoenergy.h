@@ -26,7 +26,7 @@ namespace thomasfermi {
 		class MakeRhoEnergy final {
             // #region 型エイリアス
 
-			using parameter_type = std::tuple < std::shared_ptr<femall::Beta>, std::vector<double>, double >;
+			using parameter_type = std::tuple<std::shared_ptr<femall::Beta>, std::vector<double>, double>;
 
             // #endregion 型エイリアス
 
@@ -42,7 +42,7 @@ namespace thomasfermi {
             */
             MakeRhoEnergy(std::int32_t n, parameter_type const & pt, double Z);
 
-            //! A destructor.
+            //! A default destructor.
             /*!
 				デフォルトデストラクタ
             */
@@ -112,7 +112,7 @@ namespace thomasfermi {
             //! A private member function.
             /*!
                 関数ρ~(x)の値をファイルに書き込む
-                \param コピー元のオブジェクト（禁止）
+                \param filename コピー元のオブジェクト（禁止）
                 \return コピー元のオブジェクト
             */
             void saverhoTilde(std::string const & filename);
@@ -211,29 +211,29 @@ namespace thomasfermi {
 			            
             // #endregion メンバ変数
 
-        private:
+        public:
             // #region 禁止されたコンストラクタ・メンバ関数
 
-            //! A private default constructor (deleted).
+            //! A default constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
             */
             MakeRhoEnergy() = delete;
 
-            //! A private copy constructor (deleted).
+            //! A copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
-                \param コピー元のオブジェクト
+                \param dummy コピー元のオブジェクト
             */
-            MakeRhoEnergy(MakeRhoEnergy const &) = delete;
+            MakeRhoEnergy(MakeRhoEnergy const & dummy) = delete;
 
             //! operator=() (deleted).
             /*!
                 operator=()（禁止）
-                \param コピー元のオブジェクト（未使用）
+                \param dummy コピー元のオブジェクト（未使用）
                 \return コピー元のオブジェクト
             */
-            MakeRhoEnergy & operator=(MakeRhoEnergy const &) = delete;
+            MakeRhoEnergy & operator=(MakeRhoEnergy const & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
 		};

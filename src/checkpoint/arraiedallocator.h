@@ -60,7 +60,7 @@ namespace checkpoint {
         */
 		ArraiedAllocator();
         
-        //! A destructor.
+        //! A default destructor.
         /*!
             デフォルトデストラクタ
         */
@@ -142,9 +142,9 @@ namespace checkpoint {
             コピーコンストラクタ（禁止）
             \param dummy コピー元のオブジェクト（未使用）
         */
-        ArraiedAllocator(ArraiedAllocator const &) = delete;
+        ArraiedAllocator(ArraiedAllocator const & dummy) = delete;
 
-        //! A private member function (deleted).
+        //! A public member function (deleted).
         /*!
             operator=()の宣言（禁止）
             \param dummy コピー元のオブジェクト（未使用）

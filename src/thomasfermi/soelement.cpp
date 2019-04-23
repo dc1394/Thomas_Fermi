@@ -23,7 +23,7 @@ namespace thomasfermi {
     namespace femall {
         // #region コンストラクタ
 
-        SOElement::SOElement(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk)
+        SOElement::SOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk)
             :   FEM(std::move(beta), coords, nint, usecilk),
                 a2_(nnode_ - 2, 0.0),
                 func_([this](double x) { return pbeta_->operator() < Element::Second > (x); })
@@ -58,7 +58,7 @@ namespace thomasfermi {
             return std::forward_as_tuple(a0_, a1_, a2_, b_);
         }
         
-        void SOElement::reset(dvector const & beta)
+        void SOElement::reset(std::vector<double> const & beta)
         {
             FEM::reset(beta);
             func_ = [this](double x) { return pbeta_->operator()< Element::Second >(x); };
@@ -99,9 +99,9 @@ namespace thomasfermi {
             }
         }
 
-        FEM::dvector SOElement::getdndr(double r) const
+        std::vector<double> SOElement::getdndr(double r) const
         {
-            dvector dndr(ntnoel_);
+            std::vector<double> dndr(ntnoel_);
             dndr[0] = r - 0.5;
             dndr[1] = r + 0.5;
             dndr[2] = - 2.0 * r;
@@ -109,11 +109,11 @@ namespace thomasfermi {
             return dndr;
         }
 
-        FEM::dvector SOElement::getc(std::size_t ielem) const
+        std::vector<double> SOElement::getc(std::size_t ielem) const
         {
             auto const xl = coords_[lnods_[ielem][1]] - coords_[lnods_[ielem][0]];
 
-            dvector c(ntnoel_);
+            std::vector<double> c(ntnoel_);
             c[0] = gl_.qgauss(
                 myfunctional::make_functional(
                     [this, ielem](double r)

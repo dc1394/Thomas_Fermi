@@ -35,7 +35,7 @@ namespace thomasfermi {
             // #region 型エイリアス
 
         public:
-            using result_type = std::tuple<std::shared_ptr<Beta>, FEM::dvector, double>;
+            using result_type = std::tuple<std::shared_ptr<Beta>, std::vector<double>, double>;
 
             // #endregion 型エイリアス
 
@@ -48,9 +48,9 @@ namespace thomasfermi {
             */
             explicit Iteration(std::pair<std::string, bool> const & arg);
 
-            //! A destructor.
+            //! A default destructor.
             /*!
-                デストラクタ
+                デフォルトデストラクタ
             */
             ~Iteration()
             {
@@ -72,7 +72,7 @@ namespace thomasfermi {
                 結果を返す関数
                 \return 結果
             */
-            Iteration::result_type makeresult();
+            result_type makeresult();
             
             // #endregion publicメンバ関数
 
@@ -90,7 +90,7 @@ namespace thomasfermi {
                 βを生成する関数
                 \return β
             */
-            FEM::dvector make_beta() const;
+            std::vector<double> make_beta() const;
 
             //! A private member function.
             /*!
@@ -98,7 +98,7 @@ namespace thomasfermi {
                 \param scfiter SCFの回数
                 \param y 新しいy
             */
-            void ymix(femall::FEM::dmklvector const & y);
+            void ymix(std::vector<double> const & y);
                         
             // #endregion privateメンバ関数
 
@@ -159,19 +159,19 @@ namespace thomasfermi {
             //! A private member variable.
             /*!
             */
-            FEM::dvector v_bc_nonzero_;
+            std::vector<double> v_bc_nonzero_;
 
             //! A private member variable.
             /*!
                 xのメッシュの可変長配列
             */
-            FEM::dvector x_;
+            std::vector<double> x_;
             
             //! A private member variable.
             /*!
                 yの値の可変長配列
             */
-            FEM::dmklvector y_;
+            std::vector<double> y_;
 
             //! A private member variable.
             /*!
@@ -190,20 +190,20 @@ namespace thomasfermi {
             // #region 禁止されたコンストラクタ・メンバ関数
 
         public:
-            //! A private constructor (deleted).
+            //! A default constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
             */
             Iteration() = delete;
 
-            //! A private copy constructor (deleted).
+            //! A copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
                 \param dummy コピー元のオブジェクト（未使用）
             */
-            Iteration(Iteration & dummy) = delete;
+            Iteration(Iteration const & dummy) = delete;
 
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
                 \param dummy コピー元のオブジェクト（未使用）

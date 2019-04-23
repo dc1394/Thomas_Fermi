@@ -22,10 +22,8 @@
 #pragma once
 
 #include "element.h"
-#include "utility/property.h"
-#include <cstdint>              // for std::uint32_t
-#include <memory>               // for std::shared_ptr
-#include <vector>               // for std::vector
+#include <cstdint>      // for std::uint32_t
+#include <vector>       // for std::vector
 
 namespace thomasfermi {
     namespace femall {
@@ -45,7 +43,7 @@ namespace thomasfermi {
             */
             Beta(std::vector<double> const & xvec, std::vector<double> const & yvec);
             
-            //! A destructor.
+            //! A default destructor.
             /*!
                 デフォルトデストラクタ
             */
@@ -114,7 +112,7 @@ namespace thomasfermi {
             */
             Beta(Beta const & dummy) = delete;
 
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
                 \param dummy コピー元のオブジェクト（未使用）

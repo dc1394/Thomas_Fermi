@@ -33,4 +33,3 @@ namespace thomasfermi {
 }
 
 #endif  // _ELEMENT_H_
-

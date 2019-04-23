@@ -15,87 +15,87 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="alglibinternal.cpp">
+    <ClCompile Include="src\alglibinternal.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="alglibmisc.cpp">
+    <ClCompile Include="src\alglibmisc.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="ap.cpp">
+    <ClCompile Include="src\ap.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="dataanalysis.cpp">
+    <ClCompile Include="src\dataanalysis.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="diffequations.cpp">
+    <ClCompile Include="src\diffequations.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="fasttransforms.cpp">
+    <ClCompile Include="src\fasttransforms.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="integration.cpp">
+    <ClCompile Include="src\integration.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="interpolation.cpp">
+    <ClCompile Include="src\interpolation.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="linalg.cpp">
+    <ClCompile Include="src\linalg.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="optimization.cpp">
+    <ClCompile Include="src\optimization.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="solvers.cpp">
+    <ClCompile Include="src\solvers.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="specialfunctions.cpp">
+    <ClCompile Include="src\specialfunctions.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="statistics.cpp">
+    <ClCompile Include="src\statistics.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="alglibinternal.h">
+    <ClInclude Include="src\alglibinternal.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="alglibmisc.h">
+    <ClInclude Include="src\alglibmisc.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ap.h">
+    <ClInclude Include="src\ap.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="dataanalysis.h">
+    <ClInclude Include="src\dataanalysis.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="diffequations.h">
+    <ClInclude Include="src\diffequations.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="fasttransforms.h">
+    <ClInclude Include="src\fasttransforms.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="integration.h">
+    <ClInclude Include="src\integration.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="interpolation.h">
+    <ClInclude Include="src\interpolation.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="linalg.h">
+    <ClInclude Include="src\linalg.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="optimization.h">
+    <ClInclude Include="src\optimization.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="solvers.h">
+    <ClInclude Include="src\solvers.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="specialfunctions.h">
+    <ClInclude Include="src\specialfunctions.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="statistics.h">
+    <ClInclude Include="src\statistics.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="src\stdafx.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

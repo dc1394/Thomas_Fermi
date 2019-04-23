@@ -9,7 +9,6 @@
 #include <cmath>                                // for std::exp, std::pow
 #include <iostream>                             // for std::cout
 #include <utility>                              // for std::get
-#include <boost/cast.hpp>                       // for boost::numeric_cast
 #include <boost/format.hpp>                     // for boost::format
 #include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
 
@@ -30,11 +29,8 @@ namespace thomasfermi {
 			max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
             y_prime_0_(std::get<2>(pt))
         {
-            auto const func = myfunctional::make_functional(
-                [this](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); });
-			
-			s_ = 4.0 * boost::math::constants::pi<double>() / (gl_.qgauss(
-				func,
+            s_ = 4.0 * boost::math::constants::pi<double>() / (gl_.qgauss(
+                [this](double x) { return std::sqrt(x) * y(x) * std::sqrt(y(x)); },
 				xvec_.front(),
 				xvec_.back()) * Z_);
         }

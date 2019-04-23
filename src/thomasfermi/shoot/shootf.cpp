@@ -21,26 +21,24 @@
 #include <iterator>						// for std::advance, std::distance
 #include <utility>                      // for std::make_pair
 #include <boost/assert.hpp>				// for BOOST_ASSERT
-#include <boost/cast.hpp>				// for boost::numeric_cast
 #include <boost/numeric/odeint.hpp>		// for boost::numeric::odeint
 #include <boost/range/algorithm.hpp>	// for boost::find_if			
-#include <cilk/cilk.h>					// for cilk_spawn, cilk_sync
 #include <Eigen/Dense>
 #include <Eigen/LU>						// for Eigen::FullPivLU
 #include <gsl/gsl_spline.h>             // for gsl_interp_accel, gsl_interp_accel_free, gsl_spline, gsl_spline_free
 
 namespace thomasfermi {
 	namespace shoot {
-		shootf::shootf(double delv1, double delv2, double dx, double eps, loadfunctype const & load1, load2 const & l2,	scorefunctype const & score, double v1,	double v2) :
-			delv1_(delv1),
-			delv2_(delv2),
-			dx_(dx),
-			eps_(eps),
-			load1_(load1),
-			load2_([&l2](double v2, double x2) { return l2(v2, x2); }),
-			score_(score),
-			v1_(v1),
-			v2_(v2)
+		shootf::shootf(double delv1, double delv2, double dx, double eps, loadfunctype const & load1, load2 const & l2,	scorefunctype const & score, double v1,	double v2)
+	        :   delv1_(delv1),
+			    delv2_(delv2),
+			    dx_(dx),
+			    eps_(eps),
+			    load1_(load1),
+			    load2_([&l2](double v2, double x2) { return l2(v2, x2); }),
+			    score_(score),
+			    v1_(v1),
+			    v2_(v2)
 		{
 		}
 
@@ -84,12 +82,12 @@ namespace thomasfermi {
 				v1_ = sav;
 			};
 
-			if (usecilk) {
-				cilk_spawn funcx1();
-			}
-			else {
+			//if (usecilk) {
+			//	cilk_spawn funcx1();
+			//}
+			//else {
 				funcx1();
-			}
+			//}
 			
             // 次にx2で用いる境界条件を変える
 			{	
@@ -107,9 +105,9 @@ namespace thomasfermi {
 				v2_ = sav;
 			};
 			
-			if (usecilk) {
+			/*if (usecilk) {
 				cilk_sync;
-			}
+			}*/
 
 			Eigen::VectorXd f(shootfunc::NVAR), ff(shootfunc::NVAR);
 			for (auto i = 0U; i < shootfunc::NVAR; i++) {
@@ -126,7 +124,7 @@ namespace thomasfermi {
 
 			y1 = load1_(x1, v1_);
 
-			dvector res1;
+			std::vector<double> res1;
 			
             res1.reserve(boost::numeric_cast<std::size_t>((xf - x1) / dx_) + 2);
 			
@@ -142,33 +140,33 @@ namespace thomasfermi {
 				{ res1.push_back(y[0]); });     // dx...xf + x1の結果を得る
 			};
 
-			if (usecilk) {
-				cilk_spawn funcx1toxf();
-			}
-			else {
+			//if (usecilk) {
+			//	cilk_spawn funcx1toxf();
+			//}
+			//else {
 				funcx1toxf();
-			}
+			//}
 
 			// 得られた条件でx2...xfまで微分方程式を解く
 			y2 = load2_(x2, v2_);								
 			
-            dvector res2;
+            std::vector<double> res2;
 			res2.reserve(boost::numeric_cast<std::size_t>((x2 - xf) / dx_) + 1);
 			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](auto const & y, double const)
 			{ res2.push_back(y[0]); });         // x2...xf - x1の結果を得る
 
-			if (usecilk) {
+			/*if (usecilk) {
 				cilk_sync;
-			}
+			}*/
 
             return createResult(res1, res2, x1, xf);
 		}
 
-        shootf::result_type shootf::createResult(dvector const & res1, dvector const & res2, double x1, double xf) const
+        shootf::result_type shootf::createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const
 		{
 			auto const size = boost::numeric_cast<std::vector<double>::size_type>(res1.size() + res2.size() - 1);
 
-			dvector xp, xptmp, yp;
+			std::vector<double> xp, xptmp, yp;
             xp.reserve(size);
             xptmp.reserve(size - 1);
             yp.reserve(size);

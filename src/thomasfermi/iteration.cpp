@@ -20,11 +20,9 @@
 #include "iteration.h"
 #include "readinputfile.h"
 #include "shoot/shootf.h"
-#include "soelement.h"
 #include <iostream>                             // for std::cout
 #include <stdexcept>                            // for std::runtime_error
 #include <boost/assert.hpp>                     // for BOOST_ASSERT
-#include <boost/cast.hpp>                       // for boost::numeric_cast
 #include <boost/format.hpp>                     // for boost::format
 
 namespace thomasfermi {
@@ -64,7 +62,7 @@ namespace thomasfermi {
             auto const [xtmp, ytmp] = s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_);
 
             x_ = xtmp;
-            y_ = FEM::dmklvector(ytmp.cbegin(), ytmp.cend());
+            y_ = std::vector<double>(ytmp.cbegin(), ytmp.cend());
             y1_ = ytmp[0];
             y2_ = ytmp.back();
             
@@ -141,11 +139,11 @@ namespace thomasfermi {
             return std::sqrt(sum);
         }
 
-        FEM::dvector Iteration::make_beta() const
+        std::vector<double> Iteration::make_beta() const
         {
             auto const size = y_.size();
             BOOST_ASSERT(size == x_.size());
-            FEM::dvector beta(size);
+            std::vector<double> beta(size);
 
             for (auto i = 0U; i < size; i++) {
                 beta[i] = y_[i] * std::sqrt(y_[i] / x_[i]);
@@ -154,7 +152,7 @@ namespace thomasfermi {
             return beta;
         }
 
-        void Iteration::ymix(femall::FEM::dmklvector const & y)
+        void Iteration::ymix(std::vector<double> const & y)
         {
             y_ = (*pmix_)(y);
         }

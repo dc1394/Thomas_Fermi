@@ -22,9 +22,8 @@
 #pragma once
 
 #include "element.h"
-#include "mkl_allocator.h"
-#include <tuple>            // for std::tuple
-#include <vector>           // for std::vexctor
+#include <tuple>    // for std::tuple
+#include <vector>   // for std::vector
 
 namespace thomasfermi {
     namespace femall {
@@ -34,8 +33,6 @@ namespace thomasfermi {
         */
         class Linear_equations final {
             // #region 型エイリアス
-
-            using dvector = std::vector< double, mkl_allocator<double> > ;
 
             using sivector = std::vector<std::size_t>;
 
@@ -51,7 +48,7 @@ namespace thomasfermi {
             */
             explicit Linear_equations(FEM::resulttuple const & res);
 
-            //! A destructor.
+            //! A default destructor.
             /*!
                 デストラクタ
             */
@@ -78,7 +75,7 @@ namespace thomasfermi {
                 ベクトルbを初期化する
                 \param b 対象のベクトルb
             */
-            void reset(Linear_equations::dvector const & b);
+            void reset(std::vector<double> const & b);
             
             template <Element E>
             //! A public member function.
@@ -86,7 +83,7 @@ namespace thomasfermi {
                 連立一次方程式の解を求める
                 \return 連立一次方程式の解
             */
-            Linear_equations::dvector LEsolver();
+            std::vector<double> LEsolver();
 
             // #endregion publicメンバ関数
 
@@ -97,37 +94,37 @@ namespace thomasfermi {
             /*!
                 ベクトルa0
             */
-            dvector a0_;
+            std::vector<double> a0_;
 
             //! A private member variable (constant).
             /*!
                 ベクトルa0の複製
             */
-            dvector a0back_;
+            std::vector<double> a0back_;
 
             //! A private member variable.
             /*!
                 ベクトルa1
             */
-            dvector a1_;
+            std::vector<double> a1_;
 
             //! A private member variable (constant).
             /*!
                 ベクトルa1の複製
             */
-            dvector a1back_;
+            std::vector<double> a1back_;
 
             //! A private member variable.
             /*!
                 ベクトルa2
             */
-            dvector a2_;
+            std::vector<double> a2_;
 
             //! A private member variable.
             /*!
                 ベクトルb
             */
-            dvector b_;
+            std::vector<double> b_;
 
             //! A private member variable (constant).
             /*!
@@ -153,7 +150,7 @@ namespace thomasfermi {
             */
             Linear_equations(Linear_equations const & dummy) = delete;
 
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
                 \param dummy コピー元のオブジェクト（未使用）

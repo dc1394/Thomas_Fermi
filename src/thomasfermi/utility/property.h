@@ -35,7 +35,7 @@ namespace utility {
         {
         }
 
-        //! A destructor.
+        //! A default destructor.
         /*!
             デフォルトデストラクタ
         */
@@ -107,25 +107,27 @@ namespace utility {
 
         // #region 禁止されたコンストラクタ・メンバ関数
 
-        //! A private constructor (deleted).
+    public:
+        //! A default constructor (deleted).
         /*!
-        デフォルトコンストラクタ（禁止）
+            デフォルトコンストラクタ（禁止）
         */
         Property() = delete;
 
-        //! A private copy constructor (deleted).
+        //! A copy constructor (deleted).
         /*!
-        コピーコンストラクタ（禁止）
+            コピーコンストラクタ（禁止）
+            \param dummy コピー元のオブジェクト（未使用）
         */
-        Property(Property const &) = delete;
+        Property(Property const & dummy) = delete;
 
-        //! A private member function (deleted).
+        //! A public member function (deleted).
         /*!
             operator=()の宣言（禁止）
-            \param コピー元のオブジェクト（未使用）
+            \param dummy コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
-        Property & operator=(Property const &) = delete;
+        Property & operator=(Property const & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
     };

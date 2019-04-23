@@ -23,10 +23,8 @@
 
 #include "beta.h"
 #include "gausslegendre/gausslegendre.h"
-#include "mkl_allocator.h"
 #include "utility/property.h"
 #include <array>                    // for std::array
-#include <functional>               // for std::function
 #include <memory>                   // for std::unique_ptr, std::shared_ptr
 #include <vector>                   // for std::vector
 #include <boost/multi_array.hpp>    // for boost::multi_array
@@ -43,14 +41,10 @@ namespace thomasfermi {
             // #region 型エイリアス
 
         public:
-            using dvector = std::vector<double>;
-
-            using dmklvector = std::vector<double, mkl_allocator< double > >;
-
-            using resulttuple = std::tuple< FEM::dmklvector, FEM::dmklvector, FEM::dmklvector, FEM::dmklvector >;
+            using resulttuple = std::tuple<std::vector<double>, std::vector<double>, std::vector<double>, std::vector<double> >;
 
         private:
-            using dmatrix = std::array < std::array<double, 3>, 3 >;
+            using dmatrix = std::array<std::array<double, 3>, 3>;
 
             // #endregion 型エイリアス
 
@@ -65,9 +59,9 @@ namespace thomasfermi {
                 \param nint Gauss-Legendreの分点
                 \param usecilk Cilk Plusを使用するかどうか
             */
-            FEM(dvector && beta, dvector const & coords, std::size_t nint, bool usecilk);
+            FEM(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk);
 
-            //! A destructor.
+            //! A default destructor.
             /*!
                 デストラクタ
             */
@@ -89,7 +83,7 @@ namespace thomasfermi {
                 βの状態をリセットする
                 \param beta 対象のβ
             */
-            virtual void reset(dvector const & beta) = 0;
+            virtual void reset(std::vector<double> const & beta) = 0;
             
             //! A public member function.
             /*!
@@ -161,7 +155,7 @@ namespace thomasfermi {
                 \param ielem 要素
                 \return c
             */
-            virtual dvector getc(std::size_t ielem) const = 0;
+            virtual std::vector<double> getc(std::size_t ielem) const = 0;
 
             // #endregion 
 
@@ -171,7 +165,7 @@ namespace thomasfermi {
             //! A property.
             /*!
             */
-            Property<FEM::dmklvector const &> const B;
+            Property<std::vector<double> const &> const B;
 
             //! A property.
             /*!
@@ -209,32 +203,32 @@ namespace thomasfermi {
             /*!
                 連立方程式Ax = Bの行列Aの対角要素
             */
-            FEM::dmklvector a0_;
+            std::vector<double> a0_;
 
             //! A private member variable.
             /*!
                 連立方程式Ax = Bの行列Aの三重対角要素
             */
-            FEM::dmklvector a1_;
+            std::vector<double> a1_;
 
             //! A private member variable.
             /*!
                 連立方程式Ax = BのベクトルB
             */
-            FEM::dmklvector b_;
+            std::vector<double> b_;
 
         private:
             //! A private member variable (constant).
             /*!
                 関数β
             */
-            dvector const beta_;
+            std::vector<double> const beta_;
             
         protected:
             //! A protected member variable (constant).
             /*!
             */
-            dvector const coords_;
+            std::vector<double> const coords_;
 
             //! A protected member variable.
             /*!
@@ -278,26 +272,26 @@ namespace thomasfermi {
             // #region 禁止されたコンストラクタ・メンバ関数
 
         private:
-            //! A private constructor (deleted).
+            //! A default constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
             */
             FEM() = delete;
 
-            //! A private copy constructor (deleted).
+            //! A copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
-                \param コピー元のオブジェクト（未使用）
+                \param dummy コピー元のオブジェクト（未使用）
             */
-            FEM(FEM const &) = delete;
+            FEM(FEM const & dummy) = delete;
 
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
-                \param コピー元のオブジェクト（未使用）
+                \param dummy コピー元のオブジェクト（未使用）
                 \return コピー元のオブジェクト
             */
-            FEM & operator=(FEM const &) = delete;
+            FEM & operator=(FEM const & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };

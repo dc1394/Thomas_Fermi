@@ -30,7 +30,7 @@ namespace checkpoint {
         \param TTypeSize 収納する型のサイズ
         \param TnumArray 収納する要素の数
     */
-	template <size_t TTypeSize, size_t TNumArray = 1>
+	template <std::size_t TTypeSize, std::size_t TNumArray = 1>
 	struct FastArenaObject final
 	{
 		// サイズは絶対０より大きくなくちゃダメ
@@ -58,7 +58,6 @@ namespace checkpoint {
 
         // #region 禁止されたコンストラクタ・メンバ関数
 
-    public:
         //! A default constructor (deleted).
         /*!
             デフォルトコンストラクタ（禁止）
@@ -72,7 +71,7 @@ namespace checkpoint {
         */
         FastArenaObject(FastArenaObject const & dummy) = delete;
 
-        //! A private member function (deleted).
+        //! A public member function (deleted).
         /*!
             operator=()の宣言（禁止）
             \param dummy コピー元のオブジェクト（未使用）
@@ -85,4 +84,3 @@ namespace checkpoint {
 }
 
 #endif  // _FASTARENAOBJECT_H_
-

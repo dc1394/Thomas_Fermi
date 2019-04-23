@@ -27,9 +27,9 @@ namespace myfunctional {
         */
         explicit Functional(FUNCTYPE const & func) : func_(func) {}
 
-		//! A destructor.
+		//! A default destructor.
 		/*!
-			唯一のデストラクタ
+			デフォルトデストラクタ
 		*/
 		~Functional() = default;
 
@@ -61,6 +61,32 @@ namespace myfunctional {
         FUNCTYPE const & func_;
 
         // #endregion メンバ変数
+
+        // #region 禁止されたコンストラクタ・メンバ関数
+
+    public:
+        //! A default constructor (deleted).
+        /*!
+            デフォルトコンストラクタ（禁止）
+        */
+        Functional() = delete;
+
+        //! A copy constructor (deleted).
+        /*!
+            コピーコンストラクタ（禁止）
+            \param dummy コピー元のオブジェクト（未使用）
+        */
+        Functional(Functional const & dummy) = delete;
+
+        //! A public member function (deleted).
+        /*!
+            operator=()の宣言（禁止）
+            \param dummy コピー元のオブジェクト（未使用）
+            \return コピー元のオブジェクト
+        */
+        Functional & operator=(Functional const & dummy) = delete;
+
+        // #endregion 禁止されたコンストラクタ・メンバ関数
     };
 
 	template <typename FUNCTYPE>
@@ -70,7 +96,7 @@ namespace myfunctional {
         \param func 格納する関数
         \return 生成されたFunction<FUNCTYPE>
     */
-    inline Functional<FUNCTYPE> make_functional(FUNCTYPE const & func)
+    Functional<FUNCTYPE> make_functional(FUNCTYPE const & func)
     {
         return Functional<FUNCTYPE>(func);
     }

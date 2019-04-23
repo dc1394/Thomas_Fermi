@@ -23,7 +23,6 @@
 #pragma once
 
 #include "shootfunc.h"
-#include "../utility/deleter.h"
 #include <memory>				// for std::unique_ptr
 #include <gsl/gsl_spline.h>     // for gsl_interp_accel, gsl_interp_accel_free, gsl_spline, gsl_spline_free
 
@@ -141,7 +140,7 @@ namespace thomasfermi {
             */
 			load2(load2 const & dummy) = delete;
 			
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
                 \param dummy コピー元のオブジェクト
