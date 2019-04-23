@@ -1,9 +1,20 @@
 ﻿/*! \file shootfunc.h
     \brief y(x)の初期関数y0(x)の、原点に近い点xにおける関数値および微分値と、
            適合点xfにおける関数値および微分値を求めるクラスの宣言
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
+	
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef _SHOOTFUNC_H_
@@ -65,11 +76,10 @@ namespace thomasfermi {
                 \param dydx d[y0(x)]/dxの関数値および微分値（出力）
                 \param x y0(x)のx
             */
-            static void rhs(shootfunc::state_type const & y, shootfunc::state_type & dydx, const double x);
+            static void rhs(shootfunc::state_type const & y, shootfunc::state_type & dydx, double const x);
 
             // #endregion メンバ関数
 
-        public:
             // #region メンバ定数
 
             //! A public member variable (constant expression).
@@ -86,30 +96,33 @@ namespace thomasfermi {
 
             // #endregion 
 
-		public:
-            // #region 禁止されたコンストラクタ・メンバ関数
+		    // #region 禁止されたコンストラクタ・メンバ関数
 
-            //! A private constructor (deleted).
+            //! A default constructor (deleted).
             /*!
                 デフォルトコンストラクタ（禁止）
             */
             shootfunc() = delete;
 
-            //! A private copy constructor (deleted).
+            //! A copy constructor (deleted).
             /*!
                 コピーコンストラクタ（禁止）
+                \param dummy コピー元のオブジェクト（未使用）
             */
-			shootfunc(const shootfunc &) = delete;
+			shootfunc(shootfunc const & dummy) = delete;
 			
-            //! A private member function (deleted).
+            //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
-                \param コピー元のオブジェクト
+                \param dummy コピー元のオブジェクト
                 \return コピー元のオブジェクト
             */
-            shootfunc & operator=(const shootfunc &) = delete;
+            shootfunc & operator=(shootfunc const & dummy) = delete;
+
+            // #endregion 禁止されたコンストラクタ・メンバ関数
 		};
 	}
 }
 
-#endif	// _SHOOTFUNC_H_
+#endif  // _SHOOTFUNC_H_
+

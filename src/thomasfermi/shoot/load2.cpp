@@ -1,9 +1,20 @@
 ﻿/*! \file load2.cpp
     \brief y(x)の初期関数y0(x)の、原点と端点における
     関数値とその微分値を求めるクラスの実装
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "load2.h"
@@ -16,8 +27,8 @@ namespace thomasfermi {
         // #region コンストラクタ
 
 		load2::load2() :
-			acc_(gsl_interp_accel_alloc(), utility::gsl_interp_accel_deleter),
-			spline_(gsl_spline_alloc(gsl_interp_cspline, load2::XYSIZE), utility::gsl_spline_deleter)
+			acc_(gsl_interp_accel_alloc(), gsl_interp_accel_free),
+			spline_(gsl_spline_alloc(gsl_interp_cspline, load2::XYSIZE), gsl_spline_free)
 		{
             // 正規表現 = "  ([\d\.]+\, )+[\d\.]+\,"→"$1"
 
@@ -120,3 +131,4 @@ namespace thomasfermi {
         // #endregion publicメンバ関数
 	}
 }
+

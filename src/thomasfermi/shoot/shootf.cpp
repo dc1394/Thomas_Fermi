@@ -1,8 +1,19 @@
 ﻿/*! \file shootf.cpp
     \brief 狙い撃ち法により、y(x)を求めるクラスの実装
+    Copyright © 2014-2019 @dc1394 All Rights Reserved.
+	
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
 
-    Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program. If not, see <http://www.gnu.org/licenses/>.    
 */
 
 #include "shootf.h"
@@ -16,6 +27,7 @@
 #include <cilk/cilk.h>					// for cilk_spawn, cilk_sync
 #include <Eigen/Dense>
 #include <Eigen/LU>						// for Eigen::FullPivLU
+#include <gsl/gsl_spline.h>             // for gsl_interp_accel, gsl_interp_accel_free, gsl_spline, gsl_spline_free
 
 namespace thomasfermi {
 	namespace shoot {
@@ -105,7 +117,7 @@ namespace thomasfermi {
 				ff[i] = - f[i];
 			}
 
-			Eigen::FullPivLU< Eigen::MatrixXd > lu(dfdv);
+			Eigen::FullPivLU<Eigen::MatrixXd> lu(dfdv);
 			ff = lu.solve(ff);
 						
             v1_ += ff[0];                       // x1の境界でのパラメータ値の増分
@@ -179,10 +191,10 @@ namespace thomasfermi {
 
 			BOOST_ASSERT(xptmp.size() == yp.size());
 
-			std::unique_ptr<gsl_interp_accel, decltype(utility::gsl_interp_accel_deleter)>
-				const acc(gsl_interp_accel_alloc(), utility::gsl_interp_accel_deleter);
-			std::unique_ptr<gsl_spline, decltype(utility::gsl_spline_deleter)>
-				const spline(gsl_spline_alloc(gsl_interp_cspline, yp.size()), utility::gsl_spline_deleter);
+			std::unique_ptr<gsl_interp_accel, decltype(&gsl_interp_accel_free)>
+				const acc(gsl_interp_accel_alloc(), gsl_interp_accel_free);
+			std::unique_ptr<gsl_spline, decltype(&gsl_spline_free)>
+				const spline(gsl_spline_alloc(gsl_interp_cspline, yp.size()), gsl_spline_free);
 
 			gsl_spline_init(spline.get(), xptmp.data(), yp.data(), xptmp.size());
 
@@ -207,3 +219,4 @@ namespace thomasfermi {
 		}
 	}
 }
+

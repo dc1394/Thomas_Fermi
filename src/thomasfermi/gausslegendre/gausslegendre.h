@@ -44,7 +44,7 @@ namespace gausslegendre {
         */
         explicit Gauss_Legendre(std::int32_t n);
 
-		//! A destructor.
+		//! A default destructor.
 		/*!
 			デフォルトデストラクタ
 		*/
