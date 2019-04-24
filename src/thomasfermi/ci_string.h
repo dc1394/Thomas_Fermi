@@ -23,6 +23,7 @@
 
 #include <string>   // for std::string
 #include <cctype>   // for std::toupper
+#include <cstdint>  // for std::int32_t
 
 namespace thomasfermi {
     //! A class.
@@ -40,7 +41,7 @@ namespace thomasfermi {
             \param 文字列の長さ
             \return std::strcmpの戻り値と同様
         */
-        static int compare(char const * s1, char const * s2, std::size_t n);
+        static std::int32_t compare(char const * s1, char const * s2, std::size_t n);
 
         //! A public static member function.
         /*!

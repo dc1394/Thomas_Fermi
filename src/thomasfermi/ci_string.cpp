@@ -26,7 +26,7 @@
 namespace thomasfermi {
     // #region staticメンバ関数
 
-    int ci_char_traits::compare(char const * s1, char const * s2, std::size_t n)
+    std::int32_t ci_char_traits::compare(char const * s1, char const * s2, std::size_t n)
     {
 #ifdef _MSC_VER
         return _memicmp(s1, s2, n);

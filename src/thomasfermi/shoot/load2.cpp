@@ -26,9 +26,9 @@ namespace thomasfermi {
 	namespace shoot {
         // #region コンストラクタ
 
-		load2::load2() :
-			acc_(gsl_interp_accel_alloc(), gsl_interp_accel_free),
-			spline_(gsl_spline_alloc(gsl_interp_cspline, load2::XYSIZE), gsl_spline_free)
+		load2::load2()
+	        :   acc_(gsl_interp_accel_alloc(), gsl_interp_accel_free),
+			    spline_(gsl_spline_alloc(gsl_interp_cspline, load2::XYSIZE), gsl_spline_free)
 		{
             // 正規表現 = "  ([\d\.]+\, )+[\d\.]+\,"→"$1"
 

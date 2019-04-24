@@ -22,7 +22,6 @@
 #pragma once
 
 #include "load2.h"
-#include "../myfunctional/functional.h"
 #include <functional>					// for std::function
 #include <utility>						// for std::pair
 #include <vector>						// for std::vector
@@ -93,7 +92,7 @@ namespace thomasfermi {
                 \param xf 適合点に近いxの値
                 \return xのメッシュとそれに対応したyの値のtuple
             */
-			shootf::result_type createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const;
+			result_type createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const;
 
             //! A private member function (const).
             /*!
@@ -127,9 +126,9 @@ namespace thomasfermi {
                 \param x1 原点に近いxの値
                 \param x2 無限遠点に近いxの値
                 \param xf 適合点のxの値
-                \param xのメッシュとそれに対応したyの値のstd::pair（戻り値として使用）
+                \param result xのメッシュとそれに対応したyの値のstd::pair（戻り値として使用）
             */
-			void operator()(bool useomp, double x1, double x2, double xf, shootf::result_type & result);
+			void operator()(bool useomp, double x1, double x2, double xf, result_type & result);
 
             // #endregion publicメンバ関数
 

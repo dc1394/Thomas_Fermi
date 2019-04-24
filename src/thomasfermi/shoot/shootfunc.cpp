@@ -20,7 +20,6 @@
 
 #include "shootfunc.h"
 #include <cmath>						// for std::sqrt
-#include <boost/range/algorithm.hpp>	// for boost::copy
 
 namespace thomasfermi {
 	namespace shoot {

@@ -90,6 +90,7 @@
       <OpenMP>GenerateParallelCode</OpenMP>
       <WarningLevel>Level1</WarningLevel>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

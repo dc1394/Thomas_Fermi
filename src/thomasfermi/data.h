@@ -22,7 +22,6 @@
 #pragma once
 
 #include "ci_string.h"
-#include <array>        // for std::array
 #include <cstdint>      // for std::uint32_t, std::uint8_t
 
 namespace thomasfermi {
@@ -145,7 +144,7 @@ namespace thomasfermi {
         /*!
             Cilk Plusを使用するかどうか
         */
-        bool usecilk_ = true;
+        bool useomp_ = true;
 
         //!  A public member variable.
         /*!

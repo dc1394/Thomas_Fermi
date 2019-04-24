@@ -39,9 +39,9 @@ namespace thomasfermi {
                 \param beta
                 \param coords
                 \param nint
-                \param usecilk Cilkを使用するかどうか
+                \param useomp Cilkを使用するかどうか
             */
-            SOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk);
+            SOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool useomp);
 
             //! A default destructor.
             /*!

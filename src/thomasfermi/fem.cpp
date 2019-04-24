@@ -28,7 +28,7 @@ namespace thomasfermi {
     namespace femall {
         // #region コンストラクタ
 
-        FEM::FEM(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk) :
+        FEM::FEM(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool useomp) :
             B([this] { return std::cref(b_); }, nullptr),
             Nnode([this] { return nnode_; }, nullptr),
             Ntnoel([this] { return ntnoel_; }, nullptr),
@@ -42,7 +42,7 @@ namespace thomasfermi {
             gl_(nint),
             nint_(nint),
             pbeta_(std::make_shared<Beta>(coords_, beta_)),
-            usecilk_(usecilk)
+            useomp_(useomp)
         {
             BOOST_ASSERT(coords_.size() == beta_.size());
         }
@@ -65,7 +65,7 @@ namespace thomasfermi {
                 element(ielem);
             }
 
-            if (usecilk_) {
+            if (useomp_) {
                 auto const nelem = static_cast<std::int32_t>(nelem_);
 #pragma omp parallel for
                 for (auto ielem = 0; ielem < nelem; ielem++) {
@@ -83,7 +83,7 @@ namespace thomasfermi {
 
         void FEM::stiff2()
         {
-            if (usecilk_) {
+            if (useomp_) {
                 auto const nelem = static_cast<std::int32_t>(nelem_);
 #pragma omp parallel for
                 for (auto ielem = 0; ielem < nelem; ielem++) {

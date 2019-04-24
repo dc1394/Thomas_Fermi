@@ -57,9 +57,9 @@ namespace thomasfermi {
                 \param beta 関数β(x)の配列
                 \param coords xのメッシュ
                 \param nint Gauss-Legendreの分点
-                \param usecilk Cilk Plusを使用するかどうか
+                \param useomp Cilk Plusを使用するかどうか
             */
-            FEM(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk);
+            FEM(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool useomp);
 
             //! A default destructor.
             /*!
@@ -267,7 +267,7 @@ namespace thomasfermi {
             /*!
                 Cilk Plusを使用するかどうか
             */
-            bool const usecilk_;
+            bool const useomp_;
 
             // #region 禁止されたコンストラクタ・メンバ関数
 

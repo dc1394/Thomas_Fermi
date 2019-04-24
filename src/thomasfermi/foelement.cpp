@@ -24,8 +24,8 @@ namespace thomasfermi {
     namespace femall {
         // #region コンストラクタ
 
-        FOElement::FOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk) :
-            FEM(std::move(beta), coords, nint, usecilk),
+        FOElement::FOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool useomp) :
+            FEM(std::move(beta), coords, nint, useomp),
             func_([this](double x) { return pbeta_->operator()<Element::First>(x); }),
             fun1_([this](double r, double xl, std::size_t ielem)
             { return -N1_(r) * func_(N1_(r) * coords_[lnods_[ielem][0]] + N2_(r) * coords_[lnods_[ielem][1]]) * xl * 0.5; }),

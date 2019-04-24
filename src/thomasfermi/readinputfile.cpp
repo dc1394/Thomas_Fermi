@@ -40,7 +40,7 @@ namespace thomasfermi {
         lineindex_(1),
         pdata_(std::make_shared<Data>())
     {
-        pdata_->usecilk_ = std::get<1>(arg);
+        pdata_->useomp_ = std::get<1>(arg);
     }
 
     // #endregion コンストラクタ
