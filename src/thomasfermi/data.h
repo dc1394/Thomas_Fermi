@@ -72,7 +72,7 @@ namespace thomasfermi {
     /*!
         電子密度を合成するときの重みのデフォルト値
     */
-    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.1;
+    static auto constexpr ITERATION_MIXING_WEIGHT_DEFAULT = 0.08;
 
     //! A global variable (constant expression).
     /*!
@@ -84,7 +84,7 @@ namespace thomasfermi {
     /*!
         微分方程式を解くときのメッシュの最小値のデフォルト値
     */
-    static auto constexpr XMIN_DEFAULT = 1.0E-4;
+    static auto constexpr XMIN_DEFAULT = 1.0E-5;
 
     //! A struct.
     /*!

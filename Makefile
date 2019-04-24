@@ -33,20 +33,19 @@ DEPS = $(OBJS:.o=.d)
 #
 # C++コンパイラの指定
 #
-CXX = icpc
+CXX = clang++
 
 #
 # C++コンパイラに与える、（最適化等の）オプション
 #
-CXXFLAGS = -Wall -Wextra -std=c++17 -xHOST -O3 -ipo -no-prec-div -pipe -I${MKLROOT}/include 
+CXXFLAGS = -Wall -Wextra -std=c++17 -fopenmp -O3
 
 #
 # リンク対象に含めるライブラリの指定
 #
-LDFLAGS = -L/home/dc1394/oss/boost_1_69_0/stage/icc/lib \
+LDFLAGS = -L/home/dc1394/oss/boost_1_69_0/stage/clang/lib \
           -lboost_program_options \
-		  -L${MKLROOT}/lib/intel64 \
-		  -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lgsl -ldl
+		  -lopenblas -lm -ldl -lgsl
 #
 # makeの動作
 #

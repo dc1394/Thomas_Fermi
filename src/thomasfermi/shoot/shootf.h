@@ -17,7 +17,7 @@
 */
 
 #ifndef _SHOOTF_H_
-#define _SHOOTF_H
+#define _SHOOTF_H_
 
 #pragma once
 
@@ -26,6 +26,7 @@
 #include <functional>					// for std::function
 #include <utility>						// for std::pair
 #include <vector>						// for std::vector
+#include <boost/numeric/odeint.hpp>		// for boost::numeric::odeint
 
 namespace thomasfermi {
     namespace shoot {
@@ -39,10 +40,11 @@ namespace thomasfermi {
 			using loadfunctype = std::function<shootfunc::state_type(double, double)>;
 
         public:
-			using result_type = std::pair<std::vector<double>, std::vector<double>>;
+			using result_type = std::pair< std::vector<double>, std::vector<double> >;
 
         private:
 			using scorefunctype = std::function<Eigen::VectorXd(shootfunc::state_type const &)>;
+			using stepper_type = boost::numeric::odeint::bulirsch_stoer<shootfunc::state_type>;
 
             // #endregion 型エイリアス
 
@@ -93,6 +95,26 @@ namespace thomasfermi {
             */
 			shootf::result_type createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const;
 
+            //! A private member function (const).
+            /*!
+                x2からxf - x1まで常微分方程式を解く
+                \param x1 原点に近いxの値
+                \param x2 無限遠点に近いxの値
+                \param xf 適合点に近いxの値
+                \return yのメッシュ
+            */
+            std::vector<double> solveodex2toxfmx1(double x1, double x2, double xf) const;
+
+            //! A private member function (const).
+            /*!
+                x1からxf + x1まで常微分方程式を解く
+                \param x1 原点に近いxの値
+                \param xf 適合点に近いxの値
+                \param y1 yの初期条件
+                \return yのメッシュ
+            */
+            std::vector<double> solveodex1toxfpx1(double x1, double xf, shootfunc::state_type & y1) const;
+            
             // #endregion privateメンバ関数
 
             // #region publicメンバ関数
@@ -101,13 +123,13 @@ namespace thomasfermi {
             //! A public member function (const).
             /*!
                 結果を生成する
-				\param usecilk cilkを使うかどうか
+				\param useomp OpenMPを使うかどうか
                 \param x1 原点に近いxの値
                 \param x2 無限遠点に近いxの値
                 \param xf 適合点のxの値
-                \return xのメッシュとそれに対応したyの値のtuple
+                \param xのメッシュとそれに対応したyの値のstd::pair（戻り値として使用）
             */
-			shootf::result_type operator()(bool usecilk, double x1, double x2, double xf);
+			void operator()(bool useomp, double x1, double x2, double xf, shootf::result_type & result);
 
             // #endregion publicメンバ関数
 
