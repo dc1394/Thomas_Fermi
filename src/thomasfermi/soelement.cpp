@@ -16,7 +16,6 @@
     with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include "soelement.h"
 
 namespace thomasfermi {
@@ -26,7 +25,7 @@ namespace thomasfermi {
         SOElement::SOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool usecilk)
             :   FEM(std::move(beta), coords, nint, usecilk),
                 a2_(nnode_ - 2, 0.0),
-                func_([this](double x) { return pbeta_->operator() < Element::Second > (x); })
+                func_([this](double x) { return pbeta_->operator()<Element::Second>(x); })
         {
             auto const N1tmp = [](double r) { return -0.5 * r * (1.0 - r); };
             N1_ = std::cref(N1tmp);
@@ -61,7 +60,7 @@ namespace thomasfermi {
         void SOElement::reset(std::vector<double> const & beta)
         {
             FEM::reset(beta);
-            func_ = [this](double x) { return pbeta_->operator()< Element::Second >(x); };
+            func_ = [this](double x) { return pbeta_->operator()<Element::Second>(x); };
         }
 
         // #endregion publicメンバ関数

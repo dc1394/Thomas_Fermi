@@ -21,14 +21,19 @@
 #include <iterator>						// for std::advance, std::distance
 #include <utility>                      // for std::make_pair
 #include <boost/assert.hpp>				// for BOOST_ASSERT
-#include <boost/numeric/odeint.hpp>		// for boost::numeric::odeint
 #include <boost/range/algorithm.hpp>	// for boost::find_if			
 #include <Eigen/Dense>
 #include <Eigen/LU>						// for Eigen::FullPivLU
 #include <gsl/gsl_spline.h>             // for gsl_interp_accel, gsl_interp_accel_free, gsl_spline, gsl_spline_free
 
+#if _OPENMP >= 200805
+    #include <omp.h>
+#endif
+
 namespace thomasfermi {
 	namespace shoot {
+        // #region コンストラクタ 
+
 		shootf::shootf(double delv1, double delv2, double dx, double eps, loadfunctype const & load1, load2 const & l2,	scorefunctype const & score, double v1,	double v2)
 	        :   delv1_(delv1),
 			    delv2_(delv2),
@@ -42,14 +47,16 @@ namespace thomasfermi {
 		{
 		}
 
-		shootf::result_type shootf::operator()(bool usecilk, double x1, double x2, double xf)
+        // #endregion コンストラクタ
+
+        // #region publicメンバ関数
+
+		void shootf::operator()(bool useomp, double x1, double x2, double xf, shootf::result_type & result)
 		{
+            using namespace boost::numeric::odeint;
+            
 			BOOST_ASSERT(x1 < xf);
 			BOOST_ASSERT(x2 > xf);
-
-			using namespace boost::numeric::odeint;
-
-			using stepper_type = bulirsch_stoer<shootfunc::state_type>;
 
 			// 最良の仮の値v1_でx1からxfまで解いていく
 			auto y1 = load1_(x1, v1_);
@@ -64,7 +71,7 @@ namespace thomasfermi {
 			Eigen::MatrixXd dfdv(shootfunc::NVAR, shootfunc::NVAR);
 
             // x1で用いる境界条件を変える
-			auto const funcx1 = [&]
+			auto const funcx1 = [this](auto & dfdv, auto & f1, auto x1, auto xf)
 			{
                 auto const sav = v1_;
                 v1_ += delv1_;
@@ -82,15 +89,11 @@ namespace thomasfermi {
 				v1_ = sav;
 			};
 
-			//if (usecilk) {
-			//	cilk_spawn funcx1();
-			//}
-			//else {
-				funcx1();
-			//}
-			
-            // 次にx2で用いる境界条件を変える
-			{	
+            // 次にx2で用いる境界条件を変える    
+            auto const functmp = [this](auto & dfdv, auto & f2, auto x2, auto xf)
+            {
+                using namespace boost::numeric::odeint;
+
 				auto const sav = v2_;
 				v2_ += delv2_;
 
@@ -104,11 +107,25 @@ namespace thomasfermi {
 			
 				v2_ = sav;
 			};
-			
-			/*if (usecilk) {
-				cilk_sync;
-			}*/
 
+			if (useomp) {
+#if _OPENMP >= 200805
+    #pragma omp task shared(dfdv)
+#endif
+                funcx1(dfdv, f1, x1, xf);
+#if _OPENMP >= 200805
+    #pragma omp task shared(dfdv)
+#endif
+                functmp(dfdv, f2, x2, xf);
+#if _OPENMP >= 200805
+    #pragma omp taskwait
+#endif
+			}
+			else {
+				funcx1(dfdv, f1, x1, xf);
+                functmp(dfdv, f2, x2, xf);
+			}
+            
 			Eigen::VectorXd f(shootfunc::NVAR), ff(shootfunc::NVAR);
 			for (auto i = 0U; i < shootfunc::NVAR; i++) {
 				f[i] = f1[i] - f2[i];
@@ -124,47 +141,35 @@ namespace thomasfermi {
 
 			y1 = load1_(x1, v1_);
 
-			std::vector<double> res1;
-			
-            res1.reserve(boost::numeric_cast<std::size_t>((xf - x1) / dx_) + 2);
-			
-			auto const funcx1toxf = [&]
-			{
-				// 得られた条件でx1...dxまで微分方程式を解く
-				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res1](auto const & y, auto const)
-				{ res1.push_back(y[0]);	});     // x1...dxの結果を得る
-				res1.pop_back();
+			std::vector<double> res1, res2;
+			if (useomp) {
+#if _OPENMP >= 200805
+    #pragma omp task shared(res1)
+#endif
+				res1 = solveodex1toxfpx1(x1, xf, y1);
+#if _OPENMP >= 200805
+    #pragma omp task shared(res2)
+#endif
+                res2 = solveodex2toxfmx1(x1, x2, xf);
+#if _OPENMP >= 200805
+    #pragma omp taskwait
+#endif
+			}
+			else {
+				res1 = solveodex1toxfpx1(x1, xf, y1);
+                res2 = solveodex2toxfmx1(x1, x2, xf);
+			}
 
-				// 得られた条件でdx...xfまで微分方程式を解く
-				integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res1](auto const & y, double const)
-				{ res1.push_back(y[0]); });     // dx...xf + x1の結果を得る
-			};
-
-			//if (usecilk) {
-			//	cilk_spawn funcx1toxf();
-			//}
-			//else {
-				funcx1toxf();
-			//}
-
-			// 得られた条件でx2...xfまで微分方程式を解く
-			y2 = load2_(x2, v2_);								
-			
-            std::vector<double> res2;
-			res2.reserve(boost::numeric_cast<std::size_t>((x2 - xf) / dx_) + 1);
-			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res2](auto const & y, double const)
-			{ res2.push_back(y[0]); });         // x2...xf - x1の結果を得る
-
-			/*if (usecilk) {
-				cilk_sync;
-			}*/
-
-            return createResult(res1, res2, x1, xf);
+            result = createResult(res1, res2, x1, xf);
 		}
+
+        // #endregion publicメンバ関数
+
+        // #region privateメンバ関数
 
         shootf::result_type shootf::createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const
 		{
-			auto const size = boost::numeric_cast<std::vector<double>::size_type>(res1.size() + res2.size() - 1);
+            auto const size = boost::numeric_cast<std::vector<double>::size_type>(res1.size() + res2.size() - 1);
 
 			std::vector<double> xp, xptmp, yp;
             xp.reserve(size);
@@ -174,11 +179,11 @@ namespace thomasfermi {
 			auto const xfindex = boost::numeric_cast<std::size_t>(xf / dx_); 
 
 			for (auto i = 0U; i < xfindex; i++) {
-				xptmp.push_back(i ? static_cast<double>(i)* dx_ : x1);
+				xptmp.push_back(i ? static_cast<double>(i) * dx_ : x1);
 			}
 
 			for (auto i = xfindex + 1U; i < size; i++) {
-				xptmp.push_back(static_cast<double>(i)* dx_);
+				xptmp.push_back(static_cast<double>(i) * dx_);
 			}
 
 			yp.assign(res1.begin(), res1.end() - 1);
@@ -215,6 +220,44 @@ namespace thomasfermi {
 
 			return std::make_pair(std::move(xp), std::move(yp));
 		}
+
+        std::vector<double> shootf::solveodex2toxfmx1(double x1, double x2, double xf) const
+        {
+            using namespace boost::numeric::odeint;
+            
+			// 得られた条件でx2...xf - x1まで微分方程式を解く
+			auto y2 = load2_(x2, v2_);								
+			
+            std::vector<double> res;
+			res.reserve(boost::numeric_cast<std::size_t>((x2 - xf) / dx_) + 1);
+                
+            integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y2, x2, xf - x1, - dx_, [&res](auto const & y, auto const)
+			{ res.push_back(y[0]); });         // x2...xf - x1の結果を得る
+			
+            return res;
+        }
+
+        std::vector<double> shootf::solveodex1toxfpx1(double x1, double xf, shootfunc::state_type & y1) const
+        {
+            using namespace boost::numeric::odeint;
+
+            std::vector<double> res;
+            res.reserve(boost::numeric_cast<std::size_t>((xf - x1) / dx_) + 2);
+            
+            // 得られた条件でx1...dxまで微分方程式を解く
+			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, x1, dx_, dx_ - x1, [&res](auto const & y, auto const)
+			{ res.push_back(y[0]); });     // x1...dxの結果を得る
+			res.pop_back();
+            
+			// 得られた条件でdx...xf + x1まで微分方程式を解く
+			integrate_const(stepper_type(eps_, eps_), shootfunc::rhs, y1, dx_, xf + x1, dx_, [&res](auto const & y, auto const)
+			{ res.push_back(y[0]); });     // dx...xf + x1の結果を得る
+            
+            //std::printf("%d\n", static_cast<int>(res.size()));
+            return res;
+        }
+
+        // #endregion privateメンバ関数
 	}
 }
 

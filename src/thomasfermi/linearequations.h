@@ -50,7 +50,7 @@ namespace thomasfermi {
 
             //! A default destructor.
             /*!
-                デストラクタ
+                デフォルトデストラクタ
             */
             ~Linear_equations() = default;
 

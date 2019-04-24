@@ -20,25 +20,25 @@
 #include "linearequations.h"
 #include <cmath>                // for std::abs
 #include <stdexcept>            // for std::logic_error, std::invalid_argument
-#include <boost/cast.hpp>       // for boost::numeric_cast
 #include <boost/format.hpp>     // for boost::format
 
 extern "C" {
-    int dptsv_(std::int32_t * n, std::int32_t * nrhs, double * d, double * e, double * b, std::int32_t * ldb, std::int32_t * info);
+    std::int32_t dptsv_(std::int32_t * n, std::int32_t * nrhs, double * d, double * e, double * b, std::int32_t * ldb, std::int32_t * info);
+    int dpbsv_(char * uplo, std::int32_t * n, std::int32_t * kd, std::int32_t * nrhs, double *ab, std::int32_t * ldab, double * b, std::int32_t * ldb, std::int32_t * info);
 }
 
 namespace thomasfermi {
     namespace femall {
         // #region コンストラクタ
 
-        Linear_equations::Linear_equations(FEM::resulttuple const & res) :
-            a0_(std::get<0>(res)),
-            a0back_(a0_),
-            a1_(std::get<1>(res)),
-            a1back_(a1_),
-            a2_(std::get<2>(res)),
-            b_(std::get<3>(res)),
-            n_(std::get<0>(res).size())
+        Linear_equations::Linear_equations(FEM::resulttuple const & res)
+            :   a0_(std::get<0>(res)),
+                a0back_(a0_),
+                a1_(std::get<1>(res)),
+                a1back_(a1_),
+                a2_(std::get<2>(res)),
+                b_(std::get<3>(res)),
+                n_(std::get<0>(res).size())
         {
         }
 
@@ -103,19 +103,23 @@ namespace thomasfermi {
             return b_;
         }
 
-        /*template <>
+        template <>
         std::vector<double> Linear_equations::LEsolver<Element::Second>()
         {
-            auto const n = boost::numeric_cast<lapack_int>(n_);
+            // 上三角要素を使う場合
+            auto uplo = 'U';
+
+            // 線形方程式の数（行列Aの次数）
+            auto n = static_cast<std::int32_t>(n_);
 
             // 係数行列の帯の中にある対角線より上の部分の個数
-            lapack_int const kd = 2;
+            auto kd = 2;
 
             // 行列{B}の列数。通常通り1
-            lapack_int const nrhs = 1;
+            auto nrhs = 1;
 
             // 配列ABの1次元目の大きさ（= KD + 1）
-            auto const nb = kd + 1;
+            auto nb = kd + 1;
 
             // 係数行列の帯の外を省略して詰め込んだ2次元配列
             // ピボッティングありのLU分解を行うために(KD + 1)× N必要
@@ -135,16 +139,17 @@ namespace thomasfermi {
                 }
             }
 
-            auto const info = LAPACKE_dpbsv(
-                LAPACK_COL_MAJOR,           // 行優先か列優先か
-                'U',                    // 上三角要素を使う場合
-                n,                          // 線形方程式の数（行列Aの次数）
-                kd,                         // 係数行列の帯の中にある対角線より上の部分の個数
-                nrhs,                       // 行列{B}の列数。通常通り1
-                ab.data(),               // 係数行列(input)，コレスキー分解の結果(output)
-                nb,                     // 配列ABの1次元目の大きさ（=KD+1） 
-                b_.data(),                // 方程式の右辺(input)，方程式の解(output)
-                n);                     // 行列Bの1次元目の大きさ（=N）
+            std::int32_t info;
+            dpbsv_(
+                &uplo,      // 上三角要素を使う場合                    
+                &n,         // 線形方程式の数（行列Aの次数）
+                &kd,        // 係数行列の帯の中にある対角線より上の部分の個数
+                &nrhs,      // 行列{B}の列数。通常通り1
+                ab.data(),  // 係数行列(input)，コレスキー分解の結果(output)
+                &nb,        // 配列ABの1次元目の大きさ（=KD+1） 
+                b_.data(),  // 方程式の右辺(input)，方程式の解(output)
+                &n,         // 行列Bの1次元目の大きさ（=N）
+                &info);
 
             if (info > 0) {
                 throw std::logic_error("U is singular");
@@ -156,7 +161,7 @@ namespace thomasfermi {
             }
 
             return b_;
-        }*/
+        }
 
         void Linear_equations::reset(std::vector<double> const & b)
         {
@@ -184,3 +189,4 @@ namespace thomasfermi {
         // #endregion templateメンバ関数の実体化
     }
 }
+

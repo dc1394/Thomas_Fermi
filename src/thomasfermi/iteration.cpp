@@ -20,10 +20,11 @@
 #include "iteration.h"
 #include "readinputfile.h"
 #include "shoot/shootf.h"
-#include <iostream>                             // for std::cout
-#include <stdexcept>                            // for std::runtime_error
-#include <boost/assert.hpp>                     // for BOOST_ASSERT
-#include <boost/format.hpp>                     // for boost::format
+#include "soelement.h"
+#include <iostream>         // for std::cout
+#include <stdexcept>        // for std::runtime_error
+#include <boost/assert.hpp> // for BOOST_ASSERT
+#include <boost/format.hpp> // for boost::format
 
 namespace thomasfermi {
     namespace femall {
@@ -59,7 +60,17 @@ namespace thomasfermi {
                 l2.make_v2(pdata_->xmax_));
             
             auto const usecilk = std::get<1>(arg);
-            auto const [xtmp, ytmp] = s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_);
+            
+            std::vector<double> xtmp, ytmp;
+            auto result = std::make_pair(xtmp, ytmp);
+
+#if _OPENMP >= 200805
+    #pragma omp parallel    // OpenMP並列領域の始まり
+    #pragma omp single      // task句はsingle領域で実行
+#endif
+            s(usecilk, pdata_->xmin_, pdata_->xmax_, pdata_->match_point_, result);
+
+            std::tie(xtmp, ytmp) = result;
 
             x_ = xtmp;
             y_ = std::vector<double>(ytmp.cbegin(), ytmp.cend());
