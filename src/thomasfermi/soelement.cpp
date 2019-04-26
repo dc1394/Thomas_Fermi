@@ -32,13 +32,13 @@ namespace thomasfermi {
 
             auto const N2tmp = [](double r) { return 0.5 * r * (1.0 + r); };
             N2_ = std::cref(N2tmp);
-            
+
             auto const N3tmp = [](double r) { return (1.0 - r * r); };
             N3_ = std::cref(N3tmp);
 
             ntnoel_ = 3;
             nelem_ = (nnode_ - 1) >> 1;
-            
+
             initialize();
 
             for (auto i = 0U; i < nelem_; i++) {
@@ -47,7 +47,7 @@ namespace thomasfermi {
                 lnods_[i][2] = 2 * i + 1;
             }
         }
-        
+
         // #endregion コンストラクタ
 
         // #region publicメンバ関数
@@ -56,7 +56,7 @@ namespace thomasfermi {
         {
             return std::forward_as_tuple(a0_, a1_, a2_, b_);
         }
-        
+
         void SOElement::reset(std::vector<double> const & beta)
         {
             FEM::reset(beta);
@@ -86,7 +86,7 @@ namespace thomasfermi {
                 }
             }
         }
-        
+
         void SOElement::element(std::size_t ielem)
         {
             astiffclear();
@@ -136,4 +136,3 @@ namespace thomasfermi {
         // #endregion privateメンバ関数
     }
 }
-

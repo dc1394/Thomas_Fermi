@@ -63,10 +63,10 @@ namespace thomasfermi {
 
             //! A default destructor.
             /*!
-                デストラクタ
+                デフォルトデストラクタ
             */
             virtual ~FEM() = default;
-            
+
             // #endregion コンストラクタ・デストラクタ 
 
             // #region publicメンバ関数
@@ -77,7 +77,7 @@ namespace thomasfermi {
                 \return 結果を集めたboost::container::flat_map
             */
             virtual FEM::resulttuple createresult() const = 0;
-            
+
             //! A public member function (pure virtual function).
             /*!
                 βの状態をリセットする
@@ -87,7 +87,7 @@ namespace thomasfermi {
             
             //! A public member function.
             /*!
-                
+
             */
             void stiff();
 
@@ -107,7 +107,7 @@ namespace thomasfermi {
                 astiff_を0に初期化する
             */
             void astiffclear();
-            
+
             //! A protected member function.
             /*!
                 小行列の要素を生成する
@@ -186,7 +186,7 @@ namespace thomasfermi {
             // #endregion プロパティ
 
             // #region メンバ変数
-            
+
         protected:
             //! A protected member variable (constant).
             /*!
@@ -222,8 +222,7 @@ namespace thomasfermi {
             /*!
                 関数β
             */
-            std::vector<double> const beta_;
-            
+
         protected:
             //! A protected member variable (constant).
             /*!
@@ -236,16 +235,16 @@ namespace thomasfermi {
             */
             gausslegendre::Gauss_Legendre gl_;
 
-			//! A protected member variable.
-			/*!
-			*/
-			boost::multi_array< std::size_t, 2 > lnods_;
-			
+            //! A protected member variable.
+            /*!
+            */
+            boost::multi_array< std::size_t, 2 > lnods_;
+
             //! A protected member variable.
             /*!
             */
             std::size_t nelem_;
-            
+
             //! A protected member variable (constant).
             /*!
                 Gauss-Legendreの分点数
@@ -256,13 +255,13 @@ namespace thomasfermi {
             /*!
             */
             std::size_t ntnoel_;
-            
+
             //! A protected member variable.
             /*!
                 βオブジェクトへのスマートポインタ
             */
             std::shared_ptr<Beta> pbeta_;
-            
+
             //! A protected member variable.
             /*!
                 Cilk Plusを使用するかどうか
@@ -299,4 +298,3 @@ namespace thomasfermi {
 }
 
 #endif  // _FEM_H_
-

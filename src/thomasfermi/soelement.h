@@ -45,7 +45,7 @@ namespace thomasfermi {
 
             //! A default destructor.
             /*!
-                デストラクタ
+                デフォルトデストラクタ
             */
             ~SOElement() override = default;
 
@@ -59,7 +59,7 @@ namespace thomasfermi {
                 \return 結果を集めたboost::container::flat_map
             */
             FEM::resulttuple createresult() const override;
-            
+
             //! A public member function (override).
             /*!
                 βの状態をリセットする
@@ -153,7 +153,7 @@ namespace thomasfermi {
                 形状関数その3を格納する関数オブジェクト
             */
             std::function<double(double)> N3_;
-            
+
             // #region 禁止されたコンストラクタ・メンバ関数
 
         public:

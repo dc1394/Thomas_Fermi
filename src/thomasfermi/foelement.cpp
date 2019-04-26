@@ -34,15 +34,15 @@ namespace thomasfermi {
         {
             auto const N1tmp = [](double r) { return 0.5 * (1.0 - r); };
             N1_ = std::cref(N1tmp);
-            
+
             auto const N2tmp = [](double r) { return 0.5 * (1.0 + r); };
             N2_ = std::cref(N2tmp);
 
             ntnoel_ = 2;
             nelem_ = nnode_ - 1;
-            
+
             initialize();
-            
+
             for (auto i = 0U; i < nelem_; i++) {
                 lnods_[i][0] = i;
                 lnods_[i][1] = i + 1;
@@ -81,7 +81,7 @@ namespace thomasfermi {
 
             for (auto ir = 0U; ir < nint_; ir++) {
                 auto const dndr(getdndr());
-                
+
                 FEM::element(dndr, ielem, ir);
             }
         }
@@ -116,4 +116,3 @@ namespace thomasfermi {
         // #endregion privateメンバ関数
     }
 }
-

@@ -28,7 +28,7 @@
 namespace thomasfermi {
     //! A class.
     /*!
-        コマンドラインオプションを解析するクラス    
+        コマンドラインオプションを解析するクラス
     */
     class GetComLineOption final {
         // #region コンストラクタ・デストラクタ
@@ -45,7 +45,7 @@ namespace thomasfermi {
             デフォルトデストラクタ
         */
         ~GetComLineOption() = default;
-        
+
         // #endregion コンストラクタ・デストラクタ
 
         // #region メンバ関数
@@ -76,7 +76,7 @@ namespace thomasfermi {
             デフォルトのインプットファイル名
         */
         static std::string const DEFINPNAME;
-        
+
         //!  A private member variable.
         /*!
             デフォルトのインプットファイル名
@@ -85,7 +85,7 @@ namespace thomasfermi {
 
         //!  A private member variable.
         /*!
-            OpenMPを使用するかどうか    
+            OpenMPを使用するかどうか
         */
         bool useomp_ = false;
 

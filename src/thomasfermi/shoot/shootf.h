@@ -1,7 +1,7 @@
 ﻿/*! \file shootf.h
     \brief 狙い撃ち法により、y(x)を求めるクラスの宣言
     Copyright © 2014-2019 @dc1394 All Rights Reserved.
-	
+
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the Free
     Software Foundation; either version 3 of the License, or (at your option)
@@ -22,10 +22,10 @@
 #pragma once
 
 #include "load2.h"
-#include <functional>					// for std::function
-#include <utility>						// for std::pair
-#include <vector>						// for std::vector
-#include <boost/numeric/odeint.hpp>		// for boost::numeric::odeint
+#include <functional>               // for std::function
+#include <utility>                  // for std::pair
+#include <vector>                   // for std::vector
+#include <boost/numeric/odeint.hpp> // for boost::numeric::odeint
 
 namespace thomasfermi {
     namespace shoot {
@@ -36,14 +36,14 @@ namespace thomasfermi {
         class shootf final {
             // #region 型エイリアス
 
-			using loadfunctype = std::function<shootfunc::state_type(double, double)>;
+            using loadfunctype = std::function<shootfunc::state_type(double, double)>;
 
         public:
-			using result_type = std::pair< std::vector<double>, std::vector<double> >;
+            using result_type = std::pair< std::vector<double>, std::vector<double> >;
 
         private:
-			using scorefunctype = std::function<Eigen::VectorXd(shootfunc::state_type const &)>;
-			using stepper_type = boost::numeric::odeint::bulirsch_stoer<shootfunc::state_type>;
+            using scorefunctype = std::function<Eigen::VectorXd(shootfunc::state_type const &)>;
+            using stepper_type = boost::numeric::odeint::bulirsch_stoer<shootfunc::state_type>;
 
             // #endregion 型エイリアス
 
@@ -74,9 +74,9 @@ namespace thomasfermi {
 
             //! A default destructor.
             /*!
-				デフォルトデストラクタ
+                デフォルトデストラクタ
             */
-			~shootf() = default;
+            ~shootf() = default;
 
             // #endregion コンストラクタ・デストラクタ
 
@@ -92,7 +92,7 @@ namespace thomasfermi {
                 \param xf 適合点に近いxの値
                 \return xのメッシュとそれに対応したyの値のtuple
             */
-			result_type createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const;
+            result_type createResult(std::vector<double> const & res1, std::vector<double> const & res2, double x1, double xf) const;
 
             //! A private member function (const).
             /*!
@@ -113,7 +113,7 @@ namespace thomasfermi {
                 \return yのメッシュ
             */
             std::vector<double> solveodex1toxfpx1(double x1, double xf, shootfunc::state_type & y1) const;
-            
+
             // #endregion privateメンバ関数
 
             // #region publicメンバ関数
@@ -122,13 +122,13 @@ namespace thomasfermi {
             //! A public member function (const).
             /*!
                 結果を生成する
-				\param useomp OpenMPを使うかどうか
+                \param useomp OpenMPを使うかどうか
                 \param x1 原点に近いxの値
                 \param x2 無限遠点に近いxの値
                 \param xf 適合点のxの値
                 \param result xのメッシュとそれに対応したyの値のstd::pair（戻り値として使用）
             */
-			void operator()(bool useomp, double x1, double x2, double xf, result_type & result);
+            void operator()(bool useomp, double x1, double x2, double xf, result_type & result);
 
             // #endregion publicメンバ関数
 
@@ -165,23 +165,23 @@ namespace thomasfermi {
             */
             double const eps_;
 
-			//! A private member variable (constant).
-			/*!
-				原点に近いxにおけるyの値とその微分値を求める関数オブジェクト
-			*/
-			loadfunctype const load1_;
+            //! A private member variable (constant).
+            /*!
+                原点に近いxにおけるyの値とその微分値を求める関数オブジェクト
+            */
+            loadfunctype const load1_;
 
-			//! A private member variable (constant).
-			/*!
-				無限遠点に近いxにおけるyの値とその微分値を求める関数オブジェクト
-			*/
-			loadfunctype const load2_;
+            //! A private member variable (constant).
+            /*!
+                無限遠点に近いxにおけるyの値とその微分値を求める関数オブジェクト
+            */
+            loadfunctype const load2_;
 
-			//! A private member variable (constant).
-			/*!
-				適合点で合致するべきyの値とその微分値を求める関数オブジェクト
-			*/
-			scorefunctype const score_;
+            //! A private member variable (constant).
+            /*!
+                適合点で合致するべきyの値とその微分値を求める関数オブジェクト
+            */
+            scorefunctype const score_;
 
             //! A private member variable.
             /*!
@@ -221,8 +221,7 @@ namespace thomasfermi {
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
-	}
+    }
 }
 
 #endif  // _SHOOTF_H_
-

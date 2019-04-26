@@ -37,7 +37,7 @@ namespace thomasfermi {
             using namespace thomasfermi::shoot;
 
             // インプットファイルの読み込み
-            ReadInputFile rif(arg);         
+            ReadInputFile rif(arg);
             rif.readFile();
             pdata_ = rif.PData;
 
@@ -58,9 +58,9 @@ namespace thomasfermi {
                 shootfunc::score,
                 shootfunc::V1,
                 l2.make_v2(pdata_->xmax_));
-            
+
             auto const usecilk = std::get<1>(arg);
-            
+
             std::vector<double> xtmp, ytmp;
             auto result = std::make_pair(xtmp, ytmp);
 
@@ -76,7 +76,7 @@ namespace thomasfermi {
             y_ = std::vector<double>(ytmp.cbegin(), ytmp.cend());
             y1_ = ytmp[0];
             y2_ = ytmp.back();
-            
+
             pmix_->Yold = y_;
 
             pfem_.reset(new femall::FOElement(make_beta(), x_, pdata_->gauss_legendre_integ_, usecilk));
@@ -98,7 +98,7 @@ namespace thomasfermi {
         // #endregion コンストラクタ・デストラクタ
 
         // #region publicメンバ関数
-        
+
         void Iteration::Iterationloop()
         {
             for (auto i = 1U; i < pdata_->iteration_maxiter_; i++) {
@@ -120,7 +120,7 @@ namespace thomasfermi {
                     return;
                 }
             }
-            
+
             throw std::runtime_error("収束しませんでした。");
         }
 
@@ -167,7 +167,7 @@ namespace thomasfermi {
         {
             y_ = (*pmix_)(y);
         }
-        
+
         // #endregion privateメンバ関数
     }
 }

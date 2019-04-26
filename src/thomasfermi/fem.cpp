@@ -18,10 +18,10 @@
 */
 
 #include "fem.h"
-#include <cstdint>							// for std::uint32_t
-#include <utility>							// for std::move
-#include <boost/range/algorithm/fill.hpp>	// for boost::fill
-#include <boost/assert.hpp>					// for BOOST_ASSERT
+#include <cstdint>                          // for std::uint32_t
+#include <utility>                          // for std::move
+#include <boost/range/algorithm/fill.hpp>   // for boost::fill
+#include <boost/assert.hpp>                 // for BOOST_ASSERT
 #include <omp.h>
 
 namespace thomasfermi {
@@ -46,7 +46,7 @@ namespace thomasfermi {
         {
             BOOST_ASSERT(coords_.size() == beta_.size());
         }
-        
+
         // #endregion コンストラクタ
 
         // #region publicメンバ関数
@@ -56,7 +56,7 @@ namespace thomasfermi {
             pbeta_.reset();
             pbeta_ = std::make_shared<Beta>(coords_, beta);
 
-			boost::fill(b_, 0.0);
+            boost::fill(b_, 0.0);
         }
 
         void FEM::stiff()
@@ -154,4 +154,3 @@ namespace thomasfermi {
         // #endregion privateメンバ関数
     }
 }
-

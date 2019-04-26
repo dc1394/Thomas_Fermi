@@ -52,7 +52,7 @@ namespace thomasfermi {
             // #endregion コンストラクタ・デストラクタ 
 
             // #region publicメンバ関数
-            
+
             //! A public member function (constant - override).
             /*!
                 結果を返す関数
@@ -85,7 +85,7 @@ namespace thomasfermi {
                 \param ielem
             */
             void element(std::size_t ielem) override;
-            
+
             //! A private member function (constant).
             /*!
                 dn/drを返す関数
@@ -104,7 +104,7 @@ namespace thomasfermi {
             // #endregion メンバ関数
 
             // #region メンバ変数
-            
+
             //! A private member variable.
             /*!
                 double func(double)の形の関数オブジェクト
@@ -128,7 +128,7 @@ namespace thomasfermi {
                 形状関数1を格納する関数オブジェクト
             */
             std::function<double (double)> N1_;
-            
+
             //! A private member variable.
             /*!
                 形状関数2を格納する関数オブジェクト
@@ -150,7 +150,7 @@ namespace thomasfermi {
                 \param dummy コピー元のオブジェクト（未使用）
             */
             FOElement(FOElement const & dummy) = delete;
-            
+
             //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
@@ -158,7 +158,7 @@ namespace thomasfermi {
                 \return コピー元のオブジェクト
             */
             FOElement & operator=(FOElement const & dummy) = delete;
-            
+
             // #endregion 禁止されたコンストラクタ・メンバ関数
         };
     }

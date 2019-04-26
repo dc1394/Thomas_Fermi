@@ -22,9 +22,9 @@
 
 namespace thomasfermi {
     // #region staticメンバ変数
-    
-    std::string const GetComLineOption::DEFINPNAME = "input.inp";        
-        
+
+    std::string const GetComLineOption::DEFINPNAME = "input.inp";
+
     // #endregion staticメンバ変数
 
     // #region publicメンバ関数
@@ -74,7 +74,7 @@ namespace thomasfermi {
 
         return 0;
     }
-    
+
     std::pair<std::string, bool> GetComLineOption::getpairdata() const
     {
         return std::make_pair(inpname_, useomp_);

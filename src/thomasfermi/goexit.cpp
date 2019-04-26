@@ -1,4 +1,4 @@
-﻿/*! \file goexit.h
+﻿     \file goexit.h
     \brief プログラムを終了するときの関数の実装
     Copyright © 2015-2019 @dc1394 All Rights Reserved.
 

@@ -42,19 +42,19 @@ namespace thomasfermi {
         エネルギーを求めるときのGauss-Legendre積分の分点のデフォルト値
     */
     static auto constexpr GAUSS_LEGENDRE_INTEG_NORM_DEFAULT = 1000U;
-    
+
     //! A global variable (constant expression).
     /*!
         微分方程式を解くときのメッシュの数のデフォルト値
     */
     static auto constexpr GRID_NUM_DEFAULT = 20000U;
-    
+
     //! A global variable (constant expression).
     /*!
         マッチングポイント（xmin〜xmaxまでの間でなければならない）のデフォルト値
     */
     static auto constexpr MATCH_POINT_DEFAULT = 11.0;
-        
+
     //! A global variable (constant expression).
     /*!
         ITERATIONの収束判定条件の値のデフォルト値
@@ -91,7 +91,7 @@ namespace thomasfermi {
     */
     struct Data final {
         // #region メンバ変数
-        
+
         //!  A public member variable.
         /*!
             微分方程式を解くときの許容誤差
@@ -103,7 +103,7 @@ namespace thomasfermi {
             Gauss-Legendre積分の分点
         */
         std::uint32_t gauss_legendre_integ_ = GAUSS_LEGENDRE_INTEG_DEFAULT;
-        
+
         //!  A public member variable.
         /*!
             正規化を行う時のGauss-Legendre積分の分点
@@ -169,4 +169,3 @@ namespace thomasfermi {
 }
 
 #endif  // _DATA_H_
-

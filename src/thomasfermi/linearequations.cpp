@@ -189,4 +189,3 @@ namespace thomasfermi {
         // #endregion templateメンバ関数の実体化
     }
 }
-

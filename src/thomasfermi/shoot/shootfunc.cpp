@@ -2,7 +2,7 @@
     \brief y(x)の初期関数y0(x)の、原点に近い点xにおける関数値および微分値と、
            適合点xfにおける関数値および微分値を求めるクラスの実装
     Copyright © 2014-2019 @dc1394 All Rights Reserved.
-	
+
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the Free
     Software Foundation; either version 3 of the License, or (at your option)
@@ -47,4 +47,3 @@ namespace thomasfermi {
 		}
 	}
 }
-

@@ -1,7 +1,7 @@
 ﻿/*! \file ci_string.h
     \brief 大文字小文字を区別しない文字列クラスの宣言
     Copyright © 2015-2019 @dc1394 All Rights Reserved.
-    
+
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the Free
     Software Foundation; either version 3 of the License, or (at your option)
@@ -54,7 +54,7 @@ namespace thomasfermi {
         {
             return std::toupper(lhs) == std::toupper(rhs);
         }
-        
+
         //! A public static member function.
         /*!
             引数で与えられた二つの文字の大小関係を判別する
@@ -72,7 +72,7 @@ namespace thomasfermi {
 
     // #region 型エイリアス
 
-    using ci_string = std::basic_string < char, ci_char_traits >;
+    using ci_string = std::basic_string<char, ci_char_traits>;
 
     // #endregion 型エイリアス
 
@@ -93,5 +93,4 @@ namespace thomasfermi {
     // #endregion 非メンバ関数
 }
 
-#endif  // _CISTRING_H_
-
+#endif  // _CI_STRING_H_

@@ -59,7 +59,7 @@ namespace thomasfermi {
         ~ReadInputFile() = default;
 
         // #region コンストラクタ・デストラクタ
-        
+
         // #region メンバ関数
 
         //! A public member function.
@@ -204,7 +204,7 @@ namespace thomasfermi {
             ファイル読み込み用のストリーム
         */
         std::ifstream ifs_;
-        
+
         //! A private member variable.
         /*!
             現在の行数
@@ -216,9 +216,9 @@ namespace thomasfermi {
             インプットファイルから読み込んだデータ
         */
         std::shared_ptr<Data> pdata_;
-            
+
         // #endregion メンバ変数
-        
+
         // #region 禁止されたコンストラクタ・メンバ関数
 
     public:
@@ -362,4 +362,3 @@ namespace thomasfermi {
 }
 
 #endif  // _READINPUTFILE_H_
-

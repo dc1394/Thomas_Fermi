@@ -29,7 +29,7 @@ namespace thomasfermi {
     // #region staticメンバ変数
 
     ci_string const ReadInputFile::CHEMICAL_NUMBER = "chemical.number";
-    
+
     // #endregion staticメンバ変数
 
     // #region コンストラクタ

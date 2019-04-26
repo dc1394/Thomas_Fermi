@@ -1,5 +1,5 @@
 ﻿/*! \file simplemixing.h
-	\brief 一次混合法でyの合成を行うクラスの宣言
+    \brief 一次混合法でyの合成を行うクラスの宣言
     Copyright © 2015-2019 @dc1394 All Rights Reserved.
 
     This program is free software; you can redistribute it and/or modify it
@@ -26,7 +26,7 @@
 #include <vector>
 
 namespace thomasfermi {
-	namespace mixing {
+    namespace mixing {
         class SimpleMixing final {
             // #region コンストラクタ・デストラクタ
 
@@ -115,4 +115,4 @@ namespace thomasfermi {
     }
 }
 
-#endif	// _SIMPLEMIXING_H_
+#endif    // _SIMPLEMIXING_H_

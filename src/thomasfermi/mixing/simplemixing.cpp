@@ -1,6 +1,6 @@
 ﻿/*! \file simplemixing.cpp
-	\brief 一次混合法でyの合成を行うクラスの実装
-	Copyright © 2015-2019 @dc1394 All Rights Reserved.
+    \brief 一次混合法でyの合成を行うクラスの実装
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the Free
@@ -22,7 +22,7 @@ namespace thomasfermi {
     namespace mixing {
         SimpleMixing::SimpleMixing(std::shared_ptr<Data> const & pdata)
             :   Yold(
-				[this] { return std::cref(yold_); },
+                [this] { return std::cref(yold_); },
                 [this](std::vector<double> const & val) { 
                     yold_ = val;
                     return val;
@@ -31,17 +31,17 @@ namespace thomasfermi {
         {
         }
 
-		std::vector<double> SimpleMixing::operator()(std::vector<double> const & y)
+        std::vector<double> SimpleMixing::operator()(std::vector<double> const & y)
         {
             auto const size = y.size();
             BOOST_ASSERT(size == yold_.size());
 
             std::vector<double> newy(size);
 
-			for (auto i = 0U; i < size; i++) {
+            for (auto i = 0U; i < size; i++) {
                 newy[i] = yold_[i] + pdata_->iteration_mixing_weight_ * (y[i] - yold_[i]);
             }
-            
+
             yold_ = y;
 
             return newy;

@@ -144,10 +144,10 @@ namespace thomasfermi {
             */
             std::unique_ptr<FEM> pfem_;
 
-			//! A private member variable.
-			/*!
-				連立一次方程式のソルバーオブジェクト
-			*/
+            //! A private member variable.
+            /*!
+                連立一次方程式のソルバーオブジェクト
+            */
             std::optional<Linear_equations> ple_;
 
             //! A private member variable.

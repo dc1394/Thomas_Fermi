@@ -1,7 +1,7 @@
 /*! \file gausslegendre.h
     \brief Gauss-Legendre積分を行うクラスの宣言
     Copyright © 2014-2019 @dc1394 All Rights Reserved.
-	
+    
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the Free
     Software Foundation; either version 3 of the License, or (at your option)
@@ -32,7 +32,7 @@ namespace gausslegendre {
     /*!
         Gauss-Legendre積分を行うクラス
     */
-	class Gauss_Legendre final {
+    class Gauss_Legendre final {
     public:
         // #region コンストラクタ・デストラクタ
 
@@ -44,17 +44,17 @@ namespace gausslegendre {
         */
         explicit Gauss_Legendre(std::int32_t n);
 
-		//! A default destructor.
-		/*!
-			デフォルトデストラクタ
-		*/
-		~Gauss_Legendre() = default;
+        //! A default destructor.
+        /*!
+            デフォルトデストラクタ
+        */
+        ~Gauss_Legendre() = default;
 
         // #endregion コンストラクタ・デストラクタ
 
         // #region メンバ関数
 
-		template <typename FUNCTYPE>
+        template <typename FUNCTYPE>
         //! A public member function (template function).
         /*!
             Gauss-Legendre積分を実行する
@@ -77,22 +77,22 @@ namespace gausslegendre {
 
         // #endregion メンバ関数
 
-		// #region プロパティ
+        // #region プロパティ
 
-	public:
-		//! A property.
-		/*!
-			Gauss-Legendreの重みへのプロパティ
-		*/
-		utility::Property<std::vector<double> const &> const W;
+    public:
+        //! A property.
+        /*!
+            Gauss-Legendreの重みへのプロパティ
+        */
+        utility::Property<std::vector<double> const &> const W;
 
-		//! A property.
-		/*!
-			Gauss-Legendreの節へのプロパティ
-		*/
-		utility::Property<std::vector<double> const &> const X;
+        //! A property.
+        /*!
+            Gauss-Legendreの節へのプロパティ
+        */
+        utility::Property<std::vector<double> const &> const X;
 
-		// #endregion プロパティ
+        // #endregion プロパティ
 
         // #region メンバ変数
 
@@ -105,7 +105,7 @@ namespace gausslegendre {
 
         //! A private member variable.
         /*!
-			Gauss-Legendreの重み
+            Gauss-Legendreの重み
         */
         std::vector<double> w_;
 
@@ -114,7 +114,7 @@ namespace gausslegendre {
             Gauss-Legendreの節
         */
         std::vector<double> x_;
-        
+
         // #endregion メンバ変数
 
         // #region 禁止されたコンストラクタ・メンバ関数
@@ -131,7 +131,7 @@ namespace gausslegendre {
             コピーコンストラクタ（禁止）
             \param dummy コピー元のオブジェクト（未使用）
         */
-		Gauss_Legendre(Gauss_Legendre const & dummy) = delete;
+        Gauss_Legendre(Gauss_Legendre const & dummy) = delete;
 
         //! A public member function (deleted).
         /*!
@@ -139,10 +139,10 @@ namespace gausslegendre {
             \param dummy コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
-		Gauss_Legendre & operator=(Gauss_Legendre const & dummy) = delete;
+        Gauss_Legendre & operator=(Gauss_Legendre const & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
-	};
+    };
 
     // #region template publicメンバ関数
 
@@ -154,7 +154,7 @@ namespace gausslegendre {
 
         auto sum = 0.0;
         for (auto i = 0U; i < n_; i++) {
-			sum += w_[i] * func(xm + xr * x_[i]);
+            sum += w_[i] * func(xm + xr * x_[i]);
         }
 
         return sum * xr;

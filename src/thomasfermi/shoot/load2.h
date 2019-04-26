@@ -1,6 +1,6 @@
 ﻿/*! \file load2.h
     \brief y(x)の初期関数y0(x)の、原点と端点における
-           関数値とその微分値を求めるクラスの宣言
+    関数値とその微分値を求めるクラスの宣言
     Copyright © 2014-2019 @dc1394 All Rights Reserved.
 
     This program is free software; you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
     more details.
 
     You should have received a copy of the GNU General Public License along
-    with this program. If not, see <http://www.gnu.org/licenses/>.	
+    with this program. If not, see <http://www.gnu.org/licenses/>.    
 */
 
 #ifndef _LOAD2_H_
@@ -23,17 +23,17 @@
 #pragma once
 
 #include "shootfunc.h"
-#include <memory>				// for std::unique_ptr
+#include <memory>                // for std::unique_ptr
 #include <gsl/gsl_spline.h>     // for gsl_interp_accel, gsl_interp_accel_free, gsl_spline, gsl_spline_free
 
 namespace thomasfermi {
-	namespace shoot {
+    namespace shoot {
         //! A class.
         /*!
             y(x)の初期関数y0(x)の、原点と端点における
             関数値とその微分値を求めるクラス
         */
-		class load2	final {
+        class load2    final {
         public:
             // #region コンストラクタ
 
@@ -45,14 +45,14 @@ namespace thomasfermi {
 
             //! A default destructor.
             /*!
-				デフォルトデストラクタ
+                デフォルトデストラクタ
             */
-			~load2() = default;
+            ~load2() = default;
 
             // #endregion コンストラクタ・デストラクタ
 
             // #region メンバ関数
-            
+
             //! A public static member function.
             /*!
                 y0(x)のx（遠点）における微分値の近似値を求める
@@ -113,23 +113,23 @@ namespace thomasfermi {
             /*!
                 補間のために使う動的配列のサイズ
             */
-			static auto constexpr XYSIZE = 150;
+            static auto constexpr XYSIZE = 150;
 
         private:
-			//! A private member variable.
-			/*!
-				gsl_interp_accelへのスマートポインタ
-			*/
-			std::unique_ptr<gsl_interp_accel, decltype(&gsl_interp_accel_free)> const acc_;
+            //! A private member variable.
+            /*!
+                gsl_interp_accelへのスマートポインタ
+            */
+            std::unique_ptr<gsl_interp_accel, decltype(&gsl_interp_accel_free)> const acc_;
 
-			//! A private member variable.
-			/*!
-				gsl_splineへのスマートポインタ
-			*/
-			std::unique_ptr<gsl_spline, decltype(&gsl_spline_free)> const spline_;
+            //! A private member variable.
+            /*!
+                gsl_splineへのスマートポインタ
+            */
+            std::unique_ptr<gsl_spline, decltype(&gsl_spline_free)> const spline_;
 
             // #endregion メンバ変数
-            
+
             // #region 禁止されたコンストラクタ・メンバ関数
 
         public:
@@ -138,8 +138,8 @@ namespace thomasfermi {
                 コピーコンストラクタ（禁止）
                 \param dummy コピー元のオブジェクト（未使用）
             */
-			load2(load2 const & dummy) = delete;
-			
+            load2(load2 const & dummy) = delete;
+
             //! A public member function (deleted).
             /*!
                 operator=()の宣言（禁止）
@@ -149,9 +149,8 @@ namespace thomasfermi {
             load2 & operator=(load2 const & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
-		};
-	}
+        };
+    }
 }
 
 #endif  // _LOAD2_H_
-

@@ -31,23 +31,23 @@ namespace checkpoint {
         \param TTypeSize 収納する型のサイズ
         \param TnumArray 収納する要素の数
     */
-	template <std::size_t TTypeSize, std::size_t TNumArray>
-	class ArraiedAllocator final
-	{
-		// サイズは絶対０より大きくなくちゃダメ
-		BOOST_STATIC_ASSERT(TNumArray > 0);
+    template <std::size_t TTypeSize, std::size_t TNumArray>
+    class ArraiedAllocator final
+    {
+        // サイズは絶対０より大きくなくちゃダメ
+        BOOST_STATIC_ASSERT(TNumArray > 0);
 
         // #region クラス内クラスの宣言と実装
 
         //! A structure.
         /*!
         */
-		struct Item {
-			union {
-				char value_[TTypeSize];
-				struct Item * next_;
-			};
-		};
+        struct Item {
+            union {
+                char value_[TTypeSize];
+                struct Item * next_;
+            };
+        };
 
         // #endregion クラス内クラスの宣言と実装 
 
@@ -58,8 +58,8 @@ namespace checkpoint {
         /*!
             デフォルトコンストラクタかつ唯一のコンストラクタ
         */
-		ArraiedAllocator();
-        
+        ArraiedAllocator();
+
         //! A default destructor.
         /*!
             デフォルトデストラクタ
@@ -76,29 +76,28 @@ namespace checkpoint {
             \return 確保されたメモリのアドレス
         */
         static void * Alloc() {
-			Item * ret = first_;
-			first_ = ret->next_;
-			return reinterpret_cast<void *>(ret);
-		}
+            Item * ret = first_;
+            first_ = ret->next_;
+            return reinterpret_cast<void *>(ret);
+        }
 
         //! A public static member function.
         /*!
             確保されたメモリを解放する
             \param item 解放するメモリのアドレス
         */
-		static void Free(void * item) {
-			Item * rev = reinterpret_cast<Item *>(item);
-			rev->next_ = first_;
-			first_ = rev;
-		}
+        static void Free(void * item) {
+            Item * rev = reinterpret_cast<Item *>(item);
+            rev->next_ = first_;
+            first_ = rev;
+        }
 
         //! A public static member function.
         /*!
             アロケーターを返す
             \return アロケーター
         */
-		static ArraiedAllocator& GetAllocator() { return allocator_; }
-		
+        static ArraiedAllocator& GetAllocator() { return allocator_; }
 
         //! A public static member function.
         /*!
@@ -124,7 +123,7 @@ namespace checkpoint {
 
         //! A private static member variable.
         /*!
-            最初の要素へのポインタ        
+            最初の要素へのポインタ
         */
         static Item * first_;
         
@@ -153,7 +152,7 @@ namespace checkpoint {
         ArraiedAllocator & operator=(ArraiedAllocator const & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
-	};
+    };
 
     template <std::size_t TTypeSize, std::size_t TNumArray>
     inline ArraiedAllocator<TTypeSize, TNumArray>::ArraiedAllocator() {
@@ -170,9 +169,9 @@ namespace checkpoint {
     template <std::size_t TTypeSize, std::size_t TNumArray>
     typename ArraiedAllocator<TTypeSize, TNumArray>::Item* ArraiedAllocator<TTypeSize, TNumArray>::first_;
 
-	template <std::size_t TTypeSize, std::size_t TNumArray>
-	typename ArraiedAllocator<TTypeSize,TNumArray>::Item
-		ArraiedAllocator<TTypeSize, TNumArray>::items_[ArraiedAllocator<TTypeSize,TNumArray>::MAX_SIZE];
+    template <std::size_t TTypeSize, std::size_t TNumArray>
+    typename ArraiedAllocator<TTypeSize,TNumArray>::Item
+        ArraiedAllocator<TTypeSize, TNumArray>::items_[ArraiedAllocator<TTypeSize,TNumArray>::MAX_SIZE];
 }
 
 #endif // _ARRAYIEDALLOCATOR_H_

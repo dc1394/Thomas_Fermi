@@ -2,7 +2,7 @@
     \brief β(x)から電子密度とエネルギーを計算してファイルに記録するクラスの宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
-	This software is released under the BSD 2-Clause License.
+    This software is released under the BSD 2-Clause License.
 */
 
 #ifndef _MAKERHOENERGY_H_
@@ -13,20 +13,20 @@
 #include "../beta.h"
 #include "../gausslegendre/gausslegendre.h"
 #include <cstdint>                          // for std::int32_t
-#include <cstdio>							// for FILE, std::fclose
+#include <cstdio>                           // for FILE, std::fclose
 #include <memory>                           // for std::shared_ptr
 #include <tuple>                            // for std::tuple
 
 namespace thomasfermi {
-	namespace makerhoen {
+    namespace makerhoen {
         //! A class.
         /*!
             y(x)から電子密度とエネルギーを計算する
         */
-		class MakeRhoEnergy final {
+        class MakeRhoEnergy final {
             // #region 型エイリアス
 
-			using parameter_type = std::tuple<std::shared_ptr<femall::Beta>, std::vector<double>, double>;
+            using parameter_type = std::tuple<std::shared_ptr<femall::Beta>, std::vector<double>, double>;
 
             // #endregion 型エイリアス
 
@@ -35,7 +35,7 @@ namespace thomasfermi {
 
             //! A constructor.
             /*!
-				唯一のコンストラクタ
+                唯一のコンストラクタ
                 \param n Gauss-Legendreの分点
                 \param pt std::vector<double>、std::shared_ptr<Beta>、doubleのstd::tuple
                 \param Z 原子番号
@@ -44,9 +44,9 @@ namespace thomasfermi {
 
             //! A default destructor.
             /*!
-				デフォルトデストラクタ
+                デフォルトデストラクタ
             */
-			~MakeRhoEnergy() = default;
+            ~MakeRhoEnergy() = default;
 
             // #endregion コンストラクタ・デストラクタ
 
@@ -54,7 +54,7 @@ namespace thomasfermi {
 
             //! A public member function.
             /*!
-				計算結果をファイルに出力する
+                計算結果をファイルに出力する
             */
             void saveresult();
 
@@ -62,23 +62,23 @@ namespace thomasfermi {
 
         private:
             // #region privateメンバ関数
-			
-			//! A private member function (const).
-			/*!
-				厳密な電子密度の関数
-				\param r 原点からの距離（原子単位）
-				\return 厳密な電子密度
-			*/
-			double exactrho(double r) const noexcept;
 
-			//! A private member function (const).
-			/*!
-				厳密な電子密度の関数（4πr ** 2で割っている）
-				\param r 原点からの距離（原子単位）
-				\return 厳密な電子密度の関数（4πr ** 2で割っている）
-			*/
-			double exactrhoTilde(double r) const noexcept;
-			
+            //! A private member function (const).
+            /*!
+                厳密な電子密度の関数
+                \param r 原点からの距離（原子単位）
+                \return 厳密な電子密度
+            */
+            double exactrho(double r) const noexcept;
+
+            //! A private member function (const).
+            /*!
+                厳密な電子密度の関数（4πr ** 2で割っている）
+                \param r 原点からの距離（原子単位）
+                \return 厳密な電子密度の関数（4πr ** 2で割っている）
+            */
+            double exactrhoTilde(double r) const noexcept;
+
             //! A private member function (const).
             /*!
                 原子のエネルギーを求める
@@ -141,42 +141,42 @@ namespace thomasfermi {
                 α = [128 / (9π ** 2)]^(1 / 3) * Z^(1 / 3)
             */
             double const alpha_;
-			
-			//! A private variable (constant).
-			/*!
-				原子番号
-			*/
-			double const Z_;
 
-			//! A private variable (constant).
-			/*!
-				b = 32 / (9π ** 3) * Z ** 2
-			*/
-			double const b_;
+            //! A private variable (constant).
+            /*!
+                原子番号
+            */
+            double const Z_;
 
-			//! A private variable (constant).
-			/*!
-				x方向のメッシュが格納された動的配列
-			*/
-			std::vector<double> const xvec_;
+            //! A private variable (constant).
+            /*!
+                b = 32 / (9π ** 3) * Z ** 2
+            */
+            double const b_;
 
-			//! A private variable (constant).
-			/*!
-				x方向のメッシュの刻み幅
-			*/
-			double const dx_;
-			
-			//! A private variable (constant).
-			/*!
-				ファイルポインタ
-			*/
-			std::unique_ptr<FILE, decltype(&std::fclose)> fp_;
+            //! A private variable (constant).
+            /*!
+                x方向のメッシュが格納された動的配列
+            */
+            std::vector<double> const xvec_;
 
-			//! A private variable (constant).
-			/*!
-				Gauss-Legendreの積分を行うオブジェクト
-			*/
-			gausslegendre::Gauss_Legendre const gl_;
+            //! A private variable (constant).
+            /*!
+                x方向のメッシュの刻み幅
+            */
+            double const dx_;
+
+            //! A private variable (constant).
+            /*!
+                ファイルポインタ
+            */
+            std::unique_ptr<FILE, decltype(&std::fclose)> fp_;
+
+            //! A private variable (constant).
+            /*!
+                Gauss-Legendreの積分を行うオブジェクト
+            */
+            gausslegendre::Gauss_Legendre const gl_;
 
             //! A private variable (constant).
             /*!
@@ -185,30 +185,30 @@ namespace thomasfermi {
             std::shared_ptr<femall::Beta> const pbeta_;
 
             //! A private variable.
-			/*!
-				規格化のための定数
-				s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
-			*/
-			double s_;
-            
+            /*!
+                規格化のための定数
+                s_ = 1.0 / (∫(0～∞)√x[y(x)]^(3/2)dx)
+            */
+            double s_;
+
             //! A private variable (constant).
             /*!
                 x方向のメッシュが格納された動的配列のサイズ
             */
             std::size_t const size_;
-            
-			//! A private variable (constant).
-			/*!
-				ファイル出力するときのループの最大数
-			*/
-			std::int32_t const max_;
-			
+
+            //! A private variable (constant).
+            /*!
+                ファイル出力するときのループの最大数
+            */
+            std::int32_t const max_;
+
             //! A private member variable.
             /*!
                 原点に近いxにおけるyの微分値
             */
             double const y_prime_0_;
-			            
+
             // #endregion メンバ変数
 
         public:
@@ -236,8 +236,8 @@ namespace thomasfermi {
             MakeRhoEnergy & operator=(MakeRhoEnergy const & dummy) = delete;
 
             // #endregion 禁止されたコンストラクタ・メンバ関数
-		};
-	}
+        };
+    }
 }
 
 #endif  // _MAKERHOENERGY_H_

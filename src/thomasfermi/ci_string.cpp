@@ -59,4 +59,3 @@ namespace thomasfermi {
 
     // #endregion 非メンバ関数
 }
-
