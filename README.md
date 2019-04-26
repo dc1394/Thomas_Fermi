@@ -6,57 +6,22 @@
 ★これは何？
 　原子に対して、Thomas-Fermi方程式を有限要素法（Finite Element Method、FEM）で、
 　数値的に解くプログラムです。
-　ビルドには、以下のコンパイラが必要です。
-　・Intel® Parallel Studio XE 2016 for C++
 　ビルドには、以下のライブラリが必要です。
-　・Boost C++ Libraries 1.59.0
+　・Boost C++ Libraries
 　・Eigen
 　・GNU Scientific Library
 
 ★更新履歴
 　2015/04/28 ver.0.1   コードを全面的に書き直して公開。
 　2015/10/14 ver.0.11　細かい修正を施した。
+　2019/04/26 ver.0.12　ライセンス改訂。
 
 ★ライセンス
-　このソフトはフリーソフトウェアです（2条項BSDライセンス）。
+　このソフトはフリーソフトウェアです。ライセンスはGNU General Public License
+　v3.0）です。
 --------------------------------------------------------------------------------
 　thomasfermi
-　Copyright (C) 2015 @dc1394
-
-　1.ソースコード形式であれバイナリ形式であれ、変更の有無に関わらず、以下の条件を
-　満たす限りにおいて、再配布および利用を許可します。
-
-　1-1.ソースコード形式で再配布する場合、上記著作権表示、 本条件書および第2項の責
-　任限定規定を必ず含めてください。
-　1-2.バイナリ形式で再配布する場合、上記著作権表示、 本条件書および下記責任限定
-　規定を、配布物とともに提供される文書 および/または 他の資料に必ず含めてくださ
-　い。
-
-　2.本ソフトウェアは無保証です。自己責任で使用してください。
-
-  Copyright (c) 2015, @dc1394
-  All rights reserved.
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
-  * Redistributions of source code must retain the above copyright notice, 
-    this list of conditions and the following disclaimer.
-  * Redistributions in binary form must reproduce the above copyright notice, 
-    this list of conditions and the following disclaimer in the documentation 
-    and/or other materials provided with the distribution.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND
-  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---------------------------------------------------------------------------------
+　Copyright (C) 2015-2019 @dc1394
 
   thomasfermiにはBoostコミュニティによるBoost C++ Librariesを使用しています。
   こちらのライセンスは Boostライセンス になります。
@@ -88,11 +53,6 @@
 
 　thomasfermiにはALGLIB ProjectによるALGLIB®を使用しています。こちらのライセンス
 　はGPL 2+になります。
-
-/* ALGLIB® - numerical analysis library, 1999-2015.
-*
-* ALGLIB is a registered trademark of the ALGLIB Project.
-*/
 
 　thomasfermiにはEigen projectによるEigenを使用しています。こちらのライセンスは
 　MPL2になります。
