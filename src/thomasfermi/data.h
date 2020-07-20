@@ -142,7 +142,7 @@ namespace thomasfermi {
 
         //!  A public member variable.
         /*!
-            Cilk Plusを使用するかどうか
+            OpenMPを使用するかどうか
         */
         bool useomp_ = true;
 

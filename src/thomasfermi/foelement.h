@@ -39,7 +39,7 @@ namespace thomasfermi {
                 \param beta
                 \param coords
                 \param nint
-                \param useomp Cilkを使用するかどうか
+                \param useomp OpenMPを使用するかどうか
             */
             FOElement(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool useomp);
 

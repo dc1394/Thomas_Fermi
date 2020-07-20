@@ -35,7 +35,7 @@ namespace thomasfermi {
             // #region 型エイリアス
 
         public:
-            using result_type = std::tuple<std::shared_ptr<Beta>, std::vector<double>, double>;
+            using result_type = std::tuple<std::shared_ptr<Beta> &&, std::vector<double> &&, double const>;
 
             // #endregion 型エイリアス
 
@@ -44,7 +44,7 @@ namespace thomasfermi {
             //! A constructor.
             /*!
                 唯一のコンストラクタ
-                \param arg インプットファイル名とCilk Plusを使用するかどうかのstd::pair
+                \param arg インプットファイル名とOpenMPを使用するかどうかのstd::pair
             */
             explicit Iteration(std::pair<std::string, bool> const & arg);
 

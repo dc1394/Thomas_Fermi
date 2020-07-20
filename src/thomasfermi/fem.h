@@ -57,7 +57,7 @@ namespace thomasfermi {
                 \param beta 関数β(x)の配列
                 \param coords xのメッシュ
                 \param nint Gauss-Legendreの分点
-                \param useomp Cilk Plusを使用するかどうか
+                \param useomp OpenMPを使用するかどうか
             */
             FEM(std::vector<double> && beta, std::vector<double> const & coords, std::size_t nint, bool useomp);
 
@@ -264,7 +264,7 @@ namespace thomasfermi {
 
             //! A protected member variable.
             /*!
-                Cilk Plusを使用するかどうか
+               OpenMPを使用するかどうか
             */
             bool const useomp_;
 

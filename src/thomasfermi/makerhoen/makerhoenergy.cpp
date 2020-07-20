@@ -20,11 +20,11 @@ namespace thomasfermi {
             alpha_(std::pow(128.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 2)) * Z, 1.0 / 3.0)),
             Z_(Z),
             b_(32.0 / (9.0 * std::pow(boost::math::constants::pi<double>(), 3)) * Z_ * Z_),
-            xvec_(std::get<1>(pt)),
+            xvec_(std::move(std::get<1>(pt))),
             dx_(xvec_[2] - xvec_[1]),
             fp_(nullptr, std::fclose),
             gl_(n),
-            pbeta_(std::get<0>(pt)),
+            pbeta_(std::move(std::get<0>(pt))),
             size_(xvec_.size()),
             max_(boost::numeric_cast<std::int32_t>(xvec_[size_ - 1] / alpha_ / dx_)),
             y_prime_0_(std::get<2>(pt))

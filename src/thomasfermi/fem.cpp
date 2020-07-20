@@ -37,14 +37,13 @@ namespace thomasfermi {
             a0_(nnode_, 0.0),
             a1_(nnode_ - 1, 0.0),
             b_(nnode_, 0.0),
-            beta_(std::move(beta)),
             coords_(coords),
             gl_(nint),
             nint_(nint),
-            pbeta_(std::make_shared<Beta>(coords_, beta_)),
+            pbeta_(std::make_shared<Beta>(coords_, std::move(beta))),
             useomp_(useomp)
         {
-            BOOST_ASSERT(coords_.size() == beta_.size());
+            BOOST_ASSERT(coords_.size() == beta.size());
         }
 
         // #endregion コンストラクタ

@@ -61,8 +61,8 @@ namespace thomasfermi {
 
         //! A public member function (constant).
         /*!
-            インプットファイル名とCilk Plusを使用するかどうかを、std::pairで返す
-            \return インプットファイル名とCilk Plusを使用するかどうかのstd::pair
+            インプットファイル名とOpenMPを使用するかどうかを、std::pairで返す
+            \return インプットファイル名とOpenMPを使用するかどうかのstd::pair
         */
         std::pair<std::string, bool> getpairdata() const;
 

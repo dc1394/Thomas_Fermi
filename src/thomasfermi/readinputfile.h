@@ -48,7 +48,7 @@ namespace thomasfermi {
         //! A constructor.
         /*!
             唯一のコンストラクタ
-            \param arg インプットファイル名と、Cilk Plusを使用するかどうかのstd::pair
+            \param arg インプットファイル名と、OpenMPを使用するかどうかのstd::pair
         */
         explicit ReadInputFile(std::pair<std::string, bool> const & arg);
 
