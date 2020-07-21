@@ -35,7 +35,7 @@ namespace thomasfermi {
             // #region 型エイリアス
 
         public:
-            using result_type = std::tuple<std::shared_ptr<Beta> &&, std::vector<double> &&, double const>;
+            using result_type = std::tuple<std::shared_ptr<Beta>, std::vector<double>, double const>;
 
             // #endregion 型エイリアス
 

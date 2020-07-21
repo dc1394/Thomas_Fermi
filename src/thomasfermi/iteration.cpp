@@ -127,7 +127,7 @@ namespace thomasfermi {
         Iteration::result_type Iteration::makeresult()
         {
             auto const y_prime_0 = (y_[1] - y_[0]) / (x_[1] - x_[0]);
-            return std::forward_as_tuple(std::move(pbeta_), std::move(x_), y_prime_0);
+            return std::make_tuple(pbeta_, x_, y_prime_0);
         }
 
         // #endregion publicメンバ関数
