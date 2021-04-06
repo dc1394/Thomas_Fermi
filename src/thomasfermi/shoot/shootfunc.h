@@ -86,7 +86,7 @@ namespace thomasfermi {
             /*!
                 微分を差分化するための適当な刻み幅のベクトル
             */
-            static auto constexpr DELV = 1.0E-14;
+            static auto constexpr DELV = 1.0E-7;
 
             //! A public member variable (constant expression).
             /*!
