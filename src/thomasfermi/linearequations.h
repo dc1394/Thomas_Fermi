@@ -27,11 +27,7 @@
 #include <tuple>                // for std::tuple
 #include <vector>               // for std::vector
 #include <boost/format.hpp>     // for boost::format
-
-extern "C" {
-    std::int32_t dptsv_(std::int32_t * n, std::int32_t * nrhs, double * d, double * e, double * b, std::int32_t * ldb, std::int32_t * info);
-    int dpbsv_(char * uplo, std::int32_t * n, std::int32_t * kd, std::int32_t * nrhs, double *ab, std::int32_t * ldab, double * b, std::int32_t * ldb, std::int32_t * info);
-}
+#include <mkl_lapack.h>         // for dptsv_, dpbsv_
 
 namespace thomasfermi {
     namespace femall {
